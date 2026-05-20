@@ -1,0 +1,47 @@
+{
+    "version": 1,
+    "name": "InputActionWide",
+    "maps": [
+        {
+            "name": "Mobile",
+            "id": "4b30ca04-aeb1-4265-9471-86e6a301733e",
+            "actions": [
+                {
+                    "name": "Touchscreen",
+                    "type": "Button",
+                    "id": "7f3053b8-036e-4aba-83c9-186ee3b50df7",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "5c95c734-90fc-437e-9bba-a987dd258600",
+                    "path": "<Touchscreen>/Press",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";Mobile",
+                    "action": "Touchscreen",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
+        }
+    ],
+    "controlSchemes": [
+        {
+            "name": "Mobile",
+            "bindingGroup": "Mobile",
+            "devices": [
+                {
+                    "devicePath": "<Touchscreen>",
+                    "isOptional": false,
+                    "isOR": false
+                }
+            ]
+        }
+    ]
+}
