@@ -1,6 +1,5 @@
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "WebRequestTestSO", menuName = "Scriptable Objects/WebRequestTestSO")]
 public class WebRequestTestSO : SheetDataSOBase
 {
     [Header("정보")]
