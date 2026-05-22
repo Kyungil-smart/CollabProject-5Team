@@ -35,16 +35,37 @@ public enum HashTags
 public class Employee
 {
     [Header("[ 직원 기본 정보 ]")]
-    public string employeeName;
-    public Part part;                  // 하나만 고름
-    public MbtiFlags mbti = MbtiFlags.INTP; // 기본값 INTP
-    public HashTags hashTags = HashTags.None; // 여러 개 중복 가능
+    public string    employeeName { get; private set; }
+    public Part      part         { get; private set; } // 하나만 고름
+    public MbtiFlags mbti         { get; private set; } // 기본값 INTP
+    public HashTags  hashTags     { get; private set; } // 여러 개 중복 가능
 
-    public Employee(string name = "None", Part part = 0, MbtiFlags mbti = 0, HashTags tags = 0)
+    public struct EmployeeStats
+    {
+        [Header("[지능]")]
+        public int intelligence;
+
+        [Header("[체력]")]
+        public float maxStamina;
+        public float curStamina;
+
+        public EmployeeStats(int intel, float stamina)
+        {
+            this.intelligence = intel;
+            this.maxStamina   = stamina;
+            this.curStamina   = stamina;
+        }
+    }
+
+    public EmployeeStats stats { get; private set; }
+
+    public Employee(string name = "None", Part part = 0, MbtiFlags mbti = 0, HashTags tags = 0, int intel = 0, float stamina = 0f)
     {
          employeeName = name;
             this.part = part;
             this.mbti = mbti;
         this.hashTags = tags;
+
+        this.stats = new EmployeeStats(intel, stamina);
     }
 }
