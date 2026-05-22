@@ -30,12 +30,10 @@ public enum HashTags
 
 public class EmployeeRawData
 {
-    public int id;
+    public int    id;
     public string name;
     public string partStr;     // 엑셀의 "Develop"
     public string mbtiStr;     // 엑셀의 "J, F"
     public string hashTagsStr; // 엑셀의 "Active, Genius"
-    public int intelligence;
-    public float maxStamina;
 }
 
