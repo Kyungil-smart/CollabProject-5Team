@@ -2,34 +2,6 @@ using UnityEngine;
 using System;
 
 // 전담 파트
-public enum Part
-{
-    Develop,
-    Planning,
-    Art
-}
-
-// MBTI 플래그 (0000 = INTP가 디폴트)
-[Flags]
-public enum MbtiFlags
-{
-    INTP = 0,       // 0000
-    J = 1 << 0,  // 0001
-    F = 1 << 1,  // 0010
-    S = 1 << 2,  // 0100
-    E = 1 << 3   // 1000
-}
-
-// 해시태그 플래그 (중복 선택 가능하므로 비트 자리 분리)
-[Flags]
-public enum HashTags
-{
-    None = 0,
-    Shy = 1 << 0,  // 0001
-    Active = 1 << 1,  // 0010
-    Lazy = 1 << 2,  // 0100 (예시 추가: 게으름)
-    Genius = 1 << 3   // 1000 (예시 추가: 천재)
-}
 
 // 4. 직원 클래스
 public class Employee
@@ -48,6 +20,10 @@ public class Employee
         [Header("[체력]")]
         public float maxStamina;
         public float curStamina;
+
+        public int motivation;
+        public int loyalty;
+        public int fatigue;
 
         public EmployeeStats(int intel, float stamina)
         {
