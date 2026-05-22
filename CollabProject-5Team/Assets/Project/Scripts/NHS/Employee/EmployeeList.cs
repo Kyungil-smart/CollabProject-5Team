@@ -15,9 +15,9 @@ public class EmployeeList
     {
         for(int i=0;i<10;i++)
         {
-            Employee temp = new Employee();
-
-            _allEmployees.Add(temp);
+            //Employee temp = new Employee();
+            //
+            //_allEmployees.Add(temp);
         }
 
         for(int i=0;i<allEmployees.Count;i++)
