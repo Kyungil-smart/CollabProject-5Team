@@ -110,6 +110,7 @@ namespace GameDevTycoon.UI.Title
             // await UniTask.Delay(TimeSpan.FromSeconds(0.5f), cancellationToken: destroyCancellationToken);
             // await _logoGroup.DOFade(1f, 0.8f).ToUniTask(cancellationToken: destroyCancellationToken);
 
+            if (_logoGroup == null) yield break;
             _logoGroup.alpha = 0f;
             yield return new WaitForSeconds(0.5f);
             _logoGroup.alpha = 1f;
