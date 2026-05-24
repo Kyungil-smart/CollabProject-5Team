@@ -1,9 +1,6 @@
 using UnityEngine;
 using System;
 
-// 전담 파트
-
-// 
 public class Employee : IClickable
 {
     [Header("[ 직원 기본 정보 ]")]
