@@ -13,23 +13,22 @@ public class EmployeeList
         
     public EmployeeList(List<EmployeeImmutableData> rawData)
     {
-        for (int i = 0; i < 5; i++)
-        {
-            EmployeeImmutableData temp = new EmployeeImmutableData 
-            { 
-                         id = rawData[i].id,
-                       name = rawData[i].name,
-                    partStr = rawData[i].partStr, 
-                    mbtiStr = rawData[i].mbtiStr,
-                hashTagsStr = rawData[i].hashTagsStr
-            };
+         _allEmployees.Clear();
+        _leftEmployees.Clear();
 
-            _allEmployees.Add(new Employee(temp));
+        for (int i = 0; i < rawData.Count; i++)
+        {
+            Employee newEmployee = new Employee(rawData[i]);
+
+            _allEmployees.Add(newEmployee);
         } 
 
         for (int i=0;i<allEmployees.Count;i++)
         {
-            _leftEmployees.Add(i, _allEmployees[i]);
+            Employee employee = _allEmployees[i];
+            int employeeId = employee.ImmutableData.id;
+
+            _leftEmployees.Add(employeeId, employee);
         }
     }
 

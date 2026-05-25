@@ -21,6 +21,8 @@ public class _EmployeeManager : MonoBehaviour
     public void InitializeDatabase(List<EmployeeImmutableData> rawData)
     {
         _employeeList = new EmployeeList(rawData);
+
+        Debug.Log("데이터를 로드 합니다.");
     }
 
     public void HireEmployee(int index)
