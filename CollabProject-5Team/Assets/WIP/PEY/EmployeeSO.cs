@@ -5,7 +5,7 @@ using UnityEngine;
 public class EmployeeSO : SheetDataSOBase
 {
     [Header("[ 직원 기본 정보 ]")]
-    public string    employeeName;
+    public string    Name;
     public int       stat; // 프로퍼티3개로 분할???
     public Part      part;
     public MbtiFlags mbti;
@@ -26,7 +26,7 @@ public class EmployeeSO : SheetDataSOBase
     public override void SetData(string[] data)
     {
         id = ParseInt(data[0]);
-        employeeName = data[1];
+        Name = data[1];
         part = ParseEnum<Part>(data[2]);
         // 시트 순서가 나오지 않아서 나중에 완성
     }
