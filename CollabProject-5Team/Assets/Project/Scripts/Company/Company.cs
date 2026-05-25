@@ -1,10 +1,12 @@
+using R3;
+using System;
 using UnityEngine;
 
 public class Company : MonoBehaviour
 {
     public static Company Instance;
 
-    public int day;             // 현재 날짜
+    public ReactiveProperty<int> day = new(0); // 현재 날짜
     public int gold;            // 보유 자금
     public int level;           // 회사 레벨
 
@@ -34,19 +36,29 @@ public class Company : MonoBehaviour
     #region 날짜 진행
     public void ProgressDay()
     {
-        day++;
+        if (projects.Length == 0 || Array.TrueForAll(projects, p => p.isFinished.Value))
+        {
+            Debug.Log("[Company] 모든 프로젝트가 종료되어 날짜를 진행할 수 없습니다.");
+            return;
+        }
+
+        day.Value++;
         foreach (var project in projects)
             project.ProgressDay();
 
         // 금요일 밤:
-        if (day % 5 == 0)
-            ProgressNight();
+        if (day.Value % 5 == 0) ProgressNight();
     }
     public void ProgressNight()
     {
         foreach (var project in projects)
             project.ProgressNight();
+
+        // TODO: 모든 밤 정산이 끝나고 보고서 이벤트 연결
     }
+
+    static readonly string[] WeekDayNames = { "월요일", "화요일", "수요일", "목요일", "금요일" };
+    public static string GetWeekDayName(int day) => WeekDayNames[day % 5];
     #endregion
 
     #region 프로젝트 관리
