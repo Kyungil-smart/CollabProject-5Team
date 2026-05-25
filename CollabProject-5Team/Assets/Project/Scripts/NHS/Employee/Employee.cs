@@ -11,9 +11,10 @@ public class Employee : IClickable
 
         this.MutableData = new EmployeeMutableData
         {
-            property1  = 10,
-            property2  = 10,
-            property3  = 100,
+            property1  = rawData.initProperty1,
+            property2  = rawData.initProperty2,
+            property3  = rawData.initProperty3,
+
             motivation = 50, 
             loyalty    = 50,    
             fatigue    = 0      

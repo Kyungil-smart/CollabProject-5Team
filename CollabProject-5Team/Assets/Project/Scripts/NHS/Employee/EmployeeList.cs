@@ -11,20 +11,20 @@ public class EmployeeList
     public IReadOnlyDictionary<int, Employee> leftEmployees => _leftEmployees;
     private Dictionary<int, Employee> _leftEmployees = new Dictionary<int, Employee>();
         
-    public EmployeeList()
+    public EmployeeList(List<EmployeeImmutableData> rawData)
     {
         for (int i = 0; i < 5; i++)
         {
-            EmployeeImmutableData mockRaw = new EmployeeImmutableData 
+            EmployeeImmutableData temp = new EmployeeImmutableData 
             { 
-                         id = i, 
-                       name = $"지망생_{i}", 
-                    partStr = "Develop", 
-                    mbtiStr = "INTP", 
-                hashTagsStr = "None" 
+                         id = rawData[i].id,
+                       name = rawData[i].name,
+                    partStr = rawData[i].partStr, 
+                    mbtiStr = rawData[i].mbtiStr,
+                hashTagsStr = rawData[i].hashTagsStr
             };
 
-            _allEmployees.Add(new Employee(mockRaw));
+            _allEmployees.Add(new Employee(temp));
         } 
 
         for (int i=0;i<allEmployees.Count;i++)

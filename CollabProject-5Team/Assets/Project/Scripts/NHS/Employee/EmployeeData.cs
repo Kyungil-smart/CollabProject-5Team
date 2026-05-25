@@ -34,7 +34,11 @@ public class EmployeeImmutableData // 불변 데이터
     public string        name;
     public string     partStr; 
     public string     mbtiStr; 
-    public string hashTagsStr; 
+    public string hashTagsStr;
+
+    public int initProperty1;
+    public int initProperty2;
+    public int initProperty3;
 }
 
 [System.Serializable]
