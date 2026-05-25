@@ -32,9 +32,14 @@ public class EmployeeImmutableData // 불변 데이터
 {
     public int             id;
     public string        name;
+
     public string     partStr; 
     public string     mbtiStr; 
     public string hashTagsStr;
+
+    public Part          partParsed;
+    public MbtiFlags     mbtiParsed;
+    public HashTags  hashTagsParsed;
 
     public int initProperty1;
     public int initProperty2;
