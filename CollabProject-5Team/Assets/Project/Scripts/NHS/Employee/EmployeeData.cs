@@ -28,12 +28,23 @@ public enum HashTags
     Genius = 1 << 3   // 1000 
 }
 
-public class EmployeeRawData
+public class EmployeeImmutableData // 불변 데이터
 {
-    public int    id;
-    public string name;
-    public string partStr;     // 엑셀의 "Develop"
-    public string mbtiStr;     // 엑셀의 "J, F"
-    public string hashTagsStr; // 엑셀의 "Active, Genius"
+    public int             id;
+    public string        name;
+    public string     partStr; 
+    public string     mbtiStr; 
+    public string hashTagsStr; 
 }
 
+[System.Serializable]
+public struct EmployeeMutableData // 가변 데이터
+{
+    public int property1;
+    public int property2;
+    public int property3;
+
+    public int motivation;
+    public int loyalty;
+    public int fatigue;
+}

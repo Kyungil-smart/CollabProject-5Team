@@ -13,14 +13,21 @@ public class EmployeeList
         
     public EmployeeList()
     {
-        for(int i=0;i<10;i++)
+        for (int i = 0; i < 5; i++)
         {
-            //Employee temp = new Employee();
-            //
-            //_allEmployees.Add(temp);
-        }
+            EmployeeImmutableData mockRaw = new EmployeeImmutableData 
+            { 
+                         id = i, 
+                       name = $"지망생_{i}", 
+                    partStr = "Develop", 
+                    mbtiStr = "INTP", 
+                hashTagsStr = "None" 
+            };
 
-        for(int i=0;i<allEmployees.Count;i++)
+            _allEmployees.Add(new Employee(mockRaw));
+        } 
+
+        for (int i=0;i<allEmployees.Count;i++)
         {
             _leftEmployees.Add(i, _allEmployees[i]);
         }
