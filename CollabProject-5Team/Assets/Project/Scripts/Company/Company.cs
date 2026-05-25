@@ -8,8 +8,7 @@ public class Company : MonoBehaviour
     public int money;           // 보유 자금 (단위: 만원)
     public int level;           // 회사 레벨
 
-    public Project[] curProjects; // 현재 진행중인 프로젝트들
-
+    public Project[] projects;  // 현재 진행중인 프로젝트들
 
     #region 싱글톤 설정
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]

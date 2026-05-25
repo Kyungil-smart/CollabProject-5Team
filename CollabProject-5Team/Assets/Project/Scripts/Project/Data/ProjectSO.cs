@@ -11,7 +11,7 @@ public class ProjectSO : SheetDataSOBase
     public ProjectScale scale;      // 규모 => 아래 값들 연관
     public int requiredCost;        // 개발비 
     public int maxEmployeePerPart;  // 파트별 최대 투입 인원
-    public int durationDays;        // 개발 기간 (일 단위)
+    public int durationDays;        // 개발 기간 (영업일 단위)
 
     public float goalScore; // 목표 점수
 
