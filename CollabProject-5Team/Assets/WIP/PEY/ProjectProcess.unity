@@ -172,7 +172,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 640632177}
-  - component: {fileID: 640632176}
+  - component: {fileID: 640632178}
   m_Layer: 0
   m_Name: Project
   m_TagString: Untagged
@@ -180,30 +180,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &640632176
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 640632175}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 55cf75e3c2643ca41a7e8c1afae4cc9b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  so: {fileID: 0}
-  day: 0
-  progress: 0
-  qualityScore: 0
-  stabilityScore: 0
-  charmScore: 0
-  weeklyPlanningCount: 0
-  weeklyPlanningWeight: 0
-  weeklyDevelopCount: 0
-  weeklyDevelopWeight: 0
-  weeklyArtCount: 0
-  weeklyArtWeight: 0
 --- !u!4 &640632177
 Transform:
   m_ObjectHideFlags: 0
@@ -219,6 +195,36 @@ Transform:
   m_Children: []
   m_Father: {fileID: 907805700}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &640632178
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 640632175}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 55cf75e3c2643ca41a7e8c1afae4cc9b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  so: {fileID: 11400000, guid: 1aa1266399c7eef4a9569f054f7ff5aa, type: 2}
+  day: 0
+  plannings:
+  - {fileID: 11400000, guid: b8fc01d98ff5ede4ab7076bf34455c94, type: 2}
+  develops:
+  - {fileID: 11400000, guid: ba7162194a3acac45ab6e884cbca2792, type: 2}
+  arts:
+  - {fileID: 11400000, guid: 06682cd4b7a573f42a4351487bac00e5, type: 2}
+  progress: 0
+  qualityScore: 0
+  stabilityScore: 0
+  charmScore: 0
+  weeklyPlanningCount: 0
+  weeklyPlanningWeight: 0
+  weeklyDevelopCount: 0
+  weeklyDevelopWeight: 0
+  weeklyArtCount: 0
+  weeklyArtWeight: 0
 --- !u!1 &907805698
 GameObject:
   m_ObjectHideFlags: 0
@@ -249,10 +255,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   day: 0
-  money: 0
-  level: 0
+  gold: 1500
+  level: 1
   projects:
-  - {fileID: 640632176}
+  - {fileID: 640632178}
 --- !u!4 &907805700
 Transform:
   m_ObjectHideFlags: 0

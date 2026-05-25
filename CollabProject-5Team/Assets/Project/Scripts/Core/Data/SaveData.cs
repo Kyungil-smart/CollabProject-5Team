@@ -8,7 +8,7 @@ public class SaveData
 
     // 회사 상태
     public int companyDay;
-    public int companyMoney;
+    public int companyGold;
     public int companyLevel;
 
     // 직원 상태
