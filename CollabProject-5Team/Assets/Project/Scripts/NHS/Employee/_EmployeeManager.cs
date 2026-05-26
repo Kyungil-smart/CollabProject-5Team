@@ -39,6 +39,6 @@ public class _EmployeeManager : MonoBehaviour
 
         _employeeList.DeleteEmployee(index);
 
-        Debug.Log($"[시스템] {target.ImmutableData.name} 고용 프로세스 전과정 성공!");
+        Debug.Log($"[시스템] {target.ImmutableData.employeeName} 고용 프로세스 전과정 성공!");
     }
 }

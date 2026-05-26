@@ -13,6 +13,6 @@
 
         _haveEmployeeList.Add(targetEmployee);
 
-        Debug.Log($"[인사과] {targetEmployee.ImmutableData.name} 직원이 정식 발령되었습니다.");
+        Debug.Log($"[인사과] {targetEmployee.ImmutableData.employeeName} 직원이 정식 발령되었습니다.");
     }
 }

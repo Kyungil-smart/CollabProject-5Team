@@ -26,7 +26,7 @@ public class EmployeeList
         for (int i=0;i<allEmployees.Count;i++)
         {
             Employee employee = _allEmployees[i];
-            int employeeId = employee.ImmutableData.id;
+            int employeeId = employee.ImmutableData.employeeID;
 
             _leftEmployees.Add(employeeId, employee);
         }
