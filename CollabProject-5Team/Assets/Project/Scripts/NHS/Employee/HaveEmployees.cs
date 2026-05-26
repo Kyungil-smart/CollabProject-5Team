@@ -7,15 +7,12 @@
          public List<Employee>  haveEmployeeList => _haveEmployeeList;
         private List<Employee> _haveEmployeeList = new List<Employee>();
 
-        private Stats _totalStat;
+    public void AddEmployee(Employee targetEmployee)
+    {
+        if (targetEmployee == null) return;
 
-        public void AddEmployee(int index)
-        {
-            
-        }
+        _haveEmployeeList.Add(targetEmployee);
 
-        public Stats GetAllStats()
-        {
-            return _totalStat;
-        }
+        Debug.Log($"[인사과] {targetEmployee.ImmutableData.employeeName} 직원이 정식 발령되었습니다.");
     }
+}

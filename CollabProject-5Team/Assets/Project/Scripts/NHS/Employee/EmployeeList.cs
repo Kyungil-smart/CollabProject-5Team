@@ -11,18 +11,24 @@ public class EmployeeList
     public IReadOnlyDictionary<int, Employee> leftEmployees => _leftEmployees;
     private Dictionary<int, Employee> _leftEmployees = new Dictionary<int, Employee>();
         
-    public EmployeeList()
+    public EmployeeList(List<EmployeeImmutableData> rawData)
     {
-        for(int i=0;i<10;i++)
-        {
-            //Employee temp = new Employee();
-            //
-            //_allEmployees.Add(temp);
-        }
+         _allEmployees.Clear();
+        _leftEmployees.Clear();
 
-        for(int i=0;i<allEmployees.Count;i++)
+        for (int i = 0; i < rawData.Count; i++)
         {
-            _leftEmployees.Add(i, _allEmployees[i]);
+            Employee newEmployee = new Employee(rawData[i]);
+
+            _allEmployees.Add(newEmployee);
+        } 
+
+        for (int i=0;i<allEmployees.Count;i++)
+        {
+            Employee employee = _allEmployees[i];
+            int employeeId = employee.ImmutableData.employeeID;
+
+            _leftEmployees.Add(employeeId, employee);
         }
     }
 
