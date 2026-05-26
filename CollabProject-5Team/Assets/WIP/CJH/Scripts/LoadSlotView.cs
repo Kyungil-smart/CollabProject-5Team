@@ -1,13 +1,17 @@
 // using DG.Tweening; // TODO: DoTween 패키지 설치 후 주석 해제
-// using R3;          // TODO: R3 패키지 설치 후 주석 해제
 
 using System;
+using R3;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace GameDevTycoon.UI.Title
 {
+    /// <summary>
+    /// 세이브 로드 슬롯 단일 항목 View.
+    /// 데이터 바인딩 및 선택 이벤트 발행 담당.
+    /// </summary>
     public sealed class LoadSlotView : MonoBehaviour
     {
         [Header("Interaction")]
@@ -32,25 +36,18 @@ namespace GameDevTycoon.UI.Title
         {
             _canvasGroup.alpha = 0f;
 
-            // [R3 설치 후 아래 코드로 교체]
-            // _slotButton.OnClickAsObservable().Subscribe(_ => HandleClick()).AddTo(this);
-
-            _slotButton.onClick.AddListener(HandleClick);
-
-            Debug.LogWarning("[LoadSlotView] DoTween / R3 미설치 상태 - 임시 코드 사용 중");
-        }
-
-        private void OnDestroy()
-        {
-            // [DoTween 설치 후 주석 해제]
-            // DOTween.Kill(_canvasGroup);
-            // DOTween.Kill(transform);
+            _slotButton.OnClickAsObservable()
+                .Subscribe(_ => HandleClick())
+                .AddTo(this);
         }
 
         public void Bind(SaveSlotData data)
         {
             bool isEmpty = data == null;
-            _emptyOverlay.SetActive(isEmpty);
+
+            if (_emptyOverlay != null)
+                _emptyOverlay.SetActive(isEmpty);
+
             _slotButton.interactable = !isEmpty;
 
             if (!isEmpty)
@@ -72,8 +69,7 @@ namespace GameDevTycoon.UI.Title
             // [DoTween 설치 후 아래 코드로 교체]
             // DOTween.Kill(_canvasGroup);
             // _canvasGroup.alpha = 0f;
-            // _canvasGroup.DOFade(1f, 0.25f).SetDelay(delaySeconds)
-            //     .SetEase(Ease.OutQuad).SetTarget(_canvasGroup);
+            // _canvasGroup.DOFade(1f, 0.25f).SetDelay(delaySeconds).SetEase(Ease.OutQuad).SetTarget(_canvasGroup);
 
             _canvasGroup.alpha = 1f;
         }
