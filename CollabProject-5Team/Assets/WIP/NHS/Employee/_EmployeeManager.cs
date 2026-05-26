@@ -25,7 +25,7 @@ public class _EmployeeManager : MonoBehaviour
         Debug.Log("데이터를 로드 합니다.");
     }
 
-    public EmployeeMono HireEmployee(int index)
+    public EmployeeObj HireEmployee(int index)
     {
         if (!_employeeList.leftEmployees.ContainsKey(index))
         {
@@ -35,7 +35,7 @@ public class _EmployeeManager : MonoBehaviour
 
         Employee target = _employeeList.leftEmployees[index];
         GameObject employeeObject = new GameObject($"Employee_{target.ImmutableData.employeeName}_{index}");
-        EmployeeMono employeeMono = employeeObject.AddComponent<EmployeeMono>();
+        EmployeeObj employeeMono = employeeObject.AddComponent<EmployeeObj>();
         employeeMono.Init(target);
 
         _haveEmployees.AddEmployee(target);

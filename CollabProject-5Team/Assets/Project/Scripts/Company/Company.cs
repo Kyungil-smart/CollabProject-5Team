@@ -47,21 +47,21 @@ public class Company : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Alpha1)) // 테스트용: 첫 번째 직원 고용
         {
             int firstEmployeeId = allEmployeeList[0].id;
-            EmployeeMono hiredEmployee = _EmployeeManager.Instance.HireEmployee(firstEmployeeId);
+            EmployeeObj hiredEmployee = _EmployeeManager.Instance.HireEmployee(firstEmployeeId);
 
             projects[0].AssignEmployee(hiredEmployee);
         }
         if (Input.GetKeyDown(KeyCode.Alpha2)) 
         {
             int firstEmployeeId = allEmployeeList[1].id;
-            EmployeeMono hiredEmployee = _EmployeeManager.Instance.HireEmployee(firstEmployeeId);
+            EmployeeObj hiredEmployee = _EmployeeManager.Instance.HireEmployee(firstEmployeeId);
 
             projects[0].AssignEmployee(hiredEmployee);
         }
         if (Input.GetKeyDown(KeyCode.Alpha3))
         {
             int firstEmployeeId = allEmployeeList[2].id;
-            EmployeeMono hiredEmployee = _EmployeeManager.Instance.HireEmployee(firstEmployeeId);
+            EmployeeObj hiredEmployee = _EmployeeManager.Instance.HireEmployee(firstEmployeeId);
 
             projects[0].AssignEmployee(hiredEmployee);
         }

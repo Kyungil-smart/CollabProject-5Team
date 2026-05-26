@@ -21,9 +21,9 @@ public class Project : MonoBehaviour
     public ReactiveProperty<string> userNamed = new(string.Empty); // 유저가 붙인 프로젝트 이름
 
     // 투입된 직원
-    public EmployeeMono[] plannings;
-    public EmployeeMono[] develops;
-    public EmployeeMono[] arts;
+    public EmployeeObj[] plannings;
+    public EmployeeObj[] develops;
+    public EmployeeObj[] arts;
 
     // 진행도 연관 수치
     public ReactiveProperty<float> progress = new(0f);
@@ -49,9 +49,9 @@ public class Project : MonoBehaviour
     {
         userNamed.Value = Name;
 
-        plannings = new EmployeeMono[MaxEmployeePerPart];
-        develops  = new EmployeeMono[MaxEmployeePerPart];
-        arts      = new EmployeeMono[MaxEmployeePerPart];
+        plannings = new EmployeeObj[MaxEmployeePerPart];
+        develops  = new EmployeeObj[MaxEmployeePerPart];
+        arts      = new EmployeeObj[MaxEmployeePerPart];
 
         // 세부 점수가 변경될 때마다 progress 자동 재계산
         Observable.CombineLatest(qualityScore, stabilityScore, charmScore,
@@ -60,7 +60,7 @@ public class Project : MonoBehaviour
             .AddTo(this);
     }
 
-    public bool AssignEmployee(EmployeeMono o)
+    public bool AssignEmployee(EmployeeObj o)
     {
         if (o == null)
         {
@@ -68,7 +68,7 @@ public class Project : MonoBehaviour
             return false;
         }
 
-        EmployeeMono[] targetArray = null;
+        EmployeeObj[] targetArray = null;
         switch (o.e.ImmutableData.partParsed)
         {
             case Part.Planning:
@@ -104,21 +104,21 @@ public class Project : MonoBehaviour
 
         // ~임의로 계산중~
         //기획자: qualityScore 증가
-        foreach (EmployeeMono o in plannings)
+        foreach (EmployeeObj o in plannings)
         {
             if (o == null) continue;
             qualityScore.Value += (o.e.MutableData.property1 + o.e.MutableData.property2 + o.e.MutableData.property3) / 3f * 0.1f;
         }
 
         // 개발자: stabilityScore 증가
-        foreach (EmployeeMono o in develops)
+        foreach (EmployeeObj o in develops)
         {
             if (o == null) continue;
             stabilityScore.Value += (o.e.MutableData.property1 + o.e.MutableData.property2 + o.e.MutableData.property3) / 3f * 0.1f;
         }
 
         // 아티스트: charmScore 증가
-        foreach (EmployeeMono o in arts)
+        foreach (EmployeeObj o in arts)
         {
             if (o == null) continue;
             charmScore.Value += (o.e.MutableData.property1 + o.e.MutableData.property2 + o.e.MutableData.property3) / 3f * 0.1f;

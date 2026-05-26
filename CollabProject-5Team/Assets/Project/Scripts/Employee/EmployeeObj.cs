@@ -3,7 +3,7 @@ using UnityEngine.EventSystems;
 
 // Employee의 MonoBehaviour 래퍼 클래스
 // 직원 오브젝트에 붙여서 IClickable 처리 및 인스펙터 설정담당
-public class EmployeeMono : MonoBehaviour, IPointerClickHandler
+public class EmployeeObj : MonoBehaviour, IPointerClickHandler
 {
     public Employee e;
 
