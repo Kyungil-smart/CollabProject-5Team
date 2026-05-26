@@ -14,8 +14,7 @@ public class EmployeeSO : SheetDataSOBase
     [Header("[ 직원 기본 정보 ]")]
     public string    Name;
 
-    public int stat; // 기본능력치 기본값:70
-    //public int Score => (property1 + property2 + property3) / 3; // Employee코드로 이동해야함
+    public int stat; // 작업능력 기본값:70
     public int property1; //   재미, 기술력, 비주얼 => 20(보정값) + 70(능력치)X0.5 = 55
     public int property2; // 창의성, 최적화, 연출력 => 20(보정값) + 70(능력치)X0.5 = 55
     public int property3; // 정교함, 버그제어, 구도 => 20(보정값) + 70(능력치)X0.5 = 55

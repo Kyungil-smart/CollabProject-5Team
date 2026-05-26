@@ -46,7 +46,7 @@ public class Project : MonoBehaviour
 
     private void Start()
     {
-        userNamed.Value = Name; // 초기값으로 SO의 Name 사용
+        userNamed.Value = Name;
 
         // 세부 점수가 변경될 때마다 progress 자동 재계산
         Observable.CombineLatest(qualityScore, stabilityScore, charmScore,
@@ -60,28 +60,20 @@ public class Project : MonoBehaviour
     {
         if (isFinished.Value) return;
 
-
-        // 기획자 → qualityScore 증가
+        // 기획자: qualityScore 증가
         foreach (EmployeeSO so in plannings)
-            qualityScore.Value += (so.property1 + so.property2 + so.property3) / 3f * 0.1f;
+            qualityScore.Value += (so.property1 + so.property2 + so.property3) / 3f * 0.1f; //임시 가중치(0.1f) 사용중
 
-        // 개발자 → stabilityScore 증가
+        // 개발자: stabilityScore 증가
         foreach (EmployeeSO so in develops)
             stabilityScore.Value += (so.property1 + so.property2 + so.property3) / 3f * 0.1f;
 
-        // 아티스트 → charmScore 증가
+        // 아티스트: charmScore 증가
         foreach (EmployeeSO so in arts)
             charmScore.Value += (so.property1 + so.property2 + so.property3) / 3f * 0.1f;
 
         Debug.Log($"{userNamed}: [Day {day}] {Company.GetWeekDayName(day)}종료"); // 날짜 로그 표시중
         day++;
-    }
-
-    // 프로젝트 종료
-    public void Finish()
-    {
-        isFinished.Value = true;
-        Debug.Log($"{userNamed}: 종료 | 진행도: {ProgressBar:F1}% | 소요일: {day}일");
     }
 
     // 금요일 밤(평일 5일 경과 후) 주 1회 호출되는 메서드
@@ -96,5 +88,14 @@ public class Project : MonoBehaviour
         }
 
         // 정산 알림
+    }
+
+    // 프로젝트 종료
+    public void Finish()
+    {
+        isFinished.Value = true;
+        Debug.Log($"{userNamed}: 종료 | 진행도: {ProgressBar:F1}% | 소요일: {day}일");
+
+        // 종료 프로젝트 데이터와 연결
     }
 }
