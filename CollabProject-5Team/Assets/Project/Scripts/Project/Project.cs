@@ -49,6 +49,10 @@ public class Project : MonoBehaviour
     {
         userNamed.Value = Name;
 
+        plannings = new EmployeeMono[MaxEmployeePerPart];
+        develops  = new EmployeeMono[MaxEmployeePerPart];
+        arts      = new EmployeeMono[MaxEmployeePerPart];
+
         // 세부 점수가 변경될 때마다 progress 자동 재계산
         Observable.CombineLatest(qualityScore, stabilityScore, charmScore,
             (q, s, c) => q + s + c)
@@ -56,16 +60,16 @@ public class Project : MonoBehaviour
             .AddTo(this);
     }
 
-    public bool AssignEmployee(EmployeeMono employeeMono)
+    public bool AssignEmployee(EmployeeMono o)
     {
-        if (employeeMono == null)
+        if (o == null)
         {
             Debug.Log("[Project] 고용할 직원이 null 입니다");
             return false;
         }
 
         EmployeeMono[] targetArray = null;
-        switch (employeeMono.employee.ImmutableData.partParsed)
+        switch (o.e.ImmutableData.partParsed)
         {
             case Part.Planning:
                 targetArray = plannings;
@@ -77,19 +81,19 @@ public class Project : MonoBehaviour
                 targetArray = arts;
                 break;
             default:
-                Debug.LogWarning($"[{userNamed.Value}] {employeeMono.employee.ImmutableData.employeeName}의 파트({employeeMono.employee.ImmutableData.partParsed})는 현재 프로젝트 투입 대상이 아닙니다.");
+                Debug.LogWarning($"[{userNamed.Value}] {o.e.ImmutableData.employeeName}의 파트({o.e.ImmutableData.partParsed})는 현재 프로젝트 투입 대상이 아닙니다.");
                 return false;
         }
 
         int emptyIndex = Array.FindIndex(targetArray, m => m == null);
         if (emptyIndex < 0)
         {
-            Debug.LogWarning($"[{userNamed.Value}] {employeeMono.employee.ImmutableData.partParsed} 파트 투입 슬롯이 가득 찼습니다.");
+            Debug.LogWarning($"[{userNamed.Value}] {o.e.ImmutableData.partParsed} 파트 투입 슬롯이 가득 찼습니다.");
             return false;
         }
 
-        targetArray[emptyIndex] = employeeMono;
-        Debug.Log($"[{userNamed.Value}] {employeeMono.employee.ImmutableData.employeeName} 직원이 {employeeMono.employee.ImmutableData.partParsed} 파트로 투입되었습니다.");
+        targetArray[emptyIndex] = o;
+        Debug.Log($"[{userNamed.Value}] {o.e.ImmutableData.employeeName} 직원이 {o.e.ImmutableData.partParsed} 파트로 투입되었습니다.");
         return true;
     }
 
@@ -101,15 +105,24 @@ public class Project : MonoBehaviour
         // ~임의로 계산중~
         //기획자: qualityScore 증가
         foreach (EmployeeMono o in plannings)
-            qualityScore.Value += (o.employee.MutableData.property1 + o.employee.MutableData.property2 + o.employee.MutableData.property3) / 3f * 0.1f;
+        {
+            if (o == null) continue;
+            qualityScore.Value += (o.e.MutableData.property1 + o.e.MutableData.property2 + o.e.MutableData.property3) / 3f * 0.1f;
+        }
 
         // 개발자: stabilityScore 증가
         foreach (EmployeeMono o in develops)
-            stabilityScore.Value += (o.employee.MutableData.property1 + o.employee.MutableData.property2 + o.employee.MutableData.property3) / 3f * 0.1f;
+        {
+            if (o == null) continue;
+            stabilityScore.Value += (o.e.MutableData.property1 + o.e.MutableData.property2 + o.e.MutableData.property3) / 3f * 0.1f;
+        }
 
         // 아티스트: charmScore 증가
         foreach (EmployeeMono o in arts)
-            charmScore.Value += (o.employee.MutableData.property1 + o.employee.MutableData.property2 + o.employee.MutableData.property3) / 3f * 0.1f;
+        {
+            if (o == null) continue;
+            charmScore.Value += (o.e.MutableData.property1 + o.e.MutableData.property2 + o.e.MutableData.property3) / 3f * 0.1f;
+        }
 
         Debug.Log($"{userNamed}: [Day {day}] {Company.GetWeekDayName(day)}종료"); // 날짜 로그 표시중
         day++;
