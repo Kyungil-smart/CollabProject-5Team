@@ -21,7 +21,7 @@ public class EmployeeSO : SheetDataSOBase
 
     public Part      part;
     public MbtiFlags mbti;
-    public HashTags  hashTags;
+    public Rank      rank;
     public string    desc;
 
     // 계약금/급여
