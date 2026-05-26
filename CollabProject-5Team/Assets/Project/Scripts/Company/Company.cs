@@ -6,6 +6,7 @@ public class Company : MonoBehaviour
 {
     public static Company Instance;
 
+    public string Name;
     public ReactiveProperty<int> day = new(0); // 현재 날짜
     public int gold;            // 보유 자금
     public int level;           // 회사 레벨

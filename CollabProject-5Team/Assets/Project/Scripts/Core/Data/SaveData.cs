@@ -7,6 +7,7 @@ public class SaveData
     public Project[] projects; // 진행중인 프로젝트 상태
 
     // 회사 상태
+    public string companyName;
     public int companyDay;
     public int companyGold;
     public int companyLevel;
