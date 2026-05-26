@@ -35,7 +35,6 @@ public class EmployeeImmutableData : SheetDataSOBase
     public int      employeeID;
     public string employeeName;
 
-    public string     partStr; 
     public string     mbtiStr; 
     public string hashTagsStr;
 
@@ -54,11 +53,10 @@ public class EmployeeImmutableData : SheetDataSOBase
 
         this.employeeName = rowData[1].Trim();
 
-        this.partStr      = rowData[2].Trim(); 
+        this.partParsed   = ParseEnum<Part>(rowData[2].Trim());
         this.mbtiStr      = rowData[3].Trim(); 
         this.hashTagsStr  = rowData[4].Trim();
 
-        this.partParsed     = ParseEnum<Part>(partStr);
         this.mbtiParsed     = ConvertMbtiStringToEnum(mbtiStr);
         this.hashTagsParsed = ConvertHashTagsStringToEnum(hashTagsStr);
 
