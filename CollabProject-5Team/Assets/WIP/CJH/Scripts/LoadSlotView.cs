@@ -1,5 +1,4 @@
-// using DG.Tweening; // TODO: DoTween 패키지 설치 후 주석 해제
-
+using DG.Tweening;
 using System;
 using R3;
 using TMPro;
@@ -66,19 +65,14 @@ namespace GameDevTycoon.UI.Title
 
         public void PlayEntrance(float delaySeconds)
         {
-            // [DoTween 설치 후 아래 코드로 교체]
-            // DOTween.Kill(_canvasGroup);
-            // _canvasGroup.alpha = 0f;
-            // _canvasGroup.DOFade(1f, 0.25f).SetDelay(delaySeconds).SetEase(Ease.OutQuad).SetTarget(_canvasGroup);
-
-            _canvasGroup.alpha = 1f;
+            DOTween.Kill(_canvasGroup);
+            _canvasGroup.alpha = 0f;
+            _canvasGroup.DOFade(1f, 0.25f).SetDelay(delaySeconds).SetEase(Ease.OutQuad).SetTarget(_canvasGroup);
         }
 
         private void HandleClick()
         {
-            // [DoTween 설치 후 아래 코드로 교체]
-            // transform.DOPunchScale(Vector3.one * 0.08f, 0.25f, vibrato: 5).SetTarget(transform);
-
+            transform.DOPunchScale(Vector3.one * 0.08f, 0.25f, vibrato: 5).SetTarget(transform);
             OnSelected?.Invoke(_slotIndex);
         }
     }
