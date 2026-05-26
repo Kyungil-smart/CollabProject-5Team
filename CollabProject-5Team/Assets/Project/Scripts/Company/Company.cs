@@ -1,5 +1,6 @@
 using R3;
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class Company : MonoBehaviour
@@ -23,6 +24,9 @@ public class Company : MonoBehaviour
 
     public Project[] projects;  // 현재 진행중인 프로젝트들
 
+    [Header("직원 DB (모든 직원 기본 데이터)")]
+    [SerializeField] List<EmployeeImmutableData> allEmployeeList = new();
+
     #region 싱글톤 설정
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     public static void Init() => Instance = null;
@@ -32,6 +36,35 @@ public class Company : MonoBehaviour
         if (Instance != null && Instance != this) { Destroy(gameObject); return; }
         Instance = this; DontDestroyOnLoad(gameObject);
     #endregion
+    }
+
+    private void Start()
+    {
+        _EmployeeManager.Instance.InitializeDatabase(allEmployeeList);
+    }
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.Alpha1)) // 테스트용: 첫 번째 직원 고용
+        {
+            int firstEmployeeId = allEmployeeList[0].id;
+            EmployeeMono hiredEmployee = _EmployeeManager.Instance.HireEmployee(firstEmployeeId);
+
+            projects[0].AssignEmployee(hiredEmployee);
+        }
+        if (Input.GetKeyDown(KeyCode.Alpha2)) 
+        {
+            int firstEmployeeId = allEmployeeList[1].id;
+            EmployeeMono hiredEmployee = _EmployeeManager.Instance.HireEmployee(firstEmployeeId);
+
+            projects[0].AssignEmployee(hiredEmployee);
+        }
+        if (Input.GetKeyDown(KeyCode.Alpha3))
+        {
+            int firstEmployeeId = allEmployeeList[2].id;
+            EmployeeMono hiredEmployee = _EmployeeManager.Instance.HireEmployee(firstEmployeeId);
+
+            projects[0].AssignEmployee(hiredEmployee);
+        }
     }
 
     #region 날짜 진행

@@ -6,19 +6,25 @@ public class Employee : IClickable
 {
     public EmployeeImmutableData ImmutableData { get; private set; }
     public   EmployeeMutableData   MutableData { get; set; }
+
     public Employee(EmployeeImmutableData soData)
     {
         this.ImmutableData = soData;
 
+        int initStat = PerkPolicy.InitStatFromRank(soData.rankParsed);
+
         this.MutableData = new EmployeeMutableData
         {
-            property1  = soData.initProperty1,
-            property2  = soData.initProperty2,
-            property3  = soData.initProperty3,
-
-            motivation = 50, 
-            loyalty    = 50,    
-            fatigue    = 0      
+            baseStat           = initStat,
+            property1      = PerkPolicy.CalcBaseProperty(initStat),
+            property2      = PerkPolicy.CalcBaseProperty(initStat),
+            property3      = PerkPolicy.CalcBaseProperty(initStat),
+            bonus1 = 0,
+            bonus2 = 0,
+            bonus3 = 0,
+            motivation     = 50,
+            loyalty        = 50,
+            fatigue        = 0,
         };
     }
 

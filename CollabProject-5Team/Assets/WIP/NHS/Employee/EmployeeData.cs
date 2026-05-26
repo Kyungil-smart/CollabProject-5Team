@@ -26,15 +26,14 @@ public class EmployeeImmutableData : SheetDataSOBase
 {
     public string employeeName;
 
+    [HideInInspector]
     public string     mbtiStr; 
 
-    public Part          partParsed;
     public Rank          rankParsed;
+    public Part          partParsed;
     public MbtiFlags     mbtiParsed;
 
-    public int initProperty1;
-    public int initProperty2;
-    public int initProperty3;
+    public int contractGold;
 
     public override void SetData(string[] rowData)
     {
@@ -42,25 +41,28 @@ public class EmployeeImmutableData : SheetDataSOBase
 
         this.employeeName = rowData[1].Trim();
 
-        this.partParsed   = ParseEnum<Part>(rowData[2].Trim());
-        this.rankParsed   = ParseEnum<Rank>(rowData[3].Trim());
+        this.rankParsed   = ParseEnum<Rank>(rowData[2].Trim());
+        this.partParsed   = ParseEnum<Part>(rowData[3].Trim());
 
         this.mbtiStr      = rowData[4].Trim(); 
         this.mbtiParsed   = ConvertMbtiStringToEnum(mbtiStr);
 
-        this.initProperty1 = ParseInt(rowData[5]);
-        this.initProperty2 = ParseInt(rowData[6]);
-        this.initProperty3 = ParseInt(rowData[7]);
+        this.contractGold = ParseInt(rowData[5]);
     }
 }
 
 [Serializable]
 public struct EmployeeMutableData // 가변 데이터
 {
-    public int stat; // 작업능력
-    public int property1;
+    public int baseStat;  // 주 능력치
+
+    public int property1; // 주 능력치 기반으로 변화하는 디폴트 값
     public int property2;
     public int property3;
+
+    public int bonus1; // property1에 더하는 추가 변동값
+    public int bonus2;
+    public int bonus3;
 
     public int motivation;
     public int loyalty;

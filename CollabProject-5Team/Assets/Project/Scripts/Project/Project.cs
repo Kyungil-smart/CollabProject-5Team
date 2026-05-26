@@ -1,4 +1,5 @@
 using R3;
+using System;
 using UnityEngine;
 
 // 진행중인 프로젝트의 상태 데이터
@@ -19,10 +20,10 @@ public class Project : MonoBehaviour
     public int day;      // 현재 진행 일수 (영업일 기준)
     public ReactiveProperty<string> userNamed = new(string.Empty); // 유저가 붙인 프로젝트 이름
 
-    // 투입된 직원 (임시로 EmployeeSO 사용)
-    public EmployeeSO[] plannings;
-    public EmployeeSO[] develops;
-    public EmployeeSO[] arts;
+    // 투입된 직원
+    public EmployeeMono[] plannings;
+    public EmployeeMono[] develops;
+    public EmployeeMono[] arts;
 
     // 진행도 연관 수치
     public ReactiveProperty<float> progress = new(0f);
@@ -33,9 +34,9 @@ public class Project : MonoBehaviour
     }
 
     // 세부 점수 (각 파트가 올리면 progress에 자동 반영)
-    public ReactiveProperty<float> qualityScore   = new(0f); // 완성도 점수 (기획)
+    public ReactiveProperty<float> qualityScore = new(0f); // 완성도 점수 (기획)
     public ReactiveProperty<float> stabilityScore = new(0f); // 안정성 점수 (개발)
-    public ReactiveProperty<float> charmScore     = new(0f); // 매력도 점수 (아트)
+    public ReactiveProperty<float> charmScore = new(0f); // 매력도 점수 (아트)
 
     // 이벤트 발생으로 인한 수치 변화
     //public float weeklyPlanningWeight;
@@ -55,22 +56,60 @@ public class Project : MonoBehaviour
             .AddTo(this);
     }
 
+    public bool AssignEmployee(EmployeeMono employeeMono)
+    {
+        if (employeeMono == null)
+        {
+            Debug.Log("[Project] 고용할 직원이 null 입니다");
+            return false;
+        }
+
+        EmployeeMono[] targetArray = null;
+        switch (employeeMono.employee.ImmutableData.partParsed)
+        {
+            case Part.Planning:
+                targetArray = plannings;
+                break;
+            case Part.Develop:
+                targetArray = develops;
+                break;
+            case Part.Art:
+                targetArray = arts;
+                break;
+            default:
+                Debug.LogWarning($"[{userNamed.Value}] {employeeMono.employee.ImmutableData.employeeName}의 파트({employeeMono.employee.ImmutableData.partParsed})는 현재 프로젝트 투입 대상이 아닙니다.");
+                return false;
+        }
+
+        int emptyIndex = Array.FindIndex(targetArray, m => m == null);
+        if (emptyIndex < 0)
+        {
+            Debug.LogWarning($"[{userNamed.Value}] {employeeMono.employee.ImmutableData.partParsed} 파트 투입 슬롯이 가득 찼습니다.");
+            return false;
+        }
+
+        targetArray[emptyIndex] = employeeMono;
+        Debug.Log($"[{userNamed.Value}] {employeeMono.employee.ImmutableData.employeeName} 직원이 {employeeMono.employee.ImmutableData.partParsed} 파트로 투입되었습니다.");
+        return true;
+    }
+
     // 날짜가 하루 진행될 때마다 호출되는 메서드
     public void ProgressDay()
     {
         if (isFinished.Value) return;
 
-        // 기획자: qualityScore 증가
-        foreach (EmployeeSO so in plannings)
-            qualityScore.Value += (so.property1 + so.property2 + so.property3) / 3f * 0.1f; //임시 가중치(0.1f) 사용중
+        // ~임의로 계산중~
+        //기획자: qualityScore 증가
+        foreach (EmployeeMono o in plannings)
+            qualityScore.Value += (o.employee.MutableData.property1 + o.employee.MutableData.property2 + o.employee.MutableData.property3) / 3f * 0.1f;
 
         // 개발자: stabilityScore 증가
-        foreach (EmployeeSO so in develops)
-            stabilityScore.Value += (so.property1 + so.property2 + so.property3) / 3f * 0.1f;
+        foreach (EmployeeMono o in develops)
+            stabilityScore.Value += (o.employee.MutableData.property1 + o.employee.MutableData.property2 + o.employee.MutableData.property3) / 3f * 0.1f;
 
         // 아티스트: charmScore 증가
-        foreach (EmployeeSO so in arts)
-            charmScore.Value += (so.property1 + so.property2 + so.property3) / 3f * 0.1f;
+        foreach (EmployeeMono o in arts)
+            charmScore.Value += (o.employee.MutableData.property1 + o.employee.MutableData.property2 + o.employee.MutableData.property3) / 3f * 0.1f;
 
         Debug.Log($"{userNamed}: [Day {day}] {Company.GetWeekDayName(day)}종료"); // 날짜 로그 표시중
         day++;
