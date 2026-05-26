@@ -25,20 +25,24 @@ public class _EmployeeManager : MonoBehaviour
         Debug.Log("데이터를 로드 합니다.");
     }
 
-    public void HireEmployee(int index)
+    public EmployeeMono HireEmployee(int index)
     {
         if (!_employeeList.leftEmployees.ContainsKey(index))
         {
             Debug.LogWarning($"고용 실패: 마켓에 {index}번 직원이 없습니다.");
-            return;
+            return null;
         }
 
         Employee target = _employeeList.leftEmployees[index];
+        GameObject employeeObject = new GameObject($"Employee_{target.ImmutableData.employeeName}_{index}");
+        EmployeeMono employeeMono = employeeObject.AddComponent<EmployeeMono>();
+        employeeMono.Init(target);
 
         _haveEmployees.AddEmployee(target);
 
         _employeeList.DeleteEmployee(index);
 
         Debug.Log($"[시스템] {target.ImmutableData.employeeName} 고용 프로세스 전과정 성공!");
+        return employeeMono;
     }
 }

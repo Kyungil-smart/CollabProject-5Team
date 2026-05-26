@@ -34,54 +34,28 @@ public abstract class SheetDataSOBase : ScriptableObject
         return default;
     }
 
-    /// <summary>
-    /// [Flags] Enum 파싱 (테스트 필요)
-    /// - 구분자(| ,) 방식: "Shy|Active" → HashTags.Shy | HashTags.Active
-    /// - 문자 연속 방식: "INFP" → 각 문자(I, N, F, P)를 개별 플래그로 OR 조합
-    /// </summary>
-    protected T ParseEnumFlags<T>(string raw) where T : struct, Enum
+    protected MbtiFlags ConvertMbtiStringToEnum(string mbtiStr)
     {
-        if (string.IsNullOrWhiteSpace(raw)) return default;
-
-        // 구분자가 있으면 구분자 방식으로 파싱
-        string[] tokens = raw.Split(new[] { '|', ',' }, StringSplitOptions.RemoveEmptyEntries);
-
-        if (tokens.Length > 1 || Enum.TryParse(raw.Trim(), ignoreCase: true, out T _))
-        {
-            // 구분자 방식
-            int flags = 0;
-            foreach (string token in tokens)
-            {
-                string trimmed = token.Trim();
-                if (Enum.TryParse(trimmed, ignoreCase: true, out T value))
-                    flags |= (int)(object)value;
-                else
-                    LogWarn(trimmed, typeof(T).Name);
-            }
-            return (T)(object)flags;
-        }
-        else
-        {
-            // 문자 연속 방식 (예: "INFP" → I | N | F | P)
-            int flags = 0;
-            bool anyParsed = false;
-            foreach (char c in raw)
-            {
-                string letter = c.ToString();
-                if (Enum.TryParse(letter, ignoreCase: true, out T value))
-                {
-                    flags |= (int)(object)value;
-                    anyParsed = true;
-                }
-                else
-                {
-                    LogWarn(letter, typeof(T).Name);
-                }
-            }
-            if (!anyParsed) LogWarn(raw, typeof(T).Name);
-            return (T)(object)flags;
-        }
+        MbtiFlags result = MbtiFlags.INTP;
+        string upperStr = mbtiStr.ToUpper().Trim();
+        if (upperStr.Contains("J")) result |= MbtiFlags.J;
+        if (upperStr.Contains("F")) result |= MbtiFlags.F;
+        if (upperStr.Contains("S")) result |= MbtiFlags.S;
+        if (upperStr.Contains("E")) result |= MbtiFlags.E;
+        return result;
     }
+    // 해시태그는 시트에서 삭제됨
+    //protected HashTags ConvertHashTagsStringToEnum(string tagsStr)
+    //{
+    //    HashTags result = HashTags.None;
+    //    string[] tags = tagsStr.Split(',');
+    //    foreach (var tag in tags)
+    //    {
+    //        if (System.Enum.TryParse(tag.Trim(), true, out HashTags parsedTag))
+    //            result |= parsedTag;
+    //    }
+    //    return result;
+    //}
 
     private void LogWarn(string raw, string expectedType)
     {
