@@ -31,9 +31,11 @@ public class Project : MonoBehaviour
         get => Mathf.Clamp01(progress.Value / GoalScore) * 100f;
         set => progress.Value = Mathf.Clamp(value, 0f, 100f) / 100f * GoalScore; // 바%를 직접 늘릴수도 있음(추후 확장성)
     }
-    public float qualityScore;   // 완성도 점수 (기획)
-    public float stabilityScore; // 안정성 점수 (개발)
-    public float charmScore;     // 매력도 점수 (아트)
+
+    // 세부 점수 (각 파트가 올리면 progress에 자동 반영)
+    public ReactiveProperty<float> qualityScore   = new(0f); // 완성도 점수 (기획)
+    public ReactiveProperty<float> stabilityScore = new(0f); // 안정성 점수 (개발)
+    public ReactiveProperty<float> charmScore     = new(0f); // 매력도 점수 (아트)
 
     // 이벤트 발생으로 인한 수치 변화
     //public float weeklyPlanningWeight;
@@ -45,6 +47,12 @@ public class Project : MonoBehaviour
     private void Start()
     {
         userNamed.Value = Name; // 초기값으로 SO의 Name 사용
+
+        // 세부 점수가 변경될 때마다 progress 자동 재계산
+        Observable.CombineLatest(qualityScore, stabilityScore, charmScore,
+            (q, s, c) => q + s + c)
+            .Subscribe(total => progress.Value = total)
+            .AddTo(this);
     }
 
     // 날짜가 하루 진행될 때마다 호출되는 메서드
@@ -53,22 +61,17 @@ public class Project : MonoBehaviour
         if (isFinished.Value) return;
 
 
-        // 직원의 스텟에 따라 진행도 증가
+        // 기획자 → qualityScore 증가
         foreach (EmployeeSO so in plannings)
-        {
-            float contribution = (so.property1 + so.property2 + so.property3) / 3f; // 임시 계산식
-            progress.Value += contribution * 0.1f; // 임시 가중치
-        }
+            qualityScore.Value += (so.property1 + so.property2 + so.property3) / 3f * 0.1f;
+
+        // 개발자 → stabilityScore 증가
         foreach (EmployeeSO so in develops)
-        {
-            float contribution = (so.property1 + so.property2 + so.property3) / 3f; // 임시 계산식
-            progress.Value += contribution * 0.1f; // 임시 가중치
-        }
-        foreach(EmployeeSO so in plannings)
-        {
-            float contribution = (so.property1 + so.property2 + so.property3) / 3f; // 임시 계산식
-            progress.Value += contribution * 0.1f; // 임시 가중치
-        }
+            stabilityScore.Value += (so.property1 + so.property2 + so.property3) / 3f * 0.1f;
+
+        // 아티스트 → charmScore 증가
+        foreach (EmployeeSO so in arts)
+            charmScore.Value += (so.property1 + so.property2 + so.property3) / 3f * 0.1f;
 
         Debug.Log($"{userNamed}: [Day {day}] {Company.GetWeekDayName(day)}종료"); // 날짜 로그 표시중
         day++;
