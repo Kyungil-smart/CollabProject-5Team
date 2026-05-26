@@ -17,20 +17,23 @@ namespace Dialogue
                 Destroy(gameObject); return;
             }
             Instance = this;
+            DontDestroyOnLoad(gameObject);
         }
 
         public void StartDialogue(int employeeId, EmployeeDialogueState state)
         {
             if (_isDialogueRunning) return;
+            if (DayTalkTracker.Instance.IsAtDailyLimit()) return;
+            if (DayTalkTracker.Instance.HasTalkedToday(employeeId)) return;
 
             _isDialogueRunning = true;
             _currentEmployeeId = employeeId;
-            _currentState      = state;
+            _currentState = state;
 
             DialogueEvents.NotifyDialogueReady(new DialogueStartPayload
             {
                 employeeId = employeeId,
-                state      = state,
+                state = state,
             });
         }
 
@@ -38,19 +41,17 @@ namespace Dialogue
         {
             if (!_isDialogueRunning) return;
 
-            bool isCrisis = _currentState != EmployeeDialogueState.Normal;
-
-            if (isCrisis)
+            if (EmployeeStateChecker.IsInCrisis(_currentState))
             {
-                DialogueEvents.RequestStatChange(new StatDelta { employeeId = _currentEmployeeId });
-                if (selectedIndex == 0) DialogueEvents.RequestBonusPay(_currentEmployeeId);
-                if (selectedIndex == 1) DialogueEvents.NotifyVacationPromised(_currentEmployeeId);
+                DialogueChoiceHandler.ApplyChoice(_currentEmployeeId, (DialogueChoice)selectedIndex);
             }
             else
             {
-                DialogueEvents.RequestStatChange(new StatDelta { employeeId = _currentEmployeeId });
+                // TODO: DialogueDataSO 완성 후 교체
+                DialogueChoiceHandler.ApplyNormalResult(_currentEmployeeId, isCorrect: false);
             }
 
+            DayTalkTracker.Instance.MarkTalked(_currentEmployeeId);
             _isDialogueRunning = false;
         }
     }
