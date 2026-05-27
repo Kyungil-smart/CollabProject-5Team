@@ -9,7 +9,6 @@ public static class PerkPolicy
         Rank.S => 30,
         Rank.A => 20,
         Rank.B => 10,
-        Rank.C =>  5,
         _      =>  5,
     };
 
