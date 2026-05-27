@@ -60,7 +60,7 @@ public class Project : MonoBehaviour
             .AddTo(this);
     }
 
-    public bool AssignEmployee(Employee e)
+    public bool HireEmployee(Employee e)
     {
         if (e == null)
         {
@@ -81,7 +81,7 @@ public class Project : MonoBehaviour
                 targetArray = arts;
                 break;
             default:
-                Debug.LogWarning($"[{userNamed.Value}] {e.so.employeeName}의 파트({e.so.partParsed})는 현재 프로젝트 투입 대상이 아닙니다.");
+                Debug.LogWarning($"[{userNamed.Value}] {e.so.employeeName}의 파트({e.so.partParsed})고용은 구현되지 않았습니다.");
                 return false;
         }
 
@@ -94,6 +94,43 @@ public class Project : MonoBehaviour
 
         targetArray[emptyIndex] = e;
         Debug.Log($"[{userNamed.Value}] {e.so.employeeName} 직원이 {e.so.partParsed} 파트로 투입되었습니다.");
+        return true;
+    }
+
+    // 프로젝트에서 직원을 제거하고 해고 처리
+    public bool FireEmployee(Employee e)
+    {
+        if (e == null)
+        {
+            Debug.LogWarning("[Project] 해고할 직원이 null입니다.");
+            return false;
+        }
+
+        Employee[] targetArray = e.so.partParsed switch
+        {
+            Part.Planning => plannings,
+            Part.Develop  => develops,
+            Part.Art      => arts,
+            _             => null,
+        };
+
+        if (targetArray == null)
+        {
+            Debug.LogWarning($"[{userNamed.Value}] {e.so.employeeName}의 파트({e.so.partParsed})해고는 구현되지 않았습니다.");
+            return false;
+        }
+
+        int index = Array.IndexOf(targetArray, e);
+        if (index < 0)
+        {
+            Debug.LogWarning($"[{userNamed.Value}] {e.so.employeeName}은 이 프로젝트에 투입되어 있지 않습니다.");
+            return false;
+        }
+
+        targetArray[index] = null;
+        Debug.Log($"[{userNamed.Value}] {e.so.employeeName} 직원이 {e.so.partParsed} 파트에서 제거되었습니다.");
+
+        _EmployeeManager.Instance.FireEmployee(e);
         return true;
     }
 

@@ -38,4 +38,20 @@ public class EmployeeList
         else
             Debug.LogWarning($"[경고] {id}번 지원자는 이미 고용되었거나 존재하지 않습니다.");
     }
+
+    // 해고 시 미고용 목록에 프리팹 복원
+    public void RestoreEmployee(int id)
+    {
+        if (!_allEmployeePrefabs.ContainsKey(id))
+        {
+            Debug.LogWarning($"[경고] {id}번 직원 원본 데이터가 없습니다.");
+            return;
+        }
+        if (_leftEmployees.ContainsKey(id))
+        {
+            Debug.LogWarning($"[경고] {id}번 직원은 이미 미고용 목록에 있습니다.");
+            return;
+        }
+        _leftEmployees[id] = _allEmployeePrefabs[id];
+    }
 }

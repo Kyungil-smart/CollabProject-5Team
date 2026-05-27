@@ -41,21 +41,37 @@ public class Company : MonoBehaviour
             int firstEmployeeId = _EmployeeManager.Instance.allEmployeeObj[0].GetComponent<Employee>().so.id;
             Employee hiredEmployee = _EmployeeManager.Instance.HireEmployee(firstEmployeeId);
 
-            projects[0].AssignEmployee(hiredEmployee);
+            projects[0].HireEmployee(hiredEmployee);
         }
         if (Input.GetKeyDown(KeyCode.Alpha2)) 
         {
             int firstEmployeeId = _EmployeeManager.Instance.allEmployeeObj[1].GetComponent<Employee>().so.id;
             Employee hiredEmployee = _EmployeeManager.Instance.HireEmployee(firstEmployeeId);
 
-            projects[0].AssignEmployee(hiredEmployee);
+            projects[0].HireEmployee(hiredEmployee);
         }
         if (Input.GetKeyDown(KeyCode.Alpha3))
         {
             int firstEmployeeId = _EmployeeManager.Instance.allEmployeeObj[2].GetComponent<Employee>().so.id;
             Employee hiredEmployee = _EmployeeManager.Instance.HireEmployee(firstEmployeeId);
 
-            projects[0].AssignEmployee(hiredEmployee);
+            projects[0].HireEmployee(hiredEmployee);
+        }
+
+        if (Input.GetKeyDown(KeyCode.Alpha4)) // 테스트용: 첫 번째 직원 해고
+        {
+            Employee target = projects[0].plannings[0];
+            projects[0].FireEmployee(target);
+        }
+        if (Input.GetKeyDown(KeyCode.Alpha5))
+        {
+            Employee target = projects[0].develops[0];
+            projects[0].FireEmployee(target);
+        }
+        if (Input.GetKeyDown(KeyCode.Alpha6))
+        {
+            Employee target = projects[0].arts[0];
+            projects[0].FireEmployee(target);
         }
     }
 
