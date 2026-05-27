@@ -16,10 +16,20 @@ namespace GameDevTycoon.UI.Title
         [Header("Buttons")]
         [SerializeField] private Button _startButton;
         [SerializeField] private Button _exitButton;
+        [SerializeField] private Button _settingsButton;
+        [SerializeField] private Button _creditsButton;
 
         [Header("Load Panel")]
         [SerializeField] private GameObject _loadPanel;
         [SerializeField] private Button     _loadPanelCloseButton;
+
+        [Header("Settings Panel")]
+        [SerializeField] private GameObject _settingsPanel;
+        [SerializeField] private Button     _settingsPanelCloseButton;
+
+        [Header("Credits Panel")]
+        [SerializeField] private GameObject _creditsPanel;
+        [SerializeField] private Button     _creditsPanelCloseButton;
 
         public event Action      OnStartClicked;
         public event Action      OnExitClicked;
@@ -28,6 +38,9 @@ namespace GameDevTycoon.UI.Title
         private void Awake()
         {
             _loadPanel.SetActive(false);
+
+            if (_settingsPanel != null) _settingsPanel.SetActive(false);
+            if (_creditsPanel  != null) _creditsPanel.SetActive(false);
         }
 
         private void Start()
@@ -52,6 +65,27 @@ namespace GameDevTycoon.UI.Title
             _loadPanelCloseButton.OnClickAsObservable()
                 .Subscribe(_ => HideLoadPanel())
                 .AddTo(this);
+
+            if (_settingsButton != null)
+                _settingsButton.OnClickAsObservable()
+                    .Subscribe(_ => ShowSettingsPanel())
+                    .AddTo(this);
+
+            if (_settingsPanelCloseButton != null)
+                _settingsPanelCloseButton.OnClickAsObservable()
+                    .Subscribe(_ => HideSettingsPanel())
+                    .AddTo(this);
+
+            // 크레딧은 인스펙터에서 버튼 연결 후 활성화
+            if (_creditsButton != null)
+                _creditsButton.OnClickAsObservable()
+                    .Subscribe(_ => ShowCreditsPanel())
+                    .AddTo(this);
+
+            if (_creditsPanelCloseButton != null)
+                _creditsPanelCloseButton.OnClickAsObservable()
+                    .Subscribe(_ => HideCreditsPanel())
+                    .AddTo(this);
         }
 
         public void NotifySlotSelected(int slotIndex)
@@ -71,6 +105,30 @@ namespace GameDevTycoon.UI.Title
         {
             // [DoTween 설치 후 팝업 연출 추가]
             _loadPanel.SetActive(false);
+        }
+
+        public void ShowSettingsPanel()
+        {
+            // [DoTween 설치 후 팝업 연출 추가]
+            if (_settingsPanel != null) _settingsPanel.SetActive(true);
+        }
+
+        public void HideSettingsPanel()
+        {
+            // [DoTween 설치 후 팝업 연출 추가]
+            if (_settingsPanel != null) _settingsPanel.SetActive(false);
+        }
+
+        public void ShowCreditsPanel()
+        {
+            // [DoTween 설치 후 팝업 연출 추가]
+            if (_creditsPanel != null) _creditsPanel.SetActive(true);
+        }
+
+        public void HideCreditsPanel()
+        {
+            // [DoTween 설치 후 팝업 연출 추가]
+            if (_creditsPanel != null) _creditsPanel.SetActive(false);
         }
 
         private static void QuitGame()
