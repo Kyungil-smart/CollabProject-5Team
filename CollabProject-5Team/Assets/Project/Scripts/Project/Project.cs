@@ -43,7 +43,14 @@ public class Project : MonoBehaviour
     //public float weeklyDevelopWeight;
     //public float weeklyArtWeight;
 
+    public enum State
+    {
+        None,       // 시작 안함
+        Day, Night, // 진행중
+        Completed,  // 종료
+    }
     public ReactiveProperty<bool> isFinished = new(false); // 프로젝트 종료 여부
+
 
     private void Start()
     {
@@ -161,7 +168,7 @@ public class Project : MonoBehaviour
             charmScore.Value += (e.MutableData.property1 + e.MutableData.property2 + e.MutableData.property3) / 3f * 0.1f;
         }
 
-        Debug.Log($"{userNamed}: [Day {day}] {Company.GetWeekDayName(day)}종료"); // 날짜 로그 표시중
+        Debug.Log($"{userNamed}: [Day {day}] {Company.GetDateString(day)}종료"); // 날짜 로그 표시중
         day++;
     }
 

@@ -27,7 +27,7 @@ public class EmployeeImmutableData : SheetDataSOBase
     public string employeeName;
 
     [HideInInspector]
-    public string     mbtiStr; 
+    public string mbtiStr;
 
     public Rank          rankParsed;
     public Part          partParsed;
