@@ -57,16 +57,17 @@ public static class ReportPolicy
         float[] finalEffects = new float[stats.Length];
         for (int i = 0; i < stats.Length; i++)
         {
-            float A = prevStatScores.TryGetValue(stats[i], out float prev) ? prev : 0f;
+            //float A = prevStatScores.TryGetValue(stats[i], out float prev) ? prev : 0f;
+            float A = 0f; // 임시
             float finalEffect = A + (100f - A) * (effectScores[stats[i]] / 100f);
             finalEffects[i] = finalEffect;
             total += finalEffect;
         }
 
         // 이번 주 기여 결과를 bonus 환산하여 직원 스텟에 실제 반영
-        int db1 = Mathf.RoundToInt(finalEffects[0]) - baseProperty - d.bonus1;
-        int db2 = Mathf.RoundToInt(finalEffects[1]) - baseProperty - d.bonus2;
-        int db3 = Mathf.RoundToInt(finalEffects[2]) - baseProperty - d.bonus3;
+        int db1 = Mathf.RoundToInt(finalEffects[0] - d.property1);
+        int db2 = Mathf.RoundToInt(finalEffects[1] - d.property2);
+        int db3 = Mathf.RoundToInt(finalEffects[2] - d.property3);
         e.UpdateBonus(db1, db2, db3);
 
         // 파트의 TraitStat 3개 평균 반환

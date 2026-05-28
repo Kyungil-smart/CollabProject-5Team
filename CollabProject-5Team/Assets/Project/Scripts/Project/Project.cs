@@ -217,9 +217,9 @@ public class Project : MonoBehaviour
 
             switch (report.role)
             {
-                case Role.PLANNER:     qualityScore.Value   = finalScore; break;
-                case Role.PROGRAMMER:  stabilityScore.Value = finalScore; break;
-                case Role.ARTIST:      charmScore.Value     = finalScore; break;
+                case Role.PLANNER:     qualityScore.Value   += finalScore; break;
+                case Role.PROGRAMMER:  stabilityScore.Value += finalScore; break;
+                case Role.ARTIST:      charmScore.Value     += finalScore; break;
             }
 
             Debug.Log($"{report.role} 보고서 승인: {finalScore:F1}점 ({report.so.title} / 등급{report.grade}) | " +
@@ -233,6 +233,7 @@ public class Project : MonoBehaviour
         {
             Finish(); // 기간이 되면 프로젝트 종료
         }
+        Debug.Log($"{userNamed}: 종료 | 완료도: {ProgressBar:F1}% | 소요일: {day}일");
     }
     #endregion
 
@@ -240,7 +241,6 @@ public class Project : MonoBehaviour
     public void Finish()
     {
         isFinished.Value = true;
-        Debug.Log($"{userNamed}: 종료 | 진행도: {ProgressBar:F1}% | 소요일: {day}일");
 
         // 종료 프로젝트 데이터와 연결
     }
