@@ -2,7 +2,7 @@
 
 using UnityEngine;
 
-public interface IIteractable
+public interface IInteractable
 {
     void OnInteract();
 

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using R3;
 using UnityEngine;
 
@@ -13,8 +14,8 @@ public class DateTimeManager : MonoBehaviour
     public ReactiveProperty<TimeOfDay> currentTime = new(TimeOfDay.Day);
 
     [Header("오늘 하루 상태 값")]
-    public int talkCount = 0;                   // NPC와 대화 가능 횟수
     public bool isWorkCompleted = false;        // 일일 업무 완료 여부
+    private HashSet<string> talkedNpcsToday = new HashSet<string>();
 
 
     private void Awake()
@@ -42,7 +43,7 @@ public class DateTimeManager : MonoBehaviour
     private void ResetDayStatus()
     {
         isWorkCompleted = false;
-        talkCount = 0;
+        talkedNpcsToday.Clear();
     }
 
     /// <summary>
@@ -51,7 +52,38 @@ public class DateTimeManager : MonoBehaviour
     public void CompleteDayWork()
     {
         isWorkCompleted = true;
-        talkCount = 2;
+    }
+
+    /// <summary>
+    /// NPC가 대화가 가능한 상태인지
+    /// </sumary>
+    public int GetDialogueState(string npcName)
+    {
+        // 업무를 마치지 않았다면 일반 대화만 가능
+        if (!isWorkCompleted)
+        {
+            return 0;
+        }
+
+        // 업무를 마쳤는데, 이미 해당 NPC와 특별 대화를 나눴다면
+        if (talkedNpcsToday.Contains(npcName))
+        {
+            return 2;
+        }
+
+        // 업무 마쳤고, 해당 NPC와 첫 대화라면 특별 대화
+        return 1;
+    }
+
+    /// <summary>
+    /// NPC와 특별 대화를 마쳤다면 해당 NPC를 저장함
+    /// </summary>
+    public void CompleteSpecialDialogue(string npcName)
+    {
+        if (!talkedNpcsToday.Contains(npcName))
+        {
+            talkedNpcsToday.Add(npcName);
+        }
     }
 
     /// <summary>

@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class DeskInteract : MonoBehaviour, IIteractable
+public class DeskInteract : MonoBehaviour, IInteractable
 {
     [Header("띄울 UI창")]
     [SerializeField] private GameObject interactionUI;

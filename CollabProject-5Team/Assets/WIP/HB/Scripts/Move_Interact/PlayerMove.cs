@@ -17,7 +17,7 @@ public class PlayerMove : MonoBehaviour
 
     private Collider targetCollider = null;           // 타겟의 콜라이더
 
-    private IIteractable targetInteractable = null;   // 현재 목표로 타겟팅한 대상
+    private IInteractable targetInteractable = null;   // 현재 목표로 타겟팅한 대상
     private bool hasInteracted = false;               // 현재 상호작용 중인지
 
     private void Start()
@@ -77,7 +77,7 @@ public class PlayerMove : MonoBehaviour
         if (Physics.Raycast(ray, out hit, 100f, interactableLayer))
         {
             // 터치한 오브젝트의 인터페이스를 가져옴
-            IIteractable interactable = hit.collider.GetComponent<IIteractable>();
+            IInteractable interactable = hit.collider.GetComponent<IInteractable>();
 
             if (interactable != null)
             {
