@@ -93,8 +93,7 @@ public class Company : MonoBehaviour
     }
     public void ProgressNight()
     {
-        foreach (var project in projects)
-            project.ProgressNight();
+        foreach (var project in projects) project.ProgressNight();
 
         // TODO: 모든 밤 정산이 끝나고 보고서 이벤트 연결
     }

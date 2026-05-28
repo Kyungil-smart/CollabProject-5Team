@@ -43,12 +43,12 @@ public class Project : MonoBehaviour
     //public float weeklyDevelopWeight;
     //public float weeklyArtWeight;
 
-    public enum State
-    {
-        None,       // 시작 안함
-        Day, Night, // 진행중
-        Completed,  // 종료
-    }
+    //public enum State
+    //{
+    //    Day,       // 낮
+    //    Night,     // 밤
+    //    Completed, // 종료
+    //}
     public ReactiveProperty<bool> isFinished = new(false); // 프로젝트 종료 여부
 
 
@@ -178,12 +178,13 @@ public class Project : MonoBehaviour
         Debug.Log($"{userNamed}: 밤 이벤트 발생!");
         // 주간 이벤트 정산 및 초기화
 
+        // 보고서 산출
+        // 각 직원데이터에 접근해서 보고서 목록에 등록
+
         if (day >= DurationDays)
         {
             Finish(); // 기간이 되면 프로젝트 종료
         }
-
-        // 정산 알림
     }
 
     // 프로젝트 종료
