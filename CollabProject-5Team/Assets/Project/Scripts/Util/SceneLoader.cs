@@ -61,7 +61,7 @@ namespace GameDevTycoon.Core
     public enum SceneName
     {
         Title,
-        InGame,
+        Game,
     }
 
     public static class SceneNameExtensions
@@ -69,7 +69,7 @@ namespace GameDevTycoon.Core
         public static string ToSceneString(this SceneName sceneName) => sceneName switch
         {
             SceneName.Title  => "TitleScene",
-            SceneName.InGame => "InGameScene",
+            SceneName.Game => "GameScene",
             _                => string.Empty
         };
     }
