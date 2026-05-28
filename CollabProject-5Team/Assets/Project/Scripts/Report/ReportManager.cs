@@ -9,8 +9,8 @@ public class ReportManager : MonoBehaviour
     [SerializeField] List<ReportSO> _allReports = new();
     public IReadOnlyList<ReportSO> AllReports => _allReports;
 
-    // (Part, ReportGrade) 빠른 조회용
-    public Dictionary<(Part, ReportGrade), List<ReportSO>> reportMap = new();
+    // (Role, int grade) 빠른 조회용
+    public Dictionary<(Role, int), List<ReportSO>> reportMap = new();
 
     #region 싱글톤 설정
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
@@ -31,27 +31,27 @@ public class ReportManager : MonoBehaviour
         foreach (ReportSO so in _allReports)
         {
             if (so == null) continue;
-            var key = (so.part, so.grade);
+            var key = (so.role, so.grade);
             if (!reportMap.ContainsKey(key))
                 reportMap[key] = new List<ReportSO>();
             reportMap[key].Add(so);
         }
     }
 
-    // (Part, ReportGrade)로 보고서 목록 조회
-    public List<ReportSO> GetReportList(Part part, ReportGrade grade)
+    // (Role, int grade)로 보고서 목록 조회
+    public List<ReportSO> GetReportList(Role role, int grade)
     {
-        var key = (part, grade);
+        var key = (role, grade);
         return reportMap.TryGetValue(key, out var list) ? list : null;
     }
 
-    // (Part, ReportGrade)에서 랜덤 보고서 1개 반환
-    public ReportSO GetRandomReport(Part part, ReportGrade grade)
+    // (Role, int grade)에서 랜덤 보고서 1개 반환
+    public ReportSO GetRandomReport(Role role, int grade)
     {
-        List<ReportSO> list = GetReportList(part, grade);
+        List<ReportSO> list = GetReportList(role, grade);
         if (list == null || list.Count == 0)
         {
-            Debug.LogWarning($"[Report] {part}/{grade} 에 해당하는 보고서가 없습니다.");
+            Debug.LogWarning($"[Report] {role}/{grade}등급 에 해당하는 보고서가 없습니다.");
             return null;
         }
         return list[Random.Range(0, list.Count)];

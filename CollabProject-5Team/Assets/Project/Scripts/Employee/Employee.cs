@@ -10,27 +10,24 @@ public class Employee : MonoBehaviour, IPointerClickHandler
 
     public void Init()
     {
-        int initStat = PerkPolicy.InitStatFromRank(so.rankParsed);
+        int baseProperty = PerkPolicy.CalcBaseProperty(so.ability);
 
         MutableData = new EmployeeMutableData
         {
-            baseStat  = initStat,
-            property1 = PerkPolicy.CalcBaseProperty(initStat),
-            property2 = PerkPolicy.CalcBaseProperty(initStat),
-            property3 = PerkPolicy.CalcBaseProperty(initStat),
-            bonus1     = 0,
-            bonus2     = 0,
-            bonus3     = 0,
-            motivation = 50,
-            loyalty    = 50,
-            fatigue    = 0,
+            ability   = so.ability,
+            property1 = baseProperty,
+            property2 = baseProperty,
+            property3 = baseProperty,
+            desire    = so.desire,
+            loyalty   = so.loyalty,
+            fatigue   = so.fatigue,
         };
     }
 
     // 주 능력치(stat) 변경 후 세부 능력치 재계산
     public void UpdateStat(int newStat)
     {
-        MutableData.baseStat = newStat;
+        MutableData.ability = newStat;
         RecalcProperties();
     }
 
@@ -46,19 +43,18 @@ public class Employee : MonoBehaviour, IPointerClickHandler
     // 세부 능력치 재계산: 기본값(stat 기반) + 추가 변동값
     void RecalcProperties()
     {
-        MutableData.property1 = PerkPolicy.CalcFinalProperty(MutableData.baseStat, MutableData.bonus1);
-        MutableData.property2 = PerkPolicy.CalcFinalProperty(MutableData.baseStat, MutableData.bonus2);
-        MutableData.property3 = PerkPolicy.CalcFinalProperty(MutableData.baseStat, MutableData.bonus3);
+        MutableData.property1 = PerkPolicy.CalcFinalProperty(MutableData.ability, MutableData.bonus1);
+        MutableData.property2 = PerkPolicy.CalcFinalProperty(MutableData.ability, MutableData.bonus2);
+        MutableData.property3 = PerkPolicy.CalcFinalProperty(MutableData.ability, MutableData.bonus3);
 
-        Debug.Log($"[{so.employeeName}] stat={MutableData.baseStat} " +
+        Debug.Log($"[{so.Name}] stat={MutableData.ability} " +
                   $"→ p1={MutableData.property1}(+{MutableData.bonus1}) " +
                   $"p2={MutableData.property2}(+{MutableData.bonus2}) " +
                   $"p3={MutableData.property3}(+{MutableData.bonus3})");
     }
 
-    // IPointerClickHandler 구현
     public void OnPointerClick(PointerEventData eventData)
     {
-        Debug.Log($"[직원 클릭됨] 이름: {so.employeeName} | 현재 피로도: {MutableData.fatigue}");
+        Debug.Log($"[직원 클릭됨] 이름: {so.Name} | 현재 피로도: {MutableData.fatigue}");
     }
 }

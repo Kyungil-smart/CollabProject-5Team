@@ -41,18 +41,14 @@ public class Project : MonoBehaviour
     //public float weeklyDevelopWeight;
     //public float weeklyArtWeight;
 
-    //public enum State
-    //{
-    //    Day,       // 낮
-    //    Night,     // 밤
-    //    Completed, // 종료
-    //}
     public ReactiveProperty<bool> isFinished = new(false); // 프로젝트 종료 여부
 
-    // 보고서 승인 대기 목록 (금요일 밤 생성, 파트별 다수)
+    // 보고서 승인 대기 목록 (금요일 밤 생성, 역할별 다수)
     public List<Report> pendingReports = new();
-    // 플레이어가 파트당 1개씩 선택한 보고서
-    public Dictionary<Part, Report> selectedReports = new();
+    // 플레이어가 역할당 1개씩 선택한 보고서
+    public Dictionary<Role, Report> selectedReports = new();
+    // 지난 주차 TraitStat별 점수 (보고서 최종 공식의 A값)
+    public Dictionary<TraitStat, float> prevStatScores = new();
 
 
     private void Start()
@@ -79,31 +75,31 @@ public class Project : MonoBehaviour
         }
 
         Employee[] targetArray = null;
-        switch (e.so.partParsed)
+        switch (e.so.role)
         {
-            case Part.Planning:
+            case Role.PLANNER:
                 targetArray = plannings;
                 break;
-            case Part.Develop:
+            case Role.PROGRAMMER:
                 targetArray = develops;
                 break;
-            case Part.Art:
+            case Role.ARTIST:
                 targetArray = arts;
                 break;
             default:
-                Debug.LogWarning($"[{userNamed.Value}] {e.so.employeeName}의 파트({e.so.partParsed})고용은 구현되지 않았습니다.");
+                Debug.LogWarning($"[{userNamed.Value}] {e.so.Name}의 파트({e.so.role})고용은 구현되지 않았습니다.");
                 return false;
         }
 
         int emptyIndex = Array.FindIndex(targetArray, m => m == null);
         if (emptyIndex < 0)
         {
-            Debug.LogWarning($"[{userNamed.Value}] {e.so.partParsed} 파트 투입 슬롯이 가득 찼습니다.");
+            Debug.LogWarning($"[{userNamed.Value}] {e.so.role} 파트 투입 슬롯이 가득 찼습니다.");
             return false;
         }
 
         targetArray[emptyIndex] = e;
-        Debug.Log($"[{userNamed.Value}] {e.so.employeeName} 직원이 {e.so.partParsed} 파트로 투입되었습니다.");
+        Debug.Log($"[{userNamed.Value}] {e.so.Name} 직원이 {e.so.role} 파트로 투입되었습니다.");
         return true;
     }
 
@@ -116,29 +112,29 @@ public class Project : MonoBehaviour
             return false;
         }
 
-        Employee[] targetArray = e.so.partParsed switch
+        Employee[] targetArray = e.so.role switch
         {
-            Part.Planning => plannings,
-            Part.Develop  => develops,
-            Part.Art      => arts,
+            Role.PLANNER => plannings,
+            Role.PROGRAMMER  => develops,
+            Role.ARTIST      => arts,
             _             => null,
         };
 
         if (targetArray == null)
         {
-            Debug.LogWarning($"[{userNamed.Value}] {e.so.employeeName}의 파트({e.so.partParsed})해고는 구현되지 않았습니다.");
+            Debug.LogWarning($"[{userNamed.Value}] {e.so.Name}의 파트({e.so.role})해고는 구현되지 않았습니다.");
             return false;
         }
 
         int index = Array.IndexOf(targetArray, e);
         if (index < 0)
         {
-            Debug.LogWarning($"[{userNamed.Value}] {e.so.employeeName}은 이 프로젝트에 투입되어 있지 않습니다.");
+            Debug.LogWarning($"[{userNamed.Value}] {e.so.Name}은 이 프로젝트에 투입되어 있지 않습니다.");
             return false;
         }
 
         targetArray[index] = null;
-        Debug.Log($"[{userNamed.Value}] {e.so.employeeName} 직원이 {e.so.partParsed} 파트에서 제거되었습니다.");
+        Debug.Log($"[{userNamed.Value}] {e.so.Name} 직원이 {e.so.role} 파트에서 제거되었습니다.");
 
         _EmployeeManager.Instance.FireEmployee(e);
         return true;
@@ -148,26 +144,6 @@ public class Project : MonoBehaviour
     public void ProgressDay()
     {
         if (isFinished.Value) return;
-
-        //// ~테스트용 진행도 오르기~
-        ////기획자: qualityScore 증가
-        //foreach (Employee e in plannings)
-        //{
-        //    if (e == null) continue;
-        //    qualityScore.Value += (e.MutableData.property1 + e.MutableData.property2 + e.MutableData.property3) / 3f * 0.1f;
-        //}
-        //// 개발자: stabilityScore 증가
-        //foreach (Employee e in develops)
-        //{
-        //    if (e == null) continue;
-        //    stabilityScore.Value += (e.MutableData.property1 + e.MutableData.property2 + e.MutableData.property3) / 3f * 0.1f;
-        //}
-        //// 아티스트: charmScore 증가
-        //foreach (Employee e in arts)
-        //{
-        //    if (e == null) continue;
-        //    charmScore.Value += (e.MutableData.property1 + e.MutableData.property2 + e.MutableData.property3) / 3f * 0.1f;
-        //}
 
         Debug.Log($"{userNamed}: [Day {day}] {Company.GetDateString(day)}종료"); // 날짜 로그 표시중
         day++;
@@ -181,15 +157,10 @@ public class Project : MonoBehaviour
 
         // 보고서 산출
         GenerateReportDrafts();
-
-        if (day >= DurationDays)
-        {
-            Finish(); // 기간이 되면 프로젝트 종료
-        }
     }
 
     #region 보고서 부분
-    // 투입된 직원 데이터를 기반으로 보고서 초안(Report) 생성 → pendingReports에 저장
+    // 투입된 직원 데이터를 기반으로 보고서 생성 
     public void GenerateReportDrafts()
     {
         pendingReports.Clear();
@@ -201,7 +172,6 @@ public class Project : MonoBehaviour
 
         Debug.Log($"[{userNamed.Value}] 보고서 생성 완료: {pendingReports.Count}건");
     }
-
     void GenerateDraftsForPart(Employee[] employees)
     {
         foreach (Employee e in employees)
@@ -209,10 +179,10 @@ public class Project : MonoBehaviour
             if (e == null) continue;
 
             float score = ReportPolicy.CalcScore(e.MutableData);
-            ReportGrade grade = ReportPolicy.CalcGrade(score);
-            ReportSO so = ReportManager.Instance.GetRandomReport(e.so.partParsed, grade);
+            int grade = ReportPolicy.CalcGrade(score);
+            ReportSO so = ReportManager.Instance.GetRandomReport(e.so.role, grade);
 
-            if (so == null) continue;
+            if (so == null) { Debug.Log("[Project] 해당하는 보고서 SO 없음"); continue; }
 
             pendingReports.Add(new Report { so = so, owner = e, score = score });
         }
@@ -221,8 +191,8 @@ public class Project : MonoBehaviour
     // UI에서 파트당 1개 선택 시 호출
     public void SelectReport(Report report)
     {
-        selectedReports[report.part] = report;
-        Debug.Log($"[{userNamed.Value}] {report.part} 보고서 선택: {report.so.title} ({report.grade})");
+        selectedReports[report.role] = report;
+        Debug.Log($"[{userNamed.Value}] {report.role} 보고서 선택: {report.so.title} ({report.grade}등급)");
     }
 
     // 선택된 보고서를 모두 승인하여 progress에 반영
@@ -231,20 +201,38 @@ public class Project : MonoBehaviour
         foreach (var kv in selectedReports)
         {
             Report report = kv.Value;
-            float finalScore = ReportPolicy.CalcContribution(report, report.owner);
 
-            switch (report.part)
+            // 기여값 계산 + 직원 bonus 실제 반영 (UpdateBonus → RecalcProperties 내부 호출)
+            float finalScore = ReportPolicy.CalcContribution(report, prevStatScores);
+
+            // 이번 주 결과를 다음 주 A값으로 stat별 저장
+            TraitStat[] stats = ReportPolicy.GetRoleStats(report.role);
+            EmployeeMutableData d = report.owner.MutableData;
+            float[] statValues = { d.property1, d.property2, d.property3 };
+            for (int i = 0; i < stats.Length; i++)
+                prevStatScores[stats[i]] = statValues[i];
+
+            // 피로도 반영
+            ReportPolicy.ApplyFatigue(report.owner, report.grade);
+
+            switch (report.role)
             {
-                case Part.Planning: qualityScore.Value   += finalScore; break;
-                case Part.Develop:  stabilityScore.Value += finalScore; break;
-                case Part.Art:      charmScore.Value     += finalScore; break;
+                case Role.PLANNER:     qualityScore.Value   = finalScore; break;
+                case Role.PROGRAMMER:  stabilityScore.Value = finalScore; break;
+                case Role.ARTIST:      charmScore.Value     = finalScore; break;
             }
 
-            Debug.Log($"[{userNamed.Value}] {report.part} 보고서 승인: +{finalScore:F1} ({report.so.title} / {report.grade})");
+            Debug.Log($"{report.role} 보고서 승인: {finalScore:F1}점 ({report.so.title} / 등급{report.grade}) | " +
+                      $"직원 [{report.owner.so.Name}] p1={d.property1} p2={d.property2} p3={d.property3} 피로={d.fatigue}");
         }
 
         pendingReports.Clear();
         selectedReports.Clear();
+
+        if (day >= DurationDays)
+        {
+            Finish(); // 기간이 되면 프로젝트 종료
+        }
     }
     #endregion
 

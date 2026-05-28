@@ -88,12 +88,6 @@ public class Company : MonoBehaviour
     #region 날짜 진행
     public void ProgressDay()
     {
-        if (projects.Count == 0 || projects.TrueForAll(p => p.isFinished.Value))
-        {
-            Debug.Log("[Company] 모든 프로젝트가 종료되어 날짜를 진행할 수 없습니다.");
-            return;
-        }
-
         day.Value++;
         foreach (var project in projects)
             project.ProgressDay();

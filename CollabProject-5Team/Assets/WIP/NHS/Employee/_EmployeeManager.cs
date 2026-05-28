@@ -45,7 +45,6 @@ public class _EmployeeManager : MonoBehaviour
         _haveEmployees.AddEmployee(employee);
         _employeeList.DeleteEmployee(id);
 
-        Debug.Log($"[EM] {employee.so.employeeName} 고용 프로세스 전과정 성공!");
         return employee;
     }
 
@@ -61,14 +60,14 @@ public class _EmployeeManager : MonoBehaviour
 
         if (!_haveEmployees.RemoveEmployee(employee))
         {
-            Debug.LogWarning($"[EM] 해고 실패: {employee.so.employeeName}은 고용 목록에 없습니다.");
+            Debug.LogWarning($"[EM] 해고 실패: {employee.so.Name}은 고용 목록에 없습니다.");
             return false;
         }
 
         _employeeList.RestoreEmployee(id);
         Destroy(employee.gameObject);
 
-        Debug.Log($"[EM] {employee.so.employeeName} 해고 프로세스 완료.");
+        Debug.Log($"[EM] {employee.so.Name} 해고 프로세스 완료.");
         return true;
     }
 }
