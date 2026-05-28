@@ -9,31 +9,41 @@ public class TEST_ProjectFlowUI : MonoBehaviour
     [Header(" UI 연결 ")]
     [SerializeField] TMP_InputField projectNameInput;
     [SerializeField] TMP_Text projectNameText;
+    [SerializeField] Slider progressDayBar;
     [SerializeField] Slider progressBar;
     [SerializeField] TMP_Text dayText;
     [SerializeField] Button dayPlusButton;
 
-    [Header(" 테스트 대상 ")]
-    [SerializeField] int projectIndex = 0; // projects 배열 중 몇 번째 프로젝트를 표시할지
-
     static readonly Color NormalDayColor = Color.white;
     static readonly Color ExpiredDayColor = Color.red;
+
+    TEST_ReportUI _reportUI; // 밤 이벤트 후 연결
     void Start()
     {
+        _reportUI = GetComponent<TEST_ReportUI>();
+
         var company = Company.Instance;
+        var project = company.curProject;
 
         // Day 텍스트: Company.day 변경 시 자동 갱신
         company.day
             .Subscribe(d => dayText.text = $"Day {d}")
             .AddTo(this);
 
-        // Day+ 버튼
+        // Day+ 버튼: ProgressDay 후 밤 이벤트(5일 배수)면 보고서 UI 시작
         dayPlusButton.OnClickAsObservable()
-            .Subscribe(_ => company.ProgressDay())
+            .Subscribe(_ =>
+            {
+                company.ProgressDay();
+                progressDayBar.value = project.ProgressDayBar;
+
+                // ProgressDay 내부에서 day%5==0이면 ProgressNight에 GenerateReportDrafts까지 호출됨
+                // 임시로 ProgressDay 후 바로 보고서 UI 시작하도록 함
+                if (company.day.Value % 5 == 0)
+                    _reportUI?.StartReportFlow();
+            })
             .AddTo(this);
 
-
-        var project = company.projects[projectIndex];
 
         // 프로젝트 이름 표시
         project.userNamed
@@ -47,12 +57,9 @@ public class TEST_ProjectFlowUI : MonoBehaviour
 
         // 진행도 표시: Project.progress 변경 시
         project.progress
-            .Subscribe(raw =>
+            .Subscribe(_ =>
             {
-                float pct = project.GoalScore > 0f
-                    ? Mathf.Clamp01(raw / project.GoalScore) * 100f
-                    : 0f;
-                progressBar.value = pct;
+                progressBar.value = project.ProgressBar;
             })
             .AddTo(this);
 
