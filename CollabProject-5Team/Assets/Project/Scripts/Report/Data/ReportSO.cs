@@ -1,11 +1,7 @@
 using UnityEngine;
 
-public enum ReportGrade
-{
-    INNOVATION, STANDARD, SLOPPY
-}
 // 직군별 보고서 데이터 (SO)
-[CreateAssetMenu(fileName = "ReportSO", menuName = "Scriptable Objects/ReportSO")]
+[CreateAssetMenu(fileName = "Report_", menuName = "Scriptable Objects/ReportSO")]
 public class ReportSO : SheetDataSOBase
 {
     public Part        part;

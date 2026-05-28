@@ -13,9 +13,6 @@ public class TEST_ProjectFlowUI : MonoBehaviour
     [SerializeField] TMP_Text dayText;
     [SerializeField] Button dayPlusButton;
 
-    [Header(" 테스트 대상 ")]
-    [SerializeField] int projectIndex = 0; // projects 배열 중 몇 번째 프로젝트를 표시할지
-
     static readonly Color NormalDayColor = Color.white;
     static readonly Color ExpiredDayColor = Color.red;
     void Start()
@@ -33,7 +30,7 @@ public class TEST_ProjectFlowUI : MonoBehaviour
             .AddTo(this);
 
 
-        var project = company.projects[projectIndex];
+        var project = company.curProject;
 
         // 프로젝트 이름 표시
         project.userNamed
@@ -49,10 +46,7 @@ public class TEST_ProjectFlowUI : MonoBehaviour
         project.progress
             .Subscribe(raw =>
             {
-                float pct = project.GoalScore > 0f
-                    ? Mathf.Clamp01(raw / project.GoalScore) * 100f
-                    : 0f;
-                progressBar.value = pct;
+                progressBar.value = project.ProgressBar;
             })
             .AddTo(this);
 

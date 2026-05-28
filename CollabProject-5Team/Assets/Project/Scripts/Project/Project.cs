@@ -1,5 +1,6 @@
 using R3;
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 // 진행중인 프로젝트의 상태 데이터
@@ -27,11 +28,8 @@ public class Project : MonoBehaviour
 
     // 진행도 연관 수치
     public ReactiveProperty<float> progress = new(0f);
-    public float ProgressBar
-    {
-        get => Mathf.Clamp01(progress.Value / GoalScore) * 100f;
-        set => progress.Value = Mathf.Clamp(value, 0f, 100f) / 100f * GoalScore; // 바%를 직접 늘릴수도 있음(추후 확장성)
-    }
+    public float ProgressDayBar => Mathf.Clamp01((float)day / DurationDays) * 100f; // 메인 진행바로 사용
+    public float ProgressBar => Mathf.Clamp01(progress.Value / GoalScore) * 100f; // 최고 점수 기준 진행도인데 기획의도는 날짜기준
 
     // 세부 점수 (각 파트가 올리면 progress에 자동 반영)
     public ReactiveProperty<float> qualityScore = new(0f); // 완성도 점수 (기획)
@@ -50,6 +48,11 @@ public class Project : MonoBehaviour
     //    Completed, // 종료
     //}
     public ReactiveProperty<bool> isFinished = new(false); // 프로젝트 종료 여부
+
+    // 보고서 승인 대기 목록 (금요일 밤 생성, 파트별 다수)
+    public List<Report> pendingReports = new();
+    // 플레이어가 파트당 1개씩 선택한 보고서
+    public Dictionary<Part, Report> selectedReports = new();
 
 
     private void Start()
@@ -146,27 +149,25 @@ public class Project : MonoBehaviour
     {
         if (isFinished.Value) return;
 
-        // ~임의로 계산중~
-        //기획자: qualityScore 증가
-        foreach (Employee e in plannings)
-        {
-            if (e == null) continue;
-            qualityScore.Value += (e.MutableData.property1 + e.MutableData.property2 + e.MutableData.property3) / 3f * 0.1f;
-        }
-
-        // 개발자: stabilityScore 증가
-        foreach (Employee e in develops)
-        {
-            if (e == null) continue;
-            stabilityScore.Value += (e.MutableData.property1 + e.MutableData.property2 + e.MutableData.property3) / 3f * 0.1f;
-        }
-
-        // 아티스트: charmScore 증가
-        foreach (Employee e in arts)
-        {
-            if (e == null) continue;
-            charmScore.Value += (e.MutableData.property1 + e.MutableData.property2 + e.MutableData.property3) / 3f * 0.1f;
-        }
+        //// ~테스트용 진행도 오르기~
+        ////기획자: qualityScore 증가
+        //foreach (Employee e in plannings)
+        //{
+        //    if (e == null) continue;
+        //    qualityScore.Value += (e.MutableData.property1 + e.MutableData.property2 + e.MutableData.property3) / 3f * 0.1f;
+        //}
+        //// 개발자: stabilityScore 증가
+        //foreach (Employee e in develops)
+        //{
+        //    if (e == null) continue;
+        //    stabilityScore.Value += (e.MutableData.property1 + e.MutableData.property2 + e.MutableData.property3) / 3f * 0.1f;
+        //}
+        //// 아티스트: charmScore 증가
+        //foreach (Employee e in arts)
+        //{
+        //    if (e == null) continue;
+        //    charmScore.Value += (e.MutableData.property1 + e.MutableData.property2 + e.MutableData.property3) / 3f * 0.1f;
+        //}
 
         Debug.Log($"{userNamed}: [Day {day}] {Company.GetDateString(day)}종료"); // 날짜 로그 표시중
         day++;
@@ -179,13 +180,73 @@ public class Project : MonoBehaviour
         // 주간 이벤트 정산 및 초기화
 
         // 보고서 산출
-        // 각 직원데이터에 접근해서 보고서 목록에 등록
+        GenerateReportDrafts();
 
         if (day >= DurationDays)
         {
             Finish(); // 기간이 되면 프로젝트 종료
         }
     }
+
+    #region 보고서 부분
+    // 투입된 직원 데이터를 기반으로 보고서 초안(Report) 생성 → pendingReports에 저장
+    public void GenerateReportDrafts()
+    {
+        pendingReports.Clear();
+        selectedReports.Clear();
+
+        GenerateDraftsForPart(plannings);
+        GenerateDraftsForPart(develops);
+        GenerateDraftsForPart(arts);
+
+        Debug.Log($"[{userNamed.Value}] 보고서 생성 완료: {pendingReports.Count}건");
+    }
+
+    void GenerateDraftsForPart(Employee[] employees)
+    {
+        foreach (Employee e in employees)
+        {
+            if (e == null) continue;
+
+            float score = ReportPolicy.CalcScore(e.MutableData);
+            ReportGrade grade = ReportPolicy.CalcGrade(score);
+            ReportSO so = ReportManager.Instance.GetRandomReport(e.so.partParsed, grade);
+
+            if (so == null) continue;
+
+            pendingReports.Add(new Report { so = so, owner = e, score = score });
+        }
+    }
+
+    // UI에서 파트당 1개 선택 시 호출
+    public void SelectReport(Report report)
+    {
+        selectedReports[report.part] = report;
+        Debug.Log($"[{userNamed.Value}] {report.part} 보고서 선택: {report.so.title} ({report.grade})");
+    }
+
+    // 선택된 보고서를 모두 승인하여 progress에 반영
+    public void ApproveSelectedReports()
+    {
+        foreach (var kv in selectedReports)
+        {
+            Report report = kv.Value;
+            float finalScore = ReportPolicy.CalcContribution(report, report.owner);
+
+            switch (report.part)
+            {
+                case Part.Planning: qualityScore.Value   += finalScore; break;
+                case Part.Develop:  stabilityScore.Value += finalScore; break;
+                case Part.Art:      charmScore.Value     += finalScore; break;
+            }
+
+            Debug.Log($"[{userNamed.Value}] {report.part} 보고서 승인: +{finalScore:F1} ({report.so.title} / {report.grade})");
+        }
+
+        pendingReports.Clear();
+        selectedReports.Clear();
+    }
+    #endregion
 
     // 프로젝트 종료
     public void Finish()

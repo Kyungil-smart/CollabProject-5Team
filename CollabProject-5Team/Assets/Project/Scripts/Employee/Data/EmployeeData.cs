@@ -26,12 +26,13 @@ public class EmployeeImmutableData : SheetDataSOBase
 {
     public string employeeName;
 
-    [HideInInspector]
-    public string mbtiStr;
+    public Rank       rankParsed;
+    public Part       partParsed;
+    public MbtiFlags  mbtiParsed; string _mbtiStr;
 
-    public Rank          rankParsed;
-    public Part          partParsed;
-    public MbtiFlags     mbtiParsed;
+    public Trait      mainTrait;
+    public Trait      subTrait;
+    public Trait      riskTrait;
 
     public int contractGold;
 
@@ -44,8 +45,8 @@ public class EmployeeImmutableData : SheetDataSOBase
         this.rankParsed   = ParseEnum<Rank>(rowData[2].Trim());
         this.partParsed   = ParseEnum<Part>(rowData[3].Trim());
 
-        this.mbtiStr      = rowData[4].Trim(); 
-        this.mbtiParsed   = ConvertMbtiStringToEnum(mbtiStr);
+        this._mbtiStr      = rowData[4].Trim(); 
+        this.mbtiParsed   = ConvertMbtiStringToEnum(_mbtiStr);
 
         this.contractGold = ParseInt(rowData[5]);
     }

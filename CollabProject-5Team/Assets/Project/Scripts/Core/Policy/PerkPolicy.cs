@@ -1,6 +1,6 @@
 using UnityEngine;
 
-// 주요 업그레이드/성장 정책을 관리하는 정적 클래스
+// 직원 업그레이드/성장 정책을 관리하는 정적 클래스
 public static class PerkPolicy
 {
     // Rank별 주 능력치 초기값

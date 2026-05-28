@@ -1,5 +1,5 @@
 using R3;
-using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class Company : MonoBehaviour
@@ -21,7 +21,8 @@ public class Company : MonoBehaviour
         }
     }
 
-    public Project[] projects;  // 현재 진행중인 프로젝트들
+    public List<Project> projects = new(); // 현재 진행중인 프로젝트들
+    public Project curProject; // 메인 프로젝트 (UI에 집중적으로 표시)
 
     #region 싱글톤 설정
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
@@ -33,6 +34,18 @@ public class Company : MonoBehaviour
         Instance = this; DontDestroyOnLoad(gameObject);
     #endregion
     }
+    private void Start()
+    {
+        InitProjects();
+    }
+
+    // 자식 오브젝트의 Project 컴포넌트를 수집해 projects 리스트에 세팅
+    public void InitProjects()
+    {
+        projects.Clear();
+        projects.AddRange(GetComponentsInChildren<Project>());
+        curProject = projects[0];
+    }
 
     private void Update()
     {
@@ -40,45 +53,42 @@ public class Company : MonoBehaviour
         {
             int firstEmployeeId = _EmployeeManager.Instance.allEmployeeObj[0].GetComponent<Employee>().so.id;
             Employee hiredEmployee = _EmployeeManager.Instance.HireEmployee(firstEmployeeId);
-
-            projects[0].HireEmployee(hiredEmployee);
+            curProject.HireEmployee(hiredEmployee);
         }
         if (Input.GetKeyDown(KeyCode.Alpha2)) 
         {
             int firstEmployeeId = _EmployeeManager.Instance.allEmployeeObj[1].GetComponent<Employee>().so.id;
             Employee hiredEmployee = _EmployeeManager.Instance.HireEmployee(firstEmployeeId);
-
-            projects[0].HireEmployee(hiredEmployee);
+            curProject.HireEmployee(hiredEmployee);
         }
         if (Input.GetKeyDown(KeyCode.Alpha3))
         {
             int firstEmployeeId = _EmployeeManager.Instance.allEmployeeObj[2].GetComponent<Employee>().so.id;
             Employee hiredEmployee = _EmployeeManager.Instance.HireEmployee(firstEmployeeId);
-
-            projects[0].HireEmployee(hiredEmployee);
+            curProject.HireEmployee(hiredEmployee);
         }
 
         if (Input.GetKeyDown(KeyCode.Alpha4)) // 테스트용: 첫 번째 직원 해고
         {
-            Employee target = projects[0].plannings[0];
-            projects[0].FireEmployee(target);
+            Employee target = curProject?.plannings[0];
+            curProject.FireEmployee(target);
         }
         if (Input.GetKeyDown(KeyCode.Alpha5))
         {
-            Employee target = projects[0].develops[0];
-            projects[0].FireEmployee(target);
+            Employee target = curProject?.develops[0];
+            curProject.FireEmployee(target);
         }
         if (Input.GetKeyDown(KeyCode.Alpha6))
         {
-            Employee target = projects[0].arts[0];
-            projects[0].FireEmployee(target);
+            Employee target = curProject?.arts[0];
+            curProject.FireEmployee(target);
         }
     }
 
     #region 날짜 진행
     public void ProgressDay()
     {
-        if (projects.Length == 0 || Array.TrueForAll(projects, p => p.isFinished.Value))
+        if (projects.Count == 0 || projects.TrueForAll(p => p.isFinished.Value))
         {
             Debug.Log("[Company] 모든 프로젝트가 종료되어 날짜를 진행할 수 없습니다.");
             return;
@@ -94,8 +104,8 @@ public class Company : MonoBehaviour
     public void ProgressNight()
     {
         foreach (var project in projects) project.ProgressNight();
-
-        // TODO: 모든 밤 정산이 끝나고 보고서 이벤트 연결
+        // ProgressNight → Project.GenerateReportDrafts() 자동 호출됨
+        // UI가 pendingReports 표시 후 플레이어가 SelectReport / ApproveSelectedReports 호출
     }
 
     static readonly string[] WeekDayNames = { "월요일", "화요일", "수요일", "목요일", "금요일" };
@@ -127,17 +137,17 @@ public class Company : MonoBehaviour
         if (!CanStartNewProject(project)) return;
         gold -= project.RequiredCost;
 
-        projects[projects.Length] = project;
+        projects.Add(project);
     }
 
     public bool CanStartNewProject(Project project)
     {
-        if (projects.Length < ProjectSlots)
+        if (projects.Count >= ProjectSlots)
         {
             Debug.Log("프로젝트 슬롯이 부족합니다"); // 추후 UI로 변경
             return false;
         }
-        if (gold >= project.RequiredCost)
+        if (gold < project.RequiredCost)
         {
             Debug.Log("보유 자금이 부족합니다"); // 추후 UI로 변경
             return false;
