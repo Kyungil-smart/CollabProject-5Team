@@ -5,19 +5,34 @@ using UnityEngine.UI;
 
 public class DateTimeTestUI : MonoBehaviour
 {
-    [Header ("TMP연결")]
+    public static DateTimeTestUI Instance { get; private set; }
+
+    [Header ("날짜, 업무 완료 여부 TMP")]
     [SerializeField] private TextMeshProUGUI dateText;          // 주차, 요일, 낮/밤 표시
     [SerializeField] private TextMeshProUGUI workStatusText;    // 업무 완료 여부
 
-    [Header("테스트 버튼")]
+    [Header("하단 UI창의 업무시작, 퇴근 버튼")]
+    [SerializeField] private Button workStartButton;            // 업무 완료 버튼
+    [SerializeField] private Button getOffWorkButton;           // 퇴근 버튼
+
+    [Header("업무 UI창")]
+    [SerializeField] private GameObject taskUI;                 // 퇴근 버튼 누르면 닫을 UI창
+
+    [Header("업무 UI 내부 업무 완료 버튼")]
     [SerializeField] private Button workCompleteButton;         // 업무 완료 버튼
-    [SerializeField] private Button exitButton;                 // 퇴근 버튼
 
-    [Header("퇴근 버튼 누르면 닫을 UI창")]
-    [SerializeField] private GameObject deskUI;                 // 퇴근 버튼 누르면 닫을 UI창
+    private void Awake()
+    {
+        if (Instance == null)
+        {
+            Instance = this;
+        }
 
-    [Header("플레이어 참조 연결")]
-    [SerializeField] private PlayerMove playerMove;
+        else
+        {
+            Destroy(gameObject);
+        }
+    }
 
     private void Start()
     {
@@ -26,30 +41,34 @@ public class DateTimeTestUI : MonoBehaviour
         DateTimeManager.Instance.currentDay.Subscribe(_ => UpdateCalendarText()).AddTo(this);
         DateTimeManager.Instance.currentTime.Subscribe(_ => UpdateCalendarText()).AddTo(this);
 
-        // 버튼 클릭 (업무 완료 버튼)
-        workCompleteButton.onClick.AddListener(() =>
+        // 버튼 클릭 (업무 시작 버튼)
+        workStartButton.onClick.AddListener(() =>
         {
-            DateTimeManager.Instance.CompleteDayWork();
-            UpdateUI();    
+            if (taskUI != null)
+            {
+                taskUI.SetActive(true);
+            }   
         });
 
-        // 버튼 클릭 (퇴근하기)
-        exitButton.onClick.AddListener(() =>
+        // 업무 완료 버튼 클릭 시 업무 끝내고 창 닫기
+        if (workCompleteButton != null)
         {
-            if (DateTimeManager.Instance.isWorkCompleted)
+            workCompleteButton.onClick.AddListener(() =>
             {
-                if (deskUI != null)
-                {
-                    deskUI.SetActive(false);
-                }
+                // 데이터 완료
+                DateTimeManager.Instance.CompleteDayWork();
 
-                if (playerMove != null)
-                {
-                    playerMove.CloseInteractionUI();
-                }
-            }
+                // 창 닫기
+                if (taskUI != null) taskUI.SetActive(false);
 
-            
+                // UI초기화
+                UpdateUI();
+            });
+        }
+
+        // 버튼 클릭 (퇴근하기)
+        getOffWorkButton.onClick.AddListener(() =>
+        {            
             DateTimeManager.Instance.OnClickEndDayButton();
             UpdateUI();
         });
@@ -75,13 +94,28 @@ public class DateTimeTestUI : MonoBehaviour
         if (DateTimeManager.Instance.isWorkCompleted)
         {
             workStatusText.text = "Work Status: <color=green>Completed</color>";
-            exitButton.interactable = true;
+
+            // 업무가 끝났으니 업무시작버튼 비활성화
+            workStartButton.interactable = false;
+            // 퇴근 버튼 활성화
+            getOffWorkButton.interactable = true;
         }
 
         else
         {
             workStatusText.text = "Work Status: <color=red>Incomplete</color>";
-            exitButton.interactable = false;
+
+            workStartButton.interactable = false;
+            getOffWorkButton.interactable = false;
         }
     }
+
+    // 책상 근처에 들어가거나 나올 떄 외부에서 호출될 함수
+    public void SetWorkStartButtonInteractable (bool isNearDesk)
+    {
+        if (DateTimeManager.Instance.isWorkCompleted) return;
+
+        workStartButton.interactable = isNearDesk;
+    }
+
 }

@@ -4,16 +4,25 @@ using UnityEngine.UI;
 
 public class NPCInteract : MonoBehaviour, IInteractable
 {
-    [Header("NPC 설정")]
-    [SerializeField] private string npcName = "Cat1";
+    private string npcName;
 
-    [Header("띄울 UI창")]
+    [Header("NPC대화 UI창")]
     [SerializeField] private GameObject interactionUI;
 
-    [Header("UI창 내부의 텍스트")]
+    [Header("UI창 내부의 텍스트, 퀘스트 완료 버튼")]
     [SerializeField] private TextMeshProUGUI dialogueText;
     [SerializeField] private Button questCompleteButton;
 
+    private void Start()
+    {
+        // 하이어라키 창의 이름이 NPC의 고유 식별자로 등록
+        npcName = gameObject.name;
+
+        if(questCompleteButton != null)
+        {
+            questCompleteButton.onClick.AddListener(OnClickQuestComplete);
+        }
+    }
 
     public void OnInteract()
     {
@@ -24,6 +33,11 @@ public class NPCInteract : MonoBehaviour, IInteractable
             {
                 // 일반 대화
                 dialogueText.text = $"{npcName}: Hi (General Dialogue)";
+
+                if (questCompleteButton != null)
+                {
+                    questCompleteButton.gameObject.SetActive(false);
+                }
             }
 
             // 특별 대화
@@ -34,9 +48,6 @@ public class NPCInteract : MonoBehaviour, IInteractable
                 if (questCompleteButton != null)
                 {
                     questCompleteButton.gameObject.SetActive(true);
-
-                    questCompleteButton.onClick.RemoveAllListeners();
-                    questCompleteButton.onClick.AddListener(() => OnClickQuestComplete());
                 }
             }
 
@@ -44,6 +55,11 @@ public class NPCInteract : MonoBehaviour, IInteractable
             else if (state == 2)
             {
                 dialogueText.text = $"{npcName}: See Ya (Done)";
+
+                if (questCompleteButton != null)
+                {
+                    questCompleteButton.gameObject.SetActive(false);
+                }
             }
 
             interactionUI.SetActive(true);   
