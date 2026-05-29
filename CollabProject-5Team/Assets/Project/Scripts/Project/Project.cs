@@ -43,12 +43,15 @@ public class Project : MonoBehaviour
 
     public ReactiveProperty<bool> isFinished = new(false); // 프로젝트 종료 여부
 
-    // 보고서 승인 대기 목록 (금요일 밤 생성, 역할별 다수)
+    // 보고서 승인 대기 목록 (Friday Night 생성, 역할별 다수)
     public List<Report> pendingReports = new();
     // 플레이어가 역할당 1개씩 선택한 보고서
     public Dictionary<Role, Report> selectedReports = new();
-    // 지난 주차 TraitStat별 점수 (보고서 최종 공식의 A값)
-    public Dictionary<TraitStat, float> prevStatScores = new();
+
+    // 주차별 stat 점수 누적 (Key=TraitStat, Value=주차별 점수 리스트)
+    public Dictionary<TraitStat, List<float>> weeklyStatScores = new();
+    // 완료된 주차 수
+    int _nightCount;
 
 
     private void Start()
@@ -178,7 +181,7 @@ public class Project : MonoBehaviour
         {
             if (e == null) continue;
 
-            float score = ReportPolicy.CalcScore(e.MutableData);
+            float score = ReportPolicy.CalcScore(e.so, e.MutableData.desire);
             int grade = ReportPolicy.CalcGrade(score);
             ReportSO so = ReportManager.Instance.GetRandomReport(e.so.role, grade);
 
@@ -195,53 +198,62 @@ public class Project : MonoBehaviour
         Debug.Log($"[{userNamed.Value}] {report.role} 보고서 선택: {report.so.title} ({report.grade}등급)");
     }
 
-    // 선택된 보고서를 모두 승인하여 progress에 반영
+    // 선택된 보고서를 모두 승인하여 주차 stat 저장
     public void ApproveSelectedReports()
     {
+        _nightCount++;
+
         foreach (var kv in selectedReports)
         {
             Report report = kv.Value;
 
-            // 기여값 계산 + 직원 bonus 실제 반영 (UpdateBonus → RecalcProperties 내부 호출)
-            float finalScore = ReportPolicy.CalcContribution(report, prevStatScores);
+            // 이번 주 주차 stat 점수 계산 (매 주차 독립, A값 없음)
+            float[] weekScores = ReportPolicy.CalcWeeklyStatScores(report);
+            TraitStat[] stats  = ReportPolicy.GetRoleStats(report.role);
 
-            // 이번 주 결과를 다음 주 A값으로 stat별 저장
-            TraitStat[] stats = ReportPolicy.GetRoleStats(report.role);
-            EmployeeMutableData d = report.owner.MutableData;
-            float[] statValues = { d.property1, d.property2, d.property3 };
             for (int i = 0; i < stats.Length; i++)
-                prevStatScores[stats[i]] = statValues[i];
+            {
+                if (!weeklyStatScores.ContainsKey(stats[i]))
+                    weeklyStatScores[stats[i]] = new List<float>();
+                weeklyStatScores[stats[i]].Add(weekScores[i]);
+            }
 
             // 피로도 반영
             ReportPolicy.ApplyFatigue(report.owner, report.grade);
 
-            switch (report.role)
-            {
-                case Role.PLANNER:     qualityScore.Value   += finalScore; break;
-                case Role.PROGRAMMER:  stabilityScore.Value += finalScore; break;
-                case Role.ARTIST:      charmScore.Value     += finalScore; break;
-            }
-
-            Debug.Log($"{report.role} 보고서 승인: {finalScore:F1}점 ({report.so.title} / 등급{report.grade}) | " +
-                      $"직원 [{report.owner.so.Name}] p1={d.property1} p2={d.property2} p3={d.property3} 피로={d.fatigue}");
+            Debug.Log($"{report.role} 보고서 승인: ({report.so.title} / {report.grade}등급) | " +
+                      $"직원 [{report.owner.so.Name}] " +
+                      $"s1={weekScores[0]:F1} s2={weekScores[1]:F1} s3={weekScores[2]:F1} 피로={report.owner.MutableData.fatigue}");
         }
 
         pendingReports.Clear();
         selectedReports.Clear();
 
         if (day >= DurationDays)
-        {
-            Finish(); // 기간이 되면 프로젝트 종료
-        }
-        Debug.Log($"{userNamed}: 종료 | 완료도: {ProgressBar:F1}% | 소요일: {day}일");
+            Finish();
     }
     #endregion
 
-    // 프로젝트 종료
+    // 프로젝트 종료: 주차 stat 평균 → 파트별 점수 → 최종 progress 반영
     public void Finish()
     {
-        isFinished.Value = true;
+        if (_nightCount == 0) { isFinished.Value = true; return; }
 
-        // 종료 프로젝트 데이터와 연결
+        // stat 평균 계산
+        float StatAvg(TraitStat s)
+        {
+            if (!weeklyStatScores.TryGetValue(s, out var list) || list.Count == 0) return 0f;
+            float sum = 0f;
+            foreach (float v in list) sum += v;
+            return sum / list.Count;
+        }
+
+        // 파트별 점수: (세 항목 평균)
+        qualityScore.Value   = (StatAvg(TraitStat.Fun) + StatAvg(TraitStat.Creativity) + StatAvg(TraitStat.Precision))   / 3f;
+        stabilityScore.Value = (StatAvg(TraitStat.TechPower) + StatAvg(TraitStat.Optimize) + StatAvg(TraitStat.BugControl)) / 3f;
+        charmScore.Value     = (StatAvg(TraitStat.Visual) + StatAvg(TraitStat.Direction) + StatAvg(TraitStat.Composition))  / 3f;
+
+        isFinished.Value = true;
+        Debug.Log($"{userNamed.Value}: 종료 | 완성도={qualityScore.Value:F1} 안정성={stabilityScore.Value:F1} 매력도={charmScore.Value:F1} | 최종점수={progress.Value:F1}");
     }
 }
