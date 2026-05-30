@@ -8,7 +8,7 @@ public class ProjectSO : SheetDataSOBase
     public string Name;      // 이름
     [TextArea] public string desc;  // 설명
 
-    public ProjectScale scale;      // 규모 => 아래 값들 연관
+    public ProjectSize scale;      // 규모 => 아래 값들 연관
     public int requiredCost;        // 개발비 
     public int maxEmployeePerPart;  // 파트별 최대 투입 인원
     public int durationDays;        // 개발 기간 (영업일 단위)

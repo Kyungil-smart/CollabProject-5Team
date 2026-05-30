@@ -11,7 +11,7 @@ public class Project : MonoBehaviour
     public int Id => so.id;
     public string Name => so.Name;
     public string Desc => so.desc;
-    public ProjectScale Scale => so.scale;
+    public ProjectSize Scale => so.scale;
     public int RequiredCost => so.requiredCost;
     public int MaxEmployeePerPart => so.maxEmployeePerPart;
     public int DurationDays => so.durationDays;
@@ -171,33 +171,18 @@ public class Project : MonoBehaviour
         pendingReports.Clear();
         selectedReports.Clear();
 
-        GenerateDraftsForPart(plannings);
-        GenerateDraftsForPart(programmer);
-        GenerateDraftsForPart(arts);
+        ReportPolicy.GenerateReportForRole(this, plannings);
+        ReportPolicy.GenerateReportForRole(this, programmer);
+        ReportPolicy.GenerateReportForRole(this, arts);
 
         Debug.Log($"[{userNamed.Value}] 보고서 생성 완료: {pendingReports.Count}건");
-    }
-    void GenerateDraftsForPart(Employee[] employees)
-    {
-        foreach (Employee e in employees)
-        {
-            if (e == null) continue;
-
-            float score = ReportPolicy.CalcScore(e.so, e.MutableData.desire);
-            int grade = ReportPolicy.CalcGrade(score);
-            ReportSO so = ReportManager.Instance.GetRandomReport(e.so.role, grade);
-
-            if (so == null) { Debug.Log("[Project] 해당하는 보고서 SO 없음"); continue; }
-
-            pendingReports.Add(new Report { so = so, owner = e, score = score });
-        }
     }
 
     // UI에서 파트당 1개 선택 시 호출
     public void SelectReport(Report report)
     {
         selectedReports[report.role] = report;
-        Debug.Log($"[{userNamed.Value}] {report.role} 보고서 선택: {report.so.title} ({report.grade}등급)");
+        Debug.Log($"[{userNamed.Value}] {report.role} 보고서선택: {report.so.title}-{report.trait} ({report.grade}등급)");
     }
 
     // 선택된 보고서를 모두 승인하여 주차 stat 저장
@@ -213,7 +198,7 @@ public class Project : MonoBehaviour
 
             // 이번 주 주차 stat 점수 계산 (매 주차 독립)
             float[] weekScores = ReportPolicy.CalcWeeklyStatScores(report);
-            float roleAvg = (weekScores[0] + weekScores[1] + weekScores[2]) / 3f;
+            float roleAvg = (weekScores[0] + weekScores[1] + weekScores[2] + (TraitTable.Get(report.trait).score * 2)) / 3f;
 
             switch (report.role)
             {
@@ -225,9 +210,9 @@ public class Project : MonoBehaviour
             // 피로도 반영
             ReportPolicy.ApplyFatigue(report.owner, report.grade);
 
-            Debug.Log($"  ▷ {report.role} [{report.so.title} / {report.grade}등급] " +
+            Debug.Log($"{report.role} [{report.so.title} / {report.grade}등급] " +
                       $"직원={report.owner.so.Name} | " +
-                      $"s1={weekScores[0]:F1} s2={weekScores[1]:F1} s3={weekScores[2]:F1} → 평균={roleAvg:F1}");
+                      $"s1={weekScores[0]:F1} s2={weekScores[1]:F1} s3={weekScores[2]:F1} 가중치={(TraitTable.Get(report.trait).score * 2)} → 평균={roleAvg:F1}");
         }
 
         // 주차 점수 → 누적 평균 갱신 (이전 평균에 이번 주차 값을 순차 합산)

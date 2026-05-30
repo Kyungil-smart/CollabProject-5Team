@@ -6,7 +6,7 @@ public class Report
 {
     public ReportSO  so;    // 보고서 원본 SO
     public Employee  owner; // 작성 직원
-    public float     score; // 산출된 직원 점수 (등급 결정 기준)
+    public Trait     trait => so.trait;
     public int       grade => so.grade; // 1=INNOVATION, 2=STANDARD, 3=SLOPPY
     public Role      role  => so.role;
 }
