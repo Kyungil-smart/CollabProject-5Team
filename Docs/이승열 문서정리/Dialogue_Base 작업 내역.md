@@ -17,15 +17,12 @@
 
 **DialogueData.cs**
 - `EmployeeDialogueState` 열거형 완료
-- `DialogueChoice` 열거형 완료
 - `StatDelta` 구조체 완료
-- `MotivationWeight` 구조체 완료
 - `DialogueStartPayload` 구조체 완료
-  - TODO: 대화 텍스트, 선택지 데이터 미포함 (추후 추가 예정)
 
 **DialogueEvents.cs**
-- R3 기반 이벤트 채널 5개 완료
-  - `OnStatChangeRequested`, `OnNightWeightReady`, `OnVacationPromised`, `OnBonusPayRequested`, `OnDialogueReady`
+- R3 기반 이벤트 채널 완료
+  - `OnStatChangeRequested`, `OnVacationPromised`, `OnDialogueReady`, `OnDialogueEnded`
 
 **DialogueManager.cs**
 - 싱글톤 완료
@@ -37,7 +34,6 @@
 ## 외부 연결 필요
 
 - `DialogueEvents.OnStatChangeRequested` 구독 → Employee 스탯(의욕/피로도/충성도) 반영
-- `DialogueEvents.OnBonusPayRequested` 구독 → 보너스 지급 시 자금 차감 처리
 - `DialogueEvents.OnVacationPromised` 구독 → 이번 주 보고서 채택 불가 처리
 
 ---
