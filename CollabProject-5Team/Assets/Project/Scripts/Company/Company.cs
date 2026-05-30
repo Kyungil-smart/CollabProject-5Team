@@ -75,7 +75,7 @@ public class Company : MonoBehaviour
         }
         if (Input.GetKeyDown(KeyCode.Alpha5))
         {
-            Employee target = curProject?.develops[0];
+            Employee target = curProject?.programmer[0];
             curProject.FireEmployee(target);
         }
         if (Input.GetKeyDown(KeyCode.Alpha6))

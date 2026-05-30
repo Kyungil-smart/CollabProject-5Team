@@ -81,9 +81,9 @@ public static class ReportPolicy
         _               => new TraitStat[0],
     };
 
-    // 보고서 등급에 따른 피로도 증가 (1등급: +5, 2~3등급: +15)
+    // 보고서 등급에 따른 피로도 증가
     public static void ApplyFatigue(Employee e, int grade)
     {
-        e.MutableData.fatigue += grade == 1 ? 5 : 15;
+        e.MutableData.fatigue += grade == 1 ? 10 : 20;
     }
 }

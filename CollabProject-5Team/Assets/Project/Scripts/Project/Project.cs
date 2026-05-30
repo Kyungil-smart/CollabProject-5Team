@@ -22,11 +22,16 @@ public class Project : MonoBehaviour
 
     // 투입된 직원
     public Employee[] plannings;
-    public Employee[] develops;
     public Employee[] arts;
+    public Employee[] programmer;
 
     // 진행도 연관 수치
-    public float curScore;        // 현재까지 진행한 주차 점수들의 평균 (0~100)
+    float _curScore;
+    public float CurScore // 현재까지 진행한 주차 점수들의 평균 (0~100)
+    {
+        get => _curScore;
+        set => _curScore = Mathf.Clamp(value, 0f, 100f);
+    }
     public float qualityScore;    // 완성도 점수 (기획)
     public float stabilityScore;  // 안정성 점수 (개발)
     public float charmScore;      // 매력도 점수 (아트)
@@ -42,10 +47,13 @@ public class Project : MonoBehaviour
     // 플레이어가 역할당 1개씩 선택한 보고서
     public Dictionary<Role, Report> selectedReports = new();
 
+    // 상수
+    const int FATIGUE_LESS = 5; // 밤 종료 시 모든직원 피로도 감소량
+
     // 완료 관련 데이터
     public int nightCount;
     public ReactiveProperty<bool> isFinished = new(false); // 프로젝트 종료 여부
-    public char Grade => curScore switch
+    public char Grade => CurScore switch
     {
         > 90f => 'S',> 75f => 'A',> 60f => 'B',_ => 'C',
     };
@@ -58,7 +66,7 @@ public class Project : MonoBehaviour
         userNamed.Value = Name;
 
         plannings = new Employee[MaxEmployeePerPart];
-        develops = new Employee[MaxEmployeePerPart];
+        programmer = new Employee[MaxEmployeePerPart];
         arts = new Employee[MaxEmployeePerPart];
 
         }
@@ -78,7 +86,7 @@ public class Project : MonoBehaviour
                 targetArray = plannings;
                 break;
             case Role.PROGRAMMER:
-                targetArray = develops;
+                targetArray = programmer;
                 break;
             case Role.ARTIST:
                 targetArray = arts;
@@ -112,7 +120,7 @@ public class Project : MonoBehaviour
         Employee[] targetArray = e.so.role switch
         {
             Role.PLANNER => plannings,
-            Role.PROGRAMMER => develops,
+            Role.PROGRAMMER => programmer,
             Role.ARTIST => arts,
             _ => null,
         };
@@ -164,7 +172,7 @@ public class Project : MonoBehaviour
         selectedReports.Clear();
 
         GenerateDraftsForPart(plannings);
-        GenerateDraftsForPart(develops);
+        GenerateDraftsForPart(programmer);
         GenerateDraftsForPart(arts);
 
         Debug.Log($"[{userNamed.Value}] 보고서 생성 완료: {pendingReports.Count}건");
@@ -226,14 +234,19 @@ public class Project : MonoBehaviour
         qualityScore   = (qualityScore   * (nightCount - 1) + qualThisNight)  / nightCount;
         stabilityScore = (stabilityScore * (nightCount - 1) + stabThisNight)  / nightCount;
         charmScore     = (charmScore     * (nightCount - 1) + charmThisNight) / nightCount;
-        curScore       = (qualityScore + stabilityScore + charmScore) / 3f;
+        CurScore       = (qualityScore + stabilityScore + charmScore) / 3f;
 
         Debug.Log($"[{userNamed.Value}] {nightCount}주차 점수 | " +
                   $"완성도={qualThisNight:F1} 안정성={stabThisNight:F1} 매력도={charmThisNight:F1}\n" +
-                  $"  누적 평균 → 완성도={qualityScore:F1} 안정성={stabilityScore:F1} 매력도={charmScore:F1} | curScore={curScore:F1}");
+                  $"  누적 평균 → 완성도={qualityScore:F1} 안정성={stabilityScore:F1} 매력도={charmScore:F1} | curScore={CurScore:F1}");
 
         pendingReports.Clear();
         selectedReports.Clear();
+
+        // 모든 투입 직원 피로도 감소
+        foreach (var e in plannings)  e.MutableData.fatigue -= FATIGUE_LESS;
+        foreach (var e in arts)       e.MutableData.fatigue -= FATIGUE_LESS;
+        foreach (var e in programmer) e.MutableData.fatigue -= FATIGUE_LESS;
 
         if (day >= DurationDays)
             Finish();
@@ -245,6 +258,6 @@ public class Project : MonoBehaviour
     {
         isFinished.Value = true;
         Debug.Log($"[{userNamed.Value}] 프로젝트 완료! ({nightCount}주차) | 등급={Grade}\n" +
-                  $"  최종 → 완성도={qualityScore:F1} 안정성={stabilityScore:F1} 매력도={charmScore:F1} | 평균={curScore:F1}");
+                  $"  최종 → 완성도={qualityScore:F1} 안정성={stabilityScore:F1} 매력도={charmScore:F1} | 평균={CurScore:F1}");
     }
 }

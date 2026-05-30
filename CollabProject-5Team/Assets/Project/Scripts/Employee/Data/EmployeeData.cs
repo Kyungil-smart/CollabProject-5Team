@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 public enum Role
 {
@@ -76,14 +77,36 @@ public class EmployeeImmutableData : SheetDataSOBase
 [Serializable]
 public struct EmployeeMutableData // 가변 데이터
 {
-    public int ability;   // 주 능력치
+    [SerializeField] int _ability;
+    public int ability
+    {
+        get => _ability;
+        set => _ability = Mathf.Clamp(value, 0, 100);
+    }
 
     public int property1; // 매 주차 보고서 승인 후 갱신되는 세부 능력치
     public int property2;
     public int property3;
 
-    public int desire;
-    public int loyalty;
-    public int fatigue;
+    [SerializeField] int _desire;
+    public int desire
+    {
+        get => _desire;
+        set => _desire = Mathf.Clamp(value, 0, 100);
+    }
+
+    [SerializeField] int _loyalty;
+    public int loyalty
+    {
+        get => _loyalty;
+        set => _loyalty = Mathf.Clamp(value, 0, 100);
+    }
+
+    [SerializeField] int _fatigue;
+    public int fatigue
+    {
+        get => _fatigue;
+        set => _fatigue = Mathf.Clamp(value, 0, 100);
+    }
 }
 

@@ -7,7 +7,7 @@ public class _EmployeeManager : MonoBehaviour
     public static _EmployeeManager Instance { get; private set; }
 
     [Header("모든 직원 원본 프리팹")]
-    [SerializeField] public GameObject[] allEmployeeObj;
+    public GameObject[] allEmployeeObj;
 
     public EmployeeList   employeeList  => _employeeList;
     private EmployeeList  _employeeList;
@@ -39,9 +39,9 @@ public class _EmployeeManager : MonoBehaviour
                 if (emp == null) return;
 
                 var data = emp.MutableData;
-                data.desire = Mathf.Clamp(data.desire + delta.desireDelta, 0, 100);
-                data.fatigue = Mathf.Clamp(data.fatigue + delta.fatigueDelta, 0, 100);
-                data.loyalty = Mathf.Clamp(data.loyalty + delta.loyaltyDelta, 0, 100);
+                data.desire  += delta.desireDelta;
+                data.fatigue += delta.fatigueDelta;
+                data.loyalty += delta.loyaltyDelta;
                 emp.MutableData = data;
             })
             .AddTo(this);
