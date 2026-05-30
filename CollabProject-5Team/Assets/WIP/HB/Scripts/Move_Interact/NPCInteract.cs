@@ -6,6 +6,9 @@ public class NPCInteract : MonoBehaviour, IInteractable
 {
     private string npcName;
 
+    [Header("NPC 직원 SO 연결")]
+    [SerializeField] private EmployeeImmutableData employeeSO;
+
     [Header("NPC대화 UI창")]
     [SerializeField] private GameObject interactionUI;
 
@@ -40,15 +43,12 @@ public class NPCInteract : MonoBehaviour, IInteractable
                 }
             }
 
-            // 특별 대화
+            // 업무 완료 후 첫 대화 → DialogueManager에 위임
             else if (state == 1)
             {
-                dialogueText.text = $"{npcName}: Quest (Special Dialogue)";
-
-                if (questCompleteButton != null)
-                {
-                    questCompleteButton.gameObject.SetActive(true);
-                }
+                DateTimeManager.Instance.MarkTalkedThisWeek(employeeSO.id);
+                Dialogue.DialogueManager.Instance.StartDialogueById(employeeSO.id, npcName);
+                return;
             }
 
             // 퀘스트 완료 후 대화

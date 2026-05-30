@@ -1,3 +1,4 @@
+using R3;
 using UnityEngine;
 using System.Collections.Generic;
 
@@ -26,6 +27,24 @@ public class _EmployeeManager : MonoBehaviour
 
         _employeeList = new EmployeeList(allEmployeeObj);
         Debug.Log("[EM] 초기 직원 데이터를 로드 합니다.");
+    }
+
+    private void Start()
+    {
+        Dialogue.DialogueEvents.OnStatChangeRequested
+            .Subscribe(delta =>
+            {
+                Employee emp = _haveEmployees.haveEmployeeList
+                    .Find(e => e.so.id == delta.employeeId);
+                if (emp == null) return;
+
+                var data = emp.MutableData;
+                data.desire = Mathf.Clamp(data.desire + delta.desireDelta, 0, 100);
+                data.fatigue = Mathf.Clamp(data.fatigue + delta.fatigueDelta, 0, 100);
+                data.loyalty = Mathf.Clamp(data.loyalty + delta.loyaltyDelta, 0, 100);
+                emp.MutableData = data;
+            })
+            .AddTo(this);
     }
 
     public Employee HireEmployee(int id)
