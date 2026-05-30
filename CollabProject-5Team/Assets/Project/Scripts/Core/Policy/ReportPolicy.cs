@@ -35,9 +35,9 @@ public static class ReportPolicy
 
         var scores = new Dictionary<TraitStat, float>
         {
-            [stats[0]] = d.property1,
-            [stats[1]] = d.property2,
-            [stats[2]] = d.property3,
+            [stats[0]] = d.ability,
+            [stats[1]] = d.ability,
+            [stats[2]] = d.ability,
         };
 
         // 등급별 특성 delta (대표/보조/리스크)
