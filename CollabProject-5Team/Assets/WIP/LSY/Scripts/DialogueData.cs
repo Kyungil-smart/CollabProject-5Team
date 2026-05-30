@@ -3,35 +3,25 @@ namespace Dialogue
     public enum EmployeeDialogueState
     {
         Normal,
-        Warning,
-        Danger,
-    }
-
-    public enum DialogueChoice
-    {
-        BonusPay,
-        VacationPromise,
-        Pressure,
+        Caution,
+        Critical,
     }
 
     public struct StatDelta
     {
         public int employeeId;
-        public int motivationDelta;
+        public int desireDelta;
         public int fatigueDelta;
         public int loyaltyDelta;
-    }
-
-    public struct MotivationWeight
-    {
-        public int employeeId;
-        public int weight;
     }
 
     public struct DialogueStartPayload
     {
         public int employeeId;
         public EmployeeDialogueState state;
-        // TODO: 대화 텍스트, 선택지 데이터 (DialogueDataSO 작성 후 추가)
+        public string text; // 대사 텍스트
+        public bool isChoice; // true면 선택지 표시
+        public string choice01; // 선택지 1 텍스트
+        public string choice02; // 선택지 2 텍스트
     }
 }
