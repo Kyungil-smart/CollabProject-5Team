@@ -27,20 +27,11 @@ namespace Dialogue
             DontDestroyOnLoad(gameObject);
         }
 
-        public void StartDialogueById(int employeeId, string npcName)
+        public void StartDialogueById(Employee emp)
         {
-            Employee emp = _EmployeeManager.Instance.haveEmployees.haveEmployeeList
-                .Find(e => e.so.id == employeeId);
-
-            if (emp == null)
-            {
-                Debug.LogWarning($"[DialogueManager] employeeId {employeeId} 직원을 찾을 수 없습니다.");
-                return;
-            }
-
             EmployeeDialogueState state = GetDialogueState(emp.MutableData.fatigue, emp.MutableData.desire);
 
-            StartDialogue(employeeId, npcName, state);
+            StartDialogue(emp.so.id, emp.so.Name, state);
         }
 
         public void StartDialogue(int employeeId, string npcName, EmployeeDialogueState state)
@@ -51,6 +42,7 @@ namespace Dialogue
             if (poolEntry == null)
             {
                 DialogueEvents.NotifyDialogueEnded(employeeId);
+                Debug.Log("[DM] 다이얼 로그 종료");
                 return;
             }
 
@@ -95,7 +87,7 @@ namespace Dialogue
 
             if (!highFatigue && !lowMotivation) return EmployeeDialogueState.Normal;
             if ( highFatigue &&  lowMotivation) return EmployeeDialogueState.Critical;
-            return EmployeeDialogueState.Caution;
+            return EmployeeDialogueState.Normal;
         }
 
         void ShowNode(int nodeId)
@@ -103,6 +95,7 @@ namespace Dialogue
             if (nodeId == EndNodeId || nodeId == 0)
             {
                 EndDialogue();
+                Debug.Log("[DM] 다이얼 로그 종료");
                 return;
             }
 

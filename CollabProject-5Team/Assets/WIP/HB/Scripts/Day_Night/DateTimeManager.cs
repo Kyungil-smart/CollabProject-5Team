@@ -18,7 +18,7 @@ public class DateTimeManager : MonoBehaviour
     private HashSet<string> talkedNpcsToday = new HashSet<string>();
 
     // 이번 주에 대화한 직원 ID 목록 (방치 패널티 판정용)
-    private HashSet<int> _talkedEmployeesThisWeek = new HashSet<int>();
+    private HashSet<Employee> _talkedEmployeesThisWeek = new HashSet<Employee>();
 
 
     private void Awake()
@@ -47,6 +47,14 @@ public class DateTimeManager : MonoBehaviour
     {
         isWorkCompleted = false;
         talkedNpcsToday.Clear();
+    }
+    /// <summary>
+    /// 새로운 주가 시작될 때 리셋하는 함수
+    /// </summary>
+    private void ResetWeekStatus()
+    {
+        _talkedEmployeesThisWeek.Clear();
+        Company.Instance.curProject.GetAllEmployees().ForEach(e => e.hasTalkedThisWeek = false);
     }
 
     /// <summary>
@@ -81,25 +89,13 @@ public class DateTimeManager : MonoBehaviour
     /// <summary>
     /// 특별 대화 시작 시 호출 — 이번 주 대화 직원으로 등록 (방치 패널티 면제)
     /// </summary>
-    public void MarkTalkedThisWeek(int employeeId)
+    public void MarkTalkedThisWeek(Employee e)
     {
-        _talkedEmployeesThisWeek.Add(employeeId);
+        _talkedEmployeesThisWeek.Add(e);
+        e.hasTalkedThisWeek = true;
     }
 
     /// <summary>
-    /// 이번 주 대화하지 않은 직원 ID 목록 반환
-    /// </summary>
-    private List<int> GetNeglectedEmployeeIds(List<int> allEmployeeIds)
-    {
-        List<int> neglected = new List<int>();
-        foreach (int id in allEmployeeIds)
-        {
-            if (!_talkedEmployeesThisWeek.Contains(id))
-                neglected.Add(id);
-        }
-        return neglected;
-    }
-
     /// <summary>
     /// NPC와 특별 대화를 마쳤다면 해당 NPC를 저장함
     /// </summary>
@@ -129,28 +125,27 @@ public class DateTimeManager : MonoBehaviour
 
             ResetDayStatus();
         }
-
         // 금요일 밤에 퇴근하면 다음 주 월요일 낮으로 전환
         else if (currentDay.Value == DayOfWeek.Friday && currentTime.Value == TimeOfDay.Night)
         {
-            // 방치 패널티: 이번 주 미대화 직원 충성도 -5
-            List<int> allIds = _EmployeeManager.Instance.haveEmployees.haveEmployeeList
-                .ConvertAll(e => e.so.id);
-            List<int> neglectedIds = GetNeglectedEmployeeIds(allIds);
-            Dialogue.NeglectPenaltyHandler.ApplyNeglectPenalty(neglectedIds);
+            // 방치 패널티: 이번 주 미대화 직원 충성도 -5, 피로도 +10
+            foreach (Employee e in Company.Instance.curProject.GetAllEmployees())
+            {
+                if (!e.hasTalkedThisWeek)
+                {
+                    e.MutableData.loyalty -= 5;
+                    e.MutableData.fatigue += 10;
+                }
+            }
 
             // 1주차씩 상승
             currentWeek.Value++;
             currentDay.Value = DayOfWeek.Monday;
             currentTime.Value = TimeOfDay.Day;
 
-            // 피로도 +10 다음 주 적용 + 주간 기록 초기화
-            Dialogue.NeglectPenaltyHandler.ApplyPendingFatigue();
-            _talkedEmployeesThisWeek.Clear();
-
             ResetDayStatus();
+            ResetWeekStatus();
         }
-
         // 월~목 낮에 퇴근하면 다음 날 낮으로
         else
         {

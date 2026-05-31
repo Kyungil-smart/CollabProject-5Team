@@ -620,6 +620,7 @@ GameObject:
   - component: {fileID: 4789002810224818379}
   - component: {fileID: 6317061957685076711}
   - component: {fileID: 8560962133459124673}
+  - component: {fileID: 9212657379961521883}
   m_Layer: 7
   m_Name: NPC
   m_TagString: Untagged
@@ -678,7 +679,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 081b67f8b7451704887c2a6f76d13970, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  npcName: Cat1
   interactionUI: {fileID: 0}
   dialogueText: {fileID: 0}
   questCompleteButton: {fileID: 0}
@@ -705,6 +705,29 @@ CapsuleCollider:
   m_Height: 1.5
   m_Direction: 1
   m_Center: {x: 0, y: 0.91, z: 0}
+--- !u!114 &9212657379961521883
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2287315286734292183}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e57b300b4c28a074c86e82eb2c180946, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  so: {fileID: 11400000, guid: 4ccded9b45bf6f649820e99398353d44, type: 2}
+  dialogue: {fileID: 11400000, guid: 014856be748b28446b03194481fe455c, type: 2}
+  MutableData:
+    _ability: 0
+    property1: 0
+    property2: 0
+    property3: 0
+    _desire: 0
+    _loyalty: 0
+    _fatigue: 0
+  hasTalkedThisWeek: 0
 --- !u!1 &2296344334935999939
 GameObject:
   m_ObjectHideFlags: 0
