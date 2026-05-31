@@ -1,13 +1,12 @@
 using TMPro;
+using R3;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class NPCInteract : MonoBehaviour, IInteractable
 {
+    Employee emp;
     private string npcName;
-
-    [Header("NPC 직원 SO 연결")]
-    [SerializeField] private EmployeeImmutableData employeeSO;
 
     [Header("NPC대화 UI창")]
     [SerializeField] private GameObject interactionUI;
@@ -16,53 +15,68 @@ public class NPCInteract : MonoBehaviour, IInteractable
     [SerializeField] private TextMeshProUGUI dialogueText;
     [SerializeField] private Button questCompleteButton;
 
+    private void Awake()
+    {
+        emp = GetComponent<Employee>();
+    }
+
     private void Start()
     {
         // 하이어라키 창의 이름이 NPC의 고유 식별자로 등록
         npcName = gameObject.name;
 
-        if(questCompleteButton != null)
+        if (questCompleteButton != null)
         {
             questCompleteButton.onClick.AddListener(OnClickQuestComplete);
         }
+
+        // DialogueManager에서 노드가 준비될 때마다 이 직원의 대사이면 dialogueText 갱신
+        Dialogue.DialogueEvents.OnDialogueReady
+            .Subscribe(payload =>
+            {
+                if (payload.employeeId == emp.so.id)
+                    dialogueText.text = payload.text;
+            })
+            .AddTo(this);
     }
 
     public void OnInteract()
     {
         int state = DateTimeManager.Instance.GetDialogueState(npcName);
 
+        // 일반 대화
+        if (state == 0)
+        {
             // 일반 대화
-            if (state == 0)
+            DateTimeManager.Instance.MarkTalkedThisWeek(emp);
+            Dialogue.DialogueManager.Instance.StartDialogueById(emp);
+
+            if (questCompleteButton != null)
             {
-                // 일반 대화
-                dialogueText.text = $"{npcName}: Hi (General Dialogue)";
-
-                if (questCompleteButton != null)
-                {
-                    questCompleteButton.gameObject.SetActive(false);
-                }
+                questCompleteButton.gameObject.SetActive(false);
             }
+        }
 
-            // 업무 완료 후 첫 대화 → DialogueManager에 위임
-            else if (state == 1)
+        // 업무 완료 후 첫 대화 → DialogueManager에 위임
+        else if (state == 1)
+        {
+            DateTimeManager.Instance.MarkTalkedThisWeek(emp);
+            Dialogue.DialogueManager.Instance.StartDialogueById(emp);
+            return;
+        }
+
+        // 퀘스트 완료 후 대화
+        else if (state == 2)
+        {
+            dialogueText.text = $"{npcName}: See Ya (Done)";
+
+            if (questCompleteButton != null)
             {
-                DateTimeManager.Instance.MarkTalkedThisWeek(employeeSO.id);
-                Dialogue.DialogueManager.Instance.StartDialogueById(employeeSO.id, npcName);
-                return;
+                questCompleteButton.gameObject.SetActive(false);
             }
+        }
 
-            // 퀘스트 완료 후 대화
-            else if (state == 2)
-            {
-                dialogueText.text = $"{npcName}: See Ya (Done)";
-
-                if (questCompleteButton != null)
-                {
-                    questCompleteButton.gameObject.SetActive(false);
-                }
-            }
-
-            interactionUI.SetActive(true);   
+        interactionUI.SetActive(true);
     }
 
     private void OnClickQuestComplete()

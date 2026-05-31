@@ -1,17 +1,22 @@
+using Dialogue;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
 // 직원 게임오브젝트에 부착 방식
 public class Employee : MonoBehaviour, IPointerClickHandler
 {
-    public EmployeeMutableData   MutableData;
-    [Header("직원 기본 데이터 (SO 할당)")]
+    [Header("기본 데이터 (SO 할당)")]
     public EmployeeImmutableData so;
+    [Header("대사 데이터 (SO 할당")]
+    public DialoguePoolEntrySO dialogue;
+
+    public EmployeeMutableData   MutableData;
+
+    [Header("플래그")]
+    public bool hasTalkedThisWeek;
 
     public void Init()
     {
-        //int baseProperty = PerkPolicy.CalcBaseProperty(so.ability);
-
         MutableData = new EmployeeMutableData
         {
             ability   = so.ability,
