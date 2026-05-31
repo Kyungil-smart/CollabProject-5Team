@@ -24,6 +24,14 @@ public class Project : MonoBehaviour
     public Employee[] plannings;
     public Employee[] arts;
     public Employee[] programmer;
+    public List<Employee> GetAllEmployees()
+    {
+        var result = new List<Employee>();
+        foreach (var arr in new[] { plannings, programmer, arts })
+            foreach (var e in arr)
+                if (e != null) result.Add(e);
+        return result;
+    }
 
     // 진행도 연관 수치
     float _curScore;
@@ -55,7 +63,10 @@ public class Project : MonoBehaviour
     public ReactiveProperty<bool> isFinished = new(false); // 프로젝트 종료 여부
     public char Grade => CurScore switch
     {
-        > 90f => 'S',> 75f => 'A',> 60f => 'B',_ => 'C',
+        > 90f => 'S',
+        > 75f => 'A',
+        > 60f => 'B',
+        _ => 'C',
     };
 
     [Header("UI 표시용 데이터")]
@@ -64,12 +75,10 @@ public class Project : MonoBehaviour
     private void Start()
     {
         userNamed.Value = Name;
-
         plannings = new Employee[MaxEmployeePerPart];
         programmer = new Employee[MaxEmployeePerPart];
         arts = new Employee[MaxEmployeePerPart];
-
-        }
+    }
 
     public bool HireEmployee(Employee e)
     {
@@ -202,9 +211,9 @@ public class Project : MonoBehaviour
 
             switch (report.role)
             {
-                case Role.PLANNER:    qualThisNight  = roleAvg; break;
-                case Role.PROGRAMMER: stabThisNight  = roleAvg; break;
-                case Role.ARTIST:     charmThisNight = roleAvg; break;
+                case Role.PLANNER: qualThisNight = roleAvg; break;
+                case Role.PROGRAMMER: stabThisNight = roleAvg; break;
+                case Role.ARTIST: charmThisNight = roleAvg; break;
             }
 
             // 피로도 반영
@@ -216,10 +225,10 @@ public class Project : MonoBehaviour
         }
 
         // 주차 점수 → 누적 평균 갱신 (이전 평균에 이번 주차 값을 순차 합산)
-        qualityScore   = (qualityScore   * (nightCount - 1) + qualThisNight)  / nightCount;
-        stabilityScore = (stabilityScore * (nightCount - 1) + stabThisNight)  / nightCount;
-        charmScore     = (charmScore     * (nightCount - 1) + charmThisNight) / nightCount;
-        CurScore       = (qualityScore + stabilityScore + charmScore) / 3f;
+        qualityScore = (qualityScore * (nightCount - 1) + qualThisNight) / nightCount;
+        stabilityScore = (stabilityScore * (nightCount - 1) + stabThisNight) / nightCount;
+        charmScore = (charmScore * (nightCount - 1) + charmThisNight) / nightCount;
+        CurScore = (qualityScore + stabilityScore + charmScore) / 3f;
 
         Debug.Log($"[{userNamed.Value}] {nightCount}주차 점수 | " +
                   $"완성도={qualThisNight:F1} 안정성={stabThisNight:F1} 매력도={charmThisNight:F1}\n" +
@@ -229,8 +238,8 @@ public class Project : MonoBehaviour
         selectedReports.Clear();
 
         // 모든 투입 직원 피로도 감소
-        foreach (var e in plannings)  e.MutableData.fatigue -= FATIGUE_LESS;
-        foreach (var e in arts)       e.MutableData.fatigue -= FATIGUE_LESS;
+        foreach (var e in plannings) e.MutableData.fatigue -= FATIGUE_LESS;
+        foreach (var e in arts) e.MutableData.fatigue -= FATIGUE_LESS;
         foreach (var e in programmer) e.MutableData.fatigue -= FATIGUE_LESS;
 
         if (day >= DurationDays)
