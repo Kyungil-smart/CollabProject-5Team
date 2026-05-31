@@ -7,8 +7,6 @@ public class Employee : MonoBehaviour, IPointerClickHandler
 {
     [Header("기본 데이터 (SO 할당)")]
     public EmployeeImmutableData so;
-    [Header("대사 데이터 (SO 할당")]
-    public DialoguePoolEntrySO dialogue;
 
     public EmployeeMutableData   MutableData;
 
