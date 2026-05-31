@@ -1,10 +1,10 @@
 using System;
 
-public enum ProjectScale
+public enum ProjectSize
 {
-    Small,
-    Medium,
-    Large,
+    small,
+    medium,
+    large,
 }
 
 public enum ProjectGrade
@@ -22,7 +22,7 @@ public class ProjectCompleted
     // 이전 데이터 연동
     public int projectID;
     public string projectName;
-    public ProjectScale scale;
+    public ProjectSize scale;
     public int qualityScore;
     public int stabilityScore;
     public int charmScore;

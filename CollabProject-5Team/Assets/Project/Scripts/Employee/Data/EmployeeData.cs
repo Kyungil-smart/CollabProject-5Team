@@ -16,6 +16,14 @@ public enum MbtiFlags
     E = 1 << 3   // 1000
 }
 
+// 칭호
+public enum Style
+{
+    Rookie,     // 신입사원
+    Senior,     // 선임
+    Boss,       // 팀장
+}
+
 [CreateAssetMenu(fileName = "EmployeeData_", menuName = "Scriptable Objects/EmployeeData")]
 public class EmployeeImmutableData : SheetDataSOBase
 {
@@ -35,13 +43,18 @@ public class EmployeeImmutableData : SheetDataSOBase
     public Trait mainTrait;
     public Trait subTrait;
     public Trait riskTrait;
-    public MbtiFlags mbtiParsed; string _mbtiStr;
+    public MbtiFlags mbtiParsed;
+    public Style style; // 칭호
+
+    public string hireText;  // 자기소개서
+    public string fireText;  // 해고시 텍스트1
+    public string fireText2; // 해고시 텍스트2
 
     public override void SetData(string[] rowData)
     {
         id           = ParseInt(rowData[0]);
         Name         = rowData[1].Trim();
-        role         = ParseEnum<Role>(rowData[2].Trim());
+        role         = ParseEnum<Role>(rowData[2]);
         ability      = ParseInt(rowData[3]);
         desire       = ParseInt(rowData[4]);
         fatigue      = ParseInt(rowData[5]);
@@ -49,29 +62,69 @@ public class EmployeeImmutableData : SheetDataSOBase
         hiringCost   = ParseInt(rowData[7]);
         trainingCost = ParseInt(rowData[8]);
         grade        = ParseInt(rowData[9]);
-        mainTrait    = ParseEnum<Trait>(rowData[10].Trim());
-        subTrait     = ParseEnum<Trait>(rowData[11].Trim());
-        riskTrait    = ParseEnum<Trait>(rowData[12].Trim());
-        _mbtiStr     = rowData[13].Trim();
-        mbtiParsed   = ConvertMbtiStringToEnum(_mbtiStr);
+        mainTrait    = ParseEnum<Trait>(rowData[10]);
+        subTrait     = ParseEnum<Trait>(rowData[11]);
+        riskTrait    = ParseEnum<Trait>(rowData[12]);
+        mbtiParsed = ConvertMbtiStringToEnum(rowData[13].Trim());
+        style      = ParseEnum<Style>(rowData[14]);
+        hireText   = rowData[15].Trim();
+        fireText   = rowData[16].Trim();
+        fireText2  = rowData[17].Trim();
     }
 }
 
 [Serializable]
 public struct EmployeeMutableData // 가변 데이터
 {
-    public int ability;   // 주 능력치
+    [SerializeField] int _ability;
+    public int ability
+    {
+        get
+        {   // 충성도에 따른 능력치 보정
+            float rate = _loyalty >= 81 ? 1.3f :
+                         _loyalty >= 61 ? 1.15f :
+                         _loyalty >= 41 ? 1.0f :
+                         _loyalty >= 21 ? 0.85f : 0.7f; 
+            return Mathf.Clamp((int)(_ability * rate), 0, 100);
+        }
+        set
+        {
+            // 성장 패널티: ability가 높을수록 상슥폭이 줄어듦
+            int delta = value - _ability;
+            if (delta > 0) // 증가일 때만 패널티 적용
+            {
+                float rate = _ability <= 40 ? 1.0f :
+                             _ability <= 60 ? 0.8f :
+                             _ability <= 80 ? 0.6f : 0.4f;
+                delta = (int)(delta * rate);
+            }
+            _ability = Mathf.Clamp(_ability + delta, 0, 100);
+        }
+    }
 
-    public int property1; // 주 능력치 기반으로 변화하는 디폴트 값
+    public int property1; // 매 주차 보고서 승인 후 갱신되는 세부 능력치
     public int property2;
     public int property3;
 
-    public int bonus1; // property1에 더하는 추가 변동값
-    public int bonus2;
-    public int bonus3;
+    [SerializeField] int _desire;
+    public int desire
+    {
+        get => _desire;
+        set => _desire = Mathf.Clamp(value, 0, 100);
+    }
 
-    public int desire;
-    public int loyalty;
-    public int fatigue;
+    [SerializeField] int _loyalty;
+    public int loyalty
+    {
+        get => _loyalty;
+        set => _loyalty = Mathf.Clamp(value, 0, 100);
+    }
+
+    [SerializeField] int _fatigue;
+    public int fatigue
+    {
+        get => _fatigue;
+        set => _fatigue = Mathf.Clamp(value, 0, 100);
+    }
 }
 

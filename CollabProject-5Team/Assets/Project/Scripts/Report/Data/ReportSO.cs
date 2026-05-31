@@ -4,9 +4,10 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "Report_", menuName = "Scriptable Objects/ReportSO")]
 public class ReportSO : SheetDataSOBase
 {
-    public string title; // 보고서 제목
-    public Trait  trait; // 표시 특성
-    public int    grade; // 1=INNOVATION, 2=STANDARD, 3=SLOPPY
+    public string title;  // 보고서 제목
+    public Trait  trait;  // 표시 특성
+    public int startRepo; // 1 = 1주차 보고서, 0 = 이후 랜덤 적용 보고서
+    public int    grade;
     public Role   role;
 
     // 의욕 상태에 따른 보고서내용들

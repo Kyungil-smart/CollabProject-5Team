@@ -2,8 +2,8 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-// ── 특성이 속한 파트
-public enum TraitPart
+// ── 특성이 속한 역할
+public enum TraitRole
 {
     Planning, // 기획자 전용
     Develop,  // 프로그래머 전용
@@ -28,9 +28,6 @@ public enum TraitStat
     Direction,   // 연출력
     Composition, // 구도
 }
-
-// ── 긍정/부정
-public enum TraitPolarity { Positive, Risk }
 
 // ── 특성 고유 ID
 public enum Trait
@@ -100,13 +97,14 @@ public enum Trait
 [Serializable]
 public class TraitData
 {
-    public Trait         trait;
-    public string        displayName;
-    public TraitPart     part;
-    public TraitPolarity polarity;
-    public TraitStat[]   affectedStats;
+    public Trait       trait;
+    public string      displayName;
+    public TraitRole   role;
+    public bool        isPositive;
+    public int         score;
+    public TraitStat[] affectedStats;
 
-    public Color DisplayColor => polarity == TraitPolarity.Positive
+    public Color DisplayColor => isPositive
         ? new Color(0.2f, 0.8f, 0.2f)
         : new Color(0.9f, 0.2f, 0.2f);
 }
@@ -119,48 +117,49 @@ public static class TraitTable
     static readonly Dictionary<Trait, TraitData> _all = new()
     {
         // ── PLANNER ─────────────────────────────────────────
-        [Trait.IdeaBank]        = T("아이디어 뱅크",  TraitPart.Planning, TraitPolarity.Positive, TraitStat.Creativity, TraitStat.Fun),
-        [Trait.IdeaDrought]     = T("아이디어 가뭄",  TraitPart.Planning, TraitPolarity.Risk,     TraitStat.Creativity, TraitStat.Fun),
-        [Trait.Architect]       = T("구조 설계자",    TraitPart.Planning, TraitPolarity.Positive, TraitStat.Precision,  TraitStat.Creativity),
-        [Trait.StructureBreaker]= T("구조 붕괴자",    TraitPart.Planning, TraitPolarity.Risk,     TraitStat.Precision,  TraitStat.Creativity),
-        [Trait.TrendRadar]      = T("트렌드 레이더",  TraitPart.Planning, TraitPolarity.Positive, TraitStat.Creativity, TraitStat.Fun),
-        [Trait.TrendBlind]      = T("유행 불감증",    TraitPart.Planning, TraitPolarity.Risk,     TraitStat.Creativity, TraitStat.Fun),
-        [Trait.GoldenScale]     = T("황금 저울",      TraitPart.Planning, TraitPolarity.Positive, TraitStat.Precision,  TraitStat.Fun),
-        [Trait.BalanceBreaker]  = T("밸런스 폭주",    TraitPart.Planning, TraitPolarity.Risk,     TraitStat.Precision,  TraitStat.Fun),
-        [Trait.NumberDetective] = T("숫자 탐정",      TraitPart.Planning, TraitPolarity.Positive, TraitStat.Precision,  TraitStat.Fun),
-        [Trait.DataIlliterate]  = T("데이터맹",       TraitPart.Planning, TraitPolarity.Risk,     TraitStat.Precision,  TraitStat.Fun),
+        [Trait.IdeaBank]        = T("아이디어 뱅크",  TraitRole.Planning, true,   3, TraitStat.Creativity, TraitStat.Fun),
+        [Trait.IdeaDrought]     = T("아이디어 가뭄",  TraitRole.Planning, false, -3, TraitStat.Creativity, TraitStat.Fun),
+        [Trait.Architect]       = T("구조 설계자",    TraitRole.Planning, true,   3, TraitStat.Precision,  TraitStat.Creativity),
+        [Trait.StructureBreaker]= T("구조 붕괴자",    TraitRole.Planning, false, -3, TraitStat.Precision,  TraitStat.Creativity),
+        [Trait.TrendRadar]      = T("트렌드 레이더",  TraitRole.Planning, true,   2, TraitStat.Creativity, TraitStat.Fun),
+        [Trait.TrendBlind]      = T("유행 불감증",    TraitRole.Planning, false, -2, TraitStat.Creativity, TraitStat.Fun),
+        [Trait.GoldenScale]     = T("황금 저울",      TraitRole.Planning, true,   2, TraitStat.Precision,  TraitStat.Fun),
+        [Trait.BalanceBreaker]  = T("밸런스 폭주",    TraitRole.Planning, false, -2, TraitStat.Precision,  TraitStat.Fun),
+        [Trait.NumberDetective] = T("숫자 탐정",      TraitRole.Planning, true,   1, TraitStat.Precision,  TraitStat.Fun),
+        [Trait.DataIlliterate]  = T("데이터맹",       TraitRole.Planning, false, -1, TraitStat.Precision,  TraitStat.Fun),
 
         // ── PROGRAMMER ──────────────────────────────────────────
-        [Trait.CleanCode]       = T("클린 코드",       TraitPart.Develop, TraitPolarity.Positive, TraitStat.BugControl, TraitStat.TechPower),
-        [Trait.HardCode]        = T("하드 코드",       TraitPart.Develop, TraitPolarity.Risk,     TraitStat.BugControl, TraitStat.TechPower),
-        [Trait.SystemArchitect] = T("아키텍트",        TraitPart.Develop, TraitPolarity.Positive, TraitStat.TechPower,  TraitStat.BugControl),
-        [Trait.SpaghettiCook]   = T("스파게티 요리사", TraitPart.Develop, TraitPolarity.Risk,     TraitStat.TechPower,  TraitStat.BugControl),
-        [Trait.FastDev]         = T("빠른 개발",       TraitPart.Develop, TraitPolarity.Positive, TraitStat.TechPower,  TraitStat.Optimize),
-        [Trait.SlowDev]         = T("느린 개발",       TraitPart.Develop, TraitPolarity.Risk,     TraitStat.TechPower,  TraitStat.Optimize),
-        [Trait.IssueSolver]     = T("이슈 해결사",     TraitPart.Develop, TraitPolarity.Positive, TraitStat.BugControl, TraitStat.Optimize),
-        [Trait.ErrorIgnorer]    = T("에러 방치",       TraitPart.Develop, TraitPolarity.Risk,     TraitStat.BugControl, TraitStat.Optimize),
-        [Trait.NewTechLover]    = T("신기술 선호",     TraitPart.Develop, TraitPolarity.Positive, TraitStat.TechPower,  TraitStat.Optimize),
-        [Trait.OldTech]         = T("구식 기술",       TraitPart.Develop, TraitPolarity.Risk,     TraitStat.TechPower,  TraitStat.Optimize),
+        [Trait.CleanCode]       = T("클린 코드",       TraitRole.Develop, true,   3, TraitStat.BugControl, TraitStat.TechPower),
+        [Trait.HardCode]        = T("하드 코드",       TraitRole.Develop, false, -3, TraitStat.BugControl, TraitStat.TechPower),
+        [Trait.SystemArchitect] = T("아키텍트",        TraitRole.Develop, true,   3, TraitStat.TechPower,  TraitStat.BugControl),
+        [Trait.SpaghettiCook]   = T("스파게티 요리사", TraitRole.Develop, false, -3, TraitStat.TechPower,  TraitStat.BugControl),
+        [Trait.FastDev]         = T("빠른 개발",       TraitRole.Develop, true,   2, TraitStat.TechPower,  TraitStat.Optimize),
+        [Trait.SlowDev]         = T("느린 개발",       TraitRole.Develop, false, -2, TraitStat.TechPower,  TraitStat.Optimize),
+        [Trait.IssueSolver]     = T("이슈 해결사",     TraitRole.Develop, true,   2, TraitStat.BugControl, TraitStat.Optimize),
+        [Trait.ErrorIgnorer]    = T("에러 방치",       TraitRole.Develop, false, -2, TraitStat.BugControl, TraitStat.Optimize),
+        [Trait.NewTechLover]    = T("신기술 선호",     TraitRole.Develop, true,   1, TraitStat.TechPower,  TraitStat.Optimize),
+        [Trait.OldTech]         = T("구식 기술",       TraitRole.Develop, false, -1, TraitStat.TechPower,  TraitStat.Optimize),
 
         // ── ARTIST ──────────────────────────────────────────────
-        [Trait.Original]        = T("독창적",         TraitPart.Art, TraitPolarity.Positive, TraitStat.Visual,      TraitStat.Direction),
-        [Trait.Copycat]         = T("카피캣",         TraitPart.Art, TraitPolarity.Risk,     TraitStat.Visual,      TraitStat.Direction),
-        [Trait.Prolific]        = T("다작형",         TraitPart.Art, TraitPolarity.Positive, TraitStat.Composition, TraitStat.Visual),
-        [Trait.SlowStarter]     = T("슬로우 스타터",  TraitPart.Art, TraitPolarity.Risk,     TraitStat.Composition, TraitStat.Visual),
-        [Trait.HighQuality]     = T("높은 퀄리티",    TraitPart.Art, TraitPolarity.Positive, TraitStat.Visual,      TraitStat.Composition),
-        [Trait.LowQuality]      = T("낮은 퀄리티",    TraitPart.Art, TraitPolarity.Risk,     TraitStat.Visual,      TraitStat.Composition),
-        [Trait.SensoryDir]      = T("감각적 연출",     TraitPart.Art, TraitPolarity.Positive, TraitStat.Direction,   TraitStat.Visual),
-        [Trait.FlatDir]         = T("밋밋한 연출",     TraitPart.Art, TraitPolarity.Risk,     TraitStat.Direction,   TraitStat.Visual),
-        [Trait.GoldenFrame]     = T("황금 구도",       TraitPart.Art, TraitPolarity.Positive, TraitStat.Composition, TraitStat.Direction),
-        [Trait.Cluttered]       = T("화면 산만",       TraitPart.Art, TraitPolarity.Risk,     TraitStat.Composition, TraitStat.Direction),
+        [Trait.Original]        = T("독창적",         TraitRole.Art, true,   3, TraitStat.Visual,      TraitStat.Direction),
+        [Trait.Copycat]         = T("카피캣",         TraitRole.Art, false, -3, TraitStat.Visual,      TraitStat.Direction),
+        [Trait.HighQuality]     = T("높은 퀄리티",    TraitRole.Art, true,   3, TraitStat.Visual,      TraitStat.Composition),
+        [Trait.LowQuality]      = T("낮은 퀄리티",    TraitRole.Art, false, -3, TraitStat.Visual,      TraitStat.Composition),
+        [Trait.Prolific]        = T("다작형",         TraitRole.Art, true,   2, TraitStat.Composition, TraitStat.Visual),
+        [Trait.SlowStarter]     = T("슬로우 스타터",  TraitRole.Art, false, -2, TraitStat.Composition, TraitStat.Visual),
+        [Trait.SensoryDir]      = T("감각적 연출",     TraitRole.Art, true,   2, TraitStat.Direction,   TraitStat.Visual),
+        [Trait.FlatDir]         = T("밋밋한 연출",     TraitRole.Art, false, -2, TraitStat.Direction,   TraitStat.Visual),
+        [Trait.GoldenFrame]     = T("황금 구도",       TraitRole.Art, true,   1, TraitStat.Composition, TraitStat.Direction),
+        [Trait.Cluttered]       = T("화면 산만",       TraitRole.Art, false, -1, TraitStat.Composition, TraitStat.Direction),
     };
 
-    static TraitData T(string name, TraitPart part, TraitPolarity pol,
+    static TraitData T(string name, TraitRole role, bool isPositive, int score,
         TraitStat stat1, TraitStat stat2) => new TraitData
         {
             displayName   = name,
-            part          = part,
-            polarity      = pol,
+            role          = role,
+            isPositive    = isPositive,
+            score         = score,
             affectedStats = new[] { stat1, stat2 },
         };
 

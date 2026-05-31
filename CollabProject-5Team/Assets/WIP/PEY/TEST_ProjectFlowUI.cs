@@ -56,12 +56,12 @@ public class TEST_ProjectFlowUI : MonoBehaviour
             .AddTo(this);
 
         // 진행도 표시: Project.progress 변경 시
-        project.progress
-            .Subscribe(_ =>
-            {
-                progressBar.value = project.ProgressBar;
-            })
-            .AddTo(this);
+        //project.curScore
+        //    .Subscribe(_ =>
+        //    {
+        //        progressBar.value = project.ProgressBar;
+        //    })
+        //    .AddTo(this);
 
         // 프로젝트 종료: Day 텍스트 빨강 & 버튼 비활성화
         project.isFinished
