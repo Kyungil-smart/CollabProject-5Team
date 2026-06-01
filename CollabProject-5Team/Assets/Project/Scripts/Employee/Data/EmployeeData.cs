@@ -50,6 +50,9 @@ public class EmployeeImmutableData : SheetDataSOBase
     public string fireText;  // 해고시 텍스트1
     public string fireText2; // 해고시 텍스트2
 
+    [Header("Art")]
+    public Sprite icon;
+
     public override void SetData(string[] rowData)
     {
         id           = ParseInt(rowData[0]);
