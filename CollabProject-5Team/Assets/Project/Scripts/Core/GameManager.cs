@@ -4,6 +4,7 @@ public class GameManager : MonoBehaviour
 {
     public static GameManager Instance;
 
+    [Header("자동 주입")]
     public PlayerMove player;
 
     #region 싱글톤 설정
