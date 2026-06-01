@@ -1,5 +1,4 @@
 using TMPro;
-using R3;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -18,6 +17,7 @@ public class NPCInteract : MonoBehaviour, IInteractable
     private void Awake()
     {
         emp = GetComponent<Employee>();
+        emp.Init();
     }
 
     private void Start()
@@ -25,24 +25,18 @@ public class NPCInteract : MonoBehaviour, IInteractable
         // 하이어라키 창의 이름이 NPC의 고유 식별자로 등록
         npcName = gameObject.name;
 
+        // NPC 자신의 Employee를 haveEmployees에 등록
+        _EmployeeManager.Instance.haveEmployees.AddEmployee(emp);
+
         //if (questCompleteButton != null)
         //{
         //    questCompleteButton.onClick.AddListener(OnClickQuestComplete);
         //}
-
-        // DialogueManager에서 노드가 준비될 때마다 이 직원의 대사이면 dialogueText 갱신
-        Dialogue.DialogueEvents.OnDialogueReady
-            .Subscribe(payload =>
-            {
-                if (payload.employeeId == emp.so.id)
-                    dialogueText.text = payload.text;
-            })
-            .AddTo(this);
     }
 
     public void OnInteract()
     {
-        int state = DateTimeManager.Instance.GetDialogueState(npcName);
+        int state = DateTimeManager.Instance.GetDialogueState(emp.so.id.ToString());
         
         // 일반 대화
         if (state == 0)
@@ -57,6 +51,7 @@ public class NPCInteract : MonoBehaviour, IInteractable
             Debug.Log("진입");
             Dialogue.DialogueManager.Instance.StartDialogueById(emp);
             DateTimeManager.Instance.MarkTalkedThisWeek(emp);
+            return;
         }
         // 퀘스트 완료 후 대화
         else if (state == 2)
@@ -69,13 +64,8 @@ public class NPCInteract : MonoBehaviour, IInteractable
 
     //private void OnClickQuestComplete()
     //{
-    //    // 퀘스트 완료 버튼을 누른 뒤 해당 상황을 기록
     //    DateTimeManager.Instance.CompleteSpecialDialogue(npcName);
-
-    //    // 버튼 누른 뒤 대사
     //    dialogueText.text = $"{npcName}: Quest Complete, Thanks";
-
-    //    // 퀘스트 완료버튼 숨기기
     //    if (questCompleteButton != null)
     //    {
     //        questCompleteButton.gameObject.SetActive(false);
