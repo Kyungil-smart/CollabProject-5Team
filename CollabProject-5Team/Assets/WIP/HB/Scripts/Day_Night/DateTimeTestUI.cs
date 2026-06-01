@@ -36,10 +36,8 @@ public class DateTimeTestUI : MonoBehaviour
 
     private void Start()
     {
-        // R3구독, 날짜 데이터는 값이 바뀔 떄마다 자동으로 UI갱신
-        DateTimeManager.Instance.currentWeek.Subscribe(_ => UpdateCalendarText()).AddTo(this);
-        DateTimeManager.Instance.currentDay.Subscribe(_ => UpdateCalendarText()).AddTo(this);
-        DateTimeManager.Instance.currentTime.Subscribe(_ => UpdateCalendarText()).AddTo(this);
+        //R3구독, 날짜 데이터는 값이 바뀔 떄마다 자동으로 UI갱신
+        DateTimeManager.Instance.day.Subscribe(_ => UpdateCalendarText()).AddTo(this);
 
         // 버튼 클릭 (업무 시작 버튼)
         workStartButton.onClick.AddListener(() =>
@@ -82,10 +80,12 @@ public class DateTimeTestUI : MonoBehaviour
     private void UpdateCalendarText()
     {
         int week = DateTimeManager.Instance.currentWeek.Value;
-        string day = DateTimeManager.Instance.currentDay.Value.ToString();
-        string time = DateTimeManager.Instance.currentTime.Value.ToString();
+        //string day = DateTimeManager.Instance.currentDay.Value.ToString();
+        //string time = DateTimeManager.Instance.currentTime.Value.ToString();
 
-        dateText.text = $"Week {week} {day} ({time})";
+        string text = DateTimeManager.GetDateString(DateTimeManager.Instance.day.Value);
+
+        dateText.text = $"{text} ({week}주차)";
     }
 
     private void UpdateUI()

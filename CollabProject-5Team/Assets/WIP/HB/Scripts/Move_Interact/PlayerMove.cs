@@ -22,6 +22,7 @@ public class PlayerMove : MonoBehaviour
 
     private void Start()
     {
+        GameManager.Instance.InjectPlayer(this);
         mainCamera = Camera.main;
 
         agent = GetComponent<NavMeshAgent>();

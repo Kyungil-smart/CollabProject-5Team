@@ -159,7 +159,7 @@ public class Project : MonoBehaviour
     {
         if (isFinished.Value) return;
 
-        Debug.Log($"{userNamed}: [Day {day}] {Company.GetDateString(day)}종료"); // 날짜 로그 표시중
+        Debug.Log($"{userNamed}: [Day {day}] {DateTimeManager.GetDateString(day)}종료"); // 날짜 로그 표시중
         day++;
     }
 

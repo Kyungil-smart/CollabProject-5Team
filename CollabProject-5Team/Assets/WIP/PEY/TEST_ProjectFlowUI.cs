@@ -22,8 +22,8 @@ public class TEST_ProjectFlowUI : MonoBehaviour
     {
         _reportUI = GetComponent<TEST_ReportUI>();
 
-        var company = Company.Instance;
-        var project = company.curProject;
+        var company = DateTimeManager.Instance;
+        var project = Company.Instance.curProject;
 
         // Day 텍스트: Company.day 변경 시 자동 갱신
         company.day
