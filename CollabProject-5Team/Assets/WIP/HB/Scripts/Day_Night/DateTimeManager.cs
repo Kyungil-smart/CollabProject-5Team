@@ -1,5 +1,5 @@
-using System.Collections.Generic;
 using R3;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class DateTimeManager : MonoBehaviour
@@ -7,11 +7,11 @@ public class DateTimeManager : MonoBehaviour
     // 어디서나 부를 수 있도록 싱글톤
     public static DateTimeManager Instance { get; private set; }
 
-
     [Header("현재 게임 날짜 상태(R3 반응형 변수)")]
     public ReactiveProperty<int> currentWeek = new(1);
     public ReactiveProperty<DayOfWeek> currentDay = new(DayOfWeek.Monday);
     public ReactiveProperty<TimeOfDay> currentTime = new(TimeOfDay.Day);
+    public ReactiveProperty<int> day = new(0); // 영업일 기준 지난 날짜
 
     [Header("오늘 하루 상태 값")]
     public bool isWorkCompleted = false;        // 일일 업무 완료 여부
@@ -20,19 +20,15 @@ public class DateTimeManager : MonoBehaviour
     // 이번 주에 대화한 직원 ID 목록 (방치 패널티 판정용)
     private HashSet<Employee> _talkedEmployeesThisWeek = new HashSet<Employee>();
 
+    #region 싱글톤 설정
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+    public static void Init() => Instance = null;
 
     private void Awake()
     {
-        // 중복 방지, 싱글톤 초기화
-        if (Instance == null)
-        {
-            Instance = this;
-            DontDestroyOnLoad(gameObject);
-        }
-        else
-        {
-            Destroy(gameObject);
-        }
+        if (Instance != null && Instance != this) { Destroy(gameObject); return; }
+        Instance = this; DontDestroyOnLoad(gameObject);
+    #endregion
     }
 
     private void Start()
@@ -63,6 +59,7 @@ public class DateTimeManager : MonoBehaviour
     public void CompleteDayWork()
     {
         isWorkCompleted = true;
+        Debug.Log("[DTM] 임무 완료");
     }
 
     /// <summary>
@@ -70,7 +67,7 @@ public class DateTimeManager : MonoBehaviour
     /// </sumary>
     public int GetDialogueState(string npcName)
     {
-        // 업무를 마치지 않았다면 일반 대화만 가능
+        // 업무를 마치지 않았다면 대화 불가
         if (!isWorkCompleted)
         {
             return 0;
@@ -95,7 +92,6 @@ public class DateTimeManager : MonoBehaviour
         e.hasTalkedThisWeek = true;
     }
 
-    /// <summary>
     /// <summary>
     /// NPC와 특별 대화를 마쳤다면 해당 NPC를 저장함
     /// </summary>
@@ -123,6 +119,8 @@ public class DateTimeManager : MonoBehaviour
         {
             currentTime.Value = TimeOfDay.Night;
 
+            currentWeek.Value++;
+            ProgressDay();
             ResetDayStatus();
         }
         // 금요일 밤에 퇴근하면 다음 주 월요일 낮으로 전환
@@ -139,7 +137,6 @@ public class DateTimeManager : MonoBehaviour
             }
 
             // 1주차씩 상승
-            currentWeek.Value++;
             currentDay.Value = DayOfWeek.Monday;
             currentTime.Value = TimeOfDay.Day;
 
@@ -154,7 +151,48 @@ public class DateTimeManager : MonoBehaviour
             // 낮으로
             currentTime.Value = TimeOfDay.Day;
 
+            ProgressDay();
             ResetDayStatus();
         }
     }
+
+
+    #region 날짜 진행
+    public void ProgressDay()
+    {
+        day.Value++;
+        foreach (var project in Company.Instance.projects)
+            project.ProgressDay();
+
+        // 금요일 밤:
+        if (day.Value % 5 == 0) ProgressNight();
+    }
+    public void ProgressNight()
+    {
+        foreach (var project in Company.Instance.projects) project.ProgressNight();
+    }
+
+    static readonly string[] WeekDayNames = { "월요일", "화요일", "수요일", "목요일", "금요일" };
+    static readonly int[] MonthDays = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
+    public static string GetWeekDayName(int day) => WeekDayNames[day % 5];
+
+    // 영업일(day) 기준으로 "N월 N일 요일" 문자열 반환
+    // day=0 → 1월 1일 월요일, day=4 → 1월 5일 금요일, day=5 → 1월 8일 월요일
+    public static string GetDateString(int day)
+    {
+        int week = day / 5;
+        int dayOfWeek = day % 5;
+        int calendarDay = day + week * 2 + 1; // 1-based 달력 날짜 (주말 2일씩 추가)
+
+        int month = 1;
+        int remaining = calendarDay;
+        while (month <= 12 && remaining > MonthDays[month - 1])
+        {
+            remaining -= MonthDays[month - 1];
+            month++;
+        }
+        return $"{month}월 {remaining}일 {WeekDayNames[dayOfWeek]}";
+    }
+    #endregion
+
 }
