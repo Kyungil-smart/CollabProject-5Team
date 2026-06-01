@@ -10,7 +10,6 @@ namespace Dialogue
 
         private bool _isDialogueRunning;
         private int _currentEmployeeId;
-        private string _currentNpcName;
         private EmployeeDialogueState _currentState;
 
         private DialoguePoolEntrySO _currentPoolEntry;
@@ -31,10 +30,10 @@ namespace Dialogue
         {
             EmployeeDialogueState state = GetDialogueState(emp.MutableData.fatigue, emp.MutableData.desire);
 
-            StartDialogue(emp.so.id, emp.so.Name, state);
+            StartDialogue(emp.so.id, state);
         }
 
-        public void StartDialogue(int employeeId, string npcName, EmployeeDialogueState state)
+        public void StartDialogue(int employeeId, EmployeeDialogueState state)
         {
             if (_isDialogueRunning) return;
 
@@ -42,13 +41,12 @@ namespace Dialogue
             if (poolEntry == null)
             {
                 DialogueEvents.NotifyDialogueEnded(employeeId);
-                Debug.Log("[DM] 다이얼 로그 종료");
+                Debug.Log($"[DM] 풀항목없음으로 종료 — id={employeeId}, state={state}");
                 return;
             }
 
             _isDialogueRunning = true;
             _currentEmployeeId = employeeId;
-            _currentNpcName = npcName;
             _currentState = state;
             _currentPoolEntry = poolEntry;
             _chosenBranch = 0;
@@ -87,7 +85,7 @@ namespace Dialogue
 
             if (!highFatigue && !lowMotivation) return EmployeeDialogueState.Normal;
             if ( highFatigue &&  lowMotivation) return EmployeeDialogueState.Critical;
-            return EmployeeDialogueState.Normal;
+            return EmployeeDialogueState.Caution;
         }
 
         void ShowNode(int nodeId)
@@ -95,7 +93,7 @@ namespace Dialogue
             if (nodeId == EndNodeId || nodeId == 0)
             {
                 EndDialogue();
-                Debug.Log("[DM] 다이얼 로그 종료");
+                Debug.Log($"[DM] 노드ID종료 — nodeId={nodeId}");
                 return;
             }
 
@@ -134,7 +132,7 @@ namespace Dialogue
                 DialogueEffectParser.Apply(effect, _currentEmployeeId);
             }
 
-            DateTimeManager.Instance.CompleteSpecialDialogue(_currentNpcName);
+            DateTimeManager.Instance.CompleteSpecialDialogue(_currentEmployeeId.ToString());
 
             DialogueEvents.NotifyDialogueEnded(_currentEmployeeId);
 
