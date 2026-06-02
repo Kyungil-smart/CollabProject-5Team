@@ -6,20 +6,19 @@ using UnityEngine.UI;
 
 namespace Dialogue
 {
-    /// <summary> 대화 시스템 테스트용 간단 팝업 UI </summary>
     public class TEST_DialoguePopupUI : MonoBehaviour
     {
         [Header("대사 텍스트")]
         [SerializeField] private TextMeshProUGUI _dialogueText;
 
-        [Header("선택지 버튼 (isChoice=true, 타이핑 완료 후 표시)")]
+        [Header("선택지 버튼")]
         [SerializeField] private Button          _choiceBtn01;
         [SerializeField] private Button          _choiceBtn02;
         [SerializeField] private TextMeshProUGUI _choiceText01;
         [SerializeField] private TextMeshProUGUI _choiceText02;
 
-        [Header("PlayerMove 연결")]
-        [SerializeField] private PlayerMove _playerMove;
+        [Header("초상화 (유저 대사일 때 숨김)")]
+        [SerializeField] private Image _portrait;
 
         [Header("타이핑 속도 (초/글자)")]
         [SerializeField] private float _charInterval = 0.03f;
@@ -49,10 +48,12 @@ namespace Dialogue
         private void Update()
         {
             if (!gameObject.activeSelf) return;
-
             if (_isChoiceNode) return;
-
-            if (_skipThisFrame) { _skipThisFrame = false; return; }
+            if (_skipThisFrame)
+            {
+                _skipThisFrame = false;
+                return;
+            }
 
             bool touched = Input.GetMouseButtonDown(0);
             if (!touched && Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Began)
@@ -72,6 +73,36 @@ namespace Dialogue
             _isChoiceNode = payload.isChoice;
 
             HideChoiceButtons();
+
+            if (_portrait != null)
+            {
+                if (payload.isUser)
+                {
+                    _portrait.gameObject.SetActive(false);
+                }
+                else
+                {
+                    Employee emp = _EmployeeManager.Instance.haveEmployees.haveEmployeeList
+                        .Find(e => e.so.id == payload.employeeId);
+
+                    if (emp != null)
+                    {
+                        Sprite portrait = payload.state switch
+                        {
+                            EmployeeDialogueState.Normal   => emp.so.iconNormal,
+                            EmployeeDialogueState.Caution  => emp.so.iconCaution,
+                            EmployeeDialogueState.Critical => emp.so.iconCritical,
+                            _                              => emp.so.iconNormal,
+                        };
+                        _portrait.sprite = portrait;
+                        _portrait.gameObject.SetActive(portrait != null);
+                    }
+                    else
+                    {
+                        _portrait.gameObject.SetActive(false);
+                    }
+                }
+            }
 
             if (_isChoiceNode)
             {
@@ -138,8 +169,7 @@ namespace Dialogue
             }
             _dialogueText.ShowAll();
             gameObject.SetActive(false);
-            _playerMove?.CloseInteractionUI();
+            GameManager.Instance.player?.CloseInteractionUI();
         }
-
     }
 }

@@ -51,6 +51,7 @@ public class NPCInteract : MonoBehaviour, IInteractable
             Debug.Log("진입");
             Dialogue.DialogueManager.Instance.StartDialogueById(emp);
             DateTimeManager.Instance.MarkTalkedThisWeek(emp);
+            return;
         }
         // 퀘스트 완료 후 대화
         else if (state == 2)

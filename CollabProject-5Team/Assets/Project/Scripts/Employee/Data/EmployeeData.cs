@@ -51,7 +51,10 @@ public class EmployeeImmutableData : SheetDataSOBase
     public string fireText2; // 해고시 텍스트2
 
     [Header("Art")]
-    public Sprite icon;
+    public Sprite icon; // 기본 초상화
+    public Sprite iconNormal; // Normal 상태 초상화
+    public Sprite iconCaution; // Caution 상태 초상화
+    public Sprite iconCritical; // Critical 상태 초상화
 
     public override void SetData(string[] rowData)
     {
