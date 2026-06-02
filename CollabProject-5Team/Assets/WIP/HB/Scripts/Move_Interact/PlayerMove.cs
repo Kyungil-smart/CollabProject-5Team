@@ -7,6 +7,7 @@ public class PlayerMove : MonoBehaviour
 {
     private NavMeshAgent agent;
     private Camera mainCamera;
+    private Animator anim;
 
     [Header("레이어 설정")]
     [SerializeField] private LayerMask interactableLayer;   // 상호작용 레이어
@@ -25,6 +26,8 @@ public class PlayerMove : MonoBehaviour
         GameManager.Instance.InjectPlayer(this);
         mainCamera = Camera.main;
 
+        anim = GetComponent<Animator>();
+
         agent = GetComponent<NavMeshAgent>();
 
         // 상호작용 오브젝트쪽으로 이동 후 멈출 때 여유거리
@@ -33,6 +36,8 @@ public class PlayerMove : MonoBehaviour
 
     private void Update()
     {
+        UpdateAnimation();
+
         // UI창이 열려있다면 터치 이동로직을 무시
         if (hasInteracted) return;
 
@@ -137,5 +142,26 @@ public class PlayerMove : MonoBehaviour
         }
 
         return false;
+    }
+
+    // NavMeshAgent의 속도를 애니메이터에 전달
+    private void UpdateAnimation()
+    {
+        if (agent != null && anim != null)
+        {
+            // 정지 상태면 0에 가깝고, 최고 속도로 달리면 agent.speed 값
+            float currentSpeed = agent.velocity.magnitude;
+
+            // 애니메이터 파라미터의 "Speed"에 속도를 전달
+            anim.SetFloat("Speed", currentSpeed);
+        }
+    }
+
+    public void WorkCompleteAnim()
+    {
+        if(anim != null)
+        {
+            anim.SetTrigger("IsWorkDone");
+        }
     }
 }
