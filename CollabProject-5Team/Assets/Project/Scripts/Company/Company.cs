@@ -113,7 +113,6 @@ public class Company : MonoBehaviour
         }
         return true;
     }
-    #endregion
 
     // 프로젝트 완료 처리
     public void CompleteProject(Project project)
@@ -127,7 +126,7 @@ public class Company : MonoBehaviour
             stabilityScore  = Mathf.RoundToInt(project.stabilityScore),
             charmScore      = Mathf.RoundToInt(project.charmScore),
             grade           = project.Grade,
-            // TODO: 등급/규모에 따른 평판·유지비·데일리 캐시 계산 로직 추가
+            // TODO: 평판·유지비·데일리 캐시 계산 로직 추가
             popularity      = 0,
             dailyCost       = 0,
             dailyProfit     = 0,
@@ -139,4 +138,5 @@ public class Company : MonoBehaviour
         if (curProject == project)
             curProject = projects.Count > 0 ? projects[0] : null;
     }
+    #endregion
 }

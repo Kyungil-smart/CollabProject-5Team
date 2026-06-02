@@ -20,10 +20,8 @@ public class ProjectCompleted
 
     // 완료 데이터
     public char grade;
-    public int popularity; // 평판
+    public int popularity; // 평점
     public int dailyCost; // 유지비
     public int dailyProfit; // 데일리 캐시
 
-    // 플래그
-    public bool isReady; // false면 출시 대기상태
 }
