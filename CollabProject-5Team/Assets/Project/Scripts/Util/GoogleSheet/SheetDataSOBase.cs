@@ -44,18 +44,15 @@ public abstract class SheetDataSOBase : ScriptableObject
         if (upperStr.Contains("E")) result |= MbtiFlags.E;
         return result;
     }
-    // 해시태그는 시트에서 삭제됨
-    //protected HashTags ConvertHashTagsStringToEnum(string tagsStr)
-    //{
-    //    HashTags result = HashTags.None;
-    //    string[] tags = tagsStr.Split(',');
-    //    foreach (var tag in tags)
-    //    {
-    //        if (System.Enum.TryParse(tag.Trim(), true, out HashTags parsedTag))
-    //            result |= parsedTag;
-    //    }
-    //    return result;
-    //}
+
+    // 한글 특성명 문자열을 Trait enum으로 변환.
+    protected Trait? ParseKoreanTrait(string koreanName)
+    {
+        if (string.IsNullOrWhiteSpace(koreanName)) return null;
+        if (TraitTable.NameMap.TryGetValue(koreanName.Trim(), out var trait)) return trait;
+        Debug.LogWarning($"[TraitTable] <b>{row}행</b> 알 수 없는 특성명: '{koreanName}'");
+        return null;
+    }
 
     private void LogWarn(string raw, string expectedType)
     {

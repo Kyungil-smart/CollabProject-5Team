@@ -22,6 +22,12 @@ public class Company : MonoBehaviour
 
     public List<Project> projects = new(); // 현재 진행중인 프로젝트들
     public Project curProject; // 메인 프로젝트 (UI에 집중적으로 표시)
+    public List<ProjectCompleted> completedProjects = new(); // 완료된 프로젝트 목록
+
+    // 평판 / 유지비 / 데일리 캐시
+    public int reputation;   // 평판
+    public int dailyCost;    // 유지비 (진행 중 프로젝트 합산)
+    public int dailyProfit;  // 데일리 캐시 (완료 프로젝트 합산)
 
     #region 싱글톤 설정
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
@@ -106,6 +112,31 @@ public class Company : MonoBehaviour
             return false;
         }
         return true;
+    }
+
+    // 프로젝트 완료 처리
+    public void CompleteProject(Project project)
+    {
+        var record = new ProjectCompleted
+        {
+            projectID       = project.Id,
+            projectName     = project.userNamed.Value,
+            scale           = project.Scale,
+            qualityScore    = Mathf.RoundToInt(project.qualityScore),
+            stabilityScore  = Mathf.RoundToInt(project.stabilityScore),
+            charmScore      = Mathf.RoundToInt(project.charmScore),
+            grade           = project.Grade,
+            // TODO: 평판·유지비·데일리 캐시 계산 로직 추가
+            popularity      = 0,
+            dailyCost       = 0,
+            dailyProfit     = 0,
+        };
+
+        completedProjects.Add(record);
+        projects.Remove(project);
+
+        if (curProject == project)
+            curProject = projects.Count > 0 ? projects[0] : null;
     }
     #endregion
 }

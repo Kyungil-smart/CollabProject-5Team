@@ -164,4 +164,21 @@ public static class TraitTable
         };
 
     public static TraitData Get(Trait id) => _all[id];
+
+
+    // 한글 displayName → Trait 파싱
+    static Dictionary<string, Trait> _nameMap;
+    public static Dictionary<string, Trait> NameMap
+    {
+        get
+        {
+            if (_nameMap == null)
+            {
+                _nameMap = new Dictionary<string, Trait>();
+                foreach (var kv in _all)
+                    _nameMap[kv.Value.displayName] = kv.Key;
+            }
+            return _nameMap;
+        }
+    }
 }

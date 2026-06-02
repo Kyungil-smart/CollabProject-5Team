@@ -11,7 +11,7 @@ public class TEST_ReportUI : MonoBehaviour
     [Header("패널")]
     [SerializeField] GameObject reportSummaryPannel;
     [SerializeField] GameObject reportDetailPannel;
-    [SerializeField] GameObject dayPannel; // 낮 패널 (외부 연결)
+    //[SerializeField] GameObject dayPannel; // 낮 패널 (외부 연결)
 
     [Header("ReportSummary 패널 내부")]
     [SerializeField] TMP_Text summaryRoleText;   // "Planning Report" 등 파트 제목
@@ -35,6 +35,17 @@ public class TEST_ReportUI : MonoBehaviour
     List<Report> _currentList; // 현재 역할의 보고서 목록
     int          _reportIndex; // 현재 역할 내에서 보고 있는 보고서 인덱스
     Report       _viewingReport;
+
+    private void Start()
+    {
+        // 보고서 생성이 완료된 순간 UI 시작
+        Project.OnReportDraftsReady += StartReportFlow;
+    }
+
+    private void OnDestroy()
+    {
+        Project.OnReportDraftsReady -= StartReportFlow;
+    }
 
     // ── 외부에서 호출 ────────────────────────────────────────
 
@@ -61,7 +72,7 @@ public class TEST_ReportUI : MonoBehaviour
 
         if (_currentList == null || _currentList.Count == 0)
         {
-            // 해당 역할 보고서 없으면 다음 역할로 스킵
+            Debug.Log("[ReportUI] 해당하는 보고서 없음 ");
             _roleIndex++;
             ShowSummaryForCurrentRole();
             return;
@@ -72,7 +83,7 @@ public class TEST_ReportUI : MonoBehaviour
 
         reportSummaryPannel.SetActive(true);
         reportDetailPannel.SetActive(false);
-        dayPannel?.SetActive(false);
+        //dayPannel?.SetActive(false);
     }
 
     // Summary 패널 내용을 현재 _reportIndex 보고서로 갱신 (재활용 가능)
@@ -134,7 +145,7 @@ public class TEST_ReportUI : MonoBehaviour
 
         reportSummaryPannel.SetActive(false);
         reportDetailPannel.SetActive(false);
-        dayPannel?.SetActive(true);
+        //dayPannel?.SetActive(true);
     }
 
     // ── 헬퍼 ─────────────────────────────────────────────────
