@@ -1,11 +1,12 @@
 using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
 
 public class NPCInteract : MonoBehaviour, IInteractable
 {
     Employee emp;
     private string npcName;
+
+    private Animator anim;
 
     [Header("NPC대화 UI창")]
     [SerializeField] private GameObject interactionUI;
@@ -18,6 +19,8 @@ public class NPCInteract : MonoBehaviour, IInteractable
     {
         emp = GetComponent<Employee>();
         emp.Init();
+
+        anim = GetComponent<Animator>();
     }
 
     private void Start()
@@ -36,6 +39,11 @@ public class NPCInteract : MonoBehaviour, IInteractable
 
     public void OnInteract()
     {
+        if (anim != null)
+        {
+            anim.SetTrigger("Greet");
+        }
+
         int state = DateTimeManager.Instance.GetDialogueState(emp.so.id.ToString());
         
         // 일반 대화
