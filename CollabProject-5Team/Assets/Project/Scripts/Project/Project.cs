@@ -174,6 +174,9 @@ public class Project : MonoBehaviour
     }
 
     #region 보고서 부분
+    // 보고서 생성 완료 시 발행되는 델리게이트
+    public static event Action OnReportDraftsReady;
+
     // 투입된 직원 데이터를 기반으로 보고서 생성 
     public void GenerateReportDrafts()
     {
@@ -185,6 +188,7 @@ public class Project : MonoBehaviour
         ReportPolicy.GenerateReportForRole(this, arts);
 
         Debug.Log($"[{userNamed.Value}] 보고서 생성 완료: {pendingReports.Count}건");
+        OnReportDraftsReady?.Invoke();
     }
 
     // UI에서 파트당 1개 선택 시 호출
@@ -253,5 +257,6 @@ public class Project : MonoBehaviour
         isFinished.Value = true;
         Debug.Log($"[{userNamed.Value}] 프로젝트 완료! ({nightCount}주차) | 등급={Grade}\n" +
                   $"  최종 → 완성도={qualityScore:F1} 안정성={stabilityScore:F1} 매력도={charmScore:F1} | 평균={CurScore:F1}");
+        Company.Instance.CompleteProject(this);
     }
 }

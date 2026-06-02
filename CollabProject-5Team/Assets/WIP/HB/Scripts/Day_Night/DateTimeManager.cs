@@ -103,16 +103,18 @@ public class DateTimeManager : MonoBehaviour
         }
     }
 
+    #region 날짜 진행
     /// <summary>
     /// 퇴근 버튼을 누르면 다음 날짜를 계산하는 로직
     /// </summary>
+    [ContextMenu("퇴근 처리")]
     public void OnClickEndDayButton()
     {
         // 업무가 끝나지 않았다면 퇴근 불가
-        if (!isWorkCompleted)
-        {
-            return;
-        }
+        //if (!isWorkCompleted)
+        //{
+        //    return;
+        //}
 
         // 금요일 낮에 퇴근하면 금요일 밤으로 전환
         if (currentDay.Value == DayOfWeek.Friday && currentTime.Value == TimeOfDay.Day)
@@ -122,6 +124,7 @@ public class DateTimeManager : MonoBehaviour
             currentWeek.Value++;
             ProgressDay();
             ResetDayStatus();
+
         }
         // 금요일 밤에 퇴근하면 다음 주 월요일 낮으로 전환
         else if (currentDay.Value == DayOfWeek.Friday && currentTime.Value == TimeOfDay.Night)
@@ -156,8 +159,6 @@ public class DateTimeManager : MonoBehaviour
         }
     }
 
-
-    #region 날짜 진행
     public void ProgressDay()
     {
         day.Value++;
