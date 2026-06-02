@@ -108,6 +108,7 @@ namespace Dialogue
                 state = _currentState,
                 text = node.text,
                 isChoice = node.isChoice,
+                isUser = node.isUser,
                 choice01 = node.choice01,
                 choice02 = node.choice02,
             });

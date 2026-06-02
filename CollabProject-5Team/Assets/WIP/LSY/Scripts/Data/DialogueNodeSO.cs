@@ -8,6 +8,8 @@ namespace Dialogue
     {
         public int nextId; // 선택지 없을 때 자동 이동할 ID (0이면 종료)
         public bool isChoice; // 선택지 출력 단계 여부
+        public string desc; // 화자 ("흰 고양이", "삼색 고양이", "근엄 고양이", "유저")
+        public bool   isUser => desc == "유저"; // 유저 대사 여부
         [TextArea(2, 5)]
         public string text; // 대사 텍스트
 
@@ -24,11 +26,12 @@ namespace Dialogue
             id = ParseInt(data[0]);
             nextId = ParseInt(data[1]);
             isChoice = ParseBool(data[2]);
-            text = data[3].Trim();
-            choice01 = data[4].Trim();
-            nextId01 = ParseInt(data[5]);
-            choice02 = data[6].Trim();
-            nextId02 = ParseInt(data[7]);
+            desc = data[3].Trim(); // 화자
+            text = data[4].Trim();
+            choice01 = data[5].Trim();
+            nextId01 = ParseInt(data[6]);
+            choice02 = data[7].Trim();
+            nextId02 = ParseInt(data[8]);
         }
     }
 }
