@@ -51,6 +51,7 @@ public enum Trait
     // PLANNER - DataAnalysis(데이터 분석)
     NumberDetective,  // 숫자 탐정
     DataIlliterate,   // 데이터맹
+    OverworkArtisan,  // 과몰입 장인
 
     // PROGRAMMER - CodeQuality(코드 품질)
     CleanCode,        // 클린 코드
@@ -71,6 +72,7 @@ public enum Trait
     // PROGRAMMER - TechPreference(기술 성향)
     NewTechLover,     // 신기술 선호
     OldTech,          // 구식 기술
+    HumanDebugger,    // 인간 디버거
 
     // ARTIST - CreativeStyle(창작 성향)
     Original,         // 독창적
@@ -91,6 +93,7 @@ public enum Trait
     // ARTIST - Composition(구도 감각)
     GoldenFrame,      // 황금 구도
     Cluttered,        // 화면 산만
+    DetailObsession,  // 디테일 집착증
 }
 
 // ── 특성 데이터
@@ -127,6 +130,7 @@ public static class TraitTable
         [Trait.BalanceBreaker]  = T("밸런스 폭주",    TraitRole.Planning, false, -2, TraitStat.Precision,  TraitStat.Fun),
         [Trait.NumberDetective] = T("숫자 탐정",      TraitRole.Planning, true,   1, TraitStat.Precision,  TraitStat.Fun),
         [Trait.DataIlliterate]  = T("데이터맹",       TraitRole.Planning, false, -1, TraitStat.Precision,  TraitStat.Fun),
+        [Trait.OverworkArtisan] = T("과몰입 장인",   TraitRole.Planning, true,   1, TraitStat.Precision, TraitStat.Fun),
 
         // ── PROGRAMMER ──────────────────────────────────────────
         [Trait.CleanCode]       = T("클린 코드",       TraitRole.Develop, true,   3, TraitStat.BugControl, TraitStat.TechPower),
@@ -139,6 +143,7 @@ public static class TraitTable
         [Trait.ErrorIgnorer]    = T("에러 방치",       TraitRole.Develop, false, -2, TraitStat.BugControl, TraitStat.Optimize),
         [Trait.NewTechLover]    = T("신기술 선호",     TraitRole.Develop, true,   1, TraitStat.TechPower,  TraitStat.Optimize),
         [Trait.OldTech]         = T("구식 기술",       TraitRole.Develop, false, -1, TraitStat.TechPower,  TraitStat.Optimize),
+        [Trait.HumanDebugger]   = T("인간 디버거",    TraitRole.Develop, true,   1, TraitStat.TechPower,  TraitStat.Optimize),
 
         // ── ARTIST ──────────────────────────────────────────────
         [Trait.Original]        = T("독창적",         TraitRole.Art, true,   3, TraitStat.Visual,      TraitStat.Direction),
@@ -151,6 +156,7 @@ public static class TraitTable
         [Trait.FlatDir]         = T("밋밋한 연출",     TraitRole.Art, false, -2, TraitStat.Direction,   TraitStat.Visual),
         [Trait.GoldenFrame]     = T("황금 구도",       TraitRole.Art, true,   1, TraitStat.Composition, TraitStat.Direction),
         [Trait.Cluttered]       = T("화면 산만",       TraitRole.Art, false, -1, TraitStat.Composition, TraitStat.Direction),
+        [Trait.DetailObsession] = T("디테일 집착증", TraitRole.Art, false, -1, TraitStat.Composition, TraitStat.Direction),
     };
 
     static TraitData T(string name, TraitRole role, bool isPositive, int score,
