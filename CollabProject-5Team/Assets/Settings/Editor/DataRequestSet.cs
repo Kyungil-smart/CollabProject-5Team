@@ -15,7 +15,7 @@ public class DataRequestSet : ScriptableObject
     public List<SheetDataSOBase> targetSOList;
     public Dictionary<int, SheetDataSOBase> targetSODic = new();
     public bool renameSOBySheetName; // 이름 컬럼 기준으로 에셋 파일명 변경
-    public int startRow = 6; // 데이터 시작 행
+    public int startRow = 4; // 데이터 시작 행
 
     public static DataRequestSet Get(int index)
     {
