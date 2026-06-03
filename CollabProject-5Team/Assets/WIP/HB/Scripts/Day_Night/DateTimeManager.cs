@@ -108,7 +108,7 @@ public class DateTimeManager : MonoBehaviour
         }
     }
 
-    #region 날짜 진행
+    #region 회사=>프로젝트 날짜 진행 연동
     /// <summary>
     /// 퇴근 버튼을 누르면 다음 날짜를 계산하는 로직
     /// </summary>
@@ -127,13 +127,6 @@ public class DateTimeManager : MonoBehaviour
             currentTime.Value = TimeOfDay.Night;
 
             currentWeek.Value++;
-            ProgressDay();
-            ResetDayStatus();
-
-        }
-        // 금요일 밤에 퇴근하면 다음 주 월요일 낮으로 전환
-        else if (currentDay.Value == DayOfWeek.Friday && currentTime.Value == TimeOfDay.Night)
-        {
             // 방치 패널티: 이번 주 미대화 직원 충성도 -5, 피로도 +10
             foreach (Employee e in Company.Instance.curProject.GetAllEmployees())
             {
@@ -143,13 +136,16 @@ public class DateTimeManager : MonoBehaviour
                     e.MutableData.fatigue += 10;
                 }
             }
-
+            ResetWeekStatus();
+            ResetDayStatus();
+            ProgressDay();
+        }
+        // 금요일 밤에 퇴근하면 다음 주 월요일 낮으로 전환
+        else if (currentDay.Value == DayOfWeek.Friday && currentTime.Value == TimeOfDay.Night)
+        {
             // 1주차씩 상승
             currentDay.Value = DayOfWeek.Monday;
             currentTime.Value = TimeOfDay.Day;
-
-            ResetDayStatus();
-            ResetWeekStatus();
         }
         // 월~목 낮에 퇴근하면 다음 날 낮으로
         else
@@ -164,11 +160,15 @@ public class DateTimeManager : MonoBehaviour
         }
     }
 
+    // 내부적으로 영업일을 진행시킴
     public void ProgressDay()
     {
         day.Value++;
         foreach (var project in Company.Instance.projects)
             project.ProgressDay();
+
+        // 완료 프로젝트 일일 수익 정산
+        Company.Instance.TickDailyCompletedProjects();
 
         // 금요일 밤:
         if (day.Value % 5 == 0) ProgressNight();
@@ -176,6 +176,9 @@ public class DateTimeManager : MonoBehaviour
     public void ProgressNight()
     {
         foreach (var project in Company.Instance.projects) project.ProgressNight();
+
+        // 완료 프로젝트 주간 정산
+        Company.Instance.TickWeeklyCompletedProjects();
     }
 
     static readonly string[] WeekDayNames = { "월요일", "화요일", "수요일", "목요일", "금요일" };

@@ -46,10 +46,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Name: NyanNyanComp
-  gold: 1500
+  gold: 10000
   level: 1
   projects: []
   curProject: {fileID: 0}
+  completedProjects: []
+  popularity: 0
+  reputation: 0
+  dailyCost: 0
+  dailyProfit: 0
 --- !u!1 &4693279123363449302
 GameObject:
   m_ObjectHideFlags: 0
@@ -98,7 +103,14 @@ MonoBehaviour:
   day: 0
   plannings:
   - {fileID: 0}
-  develops:
-  - {fileID: 0}
   arts:
   - {fileID: 0}
+  programmer: []
+  qualityScore: 0
+  stabilityScore: 0
+  charmScore: 0
+  pendingReports: []
+  nightCount: 0
+  genre: 
+  artStyle: 
+  engine: 
