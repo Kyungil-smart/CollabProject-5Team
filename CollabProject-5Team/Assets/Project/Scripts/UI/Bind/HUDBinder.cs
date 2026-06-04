@@ -32,6 +32,14 @@ public class HUDBinder : MonoBehaviour, IBindable<DateTimeManager>
         _view.OnWorkStartClicked
             .Subscribe(_ => data.OnClickEndDayButton())
             .AddTo(this);
+
+        // 밤 종료 버튼 클릭시
+        _view.OnNightQuitClicked
+            .Subscribe(_ =>
+            {
+                data.OnClickEndDayButton();
+                _view.SwitchToDay();
+            }).AddTo(this);
     }
 
     private void Awake()
@@ -39,8 +47,17 @@ public class HUDBinder : MonoBehaviour, IBindable<DateTimeManager>
         _view = GetComponent<HUDView>();
     }
 
+    public void SwitchToNight()
+    {
+        _view.SwitchToNight(); // 임시로 로딩없이
+    }
     private void Start()
     {
         Bind(DateTimeManager.Instance);
+        DateTimeManager.OnNightLoaded += SwitchToNight;
+    }
+    private void OnDestroy()
+    {
+        DateTimeManager.OnNightLoaded -= SwitchToNight;
     }
 }
