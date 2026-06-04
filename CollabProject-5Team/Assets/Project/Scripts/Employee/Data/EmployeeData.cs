@@ -124,7 +124,7 @@ public struct EmployeeMutableData // 가변 데이터
         set => _fatigue = Mathf.Clamp(value, 0, 100);
     }
 
-    private int preDesire;
-    private int preLoyalty;
-    private int preFatigue;
+    public int preDesire;
+    public int preLoyalty;
+    public int preFatigue;
 }

@@ -1,6 +1,7 @@
 using System.Data;
 using UnityEngine;
 
+[CreateAssetMenu(fileName = "EmployeeCommentData", menuName = "Scriptable Objects/EmployeeCommentData")]
 public class EmployeeCommentData : SheetDataSOBase
 {
     public int trigger_desire;

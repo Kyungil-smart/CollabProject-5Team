@@ -5,7 +5,7 @@ using TMPro;
 public class EmployeeComment : MonoBehaviour
 {
     [Header("내부 UI 요소들")]
-    [SerializeField] private Image[] _characterImages;
+    [SerializeField] public  Image _characterImage;
     [SerializeField] private Image[] _partImages;
     
     [SerializeField] private TextMeshProUGUI        _nameText;
@@ -15,7 +15,7 @@ public class EmployeeComment : MonoBehaviour
 
     private Employee _currentEmployee;
 
-    public void SetUpCommentUI(Employee employee, string commentText, int loyaltyDelta)
+    public void SetUpCommentUI(Employee employee, string commentText)
     {
         _currentEmployee = employee;
 
@@ -23,31 +23,28 @@ public class EmployeeComment : MonoBehaviour
         _loyaltyText.text = $"{_currentEmployee.MutableData.loyalty}";
         _commentText.text = commentText;
 
-        // 2. 변동치 세팅 (예시: 이번 주 변동량)
-        if (loyaltyDelta >= 0)
-            _FluctuatingText.text = $"<color=#D32F2F>{loyaltyDelta} ( {loyaltyDelta} ▲ )</color>";
-        else
-            _FluctuatingText.text = $"<color=#1976D2>{_currentEmployee.MutableData.loyalty} ( {Mathf.Abs(loyaltyDelta)} ▼ )</color>";
+        int fatiguChagne = employee.MutableData.fatigue - employee.MutableData.preFatigue;
 
-        // 3. 부서(Role)에 따른 마크 이미지 활성화
+        if (fatiguChagne >= 0)
+            _FluctuatingText.text = $"<color=#D32F2F>{employee.MutableData.fatigue} ( {fatiguChagne} ▲ )</color>";
+        else
+            _FluctuatingText.text = $"<color=#1976D2>{employee.MutableData.fatigue} ( {Mathf.Abs(fatiguChagne)} ▼ )</color>";
+
         SetPartImage((int)_currentEmployee.so.role);
 
-        // 4. 피로도 상태에 따른 초상화 이미지 활성화
         int fatigue = _currentEmployee.MutableData.fatigue;
-        if (fatigue >= 80) SetCharacterImage(2);      // Critical
-        else if (fatigue >= 40) SetCharacterImage(1); // Caution
-        else SetCharacterImage(0);                    // Normal
+
+        if      (fatigue >= 80)
+            _characterImage.sprite = _currentEmployee.so.iconCritical;
+        else if (fatigue >= 40)
+            _characterImage.sprite = _currentEmployee.so.iconCaution; 
+        else
+            _characterImage.sprite = _currentEmployee.so.iconNormal;  
     }
 
     private void SetPartImage(int index)
     {
         for (int i = 0; i < _partImages.Length; i++)
             _partImages[i].gameObject.SetActive(i == index);
-    }
-
-    private void SetCharacterImage(int index)
-    {
-        for (int i = 0; i < _characterImages.Length; i++)
-            _characterImages[i].gameObject.SetActive(i == index);
     }
 }
