@@ -81,9 +81,9 @@ public static class PerkPolicy
     }
 
     // - 매출 가중치 (gold) ─
-    const int SMALL_FACTOR  = 10;
-    const int MEDIUM_FACTOR = 30;
-    const int LARGE_FACTOR  = 60;
+    const int SMALL_FACTOR  = 1000;
+    const int MEDIUM_FACTOR = 3000;
+    const int LARGE_FACTOR  = 6000;
     static int SalesFactor(ProjectSize size) => size switch
     {
         ProjectSize.medium => MEDIUM_FACTOR,
