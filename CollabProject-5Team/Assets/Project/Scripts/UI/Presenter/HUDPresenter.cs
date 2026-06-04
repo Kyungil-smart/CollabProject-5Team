@@ -15,38 +15,7 @@ namespace GameDevTycoon.UI.Ingame
 
         private void Start()
         {
-            BindData();
             BindButtons();
-        }
-
-        private void BindData()
-        {
-            var dtm = DateTimeManager.Instance;
-            var company = Company.Instance;
-
-            // 주차/요일/낮밤 중 하나라도 바뀌면 TimeLabel 갱신
-            dtm.currentWeek
-                .Subscribe(_ => RefreshTimeLabel())
-                .AddTo(this);
-
-            dtm.currentDay
-                .Subscribe(_ => RefreshTimeLabel())
-                .AddTo(this);
-
-            dtm.currentTime
-                .Subscribe(time =>
-                {
-                    RefreshTimeLabel();
-                    if (time == TimeOfDay.Day) _view.SwitchToDay();
-                    else                       _view.SwitchToNight();
-                })
-                .AddTo(this);
-
-            // 자금/평판 변화 감지 — Company 필드가 ReactiveProperty가 아닌 일반 int라
-            // 매 프레임 폴링 대신 외부에서 갱신 호출하는 방식으로 처리
-            // [TODO: Company.gold / reputation이 ReactiveProperty로 전환되면 Subscribe로 교체]
-            RefreshMoneyLabel();
-            RefreshReputationLabel();
         }
 
         private void BindButtons()
@@ -80,13 +49,6 @@ namespace GameDevTycoon.UI.Ingame
             _view.OnGameQuitClicked
                 .Subscribe(_ => OnGameQuitClicked())
                 .AddTo(this);
-        }
-
-        private void RefreshTimeLabel()
-        {
-            var dtm = DateTimeManager.Instance;
-            bool isNight = dtm.currentTime.Value == TimeOfDay.Night;
-            _view.SetTimeLabel(dtm.currentWeek.Value, GetDayName(dtm.currentDay.Value), isNight);
         }
 
         private void RefreshMoneyLabel()

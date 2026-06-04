@@ -24,7 +24,7 @@ public class DateTimeManager : MonoBehaviour
     private HashSet<Employee> _talkedEmployeesThisWeek = new HashSet<Employee>();
 
     public static event Action OnNightLoading;
-    public static event Action OnNightLoaded;
+    public static event Action OnNight;
 
     #region 싱글톤 설정
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
@@ -183,7 +183,7 @@ public class DateTimeManager : MonoBehaviour
 
         // 프로젝트의 모든 보고서가 전송될때까지 대기
         await UniTask.WaitUntil(() => Company.Instance.projects.All(p => p.isReportDraftsReady));
-        OnNightLoaded?.Invoke();
+        OnNight?.Invoke();
     }
 
     public string GetWeekDayName()
