@@ -6,6 +6,7 @@ using UnityEngine;
 public class HUDBinder : MonoBehaviour, IBindable<DateTimeManager>
 {
     HUDView _view;
+    private void Awake() => _view = GetComponent<HUDView>();
 
     public void Bind(DateTimeManager data)
     {
@@ -40,11 +41,6 @@ public class HUDBinder : MonoBehaviour, IBindable<DateTimeManager>
                 data.OnClickEndDayButton();
                 _view.SwitchToDay();
             }).AddTo(this);
-    }
-
-    private void Awake()
-    {
-        _view = GetComponent<HUDView>();
     }
 
     public void SwitchToNight()

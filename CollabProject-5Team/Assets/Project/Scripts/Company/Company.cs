@@ -208,7 +208,7 @@ public class Company : MonoBehaviour
             }
         }
     }
-
+    // 대화한 직원 초기화
     public void ResetTalkedEmployees()
     {
         if (curProject != null)
