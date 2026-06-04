@@ -7,7 +7,7 @@ public class CommentListManager : MonoBehaviour
     [SerializeField] private GameObject _uiPrefab;
     [SerializeField] private Transform  _contentTransform;
 
-    [SerializeField] private List<EmployeeCommentData> _commentSheetDatas;
+    [SerializeField] private List<EmployeeCommentData> _commentSheetDatas = new List<EmployeeCommentData>();
 
     private int _maxPoolCount = 30;
     private List<EmployeeComment> _uiPoolList = new List<EmployeeComment>();
@@ -16,9 +16,7 @@ public class CommentListManager : MonoBehaviour
 
     private void Awake()
     {
-        _haveEmployeeList = _EmployeeManager.Instance.haveEmployees.haveEmployeeList;
-
-        for(int i=0;i< _haveEmployeeList.Count; i++)
+        for (int i = 0; i < _maxPoolCount; i++)
         {
             GameObject employee = Instantiate(_uiPrefab, _contentTransform, false);
             employee.SetActive(false);
