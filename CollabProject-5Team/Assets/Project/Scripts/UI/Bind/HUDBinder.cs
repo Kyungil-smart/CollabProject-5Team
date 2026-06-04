@@ -14,7 +14,7 @@ public class HUDBinder : MonoBehaviour, IBindable<DateTimeManager>
         data.day.Subscribe(d =>
         {
             int week = data.currentWeek.Value;
-            string dayName = DateTimeManager.Instance.GetWeekDayName();
+            string dayName = DateTimeManager.Instance.GetDayName();
             bool isNight = data.currentTime == TimeOfDay.Night;
             _view.SetTimeLabel(week, dayName, isNight); // 날짜
             _view.SetMoneyLabel(Company.Instance.gold); // 골드
@@ -30,17 +30,17 @@ public class HUDBinder : MonoBehaviour, IBindable<DateTimeManager>
         }).AddTo(this);
 
         // 퇴근 버튼 클릭 시 다음 날짜로 진행
-        _view.OnWorkStartClicked
-            .Subscribe(_ => data.OnClickEndDayButton())
-            .AddTo(this);
+        //_view.OnWorkStartClicked
+        //    .Subscribe(_ => data.OnClickEndDayButton())
+        //    .AddTo(this);
 
         // 밤 종료 버튼 클릭시
-        _view.OnNightQuitClicked
-            .Subscribe(_ =>
-            {
-                data.OnClickEndDayButton();
-                _view.SwitchToDay();
-            }).AddTo(this);
+        //_view.OnNightQuitClicked
+        //    .Subscribe(_ =>
+        //    {
+        //        data.OnClickEndDayButton();
+        //        _view.SwitchToDay();
+        //    }).AddTo(this);
     }
 
     public void SwitchToNight()

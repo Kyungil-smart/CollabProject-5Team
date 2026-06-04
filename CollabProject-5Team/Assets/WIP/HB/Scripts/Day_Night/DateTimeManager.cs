@@ -186,7 +186,7 @@ public class DateTimeManager : MonoBehaviour
         OnNight?.Invoke();
     }
 
-    public string GetWeekDayName()
+    public string GetDayName()
     {
         return currentDay switch
         {

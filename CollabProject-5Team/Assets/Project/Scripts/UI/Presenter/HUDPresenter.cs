@@ -1,4 +1,6 @@
 using R3;
+using System;
+using UnityEditor.Localization.Plugins.XLIFF.V20;
 using UnityEngine;
 
 namespace GameDevTycoon.UI.Ingame
@@ -43,13 +45,14 @@ namespace GameDevTycoon.UI.Ingame
                 .AddTo(this);
 
             _view.OnNightQuitClicked
-                .Subscribe(_ => dtm.OnClickEndDayButton())
+                .Subscribe(_ => OnNightQuitClicked())
                 .AddTo(this);
 
             _view.OnGameQuitClicked
                 .Subscribe(_ => OnGameQuitClicked())
                 .AddTo(this);
         }
+
 
         private void RefreshMoneyLabel()
         {
@@ -76,21 +79,13 @@ namespace GameDevTycoon.UI.Ingame
             _view.SetNightQuitInteractable(interactable);
         }
 
-        private static string GetDayName(DayOfWeek day) => day switch
-        {
-            DayOfWeek.Monday    => "월요일",
-            DayOfWeek.Tuesday   => "화요일",
-            DayOfWeek.Wednesday => "수요일",
-            DayOfWeek.Thursday  => "목요일",
-            DayOfWeek.Friday    => "금요일",
-            _                   => string.Empty
-        };
 
         private void OnWorkStartClicked()
         {
-            DateTimeManager.Instance.CompleteDayWork();
+            DateTimeManager.Instance.OnClickEndDayButton();
             // WorkStartBubble은 업무 시작 후 비활성화 — View에서 직접 처리하거나 Presenter에서 호출
             // [TODO: WorkStartBubble 비활성화 메서드 HUDView에 추가 후 연결]
+            // ★~퀘스트 구현 전에 임시로 단순 날짜 지나게 처리중~☆
         }
 
         private void OnHRClicked()
@@ -114,6 +109,12 @@ namespace GameDevTycoon.UI.Ingame
             {
                 // [TODO: SaveSystem 연결]
             });
+        }
+
+        private void OnNightQuitClicked()
+        {
+            DateTimeManager.Instance.OnClickEndDayButton();
+            _view.SwitchToDay();
         }
 
         private void OnGameQuitClicked()
