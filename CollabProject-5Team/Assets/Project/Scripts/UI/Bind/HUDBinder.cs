@@ -50,10 +50,10 @@ public class HUDBinder : MonoBehaviour, IBindable<DateTimeManager>
     private void Start()
     {
         Bind(DateTimeManager.Instance);
-        DateTimeManager.OnNightLoaded += SwitchToNight;
+        DateTimeManager.OnNight += SwitchToNight;
     }
     private void OnDestroy()
     {
-        DateTimeManager.OnNightLoaded -= SwitchToNight;
+        DateTimeManager.OnNight -= SwitchToNight;
     }
 }
