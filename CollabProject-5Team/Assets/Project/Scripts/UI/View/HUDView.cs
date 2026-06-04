@@ -62,7 +62,7 @@ namespace GameDevTycoon.UI.Ingame
 
         public void SetMoneyLabel(int money)
         {
-            _moneyLabel.text = $"{money:N0}G";
+            _moneyLabel.text = FormatPolicy.FormatGold(money);
         }
 
         public void SetReputationLabel(int reputation)

@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using UnityEditor.Localization.Plugins.XLIFF.V20;
 using UnityEngine;
 
 public class Company : MonoBehaviour
@@ -50,7 +49,7 @@ public class Company : MonoBehaviour
     {
         projects.Clear();
         projects.AddRange(GetComponentsInChildren<Project>());
-        curProject = projects[0];
+        if (projects.Count > 0) curProject = projects[0];
     }
 
     private void Update()
@@ -61,7 +60,7 @@ public class Company : MonoBehaviour
             Employee hiredEmployee = _EmployeeManager.Instance.HireEmployee(firstEmployeeId);
             curProject.HireEmployee(hiredEmployee);
         }
-        if (Input.GetKeyDown(KeyCode.Alpha2)) 
+        if (Input.GetKeyDown(KeyCode.Alpha2))
         {
             int firstEmployeeId = _EmployeeManager.Instance.allEmployeeObj[1].GetComponent<Employee>().so.id;
             Employee hiredEmployee = _EmployeeManager.Instance.HireEmployee(firstEmployeeId);
@@ -121,13 +120,13 @@ public class Company : MonoBehaviour
         // 이전 데이터 연동
         var record = new ProjectCompleted
         {
-            projectID      = project.Id,
-            projectName    = project.userNamed.Value,
-            scale          = project.Scale,
-            qualityScore   = Mathf.RoundToInt(project.qualityScore),
+            projectID = project.Id,
+            projectName = project.userNamed.Value,
+            scale = project.Scale,
+            qualityScore = Mathf.RoundToInt(project.qualityScore),
             stabilityScore = Mathf.RoundToInt(project.stabilityScore),
-            charmScore     = Mathf.RoundToInt(project.charmScore),
-            grade          = project.Grade,
+            charmScore = Mathf.RoundToInt(project.charmScore),
+            grade = project.Grade,
         };
 
         // 초기 정산 (계산영역: 평점·유저수·유지력·굿즈·일일매출·유지비)
@@ -193,4 +192,31 @@ public class Company : MonoBehaviour
         // TODO: 적자시 1회 빚 및 게임오버 시스템
     }
     #endregion
+
+    // 방치 패널티 적용
+    public void AfkPenaltyApply()
+    {
+        if (curProject != null)
+        {
+            foreach (Employee e in curProject.GetAllEmployees())
+            {
+                if (!e.hasTalkedThisWeek)
+                {
+                    e.MutableData.loyalty -= 5;
+                    e.MutableData.fatigue += 10;
+                }
+            }
+        }
+    }
+
+    public void ResetTalkedEmployees()
+    {
+        if (curProject != null)
+        {
+            foreach (Employee e in curProject.GetAllEmployees())
+            {
+                e.hasTalkedThisWeek = false;
+            }
+        }
+    }
 }
