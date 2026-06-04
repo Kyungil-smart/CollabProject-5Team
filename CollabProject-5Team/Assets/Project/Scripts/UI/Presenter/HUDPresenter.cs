@@ -1,0 +1,165 @@
+using R3;
+using UnityEngine;
+
+namespace GameDevTycoon.UI.Ingame
+{
+    /// <summary>
+    /// Canvas_HUD Presenter.
+    /// DateTimeManager, Company의 ReactiveProperty를 구독해 HUDView에 반영.
+    /// 버튼 이벤트를 받아 게임 로직으로 전달.
+    /// </summary>
+    public sealed class HUDPresenter : MonoBehaviour
+    {
+        [SerializeField] private HUDView   _view;
+        [SerializeField] private AlertView _alertView;
+
+        private void Start()
+        {
+            BindData();
+            BindButtons();
+        }
+
+        private void BindData()
+        {
+            var dtm = DateTimeManager.Instance;
+            var company = Company.Instance;
+
+            // 주차/요일/낮밤 중 하나라도 바뀌면 TimeLabel 갱신
+            dtm.currentWeek
+                .Subscribe(_ => RefreshTimeLabel())
+                .AddTo(this);
+
+            dtm.currentDay
+                .Subscribe(_ => RefreshTimeLabel())
+                .AddTo(this);
+
+            dtm.currentTime
+                .Subscribe(time =>
+                {
+                    RefreshTimeLabel();
+                    if (time == TimeOfDay.Day) _view.SwitchToDay();
+                    else                       _view.SwitchToNight();
+                })
+                .AddTo(this);
+
+            // 자금/평판 변화 감지 — Company 필드가 ReactiveProperty가 아닌 일반 int라
+            // 매 프레임 폴링 대신 외부에서 갱신 호출하는 방식으로 처리
+            // [TODO: Company.gold / reputation이 ReactiveProperty로 전환되면 Subscribe로 교체]
+            RefreshMoneyLabel();
+            RefreshReputationLabel();
+        }
+
+        private void BindButtons()
+        {
+            var dtm = DateTimeManager.Instance;
+
+            _view.OnWorkStartClicked
+                .Subscribe(_ => OnWorkStartClicked())
+                .AddTo(this);
+
+            _view.OnHRClicked
+                .Subscribe(_ => OnHRClicked())
+                .AddTo(this);
+
+            _view.OnProjectClicked
+                .Subscribe(_ => OnProjectClicked())
+                .AddTo(this);
+
+            _view.OnCompanyClicked
+                .Subscribe(_ => OnCompanyClicked())
+                .AddTo(this);
+
+            _view.OnSaveClicked
+                .Subscribe(_ => OnSaveClicked())
+                .AddTo(this);
+
+            _view.OnNightQuitClicked
+                .Subscribe(_ => dtm.OnClickEndDayButton())
+                .AddTo(this);
+
+            _view.OnGameQuitClicked
+                .Subscribe(_ => OnGameQuitClicked())
+                .AddTo(this);
+        }
+
+        private void RefreshTimeLabel()
+        {
+            var dtm = DateTimeManager.Instance;
+            bool isNight = dtm.currentTime.Value == TimeOfDay.Night;
+            _view.SetTimeLabel(dtm.currentWeek.Value, GetDayName(dtm.currentDay.Value), isNight);
+        }
+
+        private void RefreshMoneyLabel()
+        {
+            _view.SetMoneyLabel(Company.Instance.gold);
+        }
+
+        private void RefreshReputationLabel()
+        {
+            _view.SetReputationLabel(Company.Instance.reputation);
+        }
+
+        /// <summary>
+        /// Company.gold / reputation 변경 시점에 외부에서 호출.
+        /// ReactiveProperty 전환 전까지 사용.
+        /// </summary>
+        public void RefreshHUD()
+        {
+            RefreshMoneyLabel();
+            RefreshReputationLabel();
+        }
+
+        public void SetNightQuitInteractable(bool interactable)
+        {
+            _view.SetNightQuitInteractable(interactable);
+        }
+
+        private static string GetDayName(DayOfWeek day) => day switch
+        {
+            DayOfWeek.Monday    => "월요일",
+            DayOfWeek.Tuesday   => "화요일",
+            DayOfWeek.Wednesday => "수요일",
+            DayOfWeek.Thursday  => "목요일",
+            DayOfWeek.Friday    => "금요일",
+            _                   => string.Empty
+        };
+
+        private void OnWorkStartClicked()
+        {
+            DateTimeManager.Instance.CompleteDayWork();
+            // WorkStartBubble은 업무 시작 후 비활성화 — View에서 직접 처리하거나 Presenter에서 호출
+            // [TODO: WorkStartBubble 비활성화 메서드 HUDView에 추가 후 연결]
+        }
+
+        private void OnHRClicked()
+        {
+            // [TODO: HRPresenter 연결 후 HRView.Show() 호출]
+        }
+
+        private void OnProjectClicked()
+        {
+            // [TODO: ProjectPresenter 연결 후 ProjectView.Show() 호출]
+        }
+
+        private void OnCompanyClicked()
+        {
+            // [TODO: CompanyPresenter 연결 후 CompanyView.Show() 호출]
+        }
+
+        private void OnSaveClicked()
+        {
+            _alertView.ShowConfirmPopup("저장하시겠습니까?", () =>
+            {
+                // [TODO: SaveSystem 연결]
+            });
+        }
+
+        private void OnGameQuitClicked()
+        {
+            _alertView.ShowConfirmPopup("게임을 종료하시겠습니까?", () =>
+            {
+                Application.Quit();
+            });
+        }
+    }
+}
