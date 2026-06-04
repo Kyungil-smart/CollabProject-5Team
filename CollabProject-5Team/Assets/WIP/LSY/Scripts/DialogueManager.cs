@@ -106,6 +106,7 @@ namespace Dialogue
             {
                 employeeId = _currentEmployeeId,
                 state = _currentState,
+                desc = node.desc,
                 text = node.text,
                 isChoice = node.isChoice,
                 isUser = node.isUser,
