@@ -60,9 +60,9 @@ namespace GameDevTycoon.UI.Ingame
             _timeLabel.text = $"{week}주차 {dayName} {(isNight ? "밤" : "낮")}";
         }
 
-        public void SetMoneyLabel(long money)
+        public void SetMoneyLabel(int money)
         {
-            _moneyLabel.text = $"{money:N0}G";
+            _moneyLabel.text = FormatPolicy.FormatGold(money);
         }
 
         public void SetReputationLabel(int reputation)
