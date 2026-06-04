@@ -10,10 +10,10 @@ public class DateTimeManager : MonoBehaviour
     // 어디서나 부를 수 있도록 싱글톤
     public static DateTimeManager Instance { get; private set; }
 
-    [Header("현재 게임 날짜 상태(R3 반응형 변수)")]
+    [Header("현재 게임 날짜 상태")]
     public ReactiveProperty<int> currentWeek = new(1);
-    public ReactiveProperty<DayOfWeek> currentDay = new(DayOfWeek.Monday);
-    public ReactiveProperty<TimeOfDay> currentTime = new(TimeOfDay.Day);
+    public DayOfWeek currentDay = DayOfWeek.Monday; // 요일
+    public TimeOfDay currentTime = TimeOfDay.Day;   // 낮밤
     public ReactiveProperty<int> day = new(0); // 영업일 기준 지난 날짜
 
     [Header("오늘 하루 상태 값")]
@@ -55,7 +55,7 @@ public class DateTimeManager : MonoBehaviour
     private void ResetWeekStatus()
     {
         _talkedEmployeesThisWeek.Clear();
-        Company.Instance.curProject.GetAllEmployees().ForEach(e => e.hasTalkedThisWeek = false);
+        Company.Instance.ResetTalkedEmployees();
     }
 
     /// <summary>
@@ -127,38 +127,32 @@ public class DateTimeManager : MonoBehaviour
         //}
 
         // 금요일 낮에 퇴근하면 금요일 밤으로 전환
-        if (currentDay.Value == DayOfWeek.Friday && currentTime.Value == TimeOfDay.Day)
+        if (currentDay == DayOfWeek.Friday && currentTime == TimeOfDay.Day)
         {
-            currentTime.Value = TimeOfDay.Night;
+            currentTime = TimeOfDay.Night;
 
-            currentWeek.Value++;
-            // 방치 패널티: 이번 주 미대화 직원 충성도 -5, 피로도 +10
-            foreach (Employee e in Company.Instance.curProject.GetAllEmployees())
-            {
-                if (!e.hasTalkedThisWeek)
-                {
-                    e.MutableData.loyalty -= 5;
-                    e.MutableData.fatigue += 10;
-                }
-            }
+            // 방치 패널티 적용
+            Company.Instance.AfkPenaltyApply();
+
             ResetWeekStatus();
             ResetDayStatus();
+            currentWeek.Value++;
             ProgressDay();
         }
         // 금요일 밤에 퇴근하면 다음 주 월요일 낮으로 전환
-        else if (currentDay.Value == DayOfWeek.Friday && currentTime.Value == TimeOfDay.Night)
+        else if (currentDay == DayOfWeek.Friday && currentTime == TimeOfDay.Night)
         {
             // 1주차씩 상승
-            currentDay.Value = DayOfWeek.Monday;
-            currentTime.Value = TimeOfDay.Day;
+            currentDay = DayOfWeek.Monday;
+            currentTime = TimeOfDay.Day;
         }
         // 월~목 낮에 퇴근하면 다음 날 낮으로
         else
         {
             // 요일 하나 이동
-            currentDay.Value++;
+            currentDay++;
             // 낮으로
-            currentTime.Value = TimeOfDay.Day;
+            currentTime = TimeOfDay.Day;
 
             ProgressDay();
             ResetDayStatus();
@@ -168,7 +162,6 @@ public class DateTimeManager : MonoBehaviour
     // 내부적으로 영업일을 진행시킴
     public void ProgressDay()
     {
-        day.Value++;
         foreach (var project in Company.Instance.projects)
             project.ProgressDay();
 
@@ -176,6 +169,7 @@ public class DateTimeManager : MonoBehaviour
         Company.Instance.TickDailyCompletedProjects();
 
         // 금요일 밤:
+        day.Value++;
         if (day.Value % 5 == 0) ProgressNight().Forget();
     }
     public async UniTask ProgressNight()

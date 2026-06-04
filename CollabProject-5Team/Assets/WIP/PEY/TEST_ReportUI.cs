@@ -15,7 +15,7 @@ public class TEST_ReportUI : MonoBehaviour
 
     [Header("ReportSummary 패널 내부")]
     [SerializeField] TMP_Text summaryRoleText;   // "Planning Report" 등 파트 제목
-    [SerializeField] Button   reportSummaryBtn;  // 보고서 요약 버튼
+    [SerializeField] Button reportSummaryBtn;  // 보고서 요약 버튼
     [SerializeField] TMP_Text summaryReportName; // 보고서 이름
     [SerializeField] TMP_Text summaryEmploeName; // 직원 이름
 
@@ -23,18 +23,18 @@ public class TEST_ReportUI : MonoBehaviour
     [SerializeField] TMP_Text detailRoleText;    // 파트 제목
     [SerializeField] TMP_Text detailEmploeName;  // 직원 이름
     [SerializeField] TMP_Text detailMainText;    // 보고서 본문
-    [SerializeField] Button   approveBtn;
-    [SerializeField] Button   cancelBtn;
+    [SerializeField] Button approveBtn;
+    [SerializeField] Button cancelBtn;
 
 
     // 역할 진행 순서
     static readonly Role[] RoleOrder = { Role.PLANNER, Role.ARTIST, Role.PROGRAMMER };
     static readonly string[] RoleLabel = { "Planning Report", "Art Report", "Develop Report" };
 
-    int          _roleIndex;   // 현재 처리 중인 역할 인덱스 (0~2)
+    int _roleIndex;   // 현재 처리 중인 역할 인덱스 (0~2)
     List<Report> _currentList; // 현재 역할의 보고서 목록
-    int          _reportIndex; // 현재 역할 내에서 보고 있는 보고서 인덱스
-    Report       _viewingReport;
+    int _reportIndex; // 현재 역할 내에서 보고 있는 보고서 인덱스
+    Report _viewingReport;
 
     private void Start()
     {
@@ -52,8 +52,11 @@ public class TEST_ReportUI : MonoBehaviour
     // ProgressNight 후 이 메서드를 호출해 보고서 UI를 시작한다
     public void StartReportFlow()
     {
-        _roleIndex = 0;
-        ShowSummaryForCurrentRole();
+        if (Company.Instance.curProject != null)
+        {
+            _roleIndex = 0;
+            ShowSummaryForCurrentRole();
+        }
     }
 
     // ── 역할별 Summary 구성 ──────────────────────────────────
@@ -106,9 +109,9 @@ public class TEST_ReportUI : MonoBehaviour
     {
         _viewingReport = report;
 
-        detailRoleText.text   = RoleLabel[_roleIndex];
+        detailRoleText.text = RoleLabel[_roleIndex];
         detailEmploeName.text = report.owner.so.Name;
-        detailMainText.text   = report.so.contentNormal;
+        detailMainText.text = report.so.contentNormal;
 
         reportSummaryPannel.SetActive(false);
         reportDetailPannel.SetActive(true);
