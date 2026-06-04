@@ -64,7 +64,8 @@ public class NPCInteract : MonoBehaviour, IInteractable
         // 퀘스트 완료 후 대화
         else if (state == 2)
         {
-            dialogueText.text = $"{npcName}: See Ya (Done)";
+            Dialogue.DialogueManager.Instance.ShowBusyMessage(emp);
+            return;
         }
 
         interactionUI.SetActive(true);

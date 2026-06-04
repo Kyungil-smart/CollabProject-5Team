@@ -24,6 +24,8 @@ namespace Dialogue
 
         public System.Action OnTypingComplete;
 
+        public System.Action OnNextAction;
+
         public void SetNextButtonVisible(bool visible)
         {
             if (_nextButton != null)
@@ -40,6 +42,8 @@ namespace Dialogue
         {
             if (IsTyping)
                 SkipTyping();
+            else if (OnNextAction != null)
+                OnNextAction.Invoke();
             else
                 DialogueManager.Instance.AdvanceDialogue();
         }
