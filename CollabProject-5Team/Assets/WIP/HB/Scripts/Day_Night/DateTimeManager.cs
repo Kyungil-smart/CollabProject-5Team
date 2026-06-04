@@ -23,6 +23,7 @@ public class DateTimeManager : MonoBehaviour
     // 이번 주에 대화한 직원 ID 목록 (방치 패널티 판정용)
     private HashSet<Employee> _talkedEmployeesThisWeek = new HashSet<Employee>();
 
+    public static event Action OnNightLoading;
     public static event Action OnNight;
 
     #region 싱글톤 설정
@@ -136,13 +137,13 @@ public class DateTimeManager : MonoBehaviour
 
             ResetWeekStatus();
             ResetDayStatus();
-            currentWeek.Value++;
             ProgressDay();
         }
         // 금요일 밤에 퇴근하면 다음 주 월요일 낮으로 전환
         else if (currentDay == DayOfWeek.Friday && currentTime == TimeOfDay.Night)
         {
             // 1주차씩 상승
+            currentWeek.Value++;
             currentDay = DayOfWeek.Monday;
             currentTime = TimeOfDay.Day;
         }
@@ -184,9 +185,17 @@ public class DateTimeManager : MonoBehaviour
         OnNight?.Invoke();
     }
 
-    static readonly string[] WeekDayNames = { "월요일", "화요일", "수요일", "목요일", "금요일" };
-    static readonly int[] MonthDays = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
-    public static string GetWeekDayName(int day) => WeekDayNames[day % 5];
+    public string GetWeekDayName()
+    {
+        return currentDay switch
+        {
+            DayOfWeek.Monday => "월요일",
+            DayOfWeek.Tuesday => "화요일",
+            DayOfWeek.Wednesday => "수요일",
+            DayOfWeek.Thursday => "목요일",
+            _ => "금요일",
+        };
+    }
 
     // 영업일(day) 기준으로 "N월 N일 요일" 문자열 반환
     // day=0 → 1월 1일 월요일, day=4 → 1월 5일 금요일, day=5 → 1월 8일 월요일
@@ -205,6 +214,8 @@ public class DateTimeManager : MonoBehaviour
         }
         return $"{month}월 {remaining}일 {WeekDayNames[dayOfWeek]}";
     }
+    static readonly string[] WeekDayNames = { "월요일", "화요일", "수요일", "목요일", "금요일" };
+    static readonly int[] MonthDays = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
     #endregion
 
 }

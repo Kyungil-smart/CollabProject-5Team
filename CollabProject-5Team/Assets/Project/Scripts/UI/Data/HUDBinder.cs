@@ -13,11 +13,25 @@ public class HUDBinder : MonoBehaviour, IBindable<DateTimeManager>
         data.day.Subscribe(d =>
         {
             int week = data.currentWeek.Value;
-            string dayName = DateTimeManager.GetWeekDayName(d);
-            _view.SetTimeLabel(week, dayName, false); // 날짜
+            string dayName = DateTimeManager.Instance.GetWeekDayName();
+            bool isNight = data.currentTime == TimeOfDay.Night;
+            _view.SetTimeLabel(week, dayName, isNight); // 날짜
             _view.SetMoneyLabel(Company.Instance.gold); // 골드
             _view.SetReputationLabel(Company.Instance.reputation); // 평판
         }).AddTo(this);
+        // week 변경시
+        data.currentWeek.Subscribe(d =>
+        {
+            int week = data.currentWeek.Value;
+            _view.SetTimeLabel(week, "월요일", false); // 날짜
+            _view.SetMoneyLabel(Company.Instance.gold); // 골드
+            _view.SetReputationLabel(Company.Instance.reputation); // 평판
+        }).AddTo(this);
+
+        // 퇴근 버튼 클릭 시 다음 날짜로 진행
+        _view.OnWorkStartClicked
+            .Subscribe(_ => data.OnClickEndDayButton())
+            .AddTo(this);
     }
 
     private void Awake()
