@@ -39,12 +39,12 @@ public class TEST_ReportUI : MonoBehaviour
     private void Start()
     {
         // 보고서 생성이 완료된 순간 UI 시작
-        Project.OnReportDraftsReady += StartReportFlow;
+        DateTimeManager.OnNight += StartReportFlow;
     }
 
     private void OnDestroy()
     {
-        Project.OnReportDraftsReady -= StartReportFlow;
+        DateTimeManager.OnNight -= StartReportFlow;
     }
 
     // ── 외부에서 호출 ────────────────────────────────────────

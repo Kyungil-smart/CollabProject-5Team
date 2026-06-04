@@ -1,5 +1,8 @@
+using Cysharp.Threading.Tasks;
 using R3;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class DateTimeManager : MonoBehaviour
@@ -19,6 +22,8 @@ public class DateTimeManager : MonoBehaviour
 
     // 이번 주에 대화한 직원 ID 목록 (방치 패널티 판정용)
     private HashSet<Employee> _talkedEmployeesThisWeek = new HashSet<Employee>();
+
+    public static event Action OnNight;
 
     #region 싱글톤 설정
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
@@ -171,14 +176,18 @@ public class DateTimeManager : MonoBehaviour
         Company.Instance.TickDailyCompletedProjects();
 
         // 금요일 밤:
-        if (day.Value % 5 == 0) ProgressNight();
+        if (day.Value % 5 == 0) ProgressNight().Forget();
     }
-    public void ProgressNight()
+    public async UniTask ProgressNight()
     {
         foreach (var project in Company.Instance.projects) project.ProgressNight();
 
         // 완료 프로젝트 주간 정산
         Company.Instance.TickWeeklyCompletedProjects();
+
+        // 프로젝트의 모든 보고서가 전송될때까지 대기
+        await UniTask.WaitUntil(() => Company.Instance.projects.All(p => p.isReportDraftsReady));
+        OnNight?.Invoke();
     }
 
     static readonly string[] WeekDayNames = { "월요일", "화요일", "수요일", "목요일", "금요일" };
