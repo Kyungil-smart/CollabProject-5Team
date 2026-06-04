@@ -4,7 +4,6 @@ using TMPro;
 
 public class EmployeeComment : MonoBehaviour
 {
-    [Header("내부 UI 요소들")]
     [SerializeField] public  Image _characterImage;
     [SerializeField] private Image[] _partImages;
     
