@@ -6,6 +6,7 @@ using UnityEngine;
 public class HUDBinder : MonoBehaviour, IBindable<DateTimeManager>
 {
     HUDView _view;
+    private void Awake() => _view = GetComponent<HUDView>();
 
     public void Bind(DateTimeManager data)
     {
@@ -42,11 +43,6 @@ public class HUDBinder : MonoBehaviour, IBindable<DateTimeManager>
             }).AddTo(this);
     }
 
-    private void Awake()
-    {
-        _view = GetComponent<HUDView>();
-    }
-
     public void SwitchToNight()
     {
         _view.SwitchToNight(); // 임시로 로딩없이
@@ -54,10 +50,10 @@ public class HUDBinder : MonoBehaviour, IBindable<DateTimeManager>
     private void Start()
     {
         Bind(DateTimeManager.Instance);
-        DateTimeManager.OnNightLoaded += SwitchToNight;
+        DateTimeManager.OnNight += SwitchToNight;
     }
     private void OnDestroy()
     {
-        DateTimeManager.OnNightLoaded -= SwitchToNight;
+        DateTimeManager.OnNight -= SwitchToNight;
     }
 }
