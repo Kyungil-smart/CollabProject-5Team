@@ -70,13 +70,29 @@ public class CommentListManager : MonoBehaviour
         {
             if (data.target_role != employee.so.role) continue;
 
-            if (employee.MutableData.desire  > data.trigger_desire) continue;
-            if (employee.MutableData.fatigue < data.trigger_fatigue) continue; 
-            if (employee.MutableData.loyalty > data.trigger_loyalty) continue;
+            if (!CheckSection(employee.MutableData.desire,  data.trigger_desire )) continue;
+            if (!CheckSection(employee.MutableData.fatigue, data.trigger_fatigue)) continue;
+            if (!CheckSection(employee.MutableData.loyalty, data.trigger_loyalty)) continue;
 
             return data.comment_text;
         }
 
         return defaultComment;
+    }
+
+    private bool CheckSection(int actualValue, int sheetValue)
+    {
+        if (sheetValue == 50)
+        {
+            // 50 이상 100 이하
+            return actualValue >= 50 && actualValue <= 100;
+        }
+        else if (sheetValue == 0)
+        {
+            // 0 이상 50 미만
+            return actualValue >= 0 && actualValue < 50;
+        }
+
+        return actualValue >= sheetValue;
     }
 }
