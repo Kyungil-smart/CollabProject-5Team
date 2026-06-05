@@ -1,6 +1,5 @@
 using R3;
 using UnityEngine;
-using System.Collections.Generic;
 
 public class _EmployeeManager : MonoBehaviour
 {
@@ -8,6 +7,9 @@ public class _EmployeeManager : MonoBehaviour
 
     [Header("모든 직원 원본 프리팹")]
     public GameObject[] allEmployeeObj;
+
+    [Header("기본적으로 고용되있는 직원 목록")]
+    public Employee[] defaultEmployees;
 
     public EmployeeList   employeeList  => _employeeList;
     private EmployeeList  _employeeList;
@@ -45,6 +47,12 @@ public class _EmployeeManager : MonoBehaviour
                 emp.MutableData = data;
             })
             .AddTo(this);
+
+        // 기본 직원 고용
+        foreach (var emp in defaultEmployees)
+        {
+            HireEmployee(emp.so.id);
+        }
     }
 
     public Employee HireEmployee(int id)

@@ -1,12 +1,16 @@
+using Cysharp.Threading.Tasks;
 using GameDevTycoon.UI;
 using GameDevTycoon.UI.Ingame;
 using R3;
 using UnityEngine;
 
+// HUD 데이터 바인딩 및 낮/밤 전환
 public class HUDBinder : MonoBehaviour, IBindable<DateTimeManager>
 {
     HUDView _view;
     private void Awake() => _view = GetComponent<HUDView>();
+
+    [SerializeField] GameObject CanvasLoading;
 
     public void Bind(DateTimeManager data)
     {
@@ -45,7 +49,8 @@ public class HUDBinder : MonoBehaviour, IBindable<DateTimeManager>
 
     public void SwitchToNight()
     {
-        _view.SwitchToNight(); // 임시로 로딩없이
+        _view.SwitchToNight();
+        ShowLoadingScreen();
     }
     private void Start()
     {
@@ -55,5 +60,15 @@ public class HUDBinder : MonoBehaviour, IBindable<DateTimeManager>
     private void OnDestroy()
     {
         DateTimeManager.OnNight -= SwitchToNight;
+    }
+
+    async void ShowLoadingScreen()
+    {
+        if (CanvasLoading != null)
+        {
+            CanvasLoading.SetActive(true);
+            await UniTask.Delay(1235, cancellationToken: destroyCancellationToken); // 추후 로딩 전환 효과도 넣고...?
+            CanvasLoading.SetActive(false);
+        }
     }
 }
