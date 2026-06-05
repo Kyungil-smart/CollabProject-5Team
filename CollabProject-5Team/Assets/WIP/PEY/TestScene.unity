@@ -13395,8 +13395,6 @@ MonoBehaviour:
   _companyButton: {fileID: 434161260}
   _saveButton: {fileID: 397486659}
   _nightQuitButton: {fileID: 392690745}
-  _settingsPanel: {fileID: 1497020875}
-  _gameQuitButton: {fileID: 1497020877}
 --- !u!114 &536250805
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -13411,6 +13409,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _view: {fileID: 536250804}
   _alertView: {fileID: 0}
+  _settingsPresenter: {fileID: 0}
+  _hrPresenter: {fileID: 1338266524}
+  _projectPresenter: {fileID: 5880462373560598486}
 --- !u!1 &543540998
 GameObject:
   m_ObjectHideFlags: 0
@@ -33634,7 +33635,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 64a211a352e3c3646b36a9e121beefdc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _view: {fileID: 0}
+  _view: {fileID: 1338266525}
   _alertView: {fileID: 0}
   _hudPresenter: {fileID: 0}
   _employeeCardPrefab: {fileID: 0}
@@ -58710,9 +58711,14 @@ MonoBehaviour:
   _engineValue: {fileID: 0}
   _progressBar: {fileID: 0}
   _progressValueLabel: {fileID: 0}
+  _operationGroup: {fileID: 0}
+  _operationEmptyLabel: {fileID: 0}
   _statusGroup: {fileID: 0}
-  _statusGroupEmptyLabel: {fileID: 0}
-  _statGroup: {fileID: 0}
+  _userCountGroup: {fileID: 0}
+  _salesGroup: {fileID: 0}
+  _maintenanceGroup: {fileID: 0}
+  _profitGroup: {fileID: 0}
+  _revenueGraph: {fileID: 0}
   _statusValue: {fileID: 0}
   _userCountValue: {fileID: 0}
   _salesValue: {fileID: 0}

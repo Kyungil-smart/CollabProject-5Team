@@ -16,6 +16,11 @@ namespace GameDevTycoon.UI.Ingame
         [SerializeField] private AlertView _alertView;
         [SerializeField] private SettingsPresenter _settingsPresenter;
 
+        [Header("외부 연결")]
+        [SerializeField] private HRPresenter _hrPresenter;
+        [SerializeField] private ProjectPresenter _projectPresenter;
+        //[SerializeField] private CompanyPresenter _companyPresenter; // CompanyPresenter가 존재하면 주석 해제
+
         private void Start()
         {
             BindButtons();
@@ -91,17 +96,17 @@ namespace GameDevTycoon.UI.Ingame
 
         private void OnHRClicked()
         {
-            // [TODO: HRPresenter 연결 후 HRView.Show() 호출]
+            _hrPresenter.Show();
         }
 
         private void OnProjectClicked()
         {
-            // [TODO: ProjectPresenter 연결 후 ProjectView.Show() 호출]
+            _projectPresenter.Show();
         }
 
         private void OnCompanyClicked()
         {
-            // [TODO: CompanyPresenter 연결 후 CompanyView.Show() 호출]
+            //_companyPresenter.Show();
         }
 
         private void OnSaveClicked()
