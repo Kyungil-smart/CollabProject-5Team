@@ -6,12 +6,13 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace GameDevTycoon.UI.Ingame
+namespace GameDevTycoon.UI
 {
     /// <summary>
     /// Canvas_Alert 담당 View.
     /// ConfirmPopup, FireConfirmPopup, AlertPopup, NoticePopup, SynergyPopup 표시 제어.
     /// 팝업 간 배타적 활성화는 Show 메서드 호출 측에서 보장.
+    /// 타이틀 씬에서는 ConfirmPopup만 연결해서 사용 가능.
     /// </summary>
     public sealed class AlertView : MonoBehaviour
     {
@@ -45,16 +46,16 @@ namespace GameDevTycoon.UI.Ingame
         [SerializeField] private Transform       _synergyScrollContent;
         [SerializeField] private Button          _synergyConfirmButton;
 
-        private const float NOTICE_DURATION    = 3f;
+        private const float NOTICE_DURATION     = 3f;
         private const float POPUP_FADE_DURATION = 0.15f;
 
         private void Awake()
         {
-            _confirmPopup.SetActive(false);
-            _fireConfirmPopup.SetActive(false);
-            _alertPopup.SetActive(false);
-            _noticePopup.SetActive(false);
-            _synergyPopup.SetActive(false);
+            if (_confirmPopup     != null) _confirmPopup.SetActive(false);
+            if (_fireConfirmPopup != null) _fireConfirmPopup.SetActive(false);
+            if (_alertPopup       != null) _alertPopup.SetActive(false);
+            if (_noticePopup      != null) _noticePopup.SetActive(false);
+            if (_synergyPopup     != null) _synergyPopup.SetActive(false);
         }
 
         /// <summary>
@@ -62,6 +63,8 @@ namespace GameDevTycoon.UI.Ingame
         /// </summary>
         public void ShowConfirmPopup(string message, Action onConfirm, Action onCancel = null)
         {
+            if (_confirmPopup == null) return;
+
             _confirmMessageLabel.text = message;
             _confirmPopup.SetActive(true);
 
@@ -91,6 +94,8 @@ namespace GameDevTycoon.UI.Ingame
         public void ShowFireConfirmPopup(string employeeComment, Sprite employeeSprite,
             string message, Action onConfirm, Action onCancel = null)
         {
+            if (_fireConfirmPopup == null) return;
+
             _fireCommentLabel.text   = employeeComment;
             _fireEmployeeIcon.sprite = employeeSprite;
             _fireMessageLabel.text   = message;
@@ -120,6 +125,8 @@ namespace GameDevTycoon.UI.Ingame
         /// </summary>
         public void ShowAlertPopup(string message)
         {
+            if (_alertPopup == null) return;
+
             _alertMessageLabel.text = message;
             _alertPopup.SetActive(true);
 
@@ -134,6 +141,8 @@ namespace GameDevTycoon.UI.Ingame
         /// </summary>
         public void ShowNoticePopup(string comment, string employeeName, Sprite employeeSprite)
         {
+            if (_noticePopup == null) return;
+
             _noticeCommentLabel.text      = comment;
             _noticeEmployeeNameLabel.text = employeeName;
             _noticeEmployeeIcon.sprite    = employeeSprite;
@@ -157,6 +166,8 @@ namespace GameDevTycoon.UI.Ingame
         /// </summary>
         public void ShowSynergyPopup(Action onConfirm = null)
         {
+            if (_synergyPopup == null) return;
+
             _synergyPopup.SetActive(true);
 
             _synergyConfirmButton.OnClickAsObservable()
@@ -173,11 +184,11 @@ namespace GameDevTycoon.UI.Ingame
 
         public void HideAll()
         {
-            _confirmPopup.SetActive(false);
-            _fireConfirmPopup.SetActive(false);
-            _alertPopup.SetActive(false);
-            _noticePopup.SetActive(false);
-            _synergyPopup.SetActive(false);
+            if (_confirmPopup     != null) _confirmPopup.SetActive(false);
+            if (_fireConfirmPopup != null) _fireConfirmPopup.SetActive(false);
+            if (_alertPopup       != null) _alertPopup.SetActive(false);
+            if (_noticePopup      != null) _noticePopup.SetActive(false);
+            if (_synergyPopup     != null) _synergyPopup.SetActive(false);
         }
     }
 }

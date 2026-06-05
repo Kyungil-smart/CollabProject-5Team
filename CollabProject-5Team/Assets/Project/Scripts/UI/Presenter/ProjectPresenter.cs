@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using R3;
 using UnityEngine;
+using GameDevTycoon.UI;
 
 namespace GameDevTycoon.UI.Ingame
 {
@@ -366,7 +367,8 @@ namespace GameDevTycoon.UI.Ingame
             ProjectSize.large  => "대규모",
             _                  => "소규모",
         };
-        
-        private string GetCurrentProjectName() => _view.ProjectNameInput;
+
+        // [TODO: InputField 현재값 캐싱 방식으로 교체 예정]
+        private string GetCurrentProjectName() => string.Empty;
     }
 }

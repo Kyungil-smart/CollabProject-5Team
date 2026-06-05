@@ -1,5 +1,6 @@
 using Cysharp.Threading.Tasks;
 using GameDevTycoon.Core;
+using GameDevTycoon.UI.Title;
 using R3;
 using UnityEngine;
 
@@ -8,6 +9,7 @@ namespace GameDevTycoon.UI.Title
     /// <summary>
     /// 타이틀 씬 Presenter.
     /// 시작/설정 버튼 처리, 세이브 슬롯 바인딩, 씬 전환 담당.
+    /// 세이브 시스템 미구현으로 슬롯 1개 고정, 클릭 시 바로 게임씬 전환.
     /// </summary>
     public sealed class TitlePresenter : MonoBehaviour
     {
@@ -20,7 +22,7 @@ namespace GameDevTycoon.UI.Title
         private void Start()
         {
             BindButtons();
-            SpawnSlots();
+            SpawnSlot();
         }
 
         private void BindButtons()
@@ -34,33 +36,19 @@ namespace GameDevTycoon.UI.Title
                 .AddTo(this);
         }
 
-        private void SpawnSlots()
+        private void SpawnSlot()
         {
-            // 세이브 슬롯 3개 고정 생성
-            for (int i = 0; i < 3; i++)
-            {
-                var slot = Instantiate(_slotPrefab, _view.SlotContent);
-                slot.PlayEntrance(i * 0.08f);
+            var slot = Instantiate(_slotPrefab, _view.SlotContent);
+            slot.PlayEntrance(0f);
 
-                // [TODO: SaveSystem 연결 후 실제 데이터 바인딩]
-                // SaveSlotData data = SaveSystem.LoadSlot(i);
-                // slot.Bind(data);
-                slot.Bind(null);
-
-                int captured = i;
-                slot.OnSelected += slotIndex => OnSlotSelected(slotIndex);
-            }
-        }
-
-        private void OnSlotSelected(int slotIndex)
-        {
-            _view.HideLoadPanel();
-            // [TODO: SaveSystem에서 슬롯 데이터 로드 후 씬 전환]
-            LoadGameSceneAsync().Forget();
+            // [TODO: SaveSystem 연결 후 실제 데이터 바인딩 및 다중 슬롯으로 교체]
+            slot.Bind(new SaveSlotData { SlotName = "새 게임" });
+            slot.OnSelected += _ => LoadGameSceneAsync().Forget();
         }
 
         private async UniTaskVoid LoadGameSceneAsync()
         {
+            _view.HideLoadPanel();
             await SceneLoader.Instance.LoadAsync(
                 SceneName.Game,
                 this.GetCancellationTokenOnDestroy()

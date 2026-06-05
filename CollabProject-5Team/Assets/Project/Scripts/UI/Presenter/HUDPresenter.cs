@@ -14,6 +14,7 @@ namespace GameDevTycoon.UI.Ingame
     {
         [SerializeField] private HUDView   _view;
         [SerializeField] private AlertView _alertView;
+        [SerializeField] private SettingsPresenter _settingsPresenter;
 
         private void Start()
         {
@@ -47,9 +48,9 @@ namespace GameDevTycoon.UI.Ingame
             _view.OnNightQuitClicked
                 .Subscribe(_ => OnNightQuitClicked())
                 .AddTo(this);
-
-            _view.OnGameQuitClicked
-                .Subscribe(_ => OnGameQuitClicked())
+            
+            _view.OnSettingsClicked
+                .Subscribe(_ => _settingsPresenter.Show())
                 .AddTo(this);
         }
 
@@ -115,14 +116,6 @@ namespace GameDevTycoon.UI.Ingame
         {
             DateTimeManager.Instance.OnClickEndDayButton();
             _view.SwitchToDay();
-        }
-
-        private void OnGameQuitClicked()
-        {
-            _alertView.ShowConfirmPopup("게임을 종료하시겠습니까?", () =>
-            {
-                Application.Quit();
-            });
         }
     }
 }
