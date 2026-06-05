@@ -161,6 +161,7 @@ namespace GameDevTycoon.UI.Ingame
                 bool isOccupied = i < Company.Instance.projects.Count;
 
                 // [TODO: IBindable<ProjectSlotData> 연결 후 활성화]
+                item.GetComponent<ProjectSlotItemView>().Setup(i, isOccupied, false); //잠금로직 정리필요 
                 // item.GetComponent<IBindable<ProjectSlotData>>().Bind(data);
 
                 int captured = i;

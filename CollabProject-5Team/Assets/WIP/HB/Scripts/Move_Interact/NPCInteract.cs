@@ -29,7 +29,7 @@ public class NPCInteract : MonoBehaviour, IInteractable
         npcName = gameObject.name;
 
         // NPC 자신의 Employee를 haveEmployees에 등록
-        _EmployeeManager.Instance.haveEmployees.AddEmployee(emp);
+        //_EmployeeManager.Instance.haveEmployees.AddEmployee(emp);
 
         //if (questCompleteButton != null)
         //{

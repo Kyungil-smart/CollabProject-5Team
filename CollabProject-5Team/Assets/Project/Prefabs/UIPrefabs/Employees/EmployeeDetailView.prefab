@@ -1520,6 +1520,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 401284319019106409}
+  - component: {fileID: 1606338413707206003}
   m_Layer: 5
   m_Name: MBTITagView
   m_TagString: Untagged
@@ -1546,6 +1547,24 @@ RectTransform:
   m_AnchoredPosition: {x: 230, y: 26}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1606338413707206003
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2774831751158102300}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c8dead0d241291c4e89eee82b0b8714a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _tagBG: {fileID: 0}
+  _tagLabel: {fileID: 0}
+  _intColor: {r: 0, g: 0, b: 0, a: 0}
+  _entColor: {r: 0, g: 0, b: 0, a: 0}
+  _istColor: {r: 0, g: 0, b: 0, a: 0}
+  _estColor: {r: 0, g: 0, b: 0, a: 0}
 --- !u!1 &2947009645559919965
 GameObject:
   m_ObjectHideFlags: 0
@@ -2531,6 +2550,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3279422447386556181}
+  - component: {fileID: 6389366307271207156}
   m_Layer: 5
   m_Name: EmployeeDetailView
   m_TagString: Untagged
@@ -2565,6 +2585,39 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &6389366307271207156
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3874355215507970141}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 52d3c809b1248fa4090471e849cf11fd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _profileIcon: {fileID: 8235399777133428409}
+  _nameValue: {fileID: 5525539978460822366}
+  _departmentTag: {fileID: 6889566076538184569}
+  _honorificValue: {fileID: 5182287412106747495}
+  _mbtiTag: {fileID: 1606338413707206003}
+  _salaryValue: {fileID: 4634927076695034744}
+  _severanceValue: {fileID: 2064883060774683188}
+  _mainTraitTag: {fileID: 7288944410735854702}
+  _subTraitTag: {fileID: 1467614774603762916}
+  _riskTraitTag: {fileID: 6642048102834307935}
+  _statusValue: {fileID: 1012543449229513638}
+  _abilityBar: {fileID: 8836788938998002768}
+  _abilityValue: {fileID: 1142646588199766304}
+  _motivationBar: {fileID: 6039397350781978364}
+  _motivationValue: {fileID: 8625405825283170519}
+  _fatigueBar: {fileID: 724636572700263683}
+  _fatigueValue: {fileID: 1915006565111937650}
+  _loyaltyBar: {fileID: 1155159743675688616}
+  _loyaltyValue: {fileID: 1015911258589641622}
+  _projectHistoryContent: {fileID: 3486923016363096123}
+  _projectHistoryTagPrefab: {fileID: 0}
 --- !u!1 &3929888357077874159
 GameObject:
   m_ObjectHideFlags: 0
@@ -3087,6 +3140,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8490104710429452576}
+  - component: {fileID: 7288944410735854702}
   m_Layer: 5
   m_Name: TraitTagView_1
   m_TagString: Untagged
@@ -3113,6 +3167,20 @@ RectTransform:
   m_AnchoredPosition: {x: 300, y: 0}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &7288944410735854702
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4206393128595283439}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f0f2c787f66df6b4e948cc3d83088df5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _tagBG: {fileID: 0}
+  _tagLabel: {fileID: 0}
 --- !u!1 &4293337133812625068
 GameObject:
   m_ObjectHideFlags: 0
@@ -4415,6 +4483,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2497399692752288533}
+  - component: {fileID: 1467614774603762916}
   m_Layer: 5
   m_Name: TraitTagView_2
   m_TagString: Untagged
@@ -4441,6 +4510,20 @@ RectTransform:
   m_AnchoredPosition: {x: 80, y: -65}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1467614774603762916
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5889619827241448058}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f0f2c787f66df6b4e948cc3d83088df5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _tagBG: {fileID: 0}
+  _tagLabel: {fileID: 0}
 --- !u!1 &6021666101740664221
 GameObject:
   m_ObjectHideFlags: 0
@@ -4625,6 +4708,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4465987180318060431}
+  - component: {fileID: 6889566076538184569}
   m_Layer: 5
   m_Name: DepartmentTagView
   m_TagString: Untagged
@@ -4651,6 +4735,25 @@ RectTransform:
   m_AnchoredPosition: {x: 230, y: 26}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &6889566076538184569
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6282754947522122575}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 048b5d141aa9951489026e75d6da3ea5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _tagBG: {fileID: 0}
+  _tagLabel: {fileID: 0}
+  _plannerColor: {r: 0, g: 0, b: 0, a: 0}
+  _programmerColor: {r: 0, g: 0, b: 0, a: 0}
+  _artistColor: {r: 0, g: 0, b: 0, a: 0}
+  _marketingColor: {r: 0, g: 0, b: 0, a: 0}
+  _qaColor: {r: 0, g: 0, b: 0, a: 0}
 --- !u!1 &6332422009048995326
 GameObject:
   m_ObjectHideFlags: 0
@@ -5084,6 +5187,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7868241813473407325}
+  - component: {fileID: 6642048102834307935}
   m_Layer: 5
   m_Name: TraitTagView_3
   m_TagString: Untagged
@@ -5110,6 +5214,20 @@ RectTransform:
   m_AnchoredPosition: {x: 320, y: -65}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &6642048102834307935
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6681037947290105939}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f0f2c787f66df6b4e948cc3d83088df5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _tagBG: {fileID: 0}
+  _tagLabel: {fileID: 0}
 --- !u!1 &6726960349557983029
 GameObject:
   m_ObjectHideFlags: 0

@@ -1,3 +1,4 @@
+using Cysharp.Threading.Tasks;
 using R3;
 using System;
 using UnityEditor.Localization.Plugins.XLIFF.V20;
@@ -20,10 +21,23 @@ namespace GameDevTycoon.UI.Ingame
         [SerializeField] private HRPresenter _hrPresenter;
         [SerializeField] private ProjectPresenter _projectPresenter;
         //[SerializeField] private CompanyPresenter _companyPresenter; // CompanyPresenter가 존재하면 주석 해제
+        [SerializeField] GameObject CanvasLoading;
 
         private void Start()
         {
             BindButtons();
+            DateTimeManager.OnNightLoading += ShowLoadingScreen;
+            DateTimeManager.OnNight += SwitchToNight;
+        }
+        private void OnDestroy()
+        {
+            DateTimeManager.OnNightLoading -= ShowLoadingScreen;
+            DateTimeManager.OnNight -= SwitchToNight;
+        }
+
+        public void SwitchToNight()
+        {
+            _view.SwitchToNight();
         }
 
         private void BindButtons()
@@ -121,6 +135,16 @@ namespace GameDevTycoon.UI.Ingame
         {
             DateTimeManager.Instance.OnClickEndDayButton();
             _view.SwitchToDay();
+        }
+
+        async void ShowLoadingScreen()
+        {
+            if (CanvasLoading != null)
+            {
+                CanvasLoading.SetActive(true);
+                await UniTask.Delay(1235, cancellationToken: destroyCancellationToken); // 추후 로딩 전환 효과도 넣고...?
+                CanvasLoading.SetActive(false);
+            }
         }
     }
 }
