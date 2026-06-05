@@ -23,6 +23,7 @@ public class DateTimeManager : MonoBehaviour
     // 이번 주에 대화한 직원 ID 목록 (방치 패널티 판정용)
     private HashSet<Employee> _talkedEmployeesThisWeek = new HashSet<Employee>();
 
+    public static event Action OnWorkCompleted;
     public static event Action OnNightLoading;
     public static event Action OnNight;
 
@@ -67,10 +68,11 @@ public class DateTimeManager : MonoBehaviour
         isWorkCompleted = true;
         Debug.Log("[DTM] 임무 완료");
 
-        if (GameManager.Instance != null && GameManager.Instance.player != null)
+        if (GameManager.Instance != null)
         {
             GameManager.Instance.player.WorkCompleteAnim();
         }
+        OnWorkCompleted?.Invoke();
     }
 
     /// <summary>
