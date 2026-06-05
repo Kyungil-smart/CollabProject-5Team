@@ -1,5 +1,6 @@
 using DG.Tweening;
 using R3;
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -36,8 +37,8 @@ namespace GameDevTycoon.UI.Ingame
         [Header("Panel_EmployeeComment — 담당자 위임")]
         [SerializeField] private GameObject _panelEmployeeComment;
 
-        [Header("Panel_ReportReview — 담당자 위임")]
-        [SerializeField] private GameObject _panelReportReview;
+        [Header("Panel_ReportReview — 담당자 위임, 직군별 확장 가능")]
+        [SerializeField] private List<GameObject> _panelReportReviews;
 
         [Header("Panel_ReportDetail — 담당자 위임")]
         [SerializeField] private GameObject _panelReportDetail;
@@ -63,7 +64,7 @@ namespace GameDevTycoon.UI.Ingame
 
         // 담당자 패널 Show/Hide용 — Presenter에서 순서 제어
         public GameObject PanelEmployeeComment => _panelEmployeeComment;
-        public GameObject PanelReportReview    => _panelReportReview;
+        public List<GameObject> PanelReportReviews => _panelReportReviews;
         public GameObject PanelReportDetail    => _panelReportDetail;
         public GameObject PanelPersonalOpinion => _panelPersonalOpinion;
 
@@ -75,7 +76,7 @@ namespace GameDevTycoon.UI.Ingame
 
             _panelCover.SetActive(false);
             _panelEmployeeComment.SetActive(false);
-            _panelReportReview.SetActive(false);
+            foreach (var p in _panelReportReviews) p.SetActive(false);
             _panelReportDetail.SetActive(false);
             _panelPersonalOpinion.SetActive(false);
             _panelReportEnd.SetActive(false);
@@ -109,11 +110,23 @@ namespace GameDevTycoon.UI.Ingame
         {
             _panelCover.SetActive(panel == ReportPanel.Cover);
             _panelEmployeeComment.SetActive(panel == ReportPanel.EmployeeComment);
-            _panelReportReview.SetActive(panel == ReportPanel.ReportReview);
+            foreach (var p in _panelReportReviews)
+                p.SetActive(panel == ReportPanel.ReportReview);
             _panelReportDetail.SetActive(panel == ReportPanel.ReportDetail);
             _panelPersonalOpinion.SetActive(panel == ReportPanel.PersonalOpinion);
             _panelReportEnd.SetActive(panel == ReportPanel.ReportEnd);
         }
+
+        /// <summary>
+        /// 특정 직군 ReportReview 패널만 활성화. 직군별 순차 진행 시 사용.
+        /// </summary>
+        public void ShowReportReviewPanel(int index)
+        {
+            for (int i = 0; i < _panelReportReviews.Count; i++)
+                _panelReportReviews[i].SetActive(i == index);
+        }
+
+        public List<GameObject> GetReportReviewPanels() => _panelReportReviews;
 
         public void SetCoverInfo(string dateRange, string companyName)
         {
@@ -138,7 +151,8 @@ namespace GameDevTycoon.UI.Ingame
                 .DOAnchorPosY(targetY, SLIDE_DURATION)
                 .SetEase(Ease.OutQuart);
 
-            _slideToggleIcon.sprite = _isSlideExpanded ? _slideIconActive : _slideIconInactive;
+            if (_slideIconActive != null && _slideIconInactive != null)
+                _slideToggleIcon.sprite = _isSlideExpanded ? _slideIconActive : _slideIconInactive;
         }
 
         private void OnDestroy()

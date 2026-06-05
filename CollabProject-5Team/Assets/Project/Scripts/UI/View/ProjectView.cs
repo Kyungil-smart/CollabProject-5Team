@@ -111,6 +111,7 @@ namespace GameDevTycoon.UI.Ingame
         public Transform StaffGridContent       => _staffGridContent;
         public Transform InProgressListContent  => _inProgressListContent;
         public Transform StaffDetailContent     => _staffDetailContent;
+        public string ProjectNameInput => _projectNameInput.text;
 
         private void Awake()
         {

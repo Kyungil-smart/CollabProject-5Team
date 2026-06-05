@@ -19,7 +19,7 @@ namespace GameDevTycoon.UI.Ingame
 
         [Header("프리팹")]
         [SerializeField] private GameObject _projectSlotItemPrefab;
-        [SerializeField] private GameObject _staffCardPrefab;
+        [SerializeField] private List<StaffCardPrefabEntry> _staffCardPrefabs;
         [SerializeField] private GameObject _projectListItemPrefab;
         [SerializeField] private GameObject _staffDetailPrefab;
 
@@ -205,7 +205,10 @@ namespace GameDevTycoon.UI.Ingame
 
             foreach (var employee in employees)
             {
-                var card = Instantiate(_staffCardPrefab, _view.StaffGridContent);
+                var prefab = GetStaffCardPrefab(employee.so.role);
+                if (prefab == null) continue;
+
+                var card = Instantiate(prefab, _view.StaffGridContent);
                 // [TODO: IBindable<Employee> 연결 후 활성화]
 
                 var captured = employee;
@@ -368,7 +371,22 @@ namespace GameDevTycoon.UI.Ingame
             _                  => "소규모",
         };
 
-        // [TODO: InputField 현재값 캐싱 방식으로 교체 예정]
-        private string GetCurrentProjectName() => string.Empty;
+        private string GetCurrentProjectName() => _view.ProjectNameInput;
+
+        private GameObject GetStaffCardPrefab(Role role)
+        {
+            foreach (var entry in _staffCardPrefabs)
+                if (entry.role == role) return entry.prefab;
+            return null;
+        }
+    }
+
+    [System.Serializable]
+    public sealed class StaffCardPrefabEntry
+    {
+        public Role       role;
+        public GameObject prefab;
     }
 }
+
+// StaffCard 직군별 프리팹 매핑용
