@@ -5,33 +5,40 @@ using UnityEngine.EventSystems;
 
 public class PlayerMove : MonoBehaviour
 {
-    private NavMeshAgent agent;
-    private Camera mainCamera;
-    private Animator anim;
+    private NavMeshAgent _agent;
+    private Camera _mainCamera;
+    private Animator _anim;
+    
+    [Header("카메라 매니저 참조")]
+    [SerializeField] private CameraManager _cameraManager;
 
     [Header("레이어 설정")]
-    [SerializeField] private LayerMask interactableLayer;   // 상호작용 레이어
-    [SerializeField] private LayerMask groundLayer;         // 바닥 레이어
+    [SerializeField] private LayerMask _interactableLayer;   // 상호작용 레이어
+    [SerializeField] private LayerMask _groundLayer;         // 바닥 레이어
 
     [Header("상호작용 거리")]
-    [SerializeField] private float interactionDistance = 1f;  // 상호작용 거리
+    [SerializeField] private float _interactionDistance = 1f;  // 상호작용 거리
 
-    private Collider targetCollider = null;           // 타겟의 콜라이더
+    private Collider _targetCollider = null;           // 타겟의 콜라이더
 
-    private IInteractable targetInteractable = null;   // 현재 목표로 타겟팅한 대상
+    private IInteractable _targetInteractable = null;   // 현재 목표로 타겟팅한 대상
     private bool hasInteracted = false;               // 현재 상호작용 중인지
+
+    private Vector2 _touchStartPos;                     // 터치 시작점
+    private bool _isDraggingCamera = false;             // 터치 드래그 했는지
+    private const float DragThreshold = 15f;            // 드래그했다고 간주하는 거리
 
     private void Start()
     {
         GameManager.Instance.InjectPlayer(this);
-        mainCamera = Camera.main;
+        _mainCamera = Camera.main;
 
-        anim = GetComponent<Animator>();
+        _anim = GetComponent<Animator>();
 
-        agent = GetComponent<NavMeshAgent>();
+        _agent = GetComponent<NavMeshAgent>();
 
         // 상호작용 오브젝트쪽으로 이동 후 멈출 때 여유거리
-        agent.stoppingDistance = interactionDistance -0.2f;
+        _agent.stoppingDistance = _interactionDistance -0.2f;
     }
 
     private void Update()
@@ -41,6 +48,9 @@ public class PlayerMove : MonoBehaviour
         // UI창이 열려있다면 터치 이동로직을 무시
         if (hasInteracted) return;
 
+        // 카메라 매니저가 유효하고, 현재 UI창이 열려있다면 이동 금지
+        if (_cameraManager != null && _cameraManager.IsUIOpen.Value) return;
+
         // UI창이 열려있으면 터치 관통 방지
         if (IsPointerOverUI()) return;
 
@@ -48,26 +58,82 @@ public class PlayerMove : MonoBehaviour
         #if UNITY_EDITOR
         if (Input.GetMouseButtonDown(0))
         {
-            MoveToTarget(Input.mousePosition);
+            // 터치가 시작되면 위치를 기억하고 아직 드래그가 아님
+            _touchStartPos = Input.mousePosition;
+            _isDraggingCamera = false;
+        }
+
+        if (Input.GetMouseButton(0))
+        {
+            // 터치 후 드래그를 DragThreshold보다 길게하면 드래그 한 것으로 간주하고 화면 이동
+            if (Vector2.Distance(_touchStartPos, Input.mousePosition) > DragThreshold)
+            {
+                _isDraggingCamera = true;
+            }
+        }
+
+        // 터치를 땠을 때 isDraggingCamera가 true면 이동x, false면 플레이어 이동
+        if (Input.GetMouseButtonUp(0))
+        {
+            if (!_isDraggingCamera)
+            {
+                MoveToTarget(Input.mousePosition);
+            }
         }
 
         // 안드로이드 빌드파일에선 손가락 터치고 움직임
         #else
-        if(Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Began){
-            MoveToTarget(Input.GetTouch(0).position);
+        if (Input.touchCount > 0)
+        {
+            Touch touch = Input.GetTouch(0);
+            
+            // 두 손가락 줌 중일 때는 이동 로직 차단
+            if (Input.touchCount >= 2)
+            {
+                _isDraggingCamera = true;
+                return;
+            }
+
+            switch (touch.phase)
+            {
+                // 터치가 시작되면 위치를 기억하고 아직 드래그가 아님
+                case TouchPhase.Began:
+                    _touchStartPos = touch.position;
+                    _isDraggingCamera = false;
+                    break;
+
+                // 터치 후 드래그를 DragThreshold보다 길게하면 드래그 한 것으로 간주하고 화면 이동
+                case TouchPhase.Moved:
+                    if (Vector2.Distance(_touchStartPos, touch.position) > DragThreshold)
+                    {
+                        _isDraggingCamera = true;
+                    }
+                    break;
+
+                // 터치를 땠을 때 isDraggingCamera가 true면 이동x, false면 플레이어 이동
+                case TouchPhase.Ended:
+                    if (!_isDraggingCamera)
+                    {
+                        MoveToTarget(touch.position);
+                    }
+
+                    _isDraggingCamera = false;
+                    break;
+            }
         }
+        
         #endif
 
         // 상호작용 대상을 터치했고, 상호작용 전이라면 거리체크
-        if (targetInteractable != null && !hasInteracted && targetCollider != null)
+        if (_targetInteractable != null && !hasInteracted && _targetCollider != null)
         {
             // 상호작용할 타겟의 콜라이더 표면중 Player와 가장 가까운 표면
-            Vector3 closestPoint = targetCollider.ClosestPoint(transform.position);
+            Vector3 closestPoint = _targetCollider.ClosestPoint(transform.position);
 
             // Player에서부터 가장 가까운 표면까지 직선거리
             float distance = Vector3.Distance(transform.position, closestPoint);
 
-            if (distance <= interactionDistance)
+            if (distance <= _interactionDistance)
             {
                 TriggerInteraction();
             }
@@ -76,57 +142,57 @@ public class PlayerMove : MonoBehaviour
 
     private void MoveToTarget(Vector2 screenPosition)
     {
-        Ray ray = mainCamera.ScreenPointToRay(screenPosition);
+        Ray ray = _mainCamera.ScreenPointToRay(screenPosition);
         RaycastHit hit;
 
         // interactableLayer가 붙은 사물에 Ray쏨
-        if (Physics.Raycast(ray, out hit, 100f, interactableLayer))
+        if (Physics.Raycast(ray, out hit, 100f, _interactableLayer))
         {
             // 터치한 오브젝트의 인터페이스를 가져옴
             IInteractable interactable = hit.collider.GetComponent<IInteractable>();
 
             if (interactable != null)
             {
-                targetInteractable = interactable;
-                targetCollider = hit.collider;
+                _targetInteractable = interactable;
+                _targetCollider = hit.collider;
                 hasInteracted = false;
 
-                agent.SetDestination(targetInteractable.GetTransform().position);
+                _agent.SetDestination(_targetInteractable.GetTransform().position);
 
                 return;
             }
         }
 
         // 상호작용가능한 오브젝트를 터치한 게 아니면 바닥 레이어만 조준해서 쏨
-        if (Physics.Raycast(ray, out hit, 100f, groundLayer))
+        if (Physics.Raycast(ray, out hit, 100f, _groundLayer))
         {
-            targetInteractable = null;
-            targetCollider = null;
+            _targetInteractable = null;
+            _targetCollider = null;
             hasInteracted = false;
 
             // 일반 바닥 이동
-            agent.SetDestination(hit.point);
+            _agent.SetDestination(hit.point);
         }
     }
 
     private void TriggerInteraction()
     {
         hasInteracted = true;
-        agent.ResetPath();
+        _agent.ResetPath();
 
         // 대상 바라보기
-        Vector3 targetPos = targetInteractable.GetTransform().position;
+        Vector3 targetPos = _targetInteractable.GetTransform().position;
         Vector3 lookDirection = new Vector3(targetPos.x, transform.position.y, targetPos.z);
         transform.LookAt(lookDirection);
 
         // 상호작용 실행
-        targetInteractable.OnInteract();
+        _targetInteractable.OnInteract();
     }
 
     public void CloseInteractionUI()
     {
         // UI창을 끌 때 상호작용상태 초기화
-        targetInteractable = null;
+        _targetInteractable = null;
         hasInteracted = false;
     }
 
@@ -147,21 +213,21 @@ public class PlayerMove : MonoBehaviour
     // NavMeshAgent의 속도를 애니메이터에 전달
     private void UpdateAnimation()
     {
-        if (agent != null && anim != null)
+        if (_agent != null && _anim != null)
         {
             // 정지 상태면 0에 가깝고, 최고 속도로 달리면 agent.speed 값
-            float currentSpeed = agent.velocity.magnitude;
+            float currentSpeed = _agent.velocity.magnitude;
 
             // 애니메이터 파라미터의 "Speed"에 속도를 전달
-            anim.SetFloat("Speed", currentSpeed);
+            _anim.SetFloat("Speed", currentSpeed);
         }
     }
 
     public void WorkCompleteAnim()
     {
-        if(anim != null)
+        if(_anim != null)
         {
-            anim.SetTrigger("IsWorkDone");
+            _anim.SetTrigger("IsWorkDone");
         }
     }
 }
