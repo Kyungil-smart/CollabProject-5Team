@@ -61,9 +61,14 @@ namespace GameDevTycoon.UI.Ingame
         [SerializeField] private TextMeshProUGUI _engineValue;
         [SerializeField] private Slider          _progressBar;
         [SerializeField] private TextMeshProUGUI _progressValueLabel;
+        [SerializeField] private GameObject      _operationGroup;
+        [SerializeField] private GameObject      _operationEmptyLabel;
         [SerializeField] private GameObject      _statusGroup;
-        [SerializeField] private GameObject      _statusGroupEmptyLabel;
-        [SerializeField] private GameObject      _statGroup;
+        [SerializeField] private GameObject      _userCountGroup;
+        [SerializeField] private GameObject      _salesGroup;
+        [SerializeField] private GameObject      _maintenanceGroup;
+        [SerializeField] private GameObject      _profitGroup;
+        [SerializeField] private GameObject      _revenueGraph;
         [SerializeField] private TextMeshProUGUI _statusValue;
         [SerializeField] private TextMeshProUGUI _userCountValue;
         [SerializeField] private TextMeshProUGUI _salesValue;
@@ -106,7 +111,6 @@ namespace GameDevTycoon.UI.Ingame
         public Transform StaffGridContent       => _staffGridContent;
         public Transform InProgressListContent  => _inProgressListContent;
         public Transform StaffDetailContent     => _staffDetailContent;
-        public string ProjectNameInput          => _projectNameInput.text;
 
         private void Awake()
         {
@@ -199,13 +203,18 @@ namespace GameDevTycoon.UI.Ingame
         }
 
         /// <summary>
-        /// 서비스 상태 여부에 따라 StatusGroup 표시 전환.
+        /// 서비스 상태 여부에 따라 OperationGroup 표시 전환.
         /// </summary>
         public void SetStatusGroupVisible(bool isInService)
         {
-            _statusGroup.SetActive(true);
-            _statusGroupEmptyLabel.SetActive(!isInService);
-            _statGroup.SetActive(isInService);
+            _operationGroup.SetActive(true);
+            _operationEmptyLabel.SetActive(!isInService);
+            _statusGroup.SetActive(isInService);
+            _userCountGroup.SetActive(isInService);
+            _salesGroup.SetActive(isInService);
+            _maintenanceGroup.SetActive(isInService);
+            _profitGroup.SetActive(isInService);
+            _revenueGraph.SetActive(isInService);
         }
 
         public void SetStatusValue(string status)         => _statusValue.text = status;
