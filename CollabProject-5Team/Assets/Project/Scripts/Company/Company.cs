@@ -58,35 +58,35 @@ public class Company : MonoBehaviour
         {
             int firstEmployeeId = _EmployeeManager.Instance.allEmployeeObj[0].GetComponent<Employee>().so.id;
             Employee hiredEmployee = _EmployeeManager.Instance.HireEmployee(firstEmployeeId);
-            curProject.HireEmployee(hiredEmployee);
+            //curProject.HireEmployee(hiredEmployee);
         }
         if (Input.GetKeyDown(KeyCode.Alpha2))
         {
             int firstEmployeeId = _EmployeeManager.Instance.allEmployeeObj[1].GetComponent<Employee>().so.id;
             Employee hiredEmployee = _EmployeeManager.Instance.HireEmployee(firstEmployeeId);
-            curProject.HireEmployee(hiredEmployee);
+            //curProject.HireEmployee(hiredEmployee);
         }
         if (Input.GetKeyDown(KeyCode.Alpha3))
         {
             int firstEmployeeId = _EmployeeManager.Instance.allEmployeeObj[2].GetComponent<Employee>().so.id;
             Employee hiredEmployee = _EmployeeManager.Instance.HireEmployee(firstEmployeeId);
-            curProject.HireEmployee(hiredEmployee);
+            //curProject.HireEmployee(hiredEmployee);
         }
 
         if (Input.GetKeyDown(KeyCode.Alpha4)) // 테스트용: 첫 번째 직원 해고
         {
             Employee target = curProject?.plannings[0];
-            curProject.FireEmployee(target);
+            //curProject.FireEmployee(target);
         }
         if (Input.GetKeyDown(KeyCode.Alpha5))
         {
             Employee target = curProject?.programmer[0];
-            curProject.FireEmployee(target);
+            //curProject.FireEmployee(target);
         }
         if (Input.GetKeyDown(KeyCode.Alpha6))
         {
             Employee target = curProject?.arts[0];
-            curProject.FireEmployee(target);
+            //curProject.FireEmployee(target);
         }
     }
 

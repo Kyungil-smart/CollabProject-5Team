@@ -83,10 +83,10 @@ namespace GameDevTycoon.UI.Ingame
 
         private void OnWorkStartClicked()
         {
-            DateTimeManager.Instance.OnClickEndDayButton();
+            DateTimeManager.Instance.CompleteDayWork();
             // WorkStartBubble은 업무 시작 후 비활성화 — View에서 직접 처리하거나 Presenter에서 호출
             // [TODO: WorkStartBubble 비활성화 메서드 HUDView에 추가 후 연결]
-            // ★~퀘스트 구현 전에 임시로 단순 날짜 지나게 처리중~☆
+            // ★~퀘스트 구현 전에 임시로 그냥 임무 완료되게 처리중~☆
         }
 
         private void OnHRClicked()

@@ -12,7 +12,7 @@ namespace GameDevTycoon.UI.Ingame
     public sealed class DayBottomPresenter : MonoBehaviour
     {
         [SerializeField] private DayBottomView _view;
-        [SerializeField] private AlertView     _alertView;
+        [SerializeField] private AlertView _alertView;
 
         [Header("ProjectProgressItemView 프리팹")]
         [SerializeField] private GameObject _progressItemPrefab;
@@ -22,6 +22,13 @@ namespace GameDevTycoon.UI.Ingame
             BindData();
             BindButtons();
             RefreshProgressItems();
+
+            DateTimeManager.OnWorkCompleted += OnWorkCompleted;
+        }
+
+        private void OnDestroy()
+        {
+            DateTimeManager.OnWorkCompleted -= OnWorkCompleted;
         }
 
         private void BindData()
@@ -40,8 +47,11 @@ namespace GameDevTycoon.UI.Ingame
                 .AddTo(this);
 
             _view.OnDayQuitClicked
-                .Subscribe(_ => DateTimeManager.Instance.OnClickEndDayButton())
-                .AddTo(this);
+                .Subscribe(_ =>
+                {
+                    DateTimeManager.Instance.OnClickEndDayButton();
+                    //_view.SetDayQuitInteractable(false); 임시로 버그 안고침
+                }).AddTo(this);
         }
 
         /// <summary>
