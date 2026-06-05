@@ -67,9 +67,9 @@ public class _EmployeeManager : MonoBehaviour
         }
 
         GameObject prefab = _employeeList.leftEmployees[id];
-        GameObject employeeObject = Instantiate(prefab, Company.Instance.transform);
+        //GameObject employeeObject = Instantiate(prefab, Company.Instance.transform);
 
-        Employee employee = employeeObject.GetComponent<Employee>();
+        Employee employee = prefab.GetComponent<Employee>();
         employee.Init();
 
         _haveEmployees.AddEmployee(employee);
