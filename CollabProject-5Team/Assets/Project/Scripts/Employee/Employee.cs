@@ -40,4 +40,11 @@ public class Employee : MonoBehaviour, IPointerClickHandler
     {
         Debug.Log($"[직원 클릭됨] 이름: {so.Name} | 현재 피로도: {MutableData.fatigue}");
     }
+
+    public void SaveCurrentData()
+    {
+        MutableData.preDesire  = MutableData.desire;
+        MutableData.preFatigue = MutableData.fatigue;
+        MutableData.preLoyalty = MutableData.fatigue;
+    }
 }

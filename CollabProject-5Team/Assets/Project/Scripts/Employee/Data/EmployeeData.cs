@@ -57,16 +57,16 @@ public class EmployeeImmutableData : SheetDataSOBase
         fatigue      = ParseInt(rowData[5]);
         loyalty      = ParseInt(rowData[6]);
         hiringCost   = ParseInt(rowData[7]);
-        weekSalary = ParseInt(rowData[8]);
+        weekSalary   = ParseInt(rowData[8]);
         grade        = ParseInt(rowData[9]);
         mainTrait    = ParseKoreanTrait(rowData[10]) ?? default;
         subTrait     = ParseKoreanTrait(rowData[11]) ?? default;
         riskTrait    = ParseKoreanTrait(rowData[12]) ?? default;
-        mbtiParsed = ConvertMbtiStringToEnum(rowData[13].Trim());
-        style      = rowData[14].Trim();
-        hireText   = rowData[15].Trim();
-        fireText   = rowData[16].Trim();
-        fireText2  = rowData[17].Trim();
+        mbtiParsed   = ConvertMbtiStringToEnum(rowData[13].Trim());
+        style        = rowData[14].Trim();
+        hireText     = rowData[15].Trim();
+        fireText     = rowData[16].Trim();
+        fireText2    = rowData[17].Trim();
     }
 }
 
@@ -123,5 +123,8 @@ public struct EmployeeMutableData // 가변 데이터
         get => _fatigue;
         set => _fatigue = Mathf.Clamp(value, 0, 100);
     }
-}
 
+    public int preDesire;
+    public int preLoyalty;
+    public int preFatigue;
+}
