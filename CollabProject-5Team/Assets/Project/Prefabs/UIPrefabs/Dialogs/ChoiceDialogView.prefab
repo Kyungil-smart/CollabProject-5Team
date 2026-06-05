@@ -9,13 +9,15 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6702510211611411019}
+  - component: {fileID: 8153383444265598240}
+  - component: {fileID: 3067864253731068545}
   m_Layer: 5
   m_Name: ChoiceDialogView
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &6702510211611411019
 RectTransform:
   m_ObjectHideFlags: 0
@@ -25,7 +27,7 @@ RectTransform:
   m_GameObject: {fileID: 280206067276034969}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 1.0982941, y: 1.0982941, z: 1.0982941}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 2093100565956670096}
@@ -36,6 +38,34 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &8153383444265598240
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 280206067276034969}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: df43bf630d5ef204d8cef6f091d3885a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _button: {fileID: 6825690121255439215}
+  _choiceText: {fileID: 1355389655711042980}
+--- !u!114 &3067864253731068545
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 280206067276034969}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: df43bf630d5ef204d8cef6f091d3885a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _button: {fileID: 6825690121255439215}
+  _choiceText: {fileID: 1355389655711042980}
 --- !u!1 &3608182615887696472
 GameObject:
   m_ObjectHideFlags: 0
