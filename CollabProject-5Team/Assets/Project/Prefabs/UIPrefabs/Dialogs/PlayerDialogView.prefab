@@ -572,13 +572,14 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2956093879348147938}
+  - component: {fileID: 2623619844083755739}
   m_Layer: 5
   m_Name: PlayerDialogView
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &2956093879348147938
 RectTransform:
   m_ObjectHideFlags: 0
@@ -588,7 +589,7 @@ RectTransform:
   m_GameObject: {fileID: 8378009807504451931}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 1.0982941, y: 1.0982941, z: 1.0982941}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 4087780679023714445}
@@ -601,6 +602,22 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &2623619844083755739
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8378009807504451931}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: eb4ce64ee98a7b74fa4bd8b8866b9e37, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _dialogueText: {fileID: 7710666155642571437}
+  _nextButton: {fileID: 4112262335209212265}
+  _charInterval: 0.03
+  _nameText: {fileID: 5500256935279754960}
 --- !u!1 &8973108127898027473
 GameObject:
   m_ObjectHideFlags: 0

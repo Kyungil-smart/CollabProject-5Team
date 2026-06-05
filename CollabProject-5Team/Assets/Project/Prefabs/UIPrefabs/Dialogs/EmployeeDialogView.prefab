@@ -9,13 +9,14 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5335016122498062075}
+  - component: {fileID: 3071747608779327181}
   m_Layer: 5
   m_Name: EmployeeDialogView
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &5335016122498062075
 RectTransform:
   m_ObjectHideFlags: 0
@@ -25,7 +26,7 @@ RectTransform:
   m_GameObject: {fileID: 30370600743059139}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 1.0982941, y: 1.0982941, z: 1.0982941}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 6233860472289793655}
@@ -38,6 +39,23 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &3071747608779327181
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 30370600743059139}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: db87532c66f94e7449bf80ecbf6dbf22, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _dialogueText: {fileID: 8589629115557771731}
+  _nextButton: {fileID: 7092409415713025023}
+  _charInterval: 0.03
+  _portrait: {fileID: 531146614315146186}
+  _nameText: {fileID: 3011676195111943433}
 --- !u!1 &2606131688814399947
 GameObject:
   m_ObjectHideFlags: 0
