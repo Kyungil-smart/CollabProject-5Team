@@ -29,4 +29,5 @@ public class Quest
     public QuestStatus status;
     public QuestType type;
     public QuestMode mode;
+    public Role role;
 }
