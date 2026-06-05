@@ -1,3 +1,4 @@
+using R3;
 using UnityEngine;
 
 namespace Dialogue
@@ -9,12 +10,22 @@ namespace Dialogue
         private const int EndNodeId = 20000;
 
         private bool _isDialogueRunning;
-        private int _currentEmployeeId;
+        private int  _currentEmployeeId;
         private EmployeeDialogueState _currentState;
-
         private DialoguePoolEntrySO _currentPoolEntry;
-        private int _currentNodeId;
-        private int _chosenBranch;
+        private int  _currentNodeId;
+        private int  _chosenBranch;
+
+        [Header("대화 View (씬에 미리 배치)")]
+        [SerializeField] private PlayerDialogueView   _playerView;
+        [SerializeField] private EmployeeDialogueView _employeeView;
+
+        [Header("선택지 View (씬에 미리 배치, 최대 2개)")]
+        [SerializeField] private ChoiceItemView _choiceItem01;
+        [SerializeField] private ChoiceItemView _choiceItem02;
+
+        private DialogueBaseView _currentView;
+        private bool _isChoiceMode;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         public static void Init() => Instance = null;
@@ -24,12 +35,21 @@ namespace Dialogue
             if (Instance != null && Instance != this) { Destroy(gameObject); return; }
             Instance = this;
             DontDestroyOnLoad(gameObject);
+
+            DialogueEvents.OnDialogueReady
+                .Subscribe(payload => BindViews(payload))
+                .AddTo(this);
+
+            DialogueEvents.OnDialogueEnded
+                .Subscribe(_ => HideAll())
+                .AddTo(this);
+
+            HideAll();
         }
 
         public void StartDialogueById(Employee emp)
         {
             EmployeeDialogueState state = GetDialogueState(emp.MutableData.fatigue, emp.MutableData.desire);
-
             StartDialogue(emp.so.id, state);
         }
 
@@ -47,9 +67,9 @@ namespace Dialogue
 
             _isDialogueRunning = true;
             _currentEmployeeId = employeeId;
-            _currentState = state;
-            _currentPoolEntry = poolEntry;
-            _chosenBranch = 0;
+            _currentState      = state;
+            _currentPoolEntry  = poolEntry;
+            _chosenBranch      = 0;
 
             ShowNode(poolEntry.talkId);
         }
@@ -63,6 +83,10 @@ namespace Dialogue
 
             if (_chosenBranch == 0)
                 _chosenBranch = selectedIndex + 1;
+
+            _isChoiceMode = false;
+            HideChoices();
+            if (_currentView != null) _currentView.SetNextButtonVisible(true);
 
             int nextId = selectedIndex == 0 ? node.nextId01 : node.nextId02;
             AdvanceTo(nextId);
@@ -78,6 +102,26 @@ namespace Dialogue
             AdvanceTo(node.nextId);
         }
 
+        /// <summary>
+        /// 이미 대화한 직원 클릭 시 간단 메시지 표시 (state==2)
+        /// </summary>
+        public void ShowBusyMessage(Employee emp, string message = "지금은 좀 바빠 보인다...")
+        {
+            Sprite portrait = emp?.so.iconNormal;
+
+            _playerView.gameObject.SetActive(false);
+            _currentView = _employeeView;
+            _employeeView.OnTypingComplete = null;
+            _employeeView.OnNextAction     = () => HideAll();
+
+            _employeeView.Bind(new EmployeeDialogueViewData
+            {
+                desc     = "유저",
+                text     = message,
+                portrait = portrait,
+            });
+        }
+        
         static EmployeeDialogueState GetDialogueState(int fatigue, int desire)
         {
             bool highFatigue   = fatigue > 50;
@@ -105,12 +149,13 @@ namespace Dialogue
             DialogueEvents.NotifyDialogueReady(new DialogueStartPayload
             {
                 employeeId = _currentEmployeeId,
-                state = _currentState,
-                text = node.text,
-                isChoice = node.isChoice,
-                isUser = node.isUser,
-                choice01 = node.choice01,
-                choice02 = node.choice02,
+                state      = _currentState,
+                desc       = node.desc,
+                text       = node.text,
+                isChoice   = node.isChoice,
+                isUser     = node.isUser,
+                choice01   = node.choice01,
+                choice02   = node.choice02,
             });
         }
 
@@ -134,11 +179,95 @@ namespace Dialogue
             }
 
             DateTimeManager.Instance.CompleteSpecialDialogue(_currentEmployeeId.ToString());
-
             DialogueEvents.NotifyDialogueEnded(_currentEmployeeId);
 
             _isDialogueRunning = false;
-            _currentPoolEntry = null;
+            _currentPoolEntry  = null;
+        }
+
+        void BindViews(DialogueStartPayload payload)
+        {
+            HideChoices();
+            _isChoiceMode = false;
+            if (_currentView != null)
+            {
+                _currentView.OnTypingComplete = null;
+                _currentView.OnNextAction     = null;
+            }
+
+            if (payload.isUser)
+            {
+                _employeeView.gameObject.SetActive(false);
+                _currentView = _playerView;
+                _playerView.Bind(payload.desc, payload.text);
+            }
+            else
+            {
+                _playerView.gameObject.SetActive(false);
+                _currentView = _employeeView;
+
+                Employee emp = _EmployeeManager.Instance.haveEmployees.haveEmployeeList
+                    .Find(e => e.so.id == payload.employeeId);
+
+                Sprite portrait = null;
+                if (emp != null)
+                {
+                    portrait = payload.state switch
+                    {
+                        EmployeeDialogueState.Normal   => emp.so.iconNormal,
+                        EmployeeDialogueState.Caution  => emp.so.iconCaution,
+                        EmployeeDialogueState.Critical => emp.so.iconCritical,
+                        _                              => emp.so.iconNormal,
+                    };
+                }
+
+                _employeeView.Bind(new EmployeeDialogueViewData
+                {
+                    desc     = payload.desc,
+                    text     = payload.text,
+                    portrait = portrait,
+                });
+            }
+
+            if (payload.isChoice)
+            {
+                _isChoiceMode = true;
+                _currentView.OnTypingComplete = () =>
+                {
+                    _currentView.SetNextButtonVisible(false);
+                    ShowChoice(_choiceItem01, payload.choice01, 0);
+                    ShowChoice(_choiceItem02, payload.choice02, 1);
+                };
+            }
+        }
+
+        void ShowChoice(ChoiceItemView item, string text, int index)
+        {
+            if (string.IsNullOrEmpty(text)) { item.gameObject.SetActive(false); return; }
+
+            item.gameObject.SetActive(true);
+            item.Bind(new ChoiceItemViewData
+            {
+                text       = text,
+                index      = index,
+                onSelected = SubmitChoice,
+            });
+        }
+
+        void HideChoices()
+        {
+            if (_choiceItem01 != null) _choiceItem01.gameObject.SetActive(false);
+            if (_choiceItem02 != null) _choiceItem02.gameObject.SetActive(false);
+        }
+
+        void HideAll()
+        {
+            if (_playerView   != null) _playerView.gameObject.SetActive(false);
+            if (_employeeView != null) _employeeView.gameObject.SetActive(false);
+            _currentView   = null;
+            _isChoiceMode  = false;
+            HideChoices();
+            GameManager.Instance?.player?.CloseInteractionUI();
         }
     }
 }

@@ -72,6 +72,9 @@ public class Project : MonoBehaviour
     [Header("UI 표시용 데이터")]
     public string genre; public string artStyle; public string engine;
 
+    // 보고서 생성완료시 true
+    public bool isReportDraftsReady;
+
     private void Start()
     {
         userNamed.Value = Name;
@@ -174,8 +177,7 @@ public class Project : MonoBehaviour
     }
 
     #region 보고서 부분
-    // 보고서 생성 완료 시 발행되는 델리게이트
-    public static event Action OnReportDraftsReady;
+
 
     // 투입된 직원 데이터를 기반으로 보고서 생성 
     public void GenerateReportDrafts()
@@ -187,8 +189,8 @@ public class Project : MonoBehaviour
         ReportPolicy.GenerateReportForRole(this, programmer);
         ReportPolicy.GenerateReportForRole(this, arts);
 
+        isReportDraftsReady = true;
         Debug.Log($"[{userNamed.Value}] 보고서 생성 완료: {pendingReports.Count}건");
-        OnReportDraftsReady?.Invoke();
     }
 
     // UI에서 파트당 1개 선택 시 호출
@@ -240,6 +242,7 @@ public class Project : MonoBehaviour
 
         pendingReports.Clear();
         selectedReports.Clear();
+        isReportDraftsReady = false;
 
         // 모든 투입 직원 피로도 감소
         foreach (var e in plannings) e.MutableData.fatigue -= FATIGUE_LESS;

@@ -4,12 +4,12 @@ public class GameManager : MonoBehaviour
 {
     public static GameManager Instance;
 
-    [Header("임시 UI 전환용")]
-
-
-
     [Header("자동 주입")]
     public PlayerMove player;
+
+
+
+
 
     #region 싱글톤 설정
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
