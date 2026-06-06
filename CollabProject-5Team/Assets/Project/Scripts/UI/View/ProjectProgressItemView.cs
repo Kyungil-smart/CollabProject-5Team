@@ -11,20 +11,14 @@ namespace GameDevTycoon.UI.Ingame
     public sealed class ProjectProgressItemView : MonoBehaviour, IBindable<Project>
     {
         [SerializeField] private TextMeshProUGUI _projectNameLabel;
-        [SerializeField] private Slider          _progressBar;
+        [SerializeField] private Slider _progressBar;
         [SerializeField] private TextMeshProUGUI _progressValueLabel;
-        [SerializeField] private TextMeshProUGUI _remainDaysLabel;
 
         public void Bind(Project project)
         {
             _projectNameLabel.text = project.userNamed.Value;
-
-            float progress = project.ProgressDayBar / 100f;
-            _progressBar.value       = progress;
+            _progressBar.value = project.ProgressDayBar / 100f;
             _progressValueLabel.text = $"{project.ProgressDayBar:F1}%";
-
-            int remainDays = project.DurationDays - project.day;
-            _remainDaysLabel.text = remainDays > 0 ? $"D-{remainDays}" : "마감";
         }
     }
 }

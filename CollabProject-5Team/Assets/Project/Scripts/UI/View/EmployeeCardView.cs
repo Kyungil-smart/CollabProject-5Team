@@ -10,44 +10,41 @@ namespace GameDevTycoon.UI.Ingame
     /// </summary>
     public sealed class EmployeeCardView : MonoBehaviour, IBindable<Employee>
     {
-        [SerializeField] private Image           _profileIcon;
-        [SerializeField] private GameObject      _deployBadge;
-        [SerializeField] private TextMeshProUGUI _deployLabel;
-        [SerializeField] private DepartmentTagView _departmentTag;
+        [SerializeField] private Image _profileIcon;
+        [SerializeField] private GameObject _deployBadge;
         [SerializeField] private TextMeshProUGUI _nameLabel;
-        [SerializeField] private AbilityTagView  _abilityTag;
         [SerializeField] private TextMeshProUGUI _abilityValue;
-        [SerializeField] private GameObject      _educationOverlay;
-        [SerializeField] private TextMeshProUGUI _educationLabel;
+        [SerializeField] private GameObject _educationOverlay;
+
+        [Header("태그 앵커")]
+        [SerializeField] private Transform _departmentTagAnchor;
+
+        [Header("태그 프리팹")]
+        [SerializeField] private DepartmentTagView _departmentTagPrefab;
 
         public void Bind(Employee employee)
         {
-            var so      = employee.so;
+            var so = employee.so;
             var mutable = employee.MutableData;
 
             _profileIcon.sprite = GetProfileSprite(so, mutable);
-            _nameLabel.text     = so.Name;
-            _abilityValue.text  = mutable.ability.ToString();
+            _nameLabel.text = so.Name;
+            _abilityValue.text = mutable.ability.ToString();
 
-            _departmentTag.Bind(so.role);
+            ClearAnchor(_departmentTagAnchor);
+            var tag = Instantiate(_departmentTagPrefab, _departmentTagAnchor);
+            tag.Bind(so.role);
 
-            bool isDeployed = IsDeployed(employee);
-            _deployBadge.SetActive(isDeployed);
+            _deployBadge.SetActive(IsDeployed(employee));
 
             // [TODO: 교육 시스템 연결 후 교육 잔여 주수 표시]
             _educationOverlay.SetActive(false);
         }
 
-        /// <summary>
-        /// 피로도/의욕 기준 상태별 스프라이트 분기.
-        /// 정상: 피로도 ≤ 50 AND 의욕 ≥ 50
-        /// 주의: 피로도 > 50 OR 의욕 < 50
-        /// 위험: 피로도 > 50 AND 의욕 < 50
-        /// </summary>
         private static Sprite GetProfileSprite(EmployeeImmutableData so, EmployeeMutableData mutable)
         {
             bool highFatigue = mutable.fatigue > 50;
-            bool lowDesire   = mutable.desire  < 50;
+            bool lowDesire = mutable.desire < 50;
 
             if (highFatigue && lowDesire) return so.iconCritical;
             if (highFatigue || lowDesire) return so.iconCaution;
@@ -59,6 +56,12 @@ namespace GameDevTycoon.UI.Ingame
             foreach (var project in Company.Instance.projects)
                 if (project.GetAllEmployees().Contains(employee)) return true;
             return false;
+        }
+
+        private static void ClearAnchor(Transform anchor)
+        {
+            foreach (Transform child in anchor)
+                Destroy(child.gameObject);
         }
     }
 }

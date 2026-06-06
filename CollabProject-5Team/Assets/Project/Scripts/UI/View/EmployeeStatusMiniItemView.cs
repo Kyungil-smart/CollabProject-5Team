@@ -10,38 +10,49 @@ namespace GameDevTycoon.UI.Ingame
     /// </summary>
     public sealed class EmployeeStatusMiniItemView : MonoBehaviour, IBindable<Employee>
     {
-        [SerializeField] private Image           _profileIcon;
+        [SerializeField] private Image _profileIcon;
         [SerializeField] private TextMeshProUGUI _nameLabel;
-        [SerializeField] private DepartmentTagView _departmentTag;
-        [SerializeField] private MBTITagView     _mbtiTag;
+
+        [Header("태그 앵커")]
+        [SerializeField] private Transform _departmentTagAnchor;
+        [SerializeField] private Transform _mbtiTagAnchor;
+
+        [Header("태그 프리팹")]
+        [SerializeField] private DepartmentTagView _departmentTagPrefab;
+        [SerializeField] private MBTITagView _mbtiTagPrefab;
 
         [Header("의욕도")]
-        [SerializeField] private Slider          _motivationBar;
+        [SerializeField] private Slider _motivationBar;
         [SerializeField] private TextMeshProUGUI _motivationValue;
         [SerializeField] private TextMeshProUGUI _motivationComment;
 
         [Header("피로도")]
-        [SerializeField] private Slider          _fatigueBar;
+        [SerializeField] private Slider _fatigueBar;
         [SerializeField] private TextMeshProUGUI _fatigueValue;
         [SerializeField] private TextMeshProUGUI _fatigueComment;
 
         public void Bind(Employee employee)
         {
-            var so      = employee.so;
+            var so = employee.so;
             var mutable = employee.MutableData;
 
             _profileIcon.sprite = GetProfileSprite(so, mutable);
-            _nameLabel.text     = so.Name;
+            _nameLabel.text = so.Name;
 
-            _departmentTag.Bind(so.role);
-            _mbtiTag.Bind(so.mbtiParsed);
+            ClearAnchor(_departmentTagAnchor);
+            var deptTag = Instantiate(_departmentTagPrefab, _departmentTagAnchor);
+            deptTag.Bind(so.role);
 
-            _motivationBar.value    = mutable.desire;
-            _motivationValue.text   = mutable.desire.ToString();
+            ClearAnchor(_mbtiTagAnchor);
+            var mbtiTag = Instantiate(_mbtiTagPrefab, _mbtiTagAnchor);
+            mbtiTag.Bind(so.mbtiParsed);
+
+            _motivationBar.value = mutable.desire;
+            _motivationValue.text = mutable.desire.ToString();
             _motivationComment.text = GetMotivationComment(mutable.desire);
 
-            _fatigueBar.value    = mutable.fatigue;
-            _fatigueValue.text   = mutable.fatigue.ToString();
+            _fatigueBar.value = mutable.fatigue;
+            _fatigueValue.text = mutable.fatigue.ToString();
             _fatigueComment.text = GetFatigueComment(mutable.fatigue);
         }
 
@@ -49,24 +60,30 @@ namespace GameDevTycoon.UI.Ingame
         {
             >= 80 => "의욕 넘침",
             >= 40 => "평시",
-            _     => "의욕 저하"
+            _ => "의욕 저하"
         };
 
         private static string GetFatigueComment(int fatigue) => fatigue switch
         {
             >= 70 => "번아웃 위험",
             >= 50 => "피로 누적",
-            _     => "컨디션 양호"
+            _ => "컨디션 양호"
         };
 
         private static Sprite GetProfileSprite(EmployeeImmutableData so, EmployeeMutableData mutable)
         {
             bool highFatigue = mutable.fatigue > 50;
-            bool lowDesire   = mutable.desire  < 50;
+            bool lowDesire = mutable.desire < 50;
 
             if (highFatigue && lowDesire) return so.iconCritical;
             if (highFatigue || lowDesire) return so.iconCaution;
             return so.iconNormal;
+        }
+
+        private static void ClearAnchor(Transform anchor)
+        {
+            foreach (Transform child in anchor)
+                Destroy(child.gameObject);
         }
     }
 }
