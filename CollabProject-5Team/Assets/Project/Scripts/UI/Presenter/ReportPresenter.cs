@@ -124,7 +124,6 @@ namespace GameDevTycoon.UI.Ingame
         public void OnPersonalOpinionCompleted()
         {
             _view.ShowPanel(ReportPanel.ReportEnd);
-            _hudPresenter.SetNightQuitInteractable(true);
         }
 
         private void OnReportEndConfirmed()
@@ -133,7 +132,6 @@ namespace GameDevTycoon.UI.Ingame
             foreach (var project in Company.Instance.projects)
                 project.ApproveSelectedReports();
 
-            _hudPresenter.SetNightQuitInteractable(true);
             _view.Hide();
         }
 
@@ -142,8 +140,6 @@ namespace GameDevTycoon.UI.Ingame
             _reportAdopted[Role.PLANNER]    = false;
             _reportAdopted[Role.PROGRAMMER] = false;
             _reportAdopted[Role.ARTIST]     = false;
-
-            _hudPresenter.SetNightQuitInteractable(false);
         }
 
         private bool AllReportsAdopted()

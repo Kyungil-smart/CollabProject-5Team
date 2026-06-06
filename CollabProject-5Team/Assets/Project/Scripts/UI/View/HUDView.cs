@@ -63,9 +63,9 @@ namespace GameDevTycoon.UI.Ingame
             _reputationLabel.text = reputation.ToString();
         }
 
-        public void SetNightQuitInteractable(bool interactable)
+        public void SetNightQuitInteractable(int activeProjectCount)
         {
-            _nightQuitButton.interactable = interactable;
+            _nightQuitButton.interactable = activeProjectCount > 0;
         }
 
         public void SwitchToDay()

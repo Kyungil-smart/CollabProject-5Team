@@ -40,7 +40,6 @@ namespace GameDevTycoon.UI.Ingame
 
         public void Show()
         {
-            ClearSelectedEmployees();
             _view.Show();
             _view.ShowTab(ProjectTab.NewProject);
             RefreshSlotSelect();
@@ -244,10 +243,10 @@ namespace GameDevTycoon.UI.Ingame
             foreach (var project in projects)
             {
                 var item = Instantiate(_projectListItemPrefab, _view.InProgressListContent);
-                // [TODO: IBindable<Project> 연결 후 활성화]
+                item.GetComponent<IBindable<Project>>().Bind(project);
 
                 var captured = project;
-                item.GetComponent<UnityEngine.UI.Button>()?.onClick.AddListener(() =>
+                item.GetComponentInChildren<UnityEngine.UI.Button>()?.onClick.AddListener(() =>
                 {
                     ShowProjectDetail(captured);
                 });

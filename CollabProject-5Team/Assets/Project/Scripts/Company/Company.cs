@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using R3;
 using UnityEngine;
 
 public class Company : MonoBehaviour
@@ -26,6 +27,7 @@ public class Company : MonoBehaviour
     public Project curProject; // 메인 프로젝트 (UI에 집중적으로 표시)
     public List<Employee> selectedProjectEmployees = new(); // 신규 프로젝트 UI에서 임시 선택된 직원들
     public List<ProjectCompleted> completedProjects = new(); // 완료된 프로젝트 목록
+    public ReactiveProperty<int> activeProjectCount = new(0);
 
     [Header("사후 관리")]
     public int popularity;   // 회사 인기
@@ -95,12 +97,33 @@ public class Company : MonoBehaviour
     }
 
     #region 프로젝트 시작 관리
+    public Project CreateProject(ProjectSize scale, string projectName)
+    {
+        var prefab = GetProjectPrefab(scale);
+        if (prefab == null)
+        {
+            Debug.LogWarning($"[Company] {scale} 규모 프로젝트 프리팹이 없습니다.");
+            return null;
+        }
+
+        var projectObject = Instantiate(prefab, transform);
+        var project = projectObject.GetComponent<Project>();
+
+        project.InitializeRuntime(projectName);
+        foreach (var employee in selectedProjectEmployees)
+        {
+            project.HireEmployee(employee);
+        }
+
+        return project;
+    }
     public void StartNewProject(Project project)
     {
         gold -= project.RequiredCost;
 
         projects.Add(project);
         curProject = project;
+        activeProjectCount.Value++;
     }
 
     public void ClearSelectedProjectEmployees()
@@ -134,27 +157,6 @@ public class Company : MonoBehaviour
 
         selectedProjectEmployees.Add(employee);
         return true;
-    }
-
-    public Project CreateProject(ProjectSize scale, string projectName)
-    {
-        var prefab = GetProjectPrefab(scale);
-        if (prefab == null)
-        {
-            Debug.LogWarning($"[Company] {scale} 규모 프로젝트 프리팹이 없습니다.");
-            return null;
-        }
-
-        var projectObject = Instantiate(prefab, transform);
-        var project = projectObject.GetComponent<Project>();
-
-        project.InitializeRuntime(projectName);
-        foreach (var employee in selectedProjectEmployees)
-        {
-            project.HireEmployee(employee);
-        }
-
-        return project;
     }
 
     private GameObject GetProjectPrefab(ProjectSize scale) => scale switch
@@ -191,6 +193,8 @@ public class Company : MonoBehaviour
 
         if (curProject == project)
             curProject = projects.Count > 0 ? projects[0] : null;
+
+        activeProjectCount.Value--;
 
         Debug.Log($"[Company] '{record.projectName}' 완료 (등급:{record.grade} 평점:{record.rating:F1} 유저:{record.users} 일일매출:{record.dailyGold}G 유지비:{record.dailyCost}G)");
     }
