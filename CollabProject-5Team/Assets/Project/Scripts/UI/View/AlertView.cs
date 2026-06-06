@@ -49,6 +49,13 @@ namespace GameDevTycoon.UI
         private const float NOTICE_DURATION     = 3f;
         private const float POPUP_FADE_DURATION = 0.15f;
 
+        private IDisposable _confirmPopupConfirmSubscription;
+        private IDisposable _confirmPopupCancelSubscription;
+        private IDisposable _fireConfirmSubscription;
+        private IDisposable _fireCancelSubscription;
+        private IDisposable _alertConfirmSubscription;
+        private IDisposable _synergyConfirmSubscription;
+
         private void Awake()
         {
             if (_confirmPopup     != null) _confirmPopup.SetActive(false);
@@ -65,27 +72,25 @@ namespace GameDevTycoon.UI
         {
             if (_confirmPopup == null) return;
 
+            ClearConfirmPopupSubscriptions();
             _confirmMessageLabel.text = message;
             _confirmPopup.SetActive(true);
 
-            // 구독을 Take(1)로 1회 호출 후 자동 해제
-            _confirmPopupConfirmButton.OnClickAsObservable()
-                .Take(1)
+            _confirmPopupConfirmSubscription = _confirmPopupConfirmButton.OnClickAsObservable()
                 .Subscribe(_ =>
                 {
+                    ClearConfirmPopupSubscriptions();
                     _confirmPopup.SetActive(false);
                     onConfirm?.Invoke();
-                })
-                .AddTo(_confirmPopup);
+                });
 
-            _confirmPopupCancelButton.OnClickAsObservable()
-                .Take(1)
+            _confirmPopupCancelSubscription = _confirmPopupCancelButton.OnClickAsObservable()
                 .Subscribe(_ =>
                 {
+                    ClearConfirmPopupSubscriptions();
                     _confirmPopup.SetActive(false);
                     onCancel?.Invoke();
-                })
-                .AddTo(_confirmPopup);
+                });
         }
 
         /// <summary>
@@ -96,28 +101,27 @@ namespace GameDevTycoon.UI
         {
             if (_fireConfirmPopup == null) return;
 
+            ClearFireConfirmPopupSubscriptions();
             _fireCommentLabel.text   = employeeComment;
             _fireEmployeeIcon.sprite = employeeSprite;
             _fireMessageLabel.text   = message;
             _fireConfirmPopup.SetActive(true);
 
-            _fireConfirmButton.OnClickAsObservable()
-                .Take(1)
+            _fireConfirmSubscription = _fireConfirmButton.OnClickAsObservable()
                 .Subscribe(_ =>
                 {
+                    ClearFireConfirmPopupSubscriptions();
                     _fireConfirmPopup.SetActive(false);
                     onConfirm?.Invoke();
-                })
-                .AddTo(_fireConfirmPopup);
+                });
 
-            _fireCancelButton.OnClickAsObservable()
-                .Take(1)
+            _fireCancelSubscription = _fireCancelButton.OnClickAsObservable()
                 .Subscribe(_ =>
                 {
+                    ClearFireConfirmPopupSubscriptions();
                     _fireConfirmPopup.SetActive(false);
                     onCancel?.Invoke();
-                })
-                .AddTo(_fireConfirmPopup);
+                });
         }
 
         /// <summary>
@@ -127,13 +131,16 @@ namespace GameDevTycoon.UI
         {
             if (_alertPopup == null) return;
 
+            ClearAlertPopupSubscription();
             _alertMessageLabel.text = message;
             _alertPopup.SetActive(true);
 
-            _alertConfirmButton.OnClickAsObservable()
-                .Take(1)
-                .Subscribe(_ => _alertPopup.SetActive(false))
-                .AddTo(_alertPopup);
+            _alertConfirmSubscription = _alertConfirmButton.OnClickAsObservable()
+                .Subscribe(_ =>
+                {
+                    ClearAlertPopupSubscription();
+                    _alertPopup.SetActive(false);
+                });
         }
 
         /// <summary>
@@ -168,27 +175,68 @@ namespace GameDevTycoon.UI
         {
             if (_synergyPopup == null) return;
 
+            ClearSynergyPopupSubscription();
             _synergyPopup.SetActive(true);
 
-            _synergyConfirmButton.OnClickAsObservable()
-                .Take(1)
+            _synergyConfirmSubscription = _synergyConfirmButton.OnClickAsObservable()
                 .Subscribe(_ =>
                 {
+                    ClearSynergyPopupSubscription();
                     _synergyPopup.SetActive(false);
                     onConfirm?.Invoke();
-                })
-                .AddTo(_synergyPopup);
+                });
         }
 
         public Transform GetSynergyScrollContent() => _synergyScrollContent;
 
         public void HideAll()
         {
+            ClearConfirmPopupSubscriptions();
+            ClearFireConfirmPopupSubscriptions();
+            ClearAlertPopupSubscription();
+            ClearSynergyPopupSubscription();
+
             if (_confirmPopup     != null) _confirmPopup.SetActive(false);
             if (_fireConfirmPopup != null) _fireConfirmPopup.SetActive(false);
             if (_alertPopup       != null) _alertPopup.SetActive(false);
             if (_noticePopup      != null) _noticePopup.SetActive(false);
             if (_synergyPopup     != null) _synergyPopup.SetActive(false);
+        }
+
+        private void OnDestroy()
+        {
+            ClearConfirmPopupSubscriptions();
+            ClearFireConfirmPopupSubscriptions();
+            ClearAlertPopupSubscription();
+            ClearSynergyPopupSubscription();
+        }
+
+        private void ClearConfirmPopupSubscriptions()
+        {
+            _confirmPopupConfirmSubscription?.Dispose();
+            _confirmPopupCancelSubscription?.Dispose();
+            _confirmPopupConfirmSubscription = null;
+            _confirmPopupCancelSubscription = null;
+        }
+
+        private void ClearFireConfirmPopupSubscriptions()
+        {
+            _fireConfirmSubscription?.Dispose();
+            _fireCancelSubscription?.Dispose();
+            _fireConfirmSubscription = null;
+            _fireCancelSubscription = null;
+        }
+
+        private void ClearAlertPopupSubscription()
+        {
+            _alertConfirmSubscription?.Dispose();
+            _alertConfirmSubscription = null;
+        }
+
+        private void ClearSynergyPopupSubscription()
+        {
+            _synergyConfirmSubscription?.Dispose();
+            _synergyConfirmSubscription = null;
         }
     }
 }

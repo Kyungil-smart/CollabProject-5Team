@@ -75,12 +75,31 @@ public class Project : MonoBehaviour
     // 보고서 생성완료시 true
     public bool isReportDraftsReady;
 
-    private void Start()
+    bool _isRuntimeInitialized;
+    public void InitializeRuntime(string projectName)
     {
+        EnsureInitialized();
+        userNamed.Value = projectName;
+        day = 0;
+        nightCount = 0;
+        qualityScore = 0f;
+        stabilityScore = 0f;
+        charmScore = 0f;
+        CurScore = 0f;
+        isFinished.Value = false;
+        pendingReports.Clear();
+        selectedReports.Clear();
+        isReportDraftsReady = false;
+    }
+    private void EnsureInitialized()
+    {
+        if (_isRuntimeInitialized) return;
+
         userNamed.Value = Name;
         plannings = new Employee[MaxEmployeePerPart];
         programmer = new Employee[MaxEmployeePerPart];
         arts = new Employee[MaxEmployeePerPart];
+        _isRuntimeInitialized = true;
     }
 
     public bool HireEmployee(Employee e)

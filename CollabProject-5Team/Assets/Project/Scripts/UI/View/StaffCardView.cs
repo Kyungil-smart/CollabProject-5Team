@@ -34,27 +34,18 @@ namespace GameDevTycoon.UI.Ingame
             _nameLabel.text          = so.Name;
             _abilityValue.text       = mutable.ability.ToString();
 
-            bool isDeployed = IsDeployed(employee);
-            _deployOverlay.SetActive(isDeployed);
-
             // [TODO: 교육 시스템 연결 후 교육 중 상태 처리]
             _educationOverlay.SetActive(false);
 
-            SetAssigned(false);
+            SetSelected(false);
         }
 
-        public void SetAssigned(bool assigned)
+        public void SetSelected(bool selected)
         {
-            _stateOverlay.SetActive(assigned);
-            _plusIcon.SetActive(!assigned);
-            _minusIcon.SetActive(assigned);
-        }
-
-        private static bool IsDeployed(Employee employee)
-        {
-            foreach (var project in Company.Instance.projects)
-                if (project.GetAllEmployees().Contains(employee)) return true;
-            return false;
+            _deployOverlay.SetActive(selected);
+            _stateOverlay.SetActive(selected);
+            _plusIcon.SetActive(!selected);
+            _minusIcon.SetActive(selected);
         }
 
         private static string RoleToString(Role role) => role switch

@@ -139,6 +139,10 @@ namespace GameDevTycoon.UI.Ingame
         public void ShowTab(ProjectTab tab)
         {
             _tabNewProject.SetActive(tab == ProjectTab.NewProject);
+            _panelSlotSelect.SetActive(tab == ProjectTab.NewProject);
+            _panelProjectSetup.SetActive(tab != ProjectTab.NewProject);
+            _panelStaffAssign.SetActive(tab != ProjectTab.NewProject);
+
             _tabInProgress.SetActive(tab == ProjectTab.InProgress);
         }
 

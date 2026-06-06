@@ -70,6 +70,10 @@ namespace GameDevTycoon.UI.Ingame
             _view.OnSettingsClicked
                 .Subscribe(_ => _settingsPresenter.Show())
                 .AddTo(this);
+
+            Company.Instance.activeProjectCount
+                .Subscribe(count => _view.SetNightQuitInteractable(count))
+                .AddTo(this);
         }
 
 
@@ -92,12 +96,6 @@ namespace GameDevTycoon.UI.Ingame
             RefreshMoneyLabel();
             RefreshReputationLabel();
         }
-
-        public void SetNightQuitInteractable(bool interactable)
-        {
-            _view.SetNightQuitInteractable(interactable);
-        }
-
 
         private void OnWorkStartClicked()
         {
@@ -132,8 +130,10 @@ namespace GameDevTycoon.UI.Ingame
 
         private void OnNightQuitClicked()
         {
-            DateTimeManager.Instance.OnClickEndDayButton();
+            CloseAllBottomPopups();
             _view.SwitchToDay();
+
+            DateTimeManager.Instance.OnClickEndDayButton();
         }
 
         async void ShowLoadingScreen()
@@ -141,7 +141,7 @@ namespace GameDevTycoon.UI.Ingame
             if (CanvasLoading != null)
             {
                 CanvasLoading.SetActive(true);
-                await UniTask.Delay(1235, cancellationToken: destroyCancellationToken); // 추후 로딩 전환 효과도 넣고...?
+                await UniTask.Delay(565, cancellationToken: destroyCancellationToken); // 추후 로딩 전환 효과도 넣고...?
                 CanvasLoading.SetActive(false);
             }
         }

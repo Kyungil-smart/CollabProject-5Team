@@ -13,6 +13,8 @@ namespace GameDevTycoon.UI.Ingame
     /// </summary>
     public sealed class ProjectPresenter : MonoBehaviour, IBottomNightUI
     {
+        private const ProjectSize UnselectedScale = (ProjectSize)(-1);
+
         [SerializeField] private ProjectView  _view;
         [SerializeField] private AlertView    _alertView;
         [SerializeField] private HUDPresenter _hudPresenter;
@@ -23,17 +25,14 @@ namespace GameDevTycoon.UI.Ingame
         [SerializeField] private GameObject _projectListItemPrefab;
         [SerializeField] private GameObject _staffDetailPrefab;
 
-        private ProjectSO   _selectedSlotSO;
         private ProjectSize _selectedScale;
         private int         _selectedSlotIndex = -1;
-
-        // 배치 확정된 직원 목록 (인원 배치 패널)
-        private readonly List<Employee> _assignedEmployees = new();
 
         public bool IsVisible => _view.IsVisible;
 
         private void Start()
         {
+            _selectedScale = UnselectedScale;
             BindTabs();
             BindNewProject();
             BindInProgress();
@@ -46,7 +45,11 @@ namespace GameDevTycoon.UI.Ingame
             RefreshSlotSelect();
         }
 
-        public void Hide() => _view.Hide();
+        public void Hide()
+        {
+            ClearSelectedEmployees();
+            _view.Hide();
+        }
 
         private void BindTabs()
         {
@@ -85,7 +88,7 @@ namespace GameDevTycoon.UI.Ingame
             _view.OnProjectNameChanged
                 .Subscribe(name =>
                     _view.SetProjectSetupNextInteractable(
-                        !string.IsNullOrWhiteSpace(name) && _selectedSlotSO != null
+                        !string.IsNullOrWhiteSpace(name) && _selectedScale != UnselectedScale
                     )
                 )
                 .AddTo(this);
@@ -93,7 +96,8 @@ namespace GameDevTycoon.UI.Ingame
             _view.OnProjectSetupBackClicked
                 .Subscribe(_ =>
                 {
-                    _selectedSlotSO = null;
+                    ClearSelectedEmployees();
+                    _selectedScale = UnselectedScale;
                     _view.ShowSlotSelect();
                 })
                 .AddTo(this);
@@ -109,7 +113,7 @@ namespace GameDevTycoon.UI.Ingame
             _view.OnResetClicked
                 .Subscribe(_ =>
                 {
-                    _assignedEmployees.Clear();
+                    ClearSelectedEmployees();
                     RefreshStaffAssign();
                 })
                 .AddTo(this);
@@ -123,7 +127,11 @@ namespace GameDevTycoon.UI.Ingame
                 .AddTo(this);
 
             _view.OnStaffAssignBackClicked
-                .Subscribe(_ => _view.ShowProjectSetup())
+                .Subscribe(_ =>
+                {
+                    ClearSelectedEmployees();
+                    _view.ShowProjectSetup();
+                })
                 .AddTo(this);
 
             _view.OnStaffAssignConfirmClicked
@@ -167,10 +175,12 @@ namespace GameDevTycoon.UI.Ingame
                 // item.GetComponent<IBindable<ProjectSlotData>>().Bind(data);
 
                 int captured = i;
-                item.GetComponent<UnityEngine.UI.Button>()?.onClick.AddListener(() =>
+                item.GetComponentInChildren<UnityEngine.UI.Button>()?.onClick.AddListener(() =>
                 {
                     if (isOccupied) return;
                     _selectedSlotIndex = captured;
+                    ClearSelectedEmployees();
+                    _selectedScale = UnselectedScale;
                     _view.ShowProjectSetup();
                     _view.SetProjectSetupNextInteractable(false);
 
@@ -210,12 +220,13 @@ namespace GameDevTycoon.UI.Ingame
             {
                 var prefab = GetStaffCardPrefab(employee.so.role);
                 if (prefab == null) continue;
-
+                
                 var card = Instantiate(prefab, _view.StaffGridContent);
-                // [TODO: IBindable<Employee> 연결 후 활성화]
+                card.GetComponent<IBindable<Employee>>().Bind(employee);
+                card.GetComponent<StaffCardView>()?.SetSelected(IsSelected(employee));
 
                 var captured = employee;
-                card.GetComponent<UnityEngine.UI.Button>()?.onClick.AddListener(() =>
+                card.GetComponentInChildren<UnityEngine.UI.Button>().onClick.AddListener(() =>
                     OnStaffCardClicked(captured)
                 );
             }
@@ -232,12 +243,13 @@ namespace GameDevTycoon.UI.Ingame
             foreach (var project in projects)
             {
                 var item = Instantiate(_projectListItemPrefab, _view.InProgressListContent);
-                // [TODO: IBindable<Project> 연결 후 활성화]
+                item.GetComponent<IBindable<Project>>().Bind(project);
 
                 var captured = project;
-                item.GetComponent<UnityEngine.UI.Button>()?.onClick.AddListener(() =>
-                    ShowProjectDetail(captured)
-                );
+                item.GetComponentInChildren<UnityEngine.UI.Button>()?.onClick.AddListener(() =>
+                {
+                    ShowProjectDetail(captured);
+                });
             }
         }
 
@@ -276,22 +288,14 @@ namespace GameDevTycoon.UI.Ingame
 
         private void OnStaffCardClicked(Employee employee)
         {
-            bool isAssigned = _assignedEmployees.Contains(employee);
-            int max = GetMaxEmployeePerPart(_selectedScale);
+            if (_selectedScale == UnselectedScale) return;
 
-            if (!isAssigned)
+            int max = GetMaxEmployeePerPart(_selectedScale);
+            bool toggled = Company.Instance.ToggleSelectedProjectEmployee(employee, max);
+            if (!toggled)
             {
-                int roleCount = CountAssigned(employee.so.role);
-                if (roleCount >= max)
-                {
-                    _alertView.ShowAlertPopup($"해당 직군은 최대 {max}명까지 배치 가능합니다.");
-                    return;
-                }
-                _assignedEmployees.Add(employee);
-            }
-            else
-            {
-                _assignedEmployees.Remove(employee);
+                _alertView.ShowAlertPopup($"해당 직군은 최대 {max}명까지 배치 가능합니다.");
+                return;
             }
 
             RefreshStaffAssign();
@@ -310,10 +314,16 @@ namespace GameDevTycoon.UI.Ingame
                 $"개발비 {cost:N0}G를 지불하고 프로젝트를 시작하시겠습니까?",
                 onConfirm: () =>
                 {
-                    // [TODO: ProjectSO 기반 Project 생성 연결]
-                    Company.Instance.gold -= cost;
+                    var project = Company.Instance.CreateProject(_selectedScale, GetCurrentProjectName());
+                    if (project == null)
+                    {
+                        _alertView.ShowAlertPopup("프로젝트 생성에 실패했습니다.");
+                        return;
+                    }
+
+                    Company.Instance.StartNewProject(project);
                     _hudPresenter.RefreshHUD();
-                    _assignedEmployees.Clear();
+                    ClearSelectedEmployees();
 
                     _view.ShowTab(ProjectTab.InProgress);
                     RefreshInProgressList();
@@ -351,7 +361,13 @@ namespace GameDevTycoon.UI.Ingame
         }
 
         private int CountAssigned(Role role)
-            => _assignedEmployees.Count(e => e.so.role == role);
+            => Company.Instance.selectedProjectEmployees.Count(e => e.so.role == role);
+
+        private bool IsSelected(Employee employee)
+            => Company.Instance.selectedProjectEmployees.Contains(employee);
+
+        private void ClearSelectedEmployees()
+            => Company.Instance.ClearSelectedProjectEmployees();
 
         private static int GetRequiredCost(ProjectSize scale) => scale switch
         {
