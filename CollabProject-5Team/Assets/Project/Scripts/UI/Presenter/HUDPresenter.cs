@@ -1,7 +1,6 @@
 using Cysharp.Threading.Tasks;
 using R3;
-using System;
-using UnityEditor.Localization.Plugins.XLIFF.V20;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace GameDevTycoon.UI.Ingame
@@ -20,7 +19,7 @@ namespace GameDevTycoon.UI.Ingame
         [Header("외부 연결")]
         [SerializeField] private HRPresenter _hrPresenter;
         [SerializeField] private ProjectPresenter _projectPresenter;
-        //[SerializeField] private CompanyPresenter _companyPresenter; // CompanyPresenter가 존재하면 주석 해제
+        //[SerializeField] private ~Presenter _(IBottomNightUI)Presenter; 추후 IBottomNightUI가 추가로 존재하면 연결
         [SerializeField] GameObject CanvasLoading;
 
         private void Start()
@@ -110,12 +109,12 @@ namespace GameDevTycoon.UI.Ingame
 
         private void OnHRClicked()
         {
-            _hrPresenter.Show();
+            ToggleBottomPopup(_hrPresenter);
         }
 
         private void OnProjectClicked()
         {
-            _projectPresenter.Show();
+            ToggleBottomPopup(_projectPresenter);
         }
 
         private void OnCompanyClicked()
@@ -145,6 +144,42 @@ namespace GameDevTycoon.UI.Ingame
                 await UniTask.Delay(1235, cancellationToken: destroyCancellationToken); // 추후 로딩 전환 효과도 넣고...?
                 CanvasLoading.SetActive(false);
             }
+        }
+
+        private void ToggleBottomPopup(IBottomNightUI targetPresenter)
+        {
+            bool wasVisible = targetPresenter.IsVisible;
+
+            CloseAllBottomPopups();
+
+            if (!wasVisible)
+            {
+                targetPresenter.Show();
+            }
+        }
+
+        private void CloseAllBottomPopups()
+        {
+            foreach (var presenter in GetBottomPopupPresenters())
+            {
+                presenter.Hide();
+            }
+        }
+
+        private IEnumerable<IBottomNightUI> GetBottomPopupPresenters()
+        {
+            var yielded = new HashSet<IBottomNightUI>();
+
+            if (yielded.Add(_hrPresenter))
+            {
+                yield return _hrPresenter;
+            }
+
+            if (yielded.Add(_projectPresenter))
+            {
+                yield return _projectPresenter;
+            }
+            //추후 IBottomNightUI가 추가로 존재하면 여기에 추가
         }
     }
 }

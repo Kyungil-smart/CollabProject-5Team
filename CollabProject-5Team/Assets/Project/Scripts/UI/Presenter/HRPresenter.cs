@@ -12,7 +12,7 @@ namespace GameDevTycoon.UI.Ingame
     /// EmployeeCardView, EmployeeDetailView, ApplicantCardView, ApplicantDetailView
     /// 프리팹 바인딩은 IBindable 연결 후 활성화.
     /// </summary>
-    public sealed class HRPresenter : MonoBehaviour
+    public sealed class HRPresenter : MonoBehaviour, IBottomNightUI
     {
         [SerializeField] private HRView    _view;
         [SerializeField] private AlertView _alertView;
@@ -27,6 +27,8 @@ namespace GameDevTycoon.UI.Ingame
         private Employee _selectedEmployee;
         private Employee _selectedApplicant;
         private int      _selectedCourseIndex = -1;
+
+        public bool IsVisible => _view.IsVisible;
 
         private void Start()
         {

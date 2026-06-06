@@ -160,6 +160,7 @@ namespace GameDevTycoon.UI.Ingame
 
         public void Show() => _hrPopup.SetActive(true);
         public void Hide() => _hrPopup.SetActive(false);
+        public bool IsVisible => _hrPopup.activeSelf;
 
         public void ShowTab(HRTab tab)
         {
