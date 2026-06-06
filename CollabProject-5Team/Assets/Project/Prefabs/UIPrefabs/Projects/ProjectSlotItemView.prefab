@@ -593,6 +593,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1213327693478433237}
+  - component: {fileID: 9001986251789913489}
   m_Layer: 5
   m_Name: ProjectSlotItemView
   m_TagString: Untagged
@@ -622,6 +623,23 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &9001986251789913489
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7351331509099338754}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6bc9b4f525ac79b4689637f9e311ca74, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _slotButton: {fileID: 2336492920581275300}
+  _slotStateLabel: {fileID: 7135114927300240771}
+  _slotNumberLabel: {fileID: 2608114582625461726}
+  _lockOverlay: {fileID: 4331961488121897679}
+  _lockConditionLabel: {fileID: 5893291196859083997}
 --- !u!1 &7576704350260018993
 GameObject:
   m_ObjectHideFlags: 0

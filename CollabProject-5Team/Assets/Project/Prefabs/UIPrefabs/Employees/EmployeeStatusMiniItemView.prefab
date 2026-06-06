@@ -84,6 +84,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 896567755514487242}
+  - component: {fileID: 5044610979643611654}
   m_Layer: 5
   m_Name: EmployeeStatusMiniItemView
   m_TagString: Untagged
@@ -117,6 +118,30 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &5044610979643611654
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 854178130726100159}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 14130d96ee6b0fa41b96b942b27d533f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _profileIcon: {fileID: 7561711253059256082}
+  _nameLabel: {fileID: 3369117165815903854}
+  _departmentTagAnchor: {fileID: 2228631758695888563}
+  _mbtiTagAnchor: {fileID: 7207014058155215428}
+  _departmentTagPrefab: {fileID: 8022348871479560868, guid: b2a4f5491b4d1274ea9d11711420ab69, type: 3}
+  _mbtiTagPrefab: {fileID: 5338551708622990205, guid: 25a92fc9a3b94aa408c8225de64468d5, type: 3}
+  _motivationBar: {fileID: 4925880689774470947}
+  _motivationValue: {fileID: 6418365073039348248}
+  _motivationComment: {fileID: 1773278129745165294}
+  _fatigueBar: {fileID: 4386132324680935940}
+  _fatigueValue: {fileID: 5444664340720654448}
+  _fatigueComment: {fileID: 3949492425025065925}
 --- !u!1 &1993593713139660971
 GameObject:
   m_ObjectHideFlags: 0
