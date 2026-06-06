@@ -1,6 +1,6 @@
+using Cysharp.Threading.Tasks;
 using R3;
-using System;
-using UnityEditor.Localization.Plugins.XLIFF.V20;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace GameDevTycoon.UI.Ingame
@@ -16,9 +16,27 @@ namespace GameDevTycoon.UI.Ingame
         [SerializeField] private AlertView _alertView;
         [SerializeField] private SettingsPresenter _settingsPresenter;
 
+        [Header("외부 연결")]
+        [SerializeField] private HRPresenter _hrPresenter;
+        [SerializeField] private ProjectPresenter _projectPresenter;
+        //[SerializeField] private ~Presenter _(IBottomNightUI)Presenter; 추후 IBottomNightUI가 추가로 존재하면 연결
+        [SerializeField] GameObject CanvasLoading;
+
         private void Start()
         {
             BindButtons();
+            DateTimeManager.OnNightLoading += ShowLoadingScreen;
+            DateTimeManager.OnNight += SwitchToNight;
+        }
+        private void OnDestroy()
+        {
+            DateTimeManager.OnNightLoading -= ShowLoadingScreen;
+            DateTimeManager.OnNight -= SwitchToNight;
+        }
+
+        public void SwitchToNight()
+        {
+            _view.SwitchToNight();
         }
 
         private void BindButtons()
@@ -91,17 +109,17 @@ namespace GameDevTycoon.UI.Ingame
 
         private void OnHRClicked()
         {
-            // [TODO: HRPresenter 연결 후 HRView.Show() 호출]
+            ToggleBottomPopup(_hrPresenter);
         }
 
         private void OnProjectClicked()
         {
-            // [TODO: ProjectPresenter 연결 후 ProjectView.Show() 호출]
+            ToggleBottomPopup(_projectPresenter);
         }
 
         private void OnCompanyClicked()
         {
-            // [TODO: CompanyPresenter 연결 후 CompanyView.Show() 호출]
+            //_companyPresenter.Show();
         }
 
         private void OnSaveClicked()
@@ -116,6 +134,52 @@ namespace GameDevTycoon.UI.Ingame
         {
             DateTimeManager.Instance.OnClickEndDayButton();
             _view.SwitchToDay();
+        }
+
+        async void ShowLoadingScreen()
+        {
+            if (CanvasLoading != null)
+            {
+                CanvasLoading.SetActive(true);
+                await UniTask.Delay(1235, cancellationToken: destroyCancellationToken); // 추후 로딩 전환 효과도 넣고...?
+                CanvasLoading.SetActive(false);
+            }
+        }
+
+        private void ToggleBottomPopup(IBottomNightUI targetPresenter)
+        {
+            bool wasVisible = targetPresenter.IsVisible;
+
+            CloseAllBottomPopups();
+
+            if (!wasVisible)
+            {
+                targetPresenter.Show();
+            }
+        }
+
+        private void CloseAllBottomPopups()
+        {
+            foreach (var presenter in GetBottomPopupPresenters())
+            {
+                presenter.Hide();
+            }
+        }
+
+        private IEnumerable<IBottomNightUI> GetBottomPopupPresenters()
+        {
+            var yielded = new HashSet<IBottomNightUI>();
+
+            if (yielded.Add(_hrPresenter))
+            {
+                yield return _hrPresenter;
+            }
+
+            if (yielded.Add(_projectPresenter))
+            {
+                yield return _projectPresenter;
+            }
+            //추후 IBottomNightUI가 추가로 존재하면 여기에 추가
         }
     }
 }

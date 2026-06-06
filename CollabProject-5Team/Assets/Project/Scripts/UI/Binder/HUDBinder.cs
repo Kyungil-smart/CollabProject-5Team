@@ -10,8 +10,6 @@ public class HUDBinder : MonoBehaviour, IBindable<DateTimeManager>
     HUDView _view;
     private void Awake() => _view = GetComponent<HUDView>();
 
-    [SerializeField] GameObject CanvasLoading;
-
     public void Bind(DateTimeManager data)
     {
         // day가 변경될 때마다 SetTimeLabel 호출
@@ -47,28 +45,8 @@ public class HUDBinder : MonoBehaviour, IBindable<DateTimeManager>
         //    }).AddTo(this);
     }
 
-    public void SwitchToNight()
-    {
-        _view.SwitchToNight();
-        ShowLoadingScreen();
-    }
     private void Start()
     {
         Bind(DateTimeManager.Instance);
-        DateTimeManager.OnNight += SwitchToNight;
-    }
-    private void OnDestroy()
-    {
-        DateTimeManager.OnNight -= SwitchToNight;
-    }
-
-    async void ShowLoadingScreen()
-    {
-        if (CanvasLoading != null)
-        {
-            CanvasLoading.SetActive(true);
-            await UniTask.Delay(1235, cancellationToken: destroyCancellationToken); // 추후 로딩 전환 효과도 넣고...?
-            CanvasLoading.SetActive(false);
-        }
     }
 }

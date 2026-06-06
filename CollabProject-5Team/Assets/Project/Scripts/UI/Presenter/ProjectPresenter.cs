@@ -11,7 +11,7 @@ namespace GameDevTycoon.UI.Ingame
     /// 슬롯 선택 → 프로젝트 설정 → 인원 배치 흐름 및 진행 프로젝트 표시 처리.
     /// ProjectSlotItemView, StaffCardView, ProjectListItemView 바인딩은 IBindable 연결 후 활성화.
     /// </summary>
-    public sealed class ProjectPresenter : MonoBehaviour
+    public sealed class ProjectPresenter : MonoBehaviour, IBottomNightUI
     {
         [SerializeField] private ProjectView  _view;
         [SerializeField] private AlertView    _alertView;
@@ -29,6 +29,8 @@ namespace GameDevTycoon.UI.Ingame
 
         // 배치 확정된 직원 목록 (인원 배치 패널)
         private readonly List<Employee> _assignedEmployees = new();
+
+        public bool IsVisible => _view.IsVisible;
 
         private void Start()
         {
@@ -161,6 +163,7 @@ namespace GameDevTycoon.UI.Ingame
                 bool isOccupied = i < Company.Instance.projects.Count;
 
                 // [TODO: IBindable<ProjectSlotData> 연결 후 활성화]
+                item.GetComponent<ProjectSlotItemView>().Setup(i, isOccupied, false); //잠금로직 정리필요 
                 // item.GetComponent<IBindable<ProjectSlotData>>().Bind(data);
 
                 int captured = i;

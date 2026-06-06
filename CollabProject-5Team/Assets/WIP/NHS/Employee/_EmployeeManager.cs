@@ -51,6 +51,9 @@ public class _EmployeeManager : MonoBehaviour
         // 기본 직원 고용
         foreach (var emp in defaultEmployees)
         {
+            if (_haveEmployees.haveEmployeeList.Exists(e => e.so.id == emp.so.id))
+                continue;
+
             HireEmployee(emp.so.id);
         }
     }
@@ -64,14 +67,14 @@ public class _EmployeeManager : MonoBehaviour
         }
 
         GameObject prefab = _employeeList.leftEmployees[id];
-        GameObject employeeObject = Instantiate(prefab, Company.Instance.transform);
+        //GameObject employeeObject = Instantiate(prefab, Company.Instance.transform);
 
-        Employee employee = employeeObject.GetComponent<Employee>();
+        Employee employee = prefab.GetComponent<Employee>();
         employee.Init();
 
         _haveEmployees.AddEmployee(employee);
         _employeeList.DeleteEmployee(id);
-
+        
         return employee;
     }
 

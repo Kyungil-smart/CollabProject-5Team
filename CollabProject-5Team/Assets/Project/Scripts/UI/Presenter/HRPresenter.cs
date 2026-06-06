@@ -12,7 +12,7 @@ namespace GameDevTycoon.UI.Ingame
     /// EmployeeCardView, EmployeeDetailView, ApplicantCardView, ApplicantDetailView
     /// 프리팹 바인딩은 IBindable 연결 후 활성화.
     /// </summary>
-    public sealed class HRPresenter : MonoBehaviour
+    public sealed class HRPresenter : MonoBehaviour, IBottomNightUI
     {
         [SerializeField] private HRView    _view;
         [SerializeField] private AlertView _alertView;
@@ -28,6 +28,8 @@ namespace GameDevTycoon.UI.Ingame
         private Employee _selectedApplicant;
         private int      _selectedCourseIndex = -1;
 
+        public bool IsVisible => _view.IsVisible;
+
         private void Start()
         {
             BindTabs();
@@ -41,7 +43,6 @@ namespace GameDevTycoon.UI.Ingame
         {
             _view.Show();
             _view.ShowTab(HRTab.EmployeeManage);
-            RefreshEmployeeManageList();
         }
 
         public void Hide() => _view.Hide();
@@ -52,7 +53,7 @@ namespace GameDevTycoon.UI.Ingame
                 .Subscribe(_ =>
                 {
                     _view.ShowTab(HRTab.EmployeeManage);
-                    RefreshEmployeeManageList();
+                    //RefreshEmployeeManageList();
                 })
                 .AddTo(this);
 
@@ -223,8 +224,8 @@ namespace GameDevTycoon.UI.Ingame
             foreach (var employee in employees)
             {
                 var card = Instantiate(_employeeCardPrefab, _view.EmployeeGridContent);
-                // [TODO: IBindable<Employee> 연결 후 활성화]
-                // card.GetComponent<IBindable<Employee>>().Bind(employee);
+                
+                card.GetComponent<IBindable<Employee>>().Bind(employee);
 
                 // 카드 클릭 시 상세 패널 전환
                 var captured = employee;

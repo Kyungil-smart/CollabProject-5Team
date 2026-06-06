@@ -115,7 +115,7 @@ namespace GameDevTycoon.UI.Ingame
 
         private void Awake()
         {
-            _projectPopup.SetActive(false);
+            //_projectPopup.SetActive(false);
 
             ShowTab(ProjectTab.NewProject);
 
@@ -134,6 +134,7 @@ namespace GameDevTycoon.UI.Ingame
 
         public void Show() => _projectPopup.SetActive(true);
         public void Hide() => _projectPopup.SetActive(false);
+        public bool IsVisible => _projectPopup.activeSelf;
 
         public void ShowTab(ProjectTab tab)
         {

@@ -7,9 +7,6 @@ public class GameManager : MonoBehaviour
     [Header("자동 주입")]
     public PlayerMove player;
 
-
-
-
     #region 싱글톤 설정
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     public static void Init() => Instance = null;
@@ -25,4 +22,6 @@ public class GameManager : MonoBehaviour
     {
         this.player = player;
     }
+
+
 }
