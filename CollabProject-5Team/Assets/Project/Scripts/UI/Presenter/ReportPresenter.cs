@@ -128,7 +128,10 @@ namespace GameDevTycoon.UI.Ingame
         {
             if (_roleIndex >= RoleOrder.Length)
             {
-                // 모든 직군 완료 → PersonalOpinion해야하지만 미완이라 그냥 바로 완료
+                // 모든 직군 완료
+                // 보고서 승인 처리
+                Company.Instance.curProject.ApproveSelectedReports();
+                // PersonalOpinion해야하지만 미완이라 그냥 바로 완료
                 OnPersonalOpinionCompleted();
                 return;
             }
@@ -203,8 +206,6 @@ namespace GameDevTycoon.UI.Ingame
 
         private void OnReportEndConfirmed()
         {
-            // 보고서 승인 처리
-            Company.Instance.curProject.ApproveSelectedReports();
             _view.Hide();
             DateTimeManager.OnReportEnd?.Invoke();
         }
