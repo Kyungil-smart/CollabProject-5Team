@@ -146,7 +146,7 @@ namespace GameDevTycoon.UI.Ingame
         {
             _detailTitleLable.text        = report.so.title;
             _detailEmployeeNameLable.text = report.owner.so.Name;
-            _detailContentLable.text      = report.so.contentNormal;
+            _detailContentLable.text      = report.so.content;
 
             _profileIcon.sprite = report.owner.so.iconNormal;
 

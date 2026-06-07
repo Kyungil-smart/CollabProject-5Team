@@ -111,7 +111,7 @@ public class TEST_ReportUI : MonoBehaviour
 
         detailRoleText.text = RoleLabel[_roleIndex];
         detailEmploeName.text = report.owner.so.Name;
-        detailMainText.text = report.so.contentNormal;
+        detailMainText.text = report.so.content;
 
         reportSummaryPannel.SetActive(false);
         reportDetailPannel.SetActive(true);
