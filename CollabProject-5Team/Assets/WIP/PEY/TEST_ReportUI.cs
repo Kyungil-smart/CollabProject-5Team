@@ -20,7 +20,7 @@ public class TEST_ReportUI : MonoBehaviour
     [SerializeField] TMP_Text summaryEmploeName; // 직원 이름
 
     [Header("ReportDetail 패널 내부")]
-    [SerializeField] TMP_Text detailRoleText;    // 파트 제목
+    [SerializeField] TMP_Text detailRoleText;    // 직원 역할
     [SerializeField] TMP_Text detailEmploeName;  // 직원 이름
     [SerializeField] TMP_Text detailMainText;    // 보고서 본문
     [SerializeField] Button approveBtn;

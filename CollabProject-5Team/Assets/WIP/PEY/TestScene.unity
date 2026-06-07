@@ -8293,6 +8293,8 @@ MonoBehaviour:
   _contentTransform: {fileID: 1971516506}
   _commentSheetDatas:
   - {fileID: 11400000, guid: b9561be41eb5fdc498b9be680cef4b7f, type: 2}
+  - {fileID: 11400000, guid: 3d54c89993299854aa8bfc710d906853, type: 2}
+  - {fileID: 11400000, guid: 6bf5d7893d2b2c94393db04e23a1bf4c, type: 2}
 --- !u!1 &357547162
 GameObject:
   m_ObjectHideFlags: 0
@@ -8310,7 +8312,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &357547163
 RectTransform:
   m_ObjectHideFlags: 0
@@ -18731,54 +18733,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 693888993}
   m_CullTransparentMesh: 1
---- !u!1 &707017050
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 707017052}
-  - component: {fileID: 707017051}
-  m_Layer: 0
-  m_Name: CommentListManager
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &707017051
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 707017050}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 28ae24dc89a640e4ebaca453e071a58a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _uiPrefab: {fileID: 5795527634663094337, guid: e6aadfe9d4b86e448bc4da0a570ac018, type: 3}
-  _contentTransform: {fileID: 0}
-  _commentSheetDatas:
-  - {fileID: 11400000, guid: b9561be41eb5fdc498b9be680cef4b7f, type: 2}
---- !u!4 &707017052
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 707017050}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 540, y: 960, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &708411296
 GameObject:
   m_ObjectHideFlags: 0
@@ -19687,6 +19641,18 @@ MonoBehaviour:
         m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
         m_MethodName: SetActive
         m_Mode: 6
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 1
+        m_CallState: 2
+      - m_Target: {fileID: 1844123771}
+        m_TargetAssemblyTypeName: GameDevTycoon.UI.Ingame.ReportPresenter, Assembly-CSharp
+        m_MethodName: StartReportReviewFlow
+        m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
@@ -24731,7 +24697,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
+      - m_Target: {fileID: 315925045}
         m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
         m_MethodName: SetActive
         m_Mode: 6
@@ -24743,7 +24709,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-      - m_Target: {fileID: 348298400}
+      - m_Target: {fileID: 1104514042}
         m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
         m_MethodName: SetActive
         m_Mode: 6
@@ -26822,7 +26788,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &991393248
 RectTransform:
   m_ObjectHideFlags: 0
@@ -34122,7 +34088,7 @@ Canvas:
   m_AdditionalShaderChannelsFlag: 25
   m_UpdateRectTransformForStandalone: 0
   m_SortingLayerID: 0
-  m_SortingOrder: -5
+  m_SortingOrder: 10
   m_TargetDisplay: 0
 --- !u!224 &1293360402
 RectTransform:
@@ -39741,7 +39707,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1476651363
 RectTransform:
   m_ObjectHideFlags: 0
@@ -45430,7 +45396,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1724701103
 RectTransform:
   m_ObjectHideFlags: 0
@@ -48816,7 +48782,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &1844123767
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -48925,6 +48891,7 @@ MonoBehaviour:
   _view: {fileID: 1844123772}
   _hudPresenter: {fileID: 536250805}
   _employeeStatusMiniItemPrefab: {fileID: 854178130726100159, guid: 51859d24cbb2a7d41aa48c8788cbedd9, type: 3}
+  _reportCardViewPrefab: {fileID: 1998548045390696179, guid: ad259f73dad890b4f82f426dcb3e7b07, type: 3}
 --- !u!114 &1844123772
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -48953,9 +48920,20 @@ MonoBehaviour:
   _panelEmployeeComment: {fileID: 348298400}
   _panelReportReviews:
   - {fileID: 315925045}
-  - {fileID: 1104514042}
   - {fileID: 1452673714}
+  - {fileID: 1104514042}
+  _ReportReviewContents:
+  - {fileID: 935321850}
+  - {fileID: 2085362526}
+  - {fileID: 1424415136}
   _panelReportDetail: {fileID: 1820847839}
+  _profileIcon: {fileID: 1064568126}
+  _detailTitleLable: {fileID: 1618575521}
+  _departmentTagPrefab: {fileID: 8022348871479560868, guid: b2a4f5491b4d1274ea9d11711420ab69, type: 3}
+  _detailEmployeeNameLable: {fileID: 15294668}
+  _detailContentLable: {fileID: 1659140709}
+  _adoptBtn: {fileID: 859138576}
+  _cancelBtn: {fileID: 1754025426}
   _panelPersonalOpinion: {fileID: 635166515}
   _panelReportEnd: {fileID: 1107207226}
   _reportEndConfirmButton: {fileID: 602139295}
@@ -52809,7 +52787,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 846173126}
   m_HandleRect: {fileID: 846173125}
   m_Direction: 2
-  m_Value: 1
+  m_Value: 0
   m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
@@ -65979,4 +65957,3 @@ SceneRoots:
   - {fileID: 2061789252}
   - {fileID: 416957419}
   - {fileID: 2056315652}
-  - {fileID: 707017052}

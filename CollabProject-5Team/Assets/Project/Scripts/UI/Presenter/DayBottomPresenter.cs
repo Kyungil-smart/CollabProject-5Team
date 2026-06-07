@@ -23,12 +23,16 @@ namespace GameDevTycoon.UI.Ingame
             BindButtons();
             RefreshProgressItems();
 
+            DateTimeManager.OnDay += Show;
             DateTimeManager.OnWorkCompleted += OnWorkCompleted;
+            DateTimeManager.OnNightLoading += Hide;
         }
 
         private void OnDestroy()
         {
+            DateTimeManager.OnDay -= Show;
             DateTimeManager.OnWorkCompleted -= OnWorkCompleted;
+            DateTimeManager.OnNightLoading -= Hide;
         }
 
         private void BindData()
@@ -90,6 +94,15 @@ namespace GameDevTycoon.UI.Ingame
         public void OnWorkCompleted()
         {
             _view.SetDayQuitInteractable(true);
+        }
+
+        public void Show()
+        {
+            gameObject.SetActive(true);
+        }
+        public void Hide()
+        {
+            gameObject.SetActive(false);
         }
 
         private void OnSaveClicked()

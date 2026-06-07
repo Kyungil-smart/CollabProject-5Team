@@ -1,5 +1,6 @@
 using DG.Tweening;
 using R3;
+using System;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -34,16 +35,24 @@ namespace GameDevTycoon.UI.Ingame
         [SerializeField] private Sprite          _slideIconActive;
         [SerializeField] private Sprite          _slideIconInactive;
 
-        [Header("Panel_EmployeeComment — 담당자 위임")]
+        [Header("Panel_EmployeeComment")]
         [SerializeField] private GameObject _panelEmployeeComment;
 
         [Header("Panel_ReportReview — 담당자 위임, 직군별 확장 가능")]
         [SerializeField] private List<GameObject> _panelReportReviews;
+        [SerializeField] private List<Transform> _ReportReviewContents;
 
         [Header("Panel_ReportDetail — 담당자 위임")]
         [SerializeField] private GameObject _panelReportDetail;
+        [SerializeField] private Image      _profileIcon;
+        [SerializeField]         TMP_Text  _detailTitleLable;   // 보고서 제목
+        [SerializeField] DepartmentTagView _departmentTagPrefab; // 직원 역할
+        [SerializeField]         TMP_Text  _detailEmployeeNameLable;  // 직원 이름
+        [SerializeField]         TMP_Text  _detailContentLable;    // 보고서 본문
+        [SerializeField]         Button    _adoptBtn;
+        [SerializeField]         Button    _cancelBtn;
 
-        [Header("Panel_PersonalOpinion — 담당자 위임")]
+        [Header("Panel_PersonalOpinion - 추후 작업")]
         [SerializeField] private GameObject _panelPersonalOpinion;
 
         [Header("Panel_ReportEnd")]
@@ -61,10 +70,13 @@ namespace GameDevTycoon.UI.Ingame
 
         public Observable<Unit> OnCoverNextPageClicked     => _coverNextPageButton.OnClickAsObservable();
         public Observable<Unit> OnReportEndConfirmClicked  => _reportEndConfirmButton.OnClickAsObservable();
+        public Observable<Unit> OnAdoptClicked             => _adoptBtn.OnClickAsObservable();
+        public Observable<Unit> OnCancelClicked            => _cancelBtn.OnClickAsObservable();
 
         // 담당자 패널 Show/Hide용 — Presenter에서 순서 제어
         public GameObject PanelEmployeeComment => _panelEmployeeComment;
         public List<GameObject> PanelReportReviews => _panelReportReviews;
+        public List<Transform> ReportReviewContents => _ReportReviewContents;
         public GameObject PanelReportDetail    => _panelReportDetail;
         public GameObject PanelPersonalOpinion => _panelPersonalOpinion;
 
@@ -72,8 +84,6 @@ namespace GameDevTycoon.UI.Ingame
 
         private void Awake()
         {
-            _canvasReport.SetActive(false);
-
             _panelCover.SetActive(false);
             _panelEmployeeComment.SetActive(false);
             foreach (var p in _panelReportReviews) p.SetActive(false);
@@ -89,9 +99,10 @@ namespace GameDevTycoon.UI.Ingame
                 .Subscribe(_ => ToggleSlide())
                 .AddTo(this);
 
-            _reportEndConfirmButton.OnClickAsObservable()
-                .Subscribe(_ => Hide())
-                .AddTo(this);
+            //_reportEndConfirmButton.OnClickAsObservable()
+            //    .Subscribe(_ => {
+            //        Hide();
+            //    }).AddTo(this);
         }
 
         public void Show()
@@ -127,6 +138,20 @@ namespace GameDevTycoon.UI.Ingame
         }
 
         public List<GameObject> GetReportReviewPanels() => _panelReportReviews;
+
+        /// <summary>
+        /// Panel_ReportDetail 내용을 지정 보고서로 채운다.
+        /// </summary>
+        public void SetDetailInfo(Report report)
+        {
+            _detailTitleLable.text        = report.so.title;
+            _detailEmployeeNameLable.text = report.owner.so.Name;
+            _detailContentLable.text      = report.so.contentNormal;
+
+            _profileIcon.sprite = report.owner.so.iconNormal;
+
+            _departmentTagPrefab.Bind(report.role);
+        }
 
         public void SetCoverInfo(string dateRange, string companyName)
         {

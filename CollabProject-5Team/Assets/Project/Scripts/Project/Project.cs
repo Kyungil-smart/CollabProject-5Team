@@ -189,15 +189,17 @@ public class Project : MonoBehaviour
     public void ProgressNight()
     {
         Debug.Log($"{userNamed}: 밤 이벤트 발생!");
-        // 주간 이벤트 정산 및 초기화
+        // 주간 정산
+        foreach (var e in GetAllEmployees())
+        {
+           e.SaveCurrentData();
+        }
 
         // 보고서 산출
         GenerateReportDrafts();
     }
 
     #region 보고서 부분
-
-
     // 투입된 직원 데이터를 기반으로 보고서 생성 
     public void GenerateReportDrafts()
     {

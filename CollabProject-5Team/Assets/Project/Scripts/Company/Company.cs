@@ -34,6 +34,7 @@ public class Company : MonoBehaviour
     public int reputation;   // 회사 평판
     public int dailyCost;    // 유지비 (프로젝트들 합산)
     public int dailyProfit;  // 데일리 캐시 (완료 프로젝트 합산)
+    public int weeklyProfit; // 데일리캐시를 일주일동안 누적한 값 (UI 히스토리용)
 
     #region 싱글톤 설정
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
@@ -57,44 +58,6 @@ public class Company : MonoBehaviour
     //    projects.AddRange(GetComponentsInChildren<Project>());
     //    if (projects.Count > 0) curProject = projects[0];
     //}
-
-    private void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.Alpha1)) // 테스트용: 첫 번째 직원 고용
-        {
-            int firstEmployeeId = _EmployeeManager.Instance.allEmployeeObj[0].GetComponent<Employee>().so.id;
-            Employee hiredEmployee = _EmployeeManager.Instance.HireEmployee(firstEmployeeId);
-            //curProject.HireEmployee(hiredEmployee);
-        }
-        if (Input.GetKeyDown(KeyCode.Alpha2))
-        {
-            int firstEmployeeId = _EmployeeManager.Instance.allEmployeeObj[1].GetComponent<Employee>().so.id;
-            Employee hiredEmployee = _EmployeeManager.Instance.HireEmployee(firstEmployeeId);
-            //curProject.HireEmployee(hiredEmployee);
-        }
-        if (Input.GetKeyDown(KeyCode.Alpha3))
-        {
-            int firstEmployeeId = _EmployeeManager.Instance.allEmployeeObj[2].GetComponent<Employee>().so.id;
-            Employee hiredEmployee = _EmployeeManager.Instance.HireEmployee(firstEmployeeId);
-            //curProject.HireEmployee(hiredEmployee);
-        }
-
-        if (Input.GetKeyDown(KeyCode.Alpha4)) // 테스트용: 첫 번째 직원 해고
-        {
-            Employee target = curProject?.plannings[0];
-            //curProject.FireEmployee(target);
-        }
-        if (Input.GetKeyDown(KeyCode.Alpha5))
-        {
-            Employee target = curProject?.programmer[0];
-            //curProject.FireEmployee(target);
-        }
-        if (Input.GetKeyDown(KeyCode.Alpha6))
-        {
-            Employee target = curProject?.arts[0];
-            //curProject.FireEmployee(target);
-        }
-    }
 
     #region 프로젝트 시작 관리
     public Project CreateProject(ProjectSize scale, string projectName)

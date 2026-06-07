@@ -2,8 +2,6 @@ using System.Collections.Generic;
 using System.Linq;
 using R3;
 using UnityEngine;
-using GameDevTycoon.UI;
-using GameDevTycoon.UI.Ingame;
 
 namespace GameDevTycoon.UI.Ingame
 {
@@ -11,8 +9,6 @@ namespace GameDevTycoon.UI.Ingame
     /// Canvas_Report Presenter.
     /// 금요일 밤 OnNight 이벤트 수신 시 보고서 시퀀스 시작.
     /// Cover → EmployeeComment → ReportReview(직군별 순차) → PersonalOpinion → ReportEnd 흐름 제어.
-    /// Panel_EmployeeComment, Panel_ReportReview, Panel_ReportDetail, Panel_PersonalOpinion
-    /// 내부 바인딩은 담당자 스크립트 연결 후 활성화.
     /// </summary>
     public sealed class ReportPresenter : MonoBehaviour
     {
@@ -21,14 +17,15 @@ namespace GameDevTycoon.UI.Ingame
 
         [Header("프리팹")]
         [SerializeField] private GameObject _employeeStatusMiniItemPrefab;
+        [SerializeField] private ReportCardView _reportCardViewPrefab;
 
-        // 직군별 보고서 채택 완료 여부 추적
-        private readonly Dictionary<Role, bool> _reportAdopted = new()
-        {
-            { Role.PLANNER,    false },
-            { Role.PROGRAMMER, false },
-            { Role.ARTIST,     false },
-        };
+        // 직군 진행 순서
+        static readonly Role[] RoleOrder = { Role.PLANNER, Role.ARTIST, Role.PROGRAMMER };
+
+        private int              _roleIndex;
+        private List<Report>     _currentReports;
+        private List<ReportCardView> _currentCards = new();
+        private Report           _viewingReport;
 
         private void OnEnable()
         {
@@ -52,7 +49,16 @@ namespace GameDevTycoon.UI.Ingame
                 {
                     _view.ShowPanel(ReportPanel.EmployeeComment);
                     // [TODO: 담당자 EmployeeComment 패널 초기화 호출]
+                    
                 })
+                .AddTo(this);
+
+            _view.OnAdoptClicked
+                .Subscribe(_ => OnAdoptReport())
+                .AddTo(this);
+
+            _view.OnCancelClicked
+                .Subscribe(_ => OnCancelDetail())
                 .AddTo(this);
 
             _view.OnReportEndConfirmClicked
@@ -62,7 +68,11 @@ namespace GameDevTycoon.UI.Ingame
 
         private void OnNightStarted()
         {
-            ResetAdoptedState();
+            if (Company.Instance.activeProjectCount.Value < 1)
+            {
+                DateTimeManager.OnReportEnd?.Invoke();
+                return;
+            }
             RefreshCoverInfo();
             RefreshEmployeeStatusSlide();
 
@@ -81,7 +91,7 @@ namespace GameDevTycoon.UI.Ingame
             _view.SetCoverInfo(dateRange, Company.Instance.Name);
         }
 
-        private void RefreshEmployeeStatusSlide()
+        private void RefreshEmployeeStatusSlide() // 하단 참고용 직원 상태 슬라이드
         {
             foreach (Transform child in _view.SlidePreviewContent)
                 Destroy(child.gameObject);
@@ -95,8 +105,7 @@ namespace GameDevTycoon.UI.Ingame
             foreach (var employee in employees)
             {
                 var item = Instantiate(_employeeStatusMiniItemPrefab, _view.SlidePreviewContent);
-                // [TODO: IBindable<Employee> 연결 후 활성화]
-                // item.GetComponent<IBindable<Employee>>().Bind(employee);
+                item.GetComponent<IBindable<Employee>>().Bind(employee);
             }
 
             // 슬라이드 코멘트 — 직원 상태 요약
@@ -107,15 +116,81 @@ namespace GameDevTycoon.UI.Ingame
         }
 
         /// <summary>
-        /// 담당자 패널(ReportReview)에서 직군별 채택 완료 시 외부 호출.
-        /// 3개 직군 모두 채택 완료 시 PersonalOpinion 패널로 자동 진행.
+        /// EmployeeComment 완료 후 외부에서 호출하여 직군별 보고서 리뷰를 시작.
         /// </summary>
-        public void OnReportAdopted(Role role)
+        public void StartReportReviewFlow()
         {
-            _reportAdopted[role] = true;
+            _roleIndex = 0;
+            ShowReviewForCurrentRole();
+        }
 
-            if (AllReportsAdopted())
-                _view.ShowPanel(ReportPanel.PersonalOpinion);
+        private void ShowReviewForCurrentRole()
+        {
+            if (_roleIndex >= RoleOrder.Length)
+            {
+                // 모든 직군 완료 → PersonalOpinion해야하지만 미완이라 그냥 바로 완료
+                OnPersonalOpinionCompleted();
+                return;
+            }
+
+            Role currentRole = RoleOrder[_roleIndex];
+            _currentReports  = GetReportsByRole(currentRole);
+
+            if (_currentReports == null || _currentReports.Count == 0)
+            {
+                Debug.Log($"[ReportPresenter] {currentRole} 보고서 없음, 다음 직군으로 넘어감");
+                _roleIndex++;
+                ShowReviewForCurrentRole();
+                return;
+            }
+
+            // 해당 패널만 활성화, Detail 패널 닫기
+            _view.ShowReportReviewPanel(_roleIndex);
+            _view.PanelReportDetail.SetActive(false);
+
+            // 이전 카드 제거 후 재생성
+            var content = _view.ReportReviewContents[_roleIndex];
+            foreach (Transform child in content)
+                Destroy(child.gameObject);
+
+            _currentCards.Clear();
+            foreach (var report in _currentReports)
+            {
+                var card = Instantiate(_reportCardViewPrefab, content);
+                card.Bind(report);
+                card.OnCardClicked
+                    .Subscribe(r => ShowDetail(r))
+                    .AddTo(this);
+                _currentCards.Add(card);
+            }
+        }
+
+        private void ShowDetail(Report report)
+        {
+            _viewingReport = report;
+            _view.SetDetailInfo(report);
+            _view.PanelReportDetail.SetActive(true);
+        }
+
+        private void OnAdoptReport()
+        {
+            if (_viewingReport == null) return;
+
+            Company.Instance.curProject.SelectReport(_viewingReport);
+
+            // 채택 스탬프 표시
+            foreach (var card in _currentCards)
+                card.SetDisabled(true);
+
+            _view.PanelReportDetail.SetActive(false);
+
+            _roleIndex++;
+            ShowReviewForCurrentRole();
+        }
+
+        private void OnCancelDetail()
+        {
+            _view.PanelReportDetail.SetActive(false);
         }
 
         /// <summary>
@@ -129,21 +204,21 @@ namespace GameDevTycoon.UI.Ingame
         private void OnReportEndConfirmed()
         {
             // 보고서 승인 처리
-            foreach (var project in Company.Instance.projects)
-                project.ApproveSelectedReports();
-
+            Company.Instance.curProject.ApproveSelectedReports();
             _view.Hide();
+            DateTimeManager.OnReportEnd?.Invoke();
         }
 
-        private void ResetAdoptedState()
+        // ── 헬퍼 ──
+        private List<Report> GetReportsByRole(Role role)
         {
-            _reportAdopted[Role.PLANNER]    = false;
-            _reportAdopted[Role.PROGRAMMER] = false;
-            _reportAdopted[Role.ARTIST]     = false;
+            var result = new List<Report>();
+            foreach (var r in Company.Instance.curProject.pendingReports)
+            {
+                if (r.role == role) result.Add(r);
+            }
+            return result;
         }
-
-        private bool AllReportsAdopted()
-            => _reportAdopted.Values.All(v => v);
 
         private static int GetRoleOrder(Role role) => role switch
         {

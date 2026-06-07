@@ -26,12 +26,12 @@ namespace GameDevTycoon.UI.Ingame
         {
             BindButtons();
             DateTimeManager.OnNightLoading += ShowLoadingScreen;
-            DateTimeManager.OnNight += SwitchToNight;
+            DateTimeManager.OnReportEnd += SwitchToNight;
         }
         private void OnDestroy()
         {
             DateTimeManager.OnNightLoading -= ShowLoadingScreen;
-            DateTimeManager.OnNight -= SwitchToNight;
+            DateTimeManager.OnReportEnd -= SwitchToNight;
         }
 
         public void SwitchToNight()
