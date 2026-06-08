@@ -46,12 +46,11 @@ public abstract class SheetDataSOBase : ScriptableObject
     }
 
     // 한글 특성명 문자열을 Trait enum으로 변환.
-    protected Trait? ParseKoreanTrait(string koreanName)
+    protected Trait ParseKoreanTrait(string koreanName)
     {
-        if (string.IsNullOrWhiteSpace(koreanName)) return null;
         if (TraitTable.NameMap.TryGetValue(koreanName.Trim(), out var trait)) return trait;
         Debug.LogWarning($"[TraitTable] <b>{row}행</b> 알 수 없는 특성명: '{koreanName}'");
-        return null;
+        return default;
     }
 
     private void LogWarn(string raw, string expectedType)

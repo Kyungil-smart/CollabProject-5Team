@@ -23,9 +23,11 @@ public class DateTimeManager : MonoBehaviour
     // 이번 주에 대화한 직원 ID 목록 (방치 패널티 판정용)
     private HashSet<Employee> _talkedEmployeesThisWeek = new HashSet<Employee>();
 
+    public static event Action OnDay;  // 낮
     public static event Action OnWorkCompleted;
     public static event Action OnNightLoading;
-    public static event Action OnNight;
+    public static event Action OnNight;// 밤
+    public static Action OnReportEnd;
 
     #region 싱글톤 설정
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
@@ -136,7 +138,7 @@ public class DateTimeManager : MonoBehaviour
 
             // 방치 패널티 적용
             Company.Instance.AfkPenaltyApply();
-            OnNightLoading?.Invoke();
+            OnNightLoading?.Invoke();// 밤
 
             ResetWeekStatus();
             ResetDayStatus();
@@ -149,6 +151,7 @@ public class DateTimeManager : MonoBehaviour
             currentWeek.Value++;
             currentDay = DayOfWeek.Monday;
             currentTime = TimeOfDay.Day;
+            OnDay?.Invoke();// 낮
         }
         // 월~목 낮에 퇴근하면 다음 날 낮으로
         else

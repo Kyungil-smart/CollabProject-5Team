@@ -59,9 +59,9 @@ public class EmployeeImmutableData : SheetDataSOBase
         hiringCost   = ParseInt(rowData[7]);
         weekSalary   = ParseInt(rowData[8]);
         grade        = ParseInt(rowData[9]);
-        mainTrait    = ParseKoreanTrait(rowData[10]) ?? default;
-        subTrait     = ParseKoreanTrait(rowData[11]) ?? default;
-        riskTrait    = ParseKoreanTrait(rowData[12]) ?? default;
+        mainTrait    = ParseKoreanTrait(rowData[10]);
+        subTrait     = ParseKoreanTrait(rowData[11]);
+        riskTrait    = ParseKoreanTrait(rowData[12]);
         mbtiParsed   = ConvertMbtiStringToEnum(rowData[13].Trim());
         style        = rowData[14].Trim();
         hireText     = rowData[15].Trim();

@@ -20,4 +20,14 @@ public static class GoogleSheetEditorMenu
     {
         EditorUtility.OpenPropertyEditor(DataRequestSet.Get(3));
     }
+    [MenuItem("구글시트/코멘트 보고서")]
+    static void LoadSheet4()
+    {
+        EditorUtility.OpenPropertyEditor(DataRequestSet.Get(4));
+    }
+    [MenuItem("구글시트/직군별 보고서")]
+    static void LoadSheet5()
+    {
+        EditorUtility.OpenPropertyEditor(DataRequestSet.Get(5));
+    }
 }

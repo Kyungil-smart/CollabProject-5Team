@@ -52,8 +52,8 @@ public class CommentListManager : MonoBehaviour
 
                 string matchingComment = FindMatchingComment(employee, commentSheetData);
 
-                _uiPoolList[i].SetUpCommentUI(employee, matchingComment);
                 _uiPoolList[i].gameObject.SetActive(true);
+                _uiPoolList[i].SetUpCommentUI(employee, matchingComment);
             }
             else
             {

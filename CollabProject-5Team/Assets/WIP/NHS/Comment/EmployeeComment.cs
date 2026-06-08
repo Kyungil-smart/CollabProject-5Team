@@ -4,7 +4,7 @@ using TMPro;
 
 public class EmployeeComment : MonoBehaviour
 {
-    [SerializeField] public  Image _characterImage;
+    [SerializeField] private Image _characterImage;
     [SerializeField] private Image[] _partImages;
     
     [SerializeField] private TextMeshProUGUI        _nameText;
