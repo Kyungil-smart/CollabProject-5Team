@@ -21,7 +21,6 @@ namespace GameDevTycoon.UI.Ingame
         {
             BindData();
             BindButtons();
-            RefreshProgressItems();
 
             DateTimeManager.OnDay += Show;
             DateTimeManager.OnWorkCompleted += OnWorkCompleted;
@@ -83,8 +82,7 @@ namespace GameDevTycoon.UI.Ingame
             foreach (var project in projects)
             {
                 var item = Instantiate(_progressItemPrefab, _view.ProjectListContent);
-                // [TODO: ProjectProgressItemView IBindable 연결 후 Bind 호출]
-                // item.GetComponent<IBindable<Project>>().Bind(project);
+                item.GetComponent<IBindable<Project>>().Bind(project);
             }
         }
 
@@ -99,6 +97,7 @@ namespace GameDevTycoon.UI.Ingame
         public void Show()
         {
             gameObject.SetActive(true);
+            RefreshProgressItems();
         }
         public void Hide()
         {
