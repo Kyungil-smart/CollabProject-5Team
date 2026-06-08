@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
-using TMPro; 
+using TMPro;
+using GameDevTycoon.UI.Ingame;
 
 public class EmployeeComment : MonoBehaviour
 {
@@ -12,11 +13,18 @@ public class EmployeeComment : MonoBehaviour
     [SerializeField] private TextMeshProUGUI _FluctuatingText;
     [SerializeField] private TextMeshProUGUI     _commentText;
 
+    [SerializeField] private DepartmentTagView tagView;
+
     private Employee _currentEmployee;
 
     public void SetUpCommentUI(Employee employee, string commentText)
     {
         _currentEmployee = employee;
+
+        if (tagView != null)
+        {
+            tagView.Bind(_currentEmployee.so.role);
+        }
 
            _nameText.text = _currentEmployee.so.Name;
         _loyaltyText.text = $"{_currentEmployee.MutableData.loyalty}";
@@ -32,7 +40,6 @@ public class EmployeeComment : MonoBehaviour
         SetPartImage((int)_currentEmployee.so.role);
 
         int fatigue = _currentEmployee.MutableData.fatigue;
-
         if      (fatigue >= 80)
             _characterImage.sprite = _currentEmployee.so.iconCritical;
         else if (fatigue >= 40)
