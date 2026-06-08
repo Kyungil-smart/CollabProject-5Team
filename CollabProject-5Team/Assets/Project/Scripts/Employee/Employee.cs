@@ -24,6 +24,10 @@ public class Employee : MonoBehaviour, IPointerClickHandler
             desire    = so.desire,
             loyalty   = so.loyalty,
             fatigue   = so.fatigue,
+
+             preDesire = so.desire,
+            preLoyalty = so.loyalty,
+            preFatigue = so.fatigue
         };
     }
 

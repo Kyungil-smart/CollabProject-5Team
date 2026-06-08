@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
-using TMPro; 
+using TMPro;
+using GameDevTycoon.UI.Ingame;
 
 public class EmployeeComment : MonoBehaviour
 {
@@ -12,27 +13,33 @@ public class EmployeeComment : MonoBehaviour
     [SerializeField] private TextMeshProUGUI _FluctuatingText;
     [SerializeField] private TextMeshProUGUI     _commentText;
 
+    [SerializeField] private DepartmentTagView tagView;
+
     private Employee _currentEmployee;
 
     public void SetUpCommentUI(Employee employee, string commentText)
     {
         _currentEmployee = employee;
 
+        if (tagView != null)
+        {
+            tagView.Bind(_currentEmployee.so.role);
+        }
+
            _nameText.text = _currentEmployee.so.Name;
         _loyaltyText.text = $"{_currentEmployee.MutableData.loyalty}";
         _commentText.text = commentText;
 
-        int fatiguChagne = employee.MutableData.fatigue - employee.MutableData.preFatigue;
+        int loyaltyChanage = employee.MutableData.loyalty - employee.MutableData.preLoyalty;
 
-        if (fatiguChagne >= 0)
-            _FluctuatingText.text = $"<color=#D32F2F>{employee.MutableData.fatigue} ( {fatiguChagne} ▲ )</color>";
+        if (loyaltyChanage >= 0)
+            _FluctuatingText.text = $"<color=#D32F2F>( {loyaltyChanage} ▲ )</color>";
         else
-            _FluctuatingText.text = $"<color=#1976D2>{employee.MutableData.fatigue} ( {Mathf.Abs(fatiguChagne)} ▼ )</color>";
+            _FluctuatingText.text = $"<color=#1976D2>( {Mathf.Abs(loyaltyChanage)} ▼ )</color>";
 
         SetPartImage((int)_currentEmployee.so.role);
 
         int fatigue = _currentEmployee.MutableData.fatigue;
-
         if      (fatigue >= 80)
             _characterImage.sprite = _currentEmployee.so.iconCritical;
         else if (fatigue >= 40)

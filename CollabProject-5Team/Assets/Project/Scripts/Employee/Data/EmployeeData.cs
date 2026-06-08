@@ -124,7 +124,22 @@ public struct EmployeeMutableData // 가변 데이터
         set => _fatigue = Mathf.Clamp(value, 0, 100);
     }
 
-    public int preDesire;
-    public int preLoyalty;
-    public int preFatigue;
+    [SerializeField] int _preDesire;
+    public int preDesire
+    {
+        get => _preDesire;
+        set => _preDesire = Mathf.Clamp(value, 0, 100);
+    }
+    [SerializeField] int _preLoyalty;
+    public int preLoyalty
+    {
+        get => _preLoyalty;
+        set => _preLoyalty = Mathf.Clamp(value, 0, 100);
+    }
+    [SerializeField] int _preFatigue;
+    public int preFatigue
+    {
+        get => _preFatigue;
+        set => _preFatigue = Mathf.Clamp(value, 0, 100);
+    }
 }
