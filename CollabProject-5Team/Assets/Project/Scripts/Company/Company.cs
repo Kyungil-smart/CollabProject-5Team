@@ -23,11 +23,11 @@ public class Company : MonoBehaviour
             else return 3;
         }
     }
-    public List<Project> projects = new(); // 현재 진행중인 프로젝트들
+    public List<Project> projects = new(); // 현재 만들고 있는 프로젝트들
+    public ReactiveProperty<int> activeProjectCount = new(0); // 만들고 있는 프로젝트 수
     public Project curProject; // 메인 프로젝트 (UI에 집중적으로 표시)
     public List<Employee> selectedProjectEmployees = new(); // 신규 프로젝트 UI에서 임시 선택된 직원들
     public List<ProjectCompleted> completedProjects = new(); // 완료된 프로젝트 목록
-    public ReactiveProperty<int> activeProjectCount = new(0);
 
     [Header("사후 관리")]
     public int popularity;   // 회사 인기
@@ -46,18 +46,28 @@ public class Company : MonoBehaviour
         Instance = this; DontDestroyOnLoad(gameObject);
     #endregion
     }
-    //private void Start()
-    //{
-    //    InitProjects();
-    //}
+    private void Start()
+    {
+        InitProjects();
+    }
 
-    //// 자식 오브젝트의 Project 컴포넌트를 수집해 projects 리스트에 세팅
-    //public void InitProjects()
-    //{
-    //    projects.Clear();
-    //    projects.AddRange(GetComponentsInChildren<Project>());
-    //    if (projects.Count > 0) curProject = projects[0];
-    //}
+    // 자식 오브젝트의 Project 컴포넌트를 수집해 projects 리스트에 세팅
+    public void InitProjects()
+    {
+        projects.Clear();
+        projects.AddRange(GetComponentsInChildren<Project>());
+        if (projects.Count > 0)
+        {
+            curProject = projects[0];
+            activeProjectCount.Value++;
+        }
+        // _EmployeeManager HaveEmployees들을 curProject에 고용
+        foreach (var employee in _EmployeeManager.Instance.haveEmployees.haveEmployeeList)
+        {
+            if (curProject != null)
+                curProject.HireEmployee(employee);
+        }
+    }
 
     #region 프로젝트 시작 관리
     public Project CreateProject(ProjectSize scale, string projectName)

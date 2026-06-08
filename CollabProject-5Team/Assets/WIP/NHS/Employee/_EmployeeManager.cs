@@ -29,10 +29,7 @@ public class _EmployeeManager : MonoBehaviour
 
         _employeeList = new EmployeeList(allEmployeeObj);
         Debug.Log("[EM] 초기 직원 데이터를 로드 합니다.");
-    }
 
-    private void Start()
-    {
         Dialogue.DialogueEvents.OnStatChangeRequested
             .Subscribe(delta =>
             {

@@ -8494,7 +8494,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &372234108
 RectTransform:
   m_ObjectHideFlags: 0
@@ -10253,13 +10253,15 @@ GameObject:
   - component: {fileID: 416957418}
   - component: {fileID: 416957417}
   - component: {fileID: 416957416}
+  - component: {fileID: 416957421}
+  - component: {fileID: 416957420}
   m_Layer: 5
   m_Name: Canvas_Settings
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &416957416
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -10343,6 +10345,37 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 0}
+--- !u!114 &416957420
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 416957415}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dbd20e83e34c0514d869afbaea0a4704, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _view: {fileID: 905660367256910473}
+  _alertView: {fileID: 2061789253}
+--- !u!114 &416957421
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 416957415}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e1412c19da4ee9c4a9011cc544a1a104, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _settingsPanel: {fileID: 1509218150555122369}
+  _bgmSlider: {fileID: 0}
+  _sfxSlider: {fileID: 0}
+  _closeButton: {fileID: 6518909928383345073}
+  _gameQuitButton: {fileID: 3530271624702892018}
 --- !u!1 &417033240
 GameObject:
   m_ObjectHideFlags: 0
@@ -13965,6 +13998,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1328a1afddd623746bf301944213dc96, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  CanvasLoading: {fileID: 2056315648}
+  CanvasDayBottom: {fileID: 1293360398}
 --- !u!114 &536250805
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -22857,7 +22892,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &881740279
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -25328,7 +25363,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &978318097
 RectTransform:
   m_ObjectHideFlags: 0
@@ -25541,7 +25576,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &991577252
 RectTransform:
   m_ObjectHideFlags: 0
@@ -32206,7 +32241,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &1293360399
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -33488,7 +33523,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1338266523
 RectTransform:
   m_ObjectHideFlags: 0
@@ -45085,7 +45120,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &1844123767
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -50483,7 +50518,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &2061789249
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -57427,7 +57462,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!222 &4804273554890073020
 CanvasRenderer:
   m_ObjectHideFlags: 0

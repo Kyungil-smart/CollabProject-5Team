@@ -8,9 +8,6 @@ public class PlayerMove : MonoBehaviour
     private NavMeshAgent _agent;
     private Camera _mainCamera;
     private Animator _anim;
-    
-    [Header("카메라 매니저 참조")]
-    [SerializeField] private CameraManager _cameraManager;
 
     [Header("레이어 설정")]
     [SerializeField] private LayerMask _interactableLayer;   // 상호작용 레이어
@@ -22,11 +19,13 @@ public class PlayerMove : MonoBehaviour
     private Collider _targetCollider = null;           // 타겟의 콜라이더
 
     private IInteractable _targetInteractable = null;   // 현재 목표로 타겟팅한 대상
-    private bool hasInteracted = false;               // 현재 상호작용 중인지
+    private bool _hasInteracted = false;               // 현재 상호작용 중인지
 
     private Vector2 _touchStartPos;                     // 터치 시작점
     private bool _isDraggingCamera = false;             // 터치 드래그 했는지
     private const float DragThreshold = 15f;            // 드래그했다고 간주하는 거리
+
+    private bool _isMovingToPosition = false;
 
     private void Start()
     {
@@ -46,10 +45,25 @@ public class PlayerMove : MonoBehaviour
         UpdateAnimation();
 
         // UI창이 열려있다면 터치 이동로직을 무시
-        if (hasInteracted) return;
+        if (_hasInteracted || IsPointerOverUI()) return;
+
+        if(_isMovingToPosition)
+        {
+            if (!_agent.pathPending && _agent.remainingDistance <= _agent.stoppingDistance)
+            {
+                _isMovingToPosition = false;
+
+                //TODO: 이동해서 자리에 도착하면 업무 완료 애니메이션이 재생되도록 임시로 설정함
+                DateTimeManager.Instance.CompleteDayWork();
+            }
+
+            return;
+        }
 
         // 카메라 매니저가 유효하고, 현재 UI창이 열려있다면 이동 금지
-        if (_cameraManager != null && _cameraManager.IsUIOpen.Value) return;
+        //if (CameraManager.Instance != null && CameraManager.Instance.IsUIOpen.Value) return;
+
+        bool IsUIOpen = CameraManager.Instance != null && CameraManager.Instance.IsUIOpen.Value;
 
         // UI창이 열려있으면 터치 관통 방지
         if (IsPointerOverUI()) return;
@@ -125,7 +139,7 @@ public class PlayerMove : MonoBehaviour
         #endif
 
         // 상호작용 대상을 터치했고, 상호작용 전이라면 거리체크
-        if (_targetInteractable != null && !hasInteracted && _targetCollider != null)
+        if (_targetInteractable != null && !_hasInteracted && _targetCollider != null)
         {
             // 상호작용할 타겟의 콜라이더 표면중 Player와 가장 가까운 표면
             Vector3 closestPoint = _targetCollider.ClosestPoint(transform.position);
@@ -140,6 +154,7 @@ public class PlayerMove : MonoBehaviour
         }
     }
 
+    // 화면을 터치해서 레이캐스트를 쏴서 이동
     private void MoveToTarget(Vector2 screenPosition)
     {
         Ray ray = _mainCamera.ScreenPointToRay(screenPosition);
@@ -155,7 +170,7 @@ public class PlayerMove : MonoBehaviour
             {
                 _targetInteractable = interactable;
                 _targetCollider = hit.collider;
-                hasInteracted = false;
+                _hasInteracted = false;
 
                 _agent.SetDestination(_targetInteractable.GetTransform().position);
 
@@ -168,16 +183,28 @@ public class PlayerMove : MonoBehaviour
         {
             _targetInteractable = null;
             _targetCollider = null;
-            hasInteracted = false;
+            _hasInteracted = false;
 
             // 일반 바닥 이동
             _agent.SetDestination(hit.point);
         }
     }
 
+    // 해당 좌표로 이동(업무 시작 시 자기 자리로 이동)
+    public void MoveToPosition(Vector3 position)
+    {
+        _targetInteractable = null;
+        _targetCollider = null;
+        _hasInteracted = false;
+
+        _isMovingToPosition = true;
+
+        _agent.SetDestination(position);
+    }
+
     private void TriggerInteraction()
     {
-        hasInteracted = true;
+        _hasInteracted = true;
         _agent.ResetPath();
 
         // 대상 바라보기
@@ -193,7 +220,7 @@ public class PlayerMove : MonoBehaviour
     {
         // UI창을 끌 때 상호작용상태 초기화
         _targetInteractable = null;
-        hasInteracted = false;
+        _hasInteracted = false;
     }
 
     private bool IsPointerOverUI()

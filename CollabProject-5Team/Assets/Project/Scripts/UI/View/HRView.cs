@@ -50,6 +50,13 @@ namespace GameDevTycoon.UI.Ingame
         [SerializeField] private TextMeshProUGUI _totalCostLabel;
         [SerializeField] private Button          _recruitConfirmButton;
 
+        [Header("Tab_Hire — Panel_Recruit — JobSliders")]
+        [SerializeField] private JobSliderGroupView _sliderPlanning;
+        [SerializeField] private JobSliderGroupView _sliderArt;
+        [SerializeField] private JobSliderGroupView _sliderDev;
+        [SerializeField] private JobSliderGroupView _sliderQA;
+        [SerializeField] private JobSliderGroupView _sliderMarketing;
+
         [Header("Tab_Hire — Panel_ApplicantList")]
         [SerializeField] private GameObject      _panelApplicantList;
         [SerializeField] private TMP_Dropdown    _applicantSortDropdown;
@@ -137,7 +144,7 @@ namespace GameDevTycoon.UI.Ingame
 
         private void Awake()
         {
-            //_hrPopup.SetActive(false);
+            _hrPopup.SetActive(false);
 
             // Tab_EmployeeManage를 기본 탭으로
             ShowTab(HRTab.EmployeeManage);
@@ -198,6 +205,15 @@ namespace GameDevTycoon.UI.Ingame
             _panelRecruit.SetActive(true);
         }
 
+        public JobSliderGroupView[] AllSliders => new[]
+            { _sliderPlanning, _sliderArt, _sliderDev, _sliderQA, _sliderMarketing };
+
+        public void SetTotalRecruitInfo(int count, int cost)
+        {
+            _totalCountLabel.text = $"총 {count} 명";
+            _totalCostLabel.text = $"{cost:N0} G";
+        }
+
         public void ShowApplicantList()
         {
             _panelHireMain.SetActive(false);
@@ -247,8 +263,6 @@ namespace GameDevTycoon.UI.Ingame
         public void SetEmployeeManageCountLabel(int count) => _employeeManageCountLabel.text = $"직원 {count}명";
         public void SetFireCountLabel(int count)           => _fireCountLabel.text = $"직원 {count}명";
         public void SetEducationCountLabel(int count)      => _educationCountLabel.text = $"직원 {count}명";
-        public void SetTotalCountLabel(int count)          => _totalCountLabel.text = $"총 {count}명";
-        public void SetTotalCostLabel(int cost)           => _totalCostLabel.text = $"{cost:N0}G";
         public void SetJobCategoryTag(string category)     => _jobCategoryTag.text = category;
         public void SetRecruitCountTag(int count)          => _recruitCountTag.text = count.ToString();
 

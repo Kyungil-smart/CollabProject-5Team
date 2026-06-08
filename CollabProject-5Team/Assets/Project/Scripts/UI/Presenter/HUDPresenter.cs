@@ -20,22 +20,24 @@ namespace GameDevTycoon.UI.Ingame
         [SerializeField] private HRPresenter _hrPresenter;
         [SerializeField] private ProjectPresenter _projectPresenter;
         //[SerializeField] private ~Presenter _(IBottomNightUI)Presenter; 추후 IBottomNightUI가 추가로 존재하면 연결
-        [SerializeField] GameObject CanvasLoading;
+
+        [Header("업무 시작 시 이동할 데스크탑 프리팹")]
+        [SerializeField] private DeskInteract _desk;
 
         private void Start()
         {
             BindButtons();
-            DateTimeManager.OnNightLoading += ShowLoadingScreen;
             DateTimeManager.OnReportEnd += SwitchToNight;
         }
         private void OnDestroy()
         {
-            DateTimeManager.OnNightLoading -= ShowLoadingScreen;
             DateTimeManager.OnReportEnd -= SwitchToNight;
         }
 
         public void SwitchToNight()
         {
+            CloseAllBottomPopups();  // HR, Project 닫기
+            _settingsPresenter.Hide();  // 세팅도 같이 닫기
             _view.SwitchToNight();
         }
 
@@ -99,7 +101,13 @@ namespace GameDevTycoon.UI.Ingame
 
         private void OnWorkStartClicked()
         {
-            DateTimeManager.Instance.CompleteDayWork();
+            // 참조한 플레이어 책상의 데스크탑으로 이동하도록 수정함
+            if (_desk != null)
+            {
+                _desk.OnClickWorkButton();
+            }
+
+            // DateTimeManager.Instance.CompleteDayWork();
             // WorkStartBubble은 업무 시작 후 비활성화 — View에서 직접 처리하거나 Presenter에서 호출
             // [TODO: WorkStartBubble 비활성화 메서드 HUDView에 추가 후 연결]
             // ★~퀘스트 구현 전에 임시로 그냥 임무 완료되게 처리중~☆
@@ -134,16 +142,6 @@ namespace GameDevTycoon.UI.Ingame
             _view.SwitchToDay();
 
             DateTimeManager.Instance.OnClickEndDayButton();
-        }
-
-        async void ShowLoadingScreen()
-        {
-            if (CanvasLoading != null)
-            {
-                CanvasLoading.SetActive(true);
-                await UniTask.Delay(565, cancellationToken: destroyCancellationToken); // 추후 로딩 전환 효과도 넣고...?
-                CanvasLoading.SetActive(false);
-            }
         }
 
         private void ToggleBottomPopup(IBottomNightUI targetPresenter)
