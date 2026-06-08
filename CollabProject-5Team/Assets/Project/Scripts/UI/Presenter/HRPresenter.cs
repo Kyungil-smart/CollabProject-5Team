@@ -333,8 +333,7 @@ namespace GameDevTycoon.UI.Ingame
                 Destroy(child.gameObject);
 
             var detail = Instantiate(_employeeDetailPrefab, content);
-            // [TODO: IBindable<Employee> 연결 후 활성화]
-            // detail.GetComponent<IBindable<Employee>>().Bind(employee);
+            detail.GetComponent<IBindable<Employee>>().Bind(employee);
         }
 
         private void RefreshApplicantDetail(Employee applicant)

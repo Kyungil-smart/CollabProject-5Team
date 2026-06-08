@@ -46,18 +46,24 @@ public class Company : MonoBehaviour
         Instance = this; DontDestroyOnLoad(gameObject);
     #endregion
     }
-    //private void Start()
-    //{
-    //    InitProjects();
-    //}
+    private void Start()
+    {
+        InitProjects();
+    }
 
-    //// 자식 오브젝트의 Project 컴포넌트를 수집해 projects 리스트에 세팅
-    //public void InitProjects()
-    //{
-    //    projects.Clear();
-    //    projects.AddRange(GetComponentsInChildren<Project>());
-    //    if (projects.Count > 0) curProject = projects[0];
-    //}
+    // 자식 오브젝트의 Project 컴포넌트를 수집해 projects 리스트에 세팅
+    public void InitProjects()
+    {
+        projects.Clear();
+        projects.AddRange(GetComponentsInChildren<Project>());
+        if (projects.Count > 0) curProject = projects[0];
+        // _EmployeeManager HaveEmployees들을 curProject에 고용
+        foreach (var employee in _EmployeeManager.Instance.haveEmployees.haveEmployeeList)
+        {
+            if (curProject != null)
+                curProject.HireEmployee(employee);
+        }
+    }
 
     #region 프로젝트 시작 관리
     public Project CreateProject(ProjectSize scale, string projectName)

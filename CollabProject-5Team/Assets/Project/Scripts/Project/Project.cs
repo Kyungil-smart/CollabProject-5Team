@@ -18,7 +18,7 @@ public class Project : MonoBehaviour
 
     [Header(" 런타임 데이터 ")]
     public int day;      // 현재 진행 일수 (영업일 기준)
-    public ReactiveProperty<string> userNamed = new(string.Empty); // 유저가 붙인 프로젝트 이름
+    public ReactiveProperty<string> userNamed = new("a"); // 유저가 붙인 프로젝트 이름
 
     // 투입된 직원
     public Employee[] plannings;
