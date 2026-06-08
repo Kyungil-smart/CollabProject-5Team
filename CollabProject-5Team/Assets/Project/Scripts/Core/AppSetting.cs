@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Rendering;
 
 // 모바일 앱을 위한 기본 설정
 public static class AppSetting
@@ -15,5 +16,9 @@ public static class AppSetting
 
         // 백그라운드 진입 시 일시정지
         Application.runInBackground = false;
+#if UNITY_EDITOR
+        DebugManager.instance.enableRuntimeUI = false;
+        DebugManager.instance.displayRuntimeUI = false;
+#endif
     }
 }

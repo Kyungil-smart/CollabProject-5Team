@@ -10,6 +10,7 @@ public class ReportSO : SheetDataSOBase
     public int    grade;
     public Role   role;
     [TextArea] public string content;
+    public string uiCategory;
 
     public override void SetData(string[] data)
     {
@@ -19,6 +20,7 @@ public class ReportSO : SheetDataSOBase
         startRepo = ParseInt(data[3]);
         grade = ParseInt(data[4]);
         role = ParseEnum<Role>(data[5]);
-        content = data[6].Trim();
+        content = data[6];
+        uiCategory = data[7];
     }
 }
