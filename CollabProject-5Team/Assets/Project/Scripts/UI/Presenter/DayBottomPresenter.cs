@@ -54,7 +54,7 @@ namespace GameDevTycoon.UI.Ingame
                 .Subscribe(_ =>
                 {
                     DateTimeManager.Instance.OnClickEndDayButton();
-                    //_view.SetDayQuitInteractable(false); 임시로 버그 안고침
+                    // _view.SetDayQuitInteractable(false); 임시로 버그 안고침
                 }).AddTo(this);
         }
 
