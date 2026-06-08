@@ -135,9 +135,9 @@ namespace GameDevTycoon.UI.Ingame
                 .Subscribe(_ => _view.ShowHireMain())
                 .AddTo(this);
 
-            _view.OnApplicantSortChanged
-                .Subscribe(_ => RefreshApplicantList())
-                .AddTo(this);
+            //_view.OnApplicantSortChanged
+            //    .Subscribe(_ => RefreshApplicantList())
+            //    .AddTo(this);
 
             _view.OnFinalHireClicked
                 .Subscribe(_ => OnFinalHireClicked())
