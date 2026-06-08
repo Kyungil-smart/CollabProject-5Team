@@ -53,7 +53,7 @@ namespace GameDevTycoon.UI.Ingame
                 .Subscribe(_ =>
                 {
                     _view.ShowTab(HRTab.EmployeeManage);
-                    //RefreshEmployeeManageList();
+                    RefreshEmployeeManageList();
                 })
                 .AddTo(this);
 
@@ -259,8 +259,7 @@ namespace GameDevTycoon.UI.Ingame
             foreach (var applicant in applicants)
             {
                 var card = Instantiate(_applicantCardPrefab, _view.ApplicantScrollContent);
-                // [TODO: IBindable<Employee> 연결 후 활성화]
-                // card.GetComponent<IBindable<Employee>>().Bind(applicant);
+                card.GetComponent<IBindable<Employee>>().Bind(applicant);
 
                 var captured = applicant;
                 card.GetComponent<UnityEngine.UI.Button>()?.onClick.AddListener(() =>
@@ -287,7 +286,6 @@ namespace GameDevTycoon.UI.Ingame
             foreach (var employee in employees)
             {
                 var card = Instantiate(_employeeCardPrefab, _view.FireListContent);
-                // [TODO: IBindable<Employee> 연결 후 활성화]
 
                 var captured = employee;
                 card.GetComponent<UnityEngine.UI.Button>()?.onClick.AddListener(() =>
@@ -314,7 +312,6 @@ namespace GameDevTycoon.UI.Ingame
             foreach (var employee in employees)
             {
                 var card = Instantiate(_employeeCardPrefab, _view.EducationListContent);
-                // [TODO: IBindable<Employee> 연결 후 활성화]
 
                 var captured = employee;
                 card.GetComponent<UnityEngine.UI.Button>()?.onClick.AddListener(() =>
@@ -342,8 +339,7 @@ namespace GameDevTycoon.UI.Ingame
                 Destroy(child.gameObject);
 
             var detail = Instantiate(_applicantDetailPrefab, _view.ApplicantDetailContent);
-            // [TODO: IBindable<Employee> 연결 후 활성화]
-            // detail.GetComponent<IBindable<Employee>>().Bind(applicant);
+            detail.GetComponent<IBindable<Employee>>().Bind(applicant);
         }
 
         private void OnRecruitConfirmClicked()

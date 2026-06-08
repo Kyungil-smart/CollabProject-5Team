@@ -137,7 +137,7 @@ namespace GameDevTycoon.UI.Ingame
 
         private void Awake()
         {
-            //_hrPopup.SetActive(false);
+            _hrPopup.SetActive(false);
 
             // Tab_EmployeeManage를 기본 탭으로
             ShowTab(HRTab.EmployeeManage);
