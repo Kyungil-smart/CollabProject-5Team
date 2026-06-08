@@ -22,12 +22,12 @@ public class EmployeeComment : MonoBehaviour
         _loyaltyText.text = $"{_currentEmployee.MutableData.loyalty}";
         _commentText.text = commentText;
 
-        int fatiguChagne = employee.MutableData.fatigue - employee.MutableData.preFatigue;
+        int loyaltyChanage = employee.MutableData.loyalty - employee.MutableData.preLoyalty;
 
-        if (fatiguChagne >= 0)
-            _FluctuatingText.text = $"<color=#D32F2F>{employee.MutableData.fatigue} ( {fatiguChagne} ▲ )</color>";
+        if (loyaltyChanage >= 0)
+            _FluctuatingText.text = $"<color=#D32F2F>( {loyaltyChanage} ▲ )</color>";
         else
-            _FluctuatingText.text = $"<color=#1976D2>{employee.MutableData.fatigue} ( {Mathf.Abs(fatiguChagne)} ▼ )</color>";
+            _FluctuatingText.text = $"<color=#1976D2>( {Mathf.Abs(loyaltyChanage)} ▼ )</color>";
 
         SetPartImage((int)_currentEmployee.so.role);
 
