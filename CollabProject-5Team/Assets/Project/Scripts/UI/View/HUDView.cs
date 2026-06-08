@@ -22,7 +22,7 @@ namespace GameDevTycoon.UI.Ingame
         [SerializeField] private Button _settingsButton;
 
         [Header("DayUI")]
-        [SerializeField] private GameObject _dayUI;
+                         public GameObject _dayUI;
         [SerializeField] private Button     _workStartButton;
 
         [Header("NightUI")]

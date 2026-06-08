@@ -20,17 +20,14 @@ namespace GameDevTycoon.UI.Ingame
         [SerializeField] private HRPresenter _hrPresenter;
         [SerializeField] private ProjectPresenter _projectPresenter;
         //[SerializeField] private ~Presenter _(IBottomNightUI)Presenter; 추후 IBottomNightUI가 추가로 존재하면 연결
-        [SerializeField] GameObject CanvasLoading;
 
         private void Start()
         {
             BindButtons();
-            DateTimeManager.OnNightLoading += ShowLoadingScreen;
             DateTimeManager.OnReportEnd += SwitchToNight;
         }
         private void OnDestroy()
         {
-            DateTimeManager.OnNightLoading -= ShowLoadingScreen;
             DateTimeManager.OnReportEnd -= SwitchToNight;
         }
 
@@ -134,16 +131,6 @@ namespace GameDevTycoon.UI.Ingame
             _view.SwitchToDay();
 
             DateTimeManager.Instance.OnClickEndDayButton();
-        }
-
-        async void ShowLoadingScreen()
-        {
-            if (CanvasLoading != null)
-            {
-                CanvasLoading.SetActive(true);
-                await UniTask.Delay(565, cancellationToken: destroyCancellationToken); // 추후 로딩 전환 효과도 넣고...?
-                CanvasLoading.SetActive(false);
-            }
         }
 
         private void ToggleBottomPopup(IBottomNightUI targetPresenter)
