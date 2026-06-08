@@ -36,8 +36,12 @@ public class CameraManager : MonoBehaviour
 
     public SerializableReactiveProperty<bool> IsUIOpen { get; private set; } = new SerializableReactiveProperty<bool>(false);
 
+    public static CameraManager Instance { get; private set; }
+
     private void Awake()
     {
+        Instance = this;
+        
         _cam = GetComponent<Camera>();
         if (_cam.orthographic)
         {
