@@ -1,3 +1,5 @@
+using Cysharp.Threading.Tasks;
+using R3;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -19,6 +21,14 @@ namespace GameDevTycoon.UI.Ingame
             _projectNameLabel.text = project.userNamed.Value;
             _progressBar.value = project.ProgressDayBar / 100f;
             _progressValueLabel.text = $"{project.ProgressDayBar:F1}%";
+
+            // 프로젝트 진행도 변경 시 UI 갱신
+            DateTimeManager.Instance.day
+                .Subscribe(d =>
+                {
+                    _progressBar.value = project.ProgressDayBar;
+                    _progressValueLabel.text = $"{project.ProgressDayBar:F1}%";
+                }).AddTo(this);
         }
     }
 }
