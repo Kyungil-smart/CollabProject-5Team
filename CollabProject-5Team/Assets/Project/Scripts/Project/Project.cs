@@ -142,12 +142,6 @@ public class Project : MonoBehaviour
     // 프로젝트에서 직원을 제거하고 해고 처리
     public bool FireEmployee(Employee e)
     {
-        if (e == null)
-        {
-            Debug.LogWarning("[Project] 해고할 직원이 null입니다.");
-            return false;
-        }
-
         Employee[] targetArray = e.so.role switch
         {
             Role.PLANNER => plannings,
