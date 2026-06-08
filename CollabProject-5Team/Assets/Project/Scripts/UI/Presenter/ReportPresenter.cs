@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using R3;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace GameDevTycoon.UI.Ingame
 {
@@ -14,6 +15,9 @@ namespace GameDevTycoon.UI.Ingame
     {
         [SerializeField] private ReportView   _view;
         [SerializeField] private HUDPresenter _hudPresenter;
+
+        [Header("직군별 보고서 Next Buttons")]
+        [SerializeField]        Button[] _nextButtons;
 
         [Header("프리팹")]
         [SerializeField] private GameObject _employeeStatusMiniItemPrefab;
@@ -64,6 +68,18 @@ namespace GameDevTycoon.UI.Ingame
             _view.OnReportEndConfirmClicked
                 .Subscribe(_ => OnReportEndConfirmed())
                 .AddTo(this);
+
+            for (int i = 0; i < _nextButtons.Length; i++)
+            {
+                int idx = i;
+                _nextButtons[idx].OnClickAsObservable()
+                    .Subscribe(_ =>
+                    {
+                        _roleIndex = idx + 1;
+                        ShowReviewForCurrentRole();
+                    })
+                    .AddTo(this);
+            }
         }
 
         private void OnNightStarted()
@@ -122,6 +138,8 @@ namespace GameDevTycoon.UI.Ingame
         {
             _roleIndex = 0;
             ShowReviewForCurrentRole();
+            for (int i = 0; i < _nextButtons.Length; i++)
+                _nextButtons[i].interactable = false;
         }
 
         private void ShowReviewForCurrentRole()
@@ -180,15 +198,14 @@ namespace GameDevTycoon.UI.Ingame
             if (_viewingReport == null) return;
 
             Company.Instance.curProject.SelectReport(_viewingReport);
+            _viewingReport = null;
 
-            // 채택 스탬프 표시
             foreach (var card in _currentCards)
                 card.SetDisabled(true);
 
             _view.PanelReportDetail.SetActive(false);
 
-            _roleIndex++;
-            ShowReviewForCurrentRole();
+            _nextButtons[_roleIndex].interactable = true;
         }
 
         private void OnCancelDetail()
