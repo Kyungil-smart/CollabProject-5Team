@@ -153,7 +153,9 @@ namespace GameDevTycoon.UI.Ingame
             _panelRecruit.SetActive(false);
             _panelApplicantList.SetActive(false);
             _panelApplicantDetail.SetActive(false);
+            _firePanelList.SetActive(true);
             _firePanelDetail.SetActive(false);
+            _educationPanelList.SetActive(true);
             _educationPanelDetail.SetActive(false);
             _panelEducationCourse.SetActive(false);
 
