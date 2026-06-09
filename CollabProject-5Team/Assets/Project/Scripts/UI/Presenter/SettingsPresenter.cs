@@ -30,7 +30,12 @@ namespace GameDevTycoon.UI
             // BindSliders();
         }
 
-        public void Show() => _view.Show();
+        public void Show()
+        {
+            if (_view.IsVisible) return;
+            _view.Show();
+        }
+
         public void Hide() => _view.Hide();
 
         private void OnGameQuitClicked()
