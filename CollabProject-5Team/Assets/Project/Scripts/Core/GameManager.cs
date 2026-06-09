@@ -21,20 +21,19 @@ public class GameManager : MonoBehaviour
     [Header("자동 주입")]
     public PlayerMove player;
 
-    #region 싱글톤 설정
+    #region DontDestroyOnLoad없는 그냥 Instance 설정
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     public static void Init() => Instance = null;
 
     private void Awake()
     {
-        if (Instance != null && Instance != this) { Destroy(gameObject); return; }
-        Instance = this; DontDestroyOnLoad(gameObject);
+        Instance = this;
     #endregion
     }
 
     private void Start()
     {
-        InitializeGameAsync();
+        InitializeGameAsync().Forget();
     }
 
     private async UniTask InitializeGameAsync()

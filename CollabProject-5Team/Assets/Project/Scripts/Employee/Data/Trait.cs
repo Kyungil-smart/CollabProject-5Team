@@ -32,6 +32,7 @@ public enum TraitStat
 // ── 특성 고유 ID
 public enum Trait
 {
+    None,            // 특성 없음 (디폴트)
     // PLANNER - IdeaGeneration(아이디어 발상)
     IdeaBank,         // 아이디어 뱅크
     IdeaDrought,      // 아이디어 가뭄
