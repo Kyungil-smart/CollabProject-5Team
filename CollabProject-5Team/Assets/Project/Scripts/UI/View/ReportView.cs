@@ -103,6 +103,7 @@ namespace GameDevTycoon.UI.Ingame
             //    .Subscribe(_ => {
             //        Hide();
             //    }).AddTo(this);
+
         }
 
         public void Show()
