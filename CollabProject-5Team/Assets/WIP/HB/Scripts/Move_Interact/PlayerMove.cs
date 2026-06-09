@@ -23,7 +23,7 @@ public class PlayerMove : MonoBehaviour
 
     private Vector2 _touchStartPos;                     // 터치 시작점
     private bool _isDraggingCamera = false;             // 터치 드래그 했는지
-    private const float DragThreshold = 15f;            // 드래그했다고 간주하는 거리
+    private const float DragThreshold = 30f;            // 드래그했다고 간주하는 거리
 
     private bool _isMovingToPosition = false;
 
