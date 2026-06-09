@@ -22,6 +22,7 @@ namespace GameDevTycoon.UI.Ingame
 
         public void Bind(Role role)
         {
+            Debug.Log("바인드 실행");
             _tagLabel.text = RoleToString(role);
             _tagBG.color   = RoleToColor(role);
         }
