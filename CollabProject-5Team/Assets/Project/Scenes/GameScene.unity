@@ -1320,6 +1320,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0a452e1e4e1c9644cb628f4af64689bb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!4 &1518114301 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 4513200251460964629, guid: 8a84adbd877956942856225f27e0458b, type: 3}
+  m_PrefabInstance: {fileID: 1962506894305320876}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &1531362435 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 969413238718770892, guid: 8a84adbd877956942856225f27e0458b, type: 3}
@@ -2176,15 +2181,15 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 207066109208173536, guid: fe3b3f93eea92f046b65a5628cd3e875, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 0.000054103883
+      value: 0.00013329243
       objectReference: {fileID: 0}
     - target: {fileID: 609578574280031286, guid: fe3b3f93eea92f046b65a5628cd3e875, type: 3}
       propertyPath: m_AnchorMax.x
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 609578574280031286, guid: fe3b3f93eea92f046b65a5628cd3e875, type: 3}
       propertyPath: m_AnchorMax.y
-      value: 0
+      value: 0.99983007
       objectReference: {fileID: 0}
     - target: {fileID: 5098147649969793180, guid: fe3b3f93eea92f046b65a5628cd3e875, type: 3}
       propertyPath: m_Name
@@ -2206,6 +2211,22 @@ PrefabInstance:
       propertyPath: _hudPresenter
       value: 
       objectReference: {fileID: 1352439378}
+    - target: {fileID: 7607442376922382128, guid: fe3b3f93eea92f046b65a5628cd3e875, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7936397085993313520, guid: fe3b3f93eea92f046b65a5628cd3e875, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7936397085993313520, guid: fe3b3f93eea92f046b65a5628cd3e875, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7936397085993313520, guid: fe3b3f93eea92f046b65a5628cd3e875, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: -17
+      objectReference: {fileID: 0}
     - target: {fileID: 7946304728652451989, guid: fe3b3f93eea92f046b65a5628cd3e875, type: 3}
       propertyPath: m_Pivot.x
       value: 0
@@ -2601,7 +2622,7 @@ PrefabInstance:
     - target: {fileID: 7430753807283215856, guid: bbabf44e2c25a9a4b993174e8d9bb61c, type: 3}
       propertyPath: NpcSpawnPoint
       value: 
-      objectReference: {fileID: 0}
+      objectReference: {fileID: 1518114301}
     - target: {fileID: 7430753807283215856, guid: bbabf44e2c25a9a4b993174e8d9bb61c, type: 3}
       propertyPath: _npcSpawnPoint
       value: 
