@@ -13,10 +13,12 @@ public class GameManager : MonoBehaviour
 
     [Header("자리 배치")]
     [SerializeField] private Transform _playerSpawnPoint;               // 플레이어 스폰 지점
-    [SerializeField] private Transform _npcSpawnPoint;                  // NPC 스폰 지점
+    [SerializeField] public Transform NpcSpawnPoint;                    // NPC 스폰 지점
     [SerializeField] private Transform _map;                            // 의자가 있는 현재 맵
 
     private List<Transform> _sitPoints = new List<Transform>();         // 앉을 좌표 리스트
+
+    private List<NPCController> _activeNpcs = new List<NPCController>();   // 활성화된 NPC를 담아둘 리스트
 
     [Header("자동 주입")]
     public PlayerMove player;
@@ -75,17 +77,35 @@ public class GameManager : MonoBehaviour
 
             // NPC 생성
             GameObject npcObj 
-            = Instantiate(_allNpcPrefabs[i], _npcSpawnPoint.position, Quaternion.identity);
+            = Instantiate(_allNpcPrefabs[i], NpcSpawnPoint.position, Quaternion.identity);
             
             // 각 프리팹 내부의 데이터 초기화
             npcObj.GetComponent<Employee>().Init(); 
             
             // 각 NPC에게 의자 좌표를 전달해 이동시킴
-            npcObj.GetComponent<NPCController>().TargetDesk = _sitPoints[i];
+            var controller =  npcObj.GetComponent<NPCController>();
+            controller.TargetDesk = _sitPoints[i];
+
+            // 생성된 NPC를 List에 담음
+            _activeNpcs.Add(controller);
 
             // 1초 간격으로 생성
             await UniTask.Delay(1000);
         }
+    }
+
+    // 퇴근 명령 함수
+    public void LeaveWorkNPCs()
+    {
+        foreach (var npc in _activeNpcs)
+        {
+            if (npc != null)
+            {
+                npc.ChangeState(new NPCLeave());
+            }
+        }
+
+        _activeNpcs.Clear();
     }
 
     public void InjectPlayer(PlayerMove player)
