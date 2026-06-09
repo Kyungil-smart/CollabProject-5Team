@@ -12,3 +12,7 @@
    - `InitializeGameAsync()`: _playerSpawnPoint에 플레이어 프리팹을 생성한 뒤 UniTask로 1초 대기
    - `RefreshSitPoints()`: 사용 중인 맵의 자식 오브젝트 중 Seat.cs가 참조된 오브젝트를 찾아서 그 오브젝트에 붙어있는 SitPoint를 리스트에 담음
    - `SpawnNPCsAsync`: 생성할 NPC프리팹이나 의자의 수가 SitPoint 리스트의 수보다크면 생성중단(예외처리) NPC프리팹을 순서대로 생성해서 의자 좌표로 이동시킴, 유니테스크로 1초마다 생성되도록 제어
+
+## 유니티 에디터에서 설정할 것
+- GameManager 오브젝트에서 Player Spawn Point, NPC Spawn Point 두 개 모두 Map Center 하위에 있는 PlayerSpawnPoint를 참조
+- Map에는 MapCenter를 참조
