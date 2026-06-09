@@ -14,7 +14,10 @@ namespace Dialogue
         [SerializeField] List<DialoguePoolEntrySO> _allPoolEntries = new();
 
         private Dictionary<int, DialogueNodeSO> _nodeMap = new();
-        private Dictionary<(int, EmployeeDialogueState), DialoguePoolEntrySO> _poolMap = new();
+        private Dictionary<(int, EmployeeDialogueState), List<DialoguePoolEntrySO>> _poolMap = new();
+
+        // 직전에 나온 항목 기억 (다음 뽑기에서 제외)
+        private Dictionary<(int, EmployeeDialogueState), DialoguePoolEntrySO> _poolLastPicked = new();
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         public static void Init() => Instance = null;
@@ -36,10 +39,17 @@ namespace Dialogue
             }
 
             _poolMap.Clear();
+            _poolLastPicked.Clear();
             foreach (DialoguePoolEntrySO entry in _allPoolEntries)
             {
                 if (entry == null) continue;
-                _poolMap[(entry.employeeId, entry.empStatusReq)] = entry;
+                (int, EmployeeDialogueState) key = (entry.employeeId, entry.empStatusReq);
+                if (!_poolMap.TryGetValue(key, out List<DialoguePoolEntrySO> list))
+                {
+                    list = new List<DialoguePoolEntrySO>();
+                    _poolMap[key] = list;
+                }
+                list.Add(entry);
             }
         }
         
@@ -52,9 +62,25 @@ namespace Dialogue
 
         public DialoguePoolEntrySO GetPoolEntry(int employeeId, EmployeeDialogueState state)
         {
-            if (_poolMap.TryGetValue((employeeId, state), out DialoguePoolEntrySO entry)) return entry;
-            Debug.LogWarning($"[DialogueDataManager] 풀 항목 없음 — employeeId={employeeId}, state={state}");
-            return null;
+            (int, EmployeeDialogueState) key = (employeeId, state);
+
+            if (!_poolMap.TryGetValue(key, out List<DialoguePoolEntrySO> fullList) || fullList.Count == 0)
+            {
+                Debug.LogWarning($"[DialogueDataManager] 풀 항목 없음 — employeeId={employeeId}, state={state}");
+                return null;
+            }
+
+            _poolLastPicked.TryGetValue(key, out DialoguePoolEntrySO lastPicked);
+
+            // 직전 항목을 제외한 후보 목록 구성 (풀이 1개면 제외 없이 그대로 사용)
+            List<DialoguePoolEntrySO> candidates = fullList.Count > 1
+                ? fullList.FindAll(e => e != lastPicked)
+                : fullList;
+
+            DialoguePoolEntrySO picked = candidates[Random.Range(0, candidates.Count)];
+            _poolLastPicked[key] = picked;
+
+            return picked;
         }
     }
 }
