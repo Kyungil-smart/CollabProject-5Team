@@ -532,7 +532,7 @@ Transform:
   m_GameObject: {fileID: 1031673725945730757}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.562, z: 0.3062}
+  m_LocalPosition: {x: 0, y: 0.562, z: 0.099}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -3008,6 +3008,7 @@ GameObject:
   - component: {fileID: 1777830408852191653}
   - component: {fileID: 4532946769785860020}
   - component: {fileID: 8573120410256277628}
+  - component: {fileID: 7072589392094606421}
   m_Layer: 0
   m_Name: Classroom_Chair_1 Variant_3
   m_TagString: Untagged
@@ -3084,6 +3085,20 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!114 &7072589392094606421
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4299920754476813455}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 55e3e3915c6c9f44ca765f00ee4c5ee3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  sitPoint: {fileID: 5626752001271545212}
+  isSeated: 0
 --- !u!1 &4400698881459180446
 GameObject:
   m_ObjectHideFlags: 0
@@ -3573,7 +3588,7 @@ Transform:
   m_GameObject: {fileID: 4753026049739790599}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.562, z: 0.3062}
+  m_LocalPosition: {x: 0, y: 0.562, z: 0.101}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -3849,6 +3864,7 @@ GameObject:
   - component: {fileID: 2809366896753773592}
   - component: {fileID: 3600843998237192422}
   - component: {fileID: 1132945477961870027}
+  - component: {fileID: 1911563363406949624}
   m_Layer: 0
   m_Name: Classroom_Chair_1 Variant_1
   m_TagString: Untagged
@@ -3925,6 +3941,20 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!114 &1911563363406949624
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5486861016809220963}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 55e3e3915c6c9f44ca765f00ee4c5ee3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  sitPoint: {fileID: 4339472978473712359}
+  isSeated: 0
 --- !u!1 &5562078061354703490
 GameObject:
   m_ObjectHideFlags: 0
@@ -4452,6 +4482,7 @@ GameObject:
   - component: {fileID: 155671889328618022}
   - component: {fileID: 5042565493269717837}
   - component: {fileID: 4390636140381373183}
+  - component: {fileID: 6250124465401389909}
   m_Layer: 0
   m_Name: Classroom_Chair_1 Variant_4
   m_TagString: Untagged
@@ -4528,6 +4559,20 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!114 &6250124465401389909
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6027183176871957368}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 55e3e3915c6c9f44ca765f00ee4c5ee3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  sitPoint: {fileID: 7988280403743870698}
+  isSeated: 0
 --- !u!1 &6114147717159914478
 GameObject:
   m_ObjectHideFlags: 0
@@ -5997,6 +6042,37 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!1 &7484162089045543286
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6211755637151721359}
+  m_Layer: 0
+  m_Name: PlayerSpawnPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &6211755637151721359
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7484162089045543286}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -2.483, y: 0, z: 0.031}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 3616482642604521802}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &7546691781539932498
 GameObject:
   m_ObjectHideFlags: 0
@@ -6477,6 +6553,7 @@ Transform:
   - {fileID: 5778392503612307432}
   - {fileID: 5733515431711215792}
   - {fileID: 4011210290119186494}
+  - {fileID: 6211755637151721359}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &8392470980965188958

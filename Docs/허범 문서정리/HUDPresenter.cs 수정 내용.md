@@ -13,3 +13,5 @@
 CloseAllBottomPopups();
 _settingsPresenter.Hide();
 ```
+
+# 하이어라키 Canvas_Hud의 inspector창에서 Hud Presenter(script)쪽 Desk에 Hotel_PC_Monitor1 프리팹 참조해야함 
