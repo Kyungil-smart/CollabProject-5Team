@@ -39,14 +39,13 @@ public class ReportManager : MonoBehaviour
     }
 
     // 직원 Trait(main/sub/risk)과 grade로 ReportSO 1개 반환
-    // 없으면 grade=0 폴백
-    List<ReportSO> _candidateBuffer = new List<ReportSO>(3);
-    Trait[] _traitBuffer = new Trait[3];
+    List<ReportSO> _candidateBuffer = new List<ReportSO>(2);
+    Trait[] _traitBuffer = new Trait[2];
     public ReportSO GetReportsByTrait(Employee e, int grade)
     {
         _traitBuffer[0] = e.so.mainTrait;
         _traitBuffer[1] = e.so.subTrait;
-        _traitBuffer[2] = e.so.riskTrait;
+        //_traitBuffer[2] = e.so.riskTrait; // 리스크 보고서는 일단 제외
 
         _candidateBuffer.Clear();
 
@@ -57,18 +56,18 @@ public class ReportManager : MonoBehaviour
         }
 
         if (_candidateBuffer.Count > 0)
-            return _candidateBuffer[Random.Range(0, _candidateBuffer.Count)]; // 랜덤 한개 반환
-
-        // 없으면 grade=0 폴백 시도
-        foreach (Trait t in _traitBuffer)
         {
-            if (_reportMap.TryGetValue((t, 0), out var so))
-                _candidateBuffer.Add(so);
+#if UNITY_EDITOR
+            var sb = new System.Text.StringBuilder();
+            sb.Append($"[ReportManager] {e.so.Name}({e.so.role}) grade={grade} 유효 후보 보고서: ");
+            foreach (var so in _candidateBuffer)
+                sb.Append($"[{so.title}({so.role}/{so.trait}/g{so.grade})] ");
+            Debug.Log(sb.ToString());
+#endif
+            return _candidateBuffer[Random.Range(0, _candidateBuffer.Count)]; // 랜덤 한개 반환
         }
 
-        return _candidateBuffer.Count > 0
-            ? _candidateBuffer[Random.Range(0, _candidateBuffer.Count)]
-            : null;
+        return null;
     }
 }
 
