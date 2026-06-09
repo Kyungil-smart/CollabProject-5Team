@@ -45,6 +45,7 @@ namespace GameDevTycoon.UI.Ingame
         {
             _view.Show();
             _view.ShowTab(HRTab.EmployeeManage);
+            RefreshEmployeeManageList();
         }
 
         public void Hide() => _view.Hide();

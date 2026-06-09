@@ -41,6 +41,7 @@ namespace GameDevTycoon.UI
 
         public void Show() => _settingsPanel.SetActive(true);
         public void Hide() => _settingsPanel.SetActive(false);
+        public bool IsVisible => _settingsPanel.activeSelf;
 
         public void SetBGMSlider(float value) { if (_bgmSlider != null) _bgmSlider.value = value; }
         public void SetSFXSlider(float value) { if (_sfxSlider != null) _sfxSlider.value = value; }
