@@ -6,6 +6,10 @@ public class GameManager : MonoBehaviour
 {
     public static GameManager Instance;
 
+    [Header("맵 관리")]
+    [SerializeField] private List<GameObject> _officeMaps;              // 사무실 맵 프리팹
+    private int _currentMapIndex = 0;
+
     [Header("프리팹")]
     [SerializeField] private GameObject _playerPrefab;                  // 플레이어 프리팹
     [SerializeField] private List<GameObject> _allNpcPrefabs;           // NPC프리팹
@@ -30,12 +34,23 @@ public class GameManager : MonoBehaviour
     private void Awake()
     {
         Instance = this;
+
+        GenerateMap();
     #endregion
     }
 
     private void Start()
     {
         InitializeGameAsync().Forget();
+    }
+
+    private void GenerateMap()
+    {
+        for (int i = 0; i < _officeMaps.Count; i++)
+        {
+            _officeMaps[i].SetActive(i == 0);
+        }
+        _map = _officeMaps[0].transform;
     }
 
     private async UniTask InitializeGameAsync()
@@ -52,6 +67,30 @@ public class GameManager : MonoBehaviour
 
         // NPC 생성
         await SpawnNPCsAsync(10);
+    }
+
+    public void UpgradeOffice()
+    {
+        // 현재 맵의 인덱스가 맵의 개수와 같거나 크면 리턴
+        if (_currentMapIndex + 1 >= _officeMaps.Count)
+        {
+            return;
+        }
+
+        // 기존 맵 비활성화
+        _officeMaps[_currentMapIndex].SetActive(false);
+
+        // 인덱스 증가시키고 새 맵 활성화
+        _currentMapIndex++;
+        _map = _officeMaps[_currentMapIndex].transform;
+        _map.gameObject.SetActive(true);
+
+        // 의자 좌표 갱신
+        RefreshSitPoints();
+
+        // 기존 NPC정리 및 새 맵에 맞춰 재배치
+        LeaveWorkNPCs();
+        SpawnNPCsAsync(10).Forget();
     }
 
     public void RefreshSitPoints()
