@@ -39,13 +39,13 @@ public class ReportManager : MonoBehaviour
     }
 
     // 직원 Trait(main/sub/risk)과 grade로 ReportSO 1개 반환
-    List<ReportSO> _candidateBuffer = new List<ReportSO>(2);
-    Trait[] _traitBuffer = new Trait[2];
+    List<ReportSO> _candidateBuffer = new List<ReportSO>(3);
+    Trait[] _traitBuffer = new Trait[3];
     public ReportSO GetReportsByTrait(Employee e, int grade)
     {
         _traitBuffer[0] = e.so.mainTrait;
-        _traitBuffer[1] = e.so.riskTrait; // 두번째 특성은 미완이라 일단 제외
-        //_traitBuffer[2] = e.so.subTrait;
+        _traitBuffer[1] = e.so.riskTrait;
+        _traitBuffer[2] = e.so.subTrait;
 
         _candidateBuffer.Clear();
 
