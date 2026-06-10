@@ -68,12 +68,9 @@ public class DateTimeManager : MonoBehaviour
     public void CompleteDayWork()
     {
         isWorkCompleted = true;
-        Debug.Log("[DTM] 임무 완료");
 
-        if (GameManager.Instance != null)
-        {
-            GameManager.Instance.player.WorkCompleteAnim();
-        }
+        GameManager.Instance.player.WorkCompleteAnim();
+
         OnWorkCompleted?.Invoke();
     }
 
