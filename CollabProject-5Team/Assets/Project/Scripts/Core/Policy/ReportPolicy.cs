@@ -66,7 +66,7 @@ public static class ReportPolicy
 
         // 값 적용 (특성 점수 + 가중치)
         ApplyTraitDelta(scores, e.so.mainTrait, mainDelta);
-        ApplyTraitDelta(scores, e.so.subTrait,  subDelta);
+        if (e.so.subTrait != Trait.None) ApplyTraitDelta(scores, e.so.subTrait,  subDelta);
         ApplyTraitDelta(scores, e.so.riskTrait, riskDelta);
 
         // 0~100 클램프 후 결과 배열 반환

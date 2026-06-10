@@ -44,8 +44,8 @@ public class ReportManager : MonoBehaviour
     public ReportSO GetReportsByTrait(Employee e, int grade)
     {
         _traitBuffer[0] = e.so.mainTrait;
-        _traitBuffer[1] = e.so.subTrait;
-        //_traitBuffer[2] = e.so.riskTrait; // 리스크 보고서는 일단 제외
+        _traitBuffer[1] = e.so.riskTrait; // 두번째 특성은 미완이라 일단 제외
+        //_traitBuffer[2] = e.so.subTrait;
 
         _candidateBuffer.Clear();
 
