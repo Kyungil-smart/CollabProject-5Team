@@ -2885,6 +2885,8 @@ GameObject:
   - component: {fileID: 8837677480525911511}
   - component: {fileID: 6574321673877401624}
   - component: {fileID: 4434096126728630628}
+  - component: {fileID: 2508496270414816016}
+  - component: {fileID: 4934791815439661917}
   m_Layer: 5
   m_Name: Canvas_Quest
   m_TagString: Untagged
@@ -2977,6 +2979,46 @@ MonoBehaviour:
   m_BlockingMask:
     serializedVersion: 2
     m_Bits: 4294967295
+--- !u!114 &2508496270414816016
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8145258805894644839}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bb1ab82ec18c72f4bad788e2d48d575c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _questDetailPopup: {fileID: 859976504349666438}
+  _dailyQuestContent: {fileID: 477560813078584285}
+  _storyQuestContent: {fileID: 8508521189412168844}
+  _eventQuestContent: {fileID: 2076003273769965241}
+  _storyQuestTitleLabel: {fileID: 1002244300915244987}
+  _eventQuestTitleLabel: {fileID: 3542288240345916706}
+  _questDetailCloseButton: {fileID: 8496708779065131209}
+  _dailyQuestAlertPopup: {fileID: 2279802238613971645}
+  _alertQuestNameLabel: {fileID: 5745809551726271467}
+  _alertProgressLabel: {fileID: 8063307513365561323}
+  _alertConfirmButton: {fileID: 4443161200277854929}
+  _questClearPopup: {fileID: 7731405618706716229}
+  _completionUpIcon: {fileID: 3612349490103305215}
+  _stabilityUpIcon: {fileID: 624007597558547963}
+  _appealUpIcon: {fileID: 276295683314009582}
+--- !u!114 &4934791815439661917
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8145258805894644839}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7b23ce85f04edbd4f887ee2bebf6a6ba, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _view: {fileID: 2508496270414816016}
 --- !u!1 &8170910622876891823
 GameObject:
   m_ObjectHideFlags: 0
