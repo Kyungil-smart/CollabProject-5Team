@@ -1,5 +1,3 @@
-
-
 public enum QuestState
 {
     Ready,
@@ -57,7 +55,15 @@ public class DailyQuest : QuestBase
         if (curCount >= TargetCount)
         {
             state = QuestState.End;
-            result = QuestResult.Success; // 실패 조건이 있다면 추가 로직 필요
+            result = QuestResult.Success;
         }
+    }
+
+    // 시간 초과 등으로 실패 처리
+    public void Fail()
+    {
+        if (state != QuestState.Playing) return;
+        state = QuestState.End;
+        result = QuestResult.Fail;
     }
 }

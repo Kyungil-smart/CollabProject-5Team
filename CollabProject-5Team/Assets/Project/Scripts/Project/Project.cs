@@ -251,6 +251,12 @@ public class Project : MonoBehaviour
                       $"s1={weekScores[0]:F1} s2={weekScores[1]:F1} s3={weekScores[2]:F1} 가중치={(TraitTable.Get(report.trait).score * 2)} → 평균={roleAvg:F1}");
         }
 
+        // 평일 일일 퀘스트 클리어 누적 포인트를 소급 적용 (최대 100점)
+        qualThisNight = Mathf.Min(qualThisNight + QuestManager.Instance.GetWeeklyBonus(Role.PLANNER), 100f);
+        stabThisNight = Mathf.Min(stabThisNight + QuestManager.Instance.GetWeeklyBonus(Role.PROGRAMMER), 100f);
+        charmThisNight = Mathf.Min(charmThisNight + QuestManager.Instance.GetWeeklyBonus(Role.ARTIST), 100f);
+        QuestManager.Instance.ResetWeeklyBonus();
+
         // 주차 점수 → 누적 평균 갱신 (이전 평균에 이번 주차 값을 순차 합산)
         qualityScore = (qualityScore * (nightCount - 1) + qualThisNight) / nightCount;
         stabilityScore = (stabilityScore * (nightCount - 1) + stabThisNight) / nightCount;
