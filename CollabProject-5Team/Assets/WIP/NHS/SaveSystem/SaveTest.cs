@@ -4,16 +4,14 @@ public class SaveTest : MonoBehaviour
 {
     void Update()
     {
-        // S 키를 누르면 슬롯 1에 저장
         if (Input.GetKeyDown(KeyCode.S))
         {
-            SaveLoadSystem.Instance.SaveGame(1);
+            SaveLoadSystem.Instance.SaveGame(0);
         }
 
-        // L 키를 누르면 슬롯 1 불러오기
         if (Input.GetKeyDown(KeyCode.L))
         {
-            tempData data = SaveLoadSystem.Instance.LoadGame(1);
+            tempData data = SaveLoadSystem.Instance.LoadGame(0);
 
             if (data != null)
             {
@@ -26,14 +24,13 @@ public class SaveTest : MonoBehaviour
             }
         }
 
-        // H 키를 누르면 슬롯에 데이터가 있는지 확인
         if (Input.GetKeyDown(KeyCode.H))
         {
-            bool hasData = SaveLoadSystem.Instance.HasSaveData(2);
+            bool hasData = SaveLoadSystem.Instance.HasSaveData(0);
             Debug.Log($"슬롯 1 데이터 존재 여부: {hasData}");
         }
 
-        if (Input.GetKeyDown(KeyCode.P))   // P 키 누르면 정보 출력
+        if (Input.GetKeyDown(KeyCode.P))
         {
             Debug.Log("저장 경로: " + Application.persistentDataPath);
             Debug.Log("Company Name: " + Application.companyName);
