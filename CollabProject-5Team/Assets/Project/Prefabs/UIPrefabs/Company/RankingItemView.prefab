@@ -9,6 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1695170674814032522}
+  - component: {fileID: 5243246419849065220}
   m_Layer: 5
   m_Name: RankingItemView
   m_TagString: Untagged
@@ -37,6 +38,30 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &5243246419849065220
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1385869677282068776}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: db369d029447b384f80a71caaf30de08, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _rankIcon: {fileID: 7786266755276046439}
+  _companyNameLabel: {fileID: 106158700075356845}
+  _reputationLabel: {fileID: 1490565358380402853}
+  _popularityLabel: {fileID: 1201278460533952946}
+  _totalRevenueLabel: {fileID: 349801647773782800}
+  _rowBackground: {fileID: 6813329795769332937}
+  _iconGold: {fileID: 0}
+  _iconSilver: {fileID: 0}
+  _iconBronze: {fileID: 0}
+  _iconDefault: {fileID: 0}
+  _playerRowColor: {r: 0, g: 0, b: 0, a: 0}
+  _defaultRowColor: {r: 0, g: 0, b: 0, a: 0}
 --- !u!1 &1757879289979391519
 GameObject:
   m_ObjectHideFlags: 0

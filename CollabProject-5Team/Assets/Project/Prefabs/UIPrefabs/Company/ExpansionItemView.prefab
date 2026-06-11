@@ -895,6 +895,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4481760463712330106}
+  - component: {fileID: 4011055532468684829}
   m_Layer: 5
   m_Name: ExpansionItemView
   m_TagString: Untagged
@@ -922,6 +923,31 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &4011055532468684829
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8368795661627919703}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5ca19cee9fd9b14bb9f69ec471a2e45, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _cardButton: {fileID: 4045074099890718425}
+  _levelLabel: {fileID: 6218803408537468544}
+  _sizeImage: {fileID: 6525259108863736463}
+  _costLabel: {fileID: 971881022849363627}
+  _maxEmployeeLabel: {fileID: 586253563539760415}
+  _descriptionLabel: {fileID: 1441377566759275924}
+  _lockOverlay: {fileID: 9124602666235372960}
+  _lockConditionLabel1: {fileID: 6335119627425808888}
+  _lockConditionLabel2: {fileID: 4325635102128378966}
+  _spriteCurrentOrOwned: {fileID: 0}
+  _spriteUnlocked: {fileID: 0}
+  _spriteSelected: {fileID: 0}
+  _spriteLocked: {fileID: 0}
 --- !u!1 &8481368518102447320
 GameObject:
   m_ObjectHideFlags: 0
