@@ -5232,7 +5232,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &5707795767087183515
 RectTransform:
   m_ObjectHideFlags: 0
@@ -9746,7 +9746,7 @@ GameObject:
   - component: {fileID: 9215430565506187454}
   - component: {fileID: 5655712133739661867}
   m_Layer: 5
-  m_Name: OfficeLevelValue
+  m_Name: GameRankingValue
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -11580,7 +11580,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 7349604524732292389}
   m_HandleRect: {fileID: 609578574280031286}
   m_Direction: 2
-  m_Value: 0
+  m_Value: 1
   m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
@@ -15059,7 +15059,7 @@ GameObject:
   - component: {fileID: 8859591008818704348}
   - component: {fileID: 681590362225854960}
   m_Layer: 5
-  m_Name: OfficeLevelValue
+  m_Name: TotalRevenueValue
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -26653,7 +26653,7 @@ RectTransform:
   m_Father: {fileID: 1891433500218873987}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 20, y: 20}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -27881,7 +27881,7 @@ GameObject:
   - component: {fileID: 1233358590984099723}
   - component: {fileID: 7388851170367541151}
   m_Layer: 5
-  m_Name: OfficeLevelValue
+  m_Name: ReputationValue
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -28250,7 +28250,7 @@ GameObject:
   - component: {fileID: 113116542509678078}
   - component: {fileID: 7260311503486634216}
   m_Layer: 5
-  m_Name: OfficeLevelValue
+  m_Name: ReleasedGameCountValue
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -34042,7 +34042,7 @@ GameObject:
   - component: {fileID: 4023819897414227444}
   - component: {fileID: 7268662240276372014}
   m_Layer: 5
-  m_Name: OfficeLevelValue
+  m_Name: GoldValue
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -42835,13 +42835,15 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2884065877285823161}
+  - component: {fileID: 7608468434557391995}
+  - component: {fileID: 4122187858710079805}
   m_Layer: 5
   m_Name: CompanyPopup
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &2884065877285823161
 RectTransform:
   m_ObjectHideFlags: 0
@@ -42868,6 +42870,94 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &7608468434557391995
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7607442376922382128}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7eb9ffdebb827c54d9760522c912774f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _companyPopup: {fileID: 7607442376922382128}
+  _companyInfoTabButton: {fileID: 2442661408174696903}
+  _rankingTabButton: {fileID: 5045799530465841143}
+  _managementStatusTabButton: {fileID: 2483145110890599472}
+  _expansionTabButton: {fileID: 8192675790722952965}
+  _tabCompanyInfo: {fileID: 936278358602892120}
+  _logoIcon: {fileID: 7049594523651493265}
+  _companyNameLabel: {fileID: 2934539207970178924}
+  _officeLevelValue: {fileID: 1976706369577067866}
+  _gameRankingValue: {fileID: 5655712133739661867}
+  _employeeCountValue: {fileID: 556318856319121734}
+  _releasedGameCountValue: {fileID: 7260311503486634216}
+  _reputationValue: {fileID: 7388851170367541151}
+  _popularityValue: {fileID: 537704010999794779}
+  _cohesionValue: {fileID: 6027900764138552469}
+  _goldValue: {fileID: 7268662240276372014}
+  _totalRevenueValue: {fileID: 681590362225854960}
+  _tabRanking: {fileID: 6368136067068621340}
+  _rankingListContent: {fileID: 3881249160618913528}
+  _rankingUpdateNoteLabel: {fileID: 1359096675772625030}
+  _tabManagementStatus: {fileID: 820270122060020359}
+  _filterDropdown: {fileID: 2867861535373208532}
+  _periodLabel: {fileID: 61605871031953727}
+  _currentColumnHeader: {fileID: 8290595207422708617}
+  _previousColumnHeader: {fileID: 5900093442995058836}
+  _totalIncomeCurrentLabel: {fileID: 6414150451645519585}
+  _totalIncomePreviousLabel: {fileID: 5099892012883558996}
+  _gameSalesCurrentLabel: {fileID: 1857465724277263877}
+  _gameSalesPreviousLabel: {fileID: 8575749895029064941}
+  _otherIncomeCurrentLabel: {fileID: 2662499168192158461}
+  _otherIncomePreviousLabel: {fileID: 4549720683283651286}
+  _totalExpenseCurrentLabel: {fileID: 2943211000891877066}
+  _totalExpensePreviousLabel: {fileID: 1274706014515273250}
+  _laborCostCurrentLabel: {fileID: 1665865021533251642}
+  _laborCostPreviousLabel: {fileID: 3654220579788295588}
+  _devCostCurrentLabel: {fileID: 3624637741718068748}
+  _devCostPreviousLabel: {fileID: 3325100609001122964}
+  _operatingCostCurrentLabel: {fileID: 8520703367057165156}
+  _operatingCostPreviousLabel: {fileID: 7054566850309744654}
+  _marketingCostCurrentLabel: {fileID: 599499540179753256}
+  _marketingCostPreviousLabel: {fileID: 3783903639109294405}
+  _otherExpenseCurrentLabel: {fileID: 7885219705008291329}
+  _otherExpensePreviousLabel: {fileID: 527170395789485127}
+  _operatingProfitCurrentLabel: {fileID: 6681420056228818765}
+  _operatingProfitPreviousLabel: {fileID: 6637221585492803039}
+  _previousLabels:
+  - {fileID: 5099892012883558996}
+  - {fileID: 8575749895029064941}
+  - {fileID: 4549720683283651286}
+  - {fileID: 1274706014515273250}
+  - {fileID: 3654220579788295588}
+  - {fileID: 3325100609001122964}
+  - {fileID: 7054566850309744654}
+  - {fileID: 3783903639109294405}
+  - {fileID: 527170395789485127}
+  - {fileID: 6637221585492803039}
+  _tabExpansion: {fileID: 988816288490982174}
+  _expansionListContent: {fileID: 207066109208173536}
+  _expansionConfirmButton: {fileID: 144612839015050843}
+--- !u!114 &4122187858710079805
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7607442376922382128}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9f570563e72b02f46962ab3b19173260, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _view: {fileID: 7608468434557391995}
+  _alertView: {fileID: 8654902207363816660, guid: b82583b22905db24a86349a98bea2b01, type: 3}
+  _hudPresenter: {fileID: 2838642515319906603, guid: 93dd82dcc61417c458e403da87a9c416, type: 3}
+  _rankingItemPrefab: {fileID: 5243246419849065220, guid: 8e35d61cf05228a4baae06e93897f8a4, type: 3}
+  _expansionItemPrefab: {fileID: 4011055532468684829, guid: 8f3489add3ef61c488b93e1c2df6177b, type: 3}
 --- !u!1 &7616204396910550675
 GameObject:
   m_ObjectHideFlags: 0
@@ -45686,7 +45776,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\u2022 \uB9E4\uB144 \uCCAB\uBC88\uC9F8 \uC8FC\uC5D0 \uC5C5\uB370\uC774\uD2B8"
+  m_text: "* \uB9E4\uB144 \uCCAB\uBC88\uC9F8 \uC8FC\uC5D0 \uC5C5\uB370\uC774\uD2B8"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 47865496511cdeb44baa43a144e8b4ff, type: 2}
   m_sharedMaterial: {fileID: 4134685016888260732, guid: 47865496511cdeb44baa43a144e8b4ff, type: 2}
@@ -45808,7 +45898,7 @@ GameObject:
   - component: {fileID: 3568239062229957559}
   - component: {fileID: 537704010999794779}
   m_Layer: 5
-  m_Name: OfficeLevelValue
+  m_Name: PopularityValue
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -47856,7 +47946,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: -0.0000859828}
   m_SizeDelta: {x: 0, y: 300}
   m_Pivot: {x: 0, y: 1}
 --- !u!1 &8410270988214822853
@@ -50812,7 +50902,7 @@ GameObject:
   - component: {fileID: 4809496634105532283}
   - component: {fileID: 556318856319121734}
   m_Layer: 5
-  m_Name: OfficeLevelValue
+  m_Name: EmployeeCountValue
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -51011,9 +51101,9 @@ RectTransform:
   m_Father: {fileID: 1772454957035715202}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
+  m_SizeDelta: {x: -17, y: 0}
   m_Pivot: {x: 0, y: 1}
 --- !u!222 &9114229920838515327
 CanvasRenderer:
@@ -51078,7 +51168,7 @@ GameObject:
   - component: {fileID: 552131492981378974}
   - component: {fileID: 6027900764138552469}
   m_Layer: 5
-  m_Name: OfficeLevelValue
+  m_Name: CohesionValue
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
