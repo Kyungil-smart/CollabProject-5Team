@@ -131,6 +131,9 @@ public class DateTimeManager : MonoBehaviour
         // 금요일 낮에 퇴근하면 금요일 밤으로 전환
         if (currentDay == DayOfWeek.Friday && currentTime == TimeOfDay.Day)
         {
+            // 금요일 낮 업무 종료 시 NPC 퇴근
+            GameManager.Instance.LeaveWorkNPCs();
+
             currentTime = TimeOfDay.Night;
 
             // 방치 패널티 적용
@@ -148,6 +151,10 @@ public class DateTimeManager : MonoBehaviour
             currentWeek.Value++;
             currentDay = DayOfWeek.Monday;
             currentTime = TimeOfDay.Day;
+
+            // 월요일 낮이 되면 퇴근했던 직원 다시 생성
+            GameManager.Instance.SpawnNPCsAsync().Forget();
+
             OnDay?.Invoke();// 낮
         }
         // 월~목 낮에 퇴근하면 다음 날 낮으로

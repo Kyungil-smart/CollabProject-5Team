@@ -66,7 +66,7 @@ public class GameManager : MonoBehaviour
         RefreshSitPoints();
 
         // NPC 생성
-        await SpawnNPCsAsync(10);
+        await SpawnNPCsAsync();
     }
 
     public void UpgradeOffice()
@@ -90,7 +90,7 @@ public class GameManager : MonoBehaviour
 
         // 기존 NPC정리 및 새 맵에 맞춰 재배치
         LeaveWorkNPCs();
-        SpawnNPCsAsync(10).Forget();
+        SpawnNPCsAsync().Forget();
     }
 
     public void RefreshSitPoints()
@@ -107,19 +107,34 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    public async UniTask SpawnNPCsAsync(int count)
+    public async UniTask SpawnNPCsAsync()
     {
+        // 고용된 직원명단 가져오기
+        var emp = _EmployeeManager.Instance.haveEmployees.haveEmployeeList;
+
+        int count = Mathf.Min(emp.Count, _sitPoints.Count);
+
         for (int i = 0; i < count; i++)
         {
+            int id = emp[i].so.id;
+
             // 생성할 NPC 프리팹이나 의자 리스트보다 인덱스가 크면 생성 중단
-            if (i >= _allNpcPrefabs.Count || i >= _sitPoints.Count) break;
+            if (i >= _allNpcPrefabs.Count || i >= _sitPoints.Count)
+            {
+                break;
+            }
+
+            if (!_EmployeeManager.Instance.employeeList.allEmployeePrefabs.TryGetValue(id, out GameObject prefab))
+            {
+                continue;
+            }
 
             // NPC 생성
-            GameObject npcObj 
-            = Instantiate(_allNpcPrefabs[i], NpcSpawnPoint.position, Quaternion.identity);
+            GameObject npcObj = Instantiate(prefab, NpcSpawnPoint.position, Quaternion.identity);
             
-            // 각 프리팹 내부의 데이터 초기화
-            npcObj.GetComponent<Employee>().Init(); 
+            // 데이터 주입
+            var employeeComponent = npcObj.GetComponent<Employee>();
+            employeeComponent.MutableData = emp[i].MutableData;
             
             // 각 NPC에게 의자 좌표를 전달해 이동시킴
             var controller =  npcObj.GetComponent<NPCController>();
@@ -140,6 +155,18 @@ public class GameManager : MonoBehaviour
         {
             if (npc != null)
             {
+                var employeeComponent = npc.GetComponent<Employee>();
+
+                // 퇴근할 직원을 전체 직원 명부와 비교해 값을 찾음
+                var employees = _EmployeeManager.Instance.haveEmployees.haveEmployeeList;
+                var Data = employees.Find(e => e.so.id == employeeComponent.so.id);
+
+                // 찾은 값을 명부 데이터에 저장
+                if(Data != null)
+                {
+                    Data.MutableData = employeeComponent.MutableData;
+                }
+
                 npc.ChangeState(new NPCLeave());
             }
         }
