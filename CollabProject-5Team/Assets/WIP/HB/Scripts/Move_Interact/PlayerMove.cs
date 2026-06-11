@@ -52,9 +52,6 @@ public class PlayerMove : MonoBehaviour
             if (!_agent.pathPending && _agent.remainingDistance <= _agent.stoppingDistance)
             {
                 _isMovingToPosition = false;
-
-                //TODO: 이동해서 자리에 도착하면 업무 완료 애니메이션이 재생되도록 임시로 설정함
-                DateTimeManager.Instance.CompleteDayWork();
             }
 
             return;
@@ -188,6 +185,16 @@ public class PlayerMove : MonoBehaviour
             // 일반 바닥 이동
             _agent.SetDestination(hit.point);
         }
+    }
+
+    // 외부(퀘스트 말풍선 버튼 등)에서 상호작용 대상을 지정 - 해당 위치로 이동 후 도착하면 자동으로 상호작용 실행
+    public void SetInteractTarget(IInteractable target, Collider collider)
+    {
+        _targetInteractable = target;
+        _targetCollider = collider;
+        _hasInteracted = false;
+
+        _agent.SetDestination(target.GetTransform().position);
     }
 
     // 해당 좌표로 이동(업무 시작 시 자기 자리로 이동)

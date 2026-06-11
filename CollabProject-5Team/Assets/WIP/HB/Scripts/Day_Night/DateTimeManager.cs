@@ -52,6 +52,13 @@ public class DateTimeManager : MonoBehaviour
     {
         isWorkCompleted = false;
         talkedNpcsToday.Clear();
+
+        // 새로운 하루 시작 - 일일 퀘스트 자동 생성 (월~금 출근 시점)
+        if (QuestManager.Instance != null)
+        {
+            QuestManager.Instance.dailyQuestState.Value = QuestState.Ready;
+            QuestManager.Instance.StartDailyQuest();
+        }
     }
     /// <summary>
     /// 새로운 주가 시작될 때 리셋하는 함수
@@ -123,10 +130,10 @@ public class DateTimeManager : MonoBehaviour
     public void OnClickEndDayButton()
     {
         // 업무가 끝나지 않았다면 퇴근 불가
-        //if (!isWorkCompleted)
-        //{
-        //    return;
-        //}
+        if (!isWorkCompleted)
+        {
+            return;
+        }
 
         // 금요일 낮에 퇴근하면 금요일 밤으로 전환
         if (currentDay == DayOfWeek.Friday && currentTime == TimeOfDay.Day)
