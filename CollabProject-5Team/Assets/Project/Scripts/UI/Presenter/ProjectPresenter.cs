@@ -237,18 +237,18 @@ namespace GameDevTycoon.UI.Ingame
             foreach (Transform child in _view.InProgressListContent)
                 Destroy(child.gameObject);
 
-            var projects = Company.Instance.projects;
-            _view.SetInProgressEmptyVisible(projects.Count == 0);
+            // 프로젝트 목록에서 진행중인 프로젝트만 일단 표시
+            var curProject = Company.Instance.curProject;
+            _view.SetInProgressEmptyVisible(curProject == null);
 
-            foreach (var project in projects)
+            if (curProject != null)
             {
                 var item = Instantiate(_projectListItemPrefab, _view.InProgressListContent);
-                item.GetComponent<IBindable<Project>>().Bind(project);
+                item.GetComponent<IBindable<Project>>().Bind(curProject);
 
-                var captured = project;
                 item.GetComponentInChildren<UnityEngine.UI.Button>()?.onClick.AddListener(() =>
                 {
-                    ShowProjectDetail(captured);
+                    ShowProjectDetail(curProject);
                 });
             }
         }

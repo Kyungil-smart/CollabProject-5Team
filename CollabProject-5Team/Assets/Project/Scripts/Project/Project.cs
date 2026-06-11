@@ -232,9 +232,15 @@ public class Project : MonoBehaviour
 
             switch (report.role)
             {
-                case Role.PLANNER: qualThisNight = roleAvg; break;
-                case Role.PROGRAMMER: stabThisNight = roleAvg; break;
-                case Role.ARTIST: charmThisNight = roleAvg; break;
+                case Role.PLANNER: qualThisNight = roleAvg;
+                    if (nightCount == 1) genre = report.so.uiCategory;
+                    break;
+                case Role.ARTIST: charmThisNight = roleAvg;
+                    if (nightCount == 1) artStyle = report.so.uiCategory;
+                    break;
+                case Role.PROGRAMMER: stabThisNight = roleAvg;
+                    if (nightCount == 1) engine = report.so.uiCategory;
+                    break;
             }
 
             // 피로도 반영
