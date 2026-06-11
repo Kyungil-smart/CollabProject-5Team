@@ -10,18 +10,6 @@ public class AudioManager : MonoBehaviour
     bool[] isMute = new bool[3];
     float[] audioVolumes = new float[3];
 
-#if UNITY_EDITOR
-    private void Reset()
-    {
-        string[] guids = UnityEditor.AssetDatabase.FindAssets("t:AudioMixer");
-        if (guids.Length > 0)
-        {
-            string path = UnityEditor.AssetDatabase.GUIDToAssetPath(guids[0]);
-            audioMixer = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioMixer>(path);
-        }
-    }
-#endif
-
     #region 싱글톤 설정
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     public static void Init() => Instance = null;
