@@ -148,6 +148,15 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    // 활성 NPC 중 아무나 한 명의 Transform을 랜덤으로 반환 (퀘스트 말풍선 표시용)
+    public Transform GetRandomActiveNpcTransform()
+    {
+        List<NPCController> validNpcs = _activeNpcs.FindAll(npc => npc != null);
+        if (validNpcs.Count == 0) return null;
+
+        return validNpcs[Random.Range(0, validNpcs.Count)].transform;
+    }
+
     // 퇴근 명령 함수
     public void LeaveWorkNPCs()
     {

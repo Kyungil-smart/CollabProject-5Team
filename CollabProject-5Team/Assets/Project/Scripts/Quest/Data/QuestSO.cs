@@ -13,6 +13,22 @@ public class QuestSO : SheetDataSOBase
     public int successEffect;
     public string npcDialogue;
 
+    public int ActiveObjectCount
+    {
+        get
+        {
+            if (string.IsNullOrEmpty(activeObjects)) return 0;
+
+            int count = 0;
+            foreach (string objName in activeObjects.Split(','))
+            {
+                string trimmed = objName.Trim();
+                if (trimmed != "" && trimmed != "None") count++;
+            }
+            return count;
+        }
+    }
+
     public override void SetData(string[] data)
     {
         id = ParseInt(data[0]);
