@@ -34,8 +34,9 @@ public static class ReportPolicy
 
             float score = CalcScore(e.so, e.MutableData.desire);
             int grade   = CalcGrade(score);
+            int isStartRepo = Company.Instance.curProject.day <= 5 ? 1 : 0;
 
-            ReportSO picked = ReportManager.Instance.GetReportsByTrait(e, grade);
+            ReportSO picked = ReportManager.Instance.GetReportsByTrait(e, grade, isStartRepo);
             if (picked == null) { Debug.LogWarning($"[ReportPolicy] {e.so.Name} 에 맞는 보고서 SO 없음"); continue; }
             Report report = new Report { so = picked, owner = e };
             Debug.Log($"생성된 보고서:{report.so.title}\n직원:{report.owner}\n특성:{report.trait}");

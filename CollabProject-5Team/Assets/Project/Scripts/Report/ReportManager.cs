@@ -9,8 +9,8 @@ public class ReportManager : MonoBehaviour
     [SerializeField] List<ReportSO> _allReports = new();
     public IReadOnlyList<ReportSO> AllReports => _allReports;
 
-    // (Trait, grade) → ReportSO 단일 조회용
-    Dictionary<(Trait, int), ReportSO> _reportMap = new();
+    // (Trait,(startRepo첫주자보고서여부,grade)) → ReportSO 단일 조회용
+    Dictionary<(Trait,(int, int)), ReportSO> _reportMap = new();
 
     #region 싱글톤 설정
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
@@ -24,24 +24,21 @@ public class ReportManager : MonoBehaviour
         InitList();
     }
 
-    // SO 리스트를 (Trait, grade) 딕셔너리로 인덱싱
+    // SO 리스트를 (Trait, (startRepo,grade)) 딕셔너리로 인덱싱
     void InitList()
     {
         _reportMap.Clear();
         foreach (ReportSO so in _allReports)
         {
             if (so == null) continue;
-            _reportMap[(so.trait, so.grade)] = so;
-            // grade=0 키는 폴백용으로 덮어쓰기
-            if (!_reportMap.ContainsKey((so.trait, 0)))
-                _reportMap[(so.trait, 0)] = so;
+            _reportMap[(so.trait, (so.startRepo,so.grade))] = so;
         }
     }
 
     // 직원 Trait(main/sub/risk)과 grade로 ReportSO 1개 반환
     List<ReportSO> _candidateBuffer = new List<ReportSO>(3);
     Trait[] _traitBuffer = new Trait[3];
-    public ReportSO GetReportsByTrait(Employee e, int grade)
+    public ReportSO GetReportsByTrait(Employee e, int grade, int startRepo)//startRepo: 1=1주차 전용, 0=이후 랜덤 적용
     {
         _traitBuffer[0] = e.so.mainTrait;
         _traitBuffer[1] = e.so.riskTrait;
@@ -51,7 +48,7 @@ public class ReportManager : MonoBehaviour
 
         foreach (Trait t in _traitBuffer)
         {
-            if (_reportMap.TryGetValue((t, grade), out var so))
+            if (_reportMap.TryGetValue((t, (startRepo,grade)), out var so))
                 _candidateBuffer.Add(so);
         }
 
