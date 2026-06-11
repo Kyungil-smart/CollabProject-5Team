@@ -29,7 +29,7 @@ public class SaveLoadSystem : MonoBehaviour
 
     public void SaveGame(int slot)
     {
-        if (slot < 1 || slot > MaxSaveSlots) return;
+        if (slot < 0 || slot >= MaxSaveSlots) return;
 
         tempData data = new tempData();
 
@@ -43,7 +43,7 @@ public class SaveLoadSystem : MonoBehaviour
 
     public tempData LoadGame(int slot)
     {
-        if (slot < 1 || slot > MaxSaveSlots) return null;
+        if (slot < 0 || slot >= MaxSaveSlots) return null;
 
         string keyName = GetSaveKey(slot);
         string jsonData = LoadEncryptedData(keyName);
@@ -53,9 +53,7 @@ public class SaveLoadSystem : MonoBehaviour
             try
             {
                 tempData data = JsonUtility.FromJson<tempData>(jsonData);
-
                 Debug.Log("불러오기 성공");
-
                 return data;
             }
             catch (Exception e)
@@ -78,6 +76,8 @@ public class SaveLoadSystem : MonoBehaviour
     // 특정 슬롯이 존재하는지 확인
     public bool HasSaveData(int slot)
     {
+        if (slot < 0 || slot >= MaxSaveSlots) return false;
+
         string keyName = GetSaveKey(slot);
         return !string.IsNullOrEmpty(PlayerPrefs.GetString(keyName));
     }

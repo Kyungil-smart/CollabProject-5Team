@@ -1,26 +1,40 @@
+using System.Linq;
+using System.Threading.Tasks;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class SaveUI : MonoBehaviour
 {
-    // 각 슬롯의 UI를 묶어서 관리하면 코드가 깔끔해집니다.
     [System.Serializable]
     public struct SaveSlotUI
     {
-        public Image companyImage;
+        public Image           companyImage;
         public TextMeshProUGUI saveDateText;
         public TextMeshProUGUI saveDataText;
         public TextMeshProUGUI saveDataDetailText;
+        public Button          saveButton;
     }
 
     [SerializeField] private SaveSlotUI[] slotUIs = new SaveSlotUI[3];
 
     [SerializeField] private Sprite[] companySprites;
 
+    private void Start()
+    {
+        for (int i = 0; i < slotUIs.Length; i++)
+        {
+            slotUIs[i].saveButton.onClick.AddListener(() =>
+            {
+                SaveLoadSystem.Instance.SaveGame(i);
+                RefreshSaveSlots();
+            });
+        }
+    }
+
     private void OnEnable()
     {
-        // UI 창이 켜질 때마다 새로고침합니다.
+        Debug.Log("정보를 초기화합니다.");
         RefreshSaveSlots();
     }
 
@@ -28,7 +42,7 @@ public class SaveUI : MonoBehaviour
     {
         for (int i = 0; i < slotUIs.Length; i++)
         {
-            int slotNumber = i + 1; // 슬롯 번호는 1, 2, 3
+            int slotNumber = i;
 
             if (SaveLoadSystem.Instance.HasSaveData(slotNumber))
             {
@@ -40,6 +54,9 @@ public class SaveUI : MonoBehaviour
             }
             else
             {
+                // 데이터 없을 때 UI 처리 (동일)
+                slotUIs[i].saveDateText.text = "----/--/--";
+                slotUIs[i].saveDataDetailText.text = "데이터 없음";
             }
         }
     }
