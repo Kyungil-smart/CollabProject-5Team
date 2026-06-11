@@ -1,35 +1,49 @@
 using TMPro;
 using UnityEngine;
 
-
+// 퀘스트 성공 시 직원 머리 위에 런타임 생성되는 말풍선. Canvas_Quest 하위에 생성되며,
+// 대상 직원 위치를 화면 좌표로 추적하다가 일정 시간 후 자동으로 사라진다.
 public class SpeechBubble : MonoBehaviour
 {
-    [SerializeField] private GameObject      _bubbleRoot;
-    [SerializeField] private TextMeshProUGUI _text;
+    [SerializeField] private TextMeshProUGUI text;
+
+    private const float DisplayDuration = 3f; // 표시 후 사라지기까지 시간(초)
+
+    private RectTransform _rect;
+    private Transform _target;
+    private Vector3 _worldOffset;
+    private float _timer;
 
     private void Awake()
     {
-        Hide();
+        _rect = GetComponent<RectTransform>();
     }
 
-    public void Show(string message = "")
+    public void Show(Transform target, Vector3 worldOffset, string message)
     {
-        if (_text != null)
-            _text.text = message;
+        _target = target;
+        _worldOffset = worldOffset;
+        _timer = DisplayDuration;
 
-        if (_bubbleRoot != null)
-            _bubbleRoot.SetActive(true);
+        if (text != null) text.text = message;
+
+        UpdatePosition();
     }
 
-    public void Hide()
+    private void LateUpdate()
     {
-        if (_bubbleRoot != null)
-            _bubbleRoot.SetActive(false);
+        UpdatePosition();
+
+        _timer -= Time.deltaTime;
+        if (_timer <= 0f) Destroy(gameObject);
     }
 
-    public void SetText(string message)
+    private void UpdatePosition()
     {
-        if (_text != null)
-            _text.text = message;
+        if (_target == null || Camera.main == null) return;
+
+        if (_rect == null) _rect = GetComponent<RectTransform>();
+
+        _rect.position = Camera.main.WorldToScreenPoint(_target.position + _worldOffset);
     }
 }

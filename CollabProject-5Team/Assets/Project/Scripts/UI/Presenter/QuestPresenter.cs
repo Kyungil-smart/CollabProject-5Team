@@ -33,6 +33,7 @@ namespace GameDevTycoon.UI.Ingame
         {
             BindButtons();
             LoadPrefabAsync().Forget();
+            BindQuestManager();
         }
 
         private void OnDestroy()
@@ -50,6 +51,54 @@ namespace GameDevTycoon.UI.Ingame
             _view.OnAlertConfirmClicked
                 .Subscribe(_ => _view.HideDailyQuestAlert())
                 .AddTo(this);
+        }
+
+        // QuestManager 상태/진행도 변화 구독
+        private void BindQuestManager()
+        {
+            QuestManager.Instance.dailyQuestState
+                .Subscribe(OnDailyQuestStateChanged)
+                .AddTo(this);
+
+            QuestManager.Instance.dailyQuestProgress
+                .Subscribe(progress =>
+                {
+                    DailyQuest quest = QuestManager.Instance.curDailyQuest;
+                    if (quest == null) return;
+
+                    UpdateDailyQuestProgress(progress, quest.TargetCount);
+                })
+                .AddTo(this);
+        }
+
+        private void OnDailyQuestStateChanged(QuestState state)
+        {
+            DailyQuest quest = QuestManager.Instance.curDailyQuest;
+            if (quest == null) return;
+
+            switch (state)
+            {
+                case QuestState.Playing:
+                    ShowDailyQuestAlert();
+                    break;
+
+                case QuestState.End:
+                    if (quest.result == QuestResult.Success)
+                        ShowClearPopupForCurrentQuest();
+                    break;
+            }
+        }
+
+        // 완료한 퀘스트의 직군에 맞는 스탯 UP 아이콘만 표시 (Project.cs의 직군별 스탯 매핑과 동일)
+        private void ShowClearPopupForCurrentQuest()
+        {
+            Role role = QuestManager.Instance.curDailyQuest.so.role;
+
+            ShowClearPopup(
+                completionUp: role == Role.PLANNER,
+                stabilityUp: role == Role.PROGRAMMER,
+                appealUp: role == Role.ARTIST
+            );
         }
 
         private async UniTaskVoid LoadPrefabAsync()
@@ -75,15 +124,17 @@ namespace GameDevTycoon.UI.Ingame
         public bool IsDetailVisible => _view.IsDetailVisible;
 
         /// <summary>
-        /// 업무 시작 버튼 클릭 시 외부에서 호출.
+        /// 일일 퀘스트 시작(Ready→Playing 전환) 시 자동 호출.
         /// </summary>
         public void ShowDailyQuestAlert()
         {
-            // [TODO: QuestManager 연결 후 현재 일일퀘스트 이름/진행도 바인딩]
+            DailyQuest quest = QuestManager.Instance.curDailyQuest;
+            if (quest == null) return;
+
             _view.ShowDailyQuestAlert(
-                questName: "퀘스트 이름",
-                current: 0,
-                total: 1
+                questName: quest.so.Name,
+                current: quest.curCount,
+                total: quest.TargetCount
             );
         }
 
@@ -104,7 +155,6 @@ namespace GameDevTycoon.UI.Ingame
 
         private void RefreshQuestDetail()
         {
-            // [TODO: QuestManager 연결 후 실제 퀘스트 목록 바인딩]
             var dailyQuests = GetDailyQuests();
             var storyQuests = GetStoryQuests();
             var eventQuests = GetEventQuests();
@@ -148,8 +198,23 @@ namespace GameDevTycoon.UI.Ingame
             _view.HideClearPopup();
         }
 
-        // [TODO: QuestManager 연결 후 하드코딩 교체]
-        private static List<QuestItemData> GetDailyQuests() => new();
+        // 일일 퀘스트는 하루에 하나만 존재
+        private static List<QuestItemData> GetDailyQuests()
+        {
+            DailyQuest quest = QuestManager.Instance.curDailyQuest;
+            if (quest == null) return new();
+
+            return new()
+            {
+                new QuestItemData
+                {
+                    questName = quest.so.Name,
+                    isCompleted = quest.state == QuestState.End
+                }
+            };
+        }
+
+        // [TODO: 스토리/이벤트 퀘스트 시스템 구현 후 연결]
         private static List<QuestItemData> GetStoryQuests() => new();
         private static List<QuestItemData> GetEventQuests() => new();
     }
