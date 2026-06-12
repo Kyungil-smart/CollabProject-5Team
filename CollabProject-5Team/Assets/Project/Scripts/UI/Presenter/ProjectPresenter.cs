@@ -8,25 +8,24 @@ namespace GameDevTycoon.UI.Ingame
 {
     /// <summary>
     /// Canvas_Popup.ProjectPopup Presenter.
-    /// 슬롯 선택 → 프로젝트 설정 → 인원 배치 흐름 및 진행 프로젝트 표시 처리.
-    /// ProjectSlotItemView, StaffCardView, ProjectListItemView 바인딩은 IBindable 연결 후 활성화.
+    /// 프로젝트 설정 → 인원 배치 흐름 및 진행 프로젝트 표시 처리.
+    /// 신규 프로젝트는 한 번에 한 개만 진행 가능. 진행 중이면 안내 문구 표시 후 입력 비활성.
+    /// StaffCardView, ProjectListItemView 바인딩은 IBindable 연결 후 활성화.
     /// </summary>
     public sealed class ProjectPresenter : MonoBehaviour, IBottomNightUI
     {
         private const ProjectSize UnselectedScale = (ProjectSize)(-1);
 
-        [SerializeField] private ProjectView  _view;
-        [SerializeField] private AlertView    _alertView;
+        [SerializeField] private ProjectView _view;
+        [SerializeField] private AlertView _alertView;
         [SerializeField] private HUDPresenter _hudPresenter;
 
         [Header("프리팹")]
-        [SerializeField] private GameObject _projectSlotItemPrefab;
         [SerializeField] private List<StaffCardPrefabEntry> _staffCardPrefabs;
         [SerializeField] private GameObject _projectListItemPrefab;
         [SerializeField] private GameObject _staffDetailPrefab;
 
         private ProjectSize _selectedScale;
-        private int         _selectedSlotIndex = -1;
 
         public bool IsVisible => _view.IsVisible;
 
@@ -42,7 +41,7 @@ namespace GameDevTycoon.UI.Ingame
         {
             _view.Show();
             _view.ShowTab(ProjectTab.NewProject);
-            RefreshSlotSelect();
+            RefreshNewProject();
         }
 
         public void Hide()
@@ -57,7 +56,7 @@ namespace GameDevTycoon.UI.Ingame
                 .Subscribe(_ =>
                 {
                     _view.ShowTab(ProjectTab.NewProject);
-                    RefreshSlotSelect();
+                    RefreshNewProject();
                 })
                 .AddTo(this);
 
@@ -98,7 +97,7 @@ namespace GameDevTycoon.UI.Ingame
                 {
                     ClearSelectedEmployees();
                     _selectedScale = UnselectedScale;
-                    _view.ShowSlotSelect();
+                    Hide();
                 })
                 .AddTo(this);
 
@@ -158,37 +157,19 @@ namespace GameDevTycoon.UI.Ingame
                 .AddTo(this);
         }
 
-        private void RefreshSlotSelect()
+        private void RefreshNewProject()
         {
-            foreach (Transform child in _view.SlotScrollContent)
-                Destroy(child.gameObject);
+            bool hasActiveProject = Company.Instance.curProject != null;
+            _view.SetActiveProjectWarningVisible(hasActiveProject);
 
-            int maxSlots = Company.Instance.ProjectSlots;
-
-            for (int i = 0; i < maxSlots; i++)
+            if (!hasActiveProject)
             {
-                var item = Instantiate(_projectSlotItemPrefab, _view.SlotScrollContent);
-                bool isOccupied = i < Company.Instance.projects.Count;
+                _selectedScale = UnselectedScale;
+                _view.SetProjectSetupNextInteractable(false);
 
-                // [TODO: IBindable<ProjectSlotData> 연결 후 활성화]
-                item.GetComponent<ProjectSlotItemView>().Setup(i, isOccupied, false); //잠금로직 정리필요 
-                // item.GetComponent<IBindable<ProjectSlotData>>().Bind(data);
-
-                int captured = i;
-                item.GetComponentInChildren<UnityEngine.UI.Button>()?.onClick.AddListener(() =>
-                {
-                    if (isOccupied) return;
-                    _selectedSlotIndex = captured;
-                    ClearSelectedEmployees();
-                    _selectedScale = UnselectedScale;
-                    _view.ShowProjectSetup();
-                    _view.SetProjectSetupNextInteractable(false);
-
-                    // 회사 레벨 기준 규모 잠금 해제
-                    int level = Company.Instance.level;
-                    _view.SetScaleMediumLocked(level < 2);
-                    _view.SetScaleLargeLocked(level < 4);
-                });
+                int level = Company.Instance.level;
+                _view.SetScaleMediumLocked(level < 2);
+                _view.SetScaleLargeLocked(level < 4);
             }
         }
 
@@ -212,7 +193,7 @@ namespace GameDevTycoon.UI.Ingame
 
             // 확정 조건: 기획/아트/개발 각 1명 이상
             bool canConfirm = CountAssigned(Role.PLANNER) >= 1
-                           && CountAssigned(Role.ARTIST)  >= 1
+                           && CountAssigned(Role.ARTIST) >= 1
                            && CountAssigned(Role.PROGRAMMER) >= 1;
             _view.SetStaffAssignConfirmInteractable(canConfirm);
 
@@ -220,7 +201,7 @@ namespace GameDevTycoon.UI.Ingame
             {
                 var prefab = GetStaffCardPrefab(employee.so.role);
                 if (prefab == null) continue;
-                
+
                 var card = Instantiate(prefab, _view.StaffGridContent);
                 card.GetComponent<IBindable<Employee>>().Bind(employee);
                 card.GetComponent<StaffCardView>()?.SetSelected(IsSelected(employee));
@@ -237,7 +218,6 @@ namespace GameDevTycoon.UI.Ingame
             foreach (Transform child in _view.InProgressListContent)
                 Destroy(child.gameObject);
 
-            // 프로젝트 목록에서 진행중인 프로젝트만 일단 표시
             var curProject = Company.Instance.curProject;
             _view.SetInProgressEmptyVisible(curProject == null);
 
@@ -372,22 +352,22 @@ namespace GameDevTycoon.UI.Ingame
         private static int GetRequiredCost(ProjectSize scale) => scale switch
         {
             ProjectSize.medium => 10000,
-            ProjectSize.large  => 100000,
-            _                  => 1000,
+            ProjectSize.large => 100000,
+            _ => 1000,
         };
 
         private static int GetMaxEmployeePerPart(ProjectSize scale) => scale switch
         {
             ProjectSize.medium => 2,
-            ProjectSize.large  => 3,
-            _                  => 1,
+            ProjectSize.large => 3,
+            _ => 1,
         };
 
         private static string ScaleToString(ProjectSize scale) => scale switch
         {
             ProjectSize.medium => "중규모",
-            ProjectSize.large  => "대규모",
-            _                  => "소규모",
+            ProjectSize.large => "대규모",
+            _ => "소규모",
         };
 
         private string GetCurrentProjectName() => _view.ProjectNameInput;
@@ -403,7 +383,7 @@ namespace GameDevTycoon.UI.Ingame
     [System.Serializable]
     public sealed class StaffCardPrefabEntry
     {
-        public Role       role;
+        public Role role;
         public GameObject prefab;
     }
 }
