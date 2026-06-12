@@ -41,7 +41,6 @@ namespace GameDevTycoon.UI.Ingame
         [SerializeField] private Button _resetButton;
         [SerializeField] private TMP_Dropdown _staffSortDropdown;
         [SerializeField] private Transform _staffGridContent;
-        [SerializeField] private Button _synergyButton;
         [SerializeField] private Button _staffAssignBackButton;
         [SerializeField] private Button _staffAssignConfirmButton;
 
@@ -94,7 +93,6 @@ namespace GameDevTycoon.UI.Ingame
         public Observable<string> OnProjectNameChanged => _projectNameInput.onValueChanged.AsObservable();
         public Observable<Unit> OnResetClicked => _resetButton.OnClickAsObservable();
         public Observable<int> OnStaffSortChanged => _staffSortDropdown.OnValueChangedAsObservable();
-        public Observable<Unit> OnSynergyClicked => _synergyButton.OnClickAsObservable();
         public Observable<Unit> OnStaffAssignBackClicked => _staffAssignBackButton.OnClickAsObservable();
         public Observable<Unit> OnStaffAssignConfirmClicked => _staffAssignConfirmButton.OnClickAsObservable();
 

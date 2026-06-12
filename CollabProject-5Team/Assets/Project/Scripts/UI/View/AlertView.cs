@@ -10,43 +10,38 @@ namespace GameDevTycoon.UI
 {
     /// <summary>
     /// Canvas_Alert 담당 View.
-    /// ConfirmPopup, FireConfirmPopup, AlertPopup, NoticePopup, SynergyPopup 표시 제어.
+    /// ConfirmPopup, FireConfirmPopup, AlertPopup, NoticePopup 표시 제어.
     /// 팝업 간 배타적 활성화는 Show 메서드 호출 측에서 보장.
     /// 타이틀 씬에서는 ConfirmPopup만 연결해서 사용 가능.
     /// </summary>
     public sealed class AlertView : MonoBehaviour
     {
         [Header("ConfirmPopup")]
-        [SerializeField] private GameObject      _confirmPopup;
+        [SerializeField] private GameObject _confirmPopup;
         [SerializeField] private TextMeshProUGUI _confirmMessageLabel;
-        [SerializeField] private Button          _confirmPopupConfirmButton;
-        [SerializeField] private Button          _confirmPopupCancelButton;
+        [SerializeField] private Button _confirmPopupConfirmButton;
+        [SerializeField] private Button _confirmPopupCancelButton;
 
         [Header("FireConfirmPopup")]
-        [SerializeField] private GameObject      _fireConfirmPopup;
+        [SerializeField] private GameObject _fireConfirmPopup;
         [SerializeField] private TextMeshProUGUI _fireCommentLabel;
-        [SerializeField] private Image           _fireEmployeeIcon;
+        [SerializeField] private Image _fireEmployeeIcon;
         [SerializeField] private TextMeshProUGUI _fireMessageLabel;
-        [SerializeField] private Button          _fireConfirmButton;
-        [SerializeField] private Button          _fireCancelButton;
+        [SerializeField] private Button _fireConfirmButton;
+        [SerializeField] private Button _fireCancelButton;
 
         [Header("AlertPopup")]
-        [SerializeField] private GameObject      _alertPopup;
+        [SerializeField] private GameObject _alertPopup;
         [SerializeField] private TextMeshProUGUI _alertMessageLabel;
-        [SerializeField] private Button          _alertConfirmButton;
+        [SerializeField] private Button _alertConfirmButton;
 
         [Header("NoticePopup")]
-        [SerializeField] private GameObject      _noticePopup;
+        [SerializeField] private GameObject _noticePopup;
         [SerializeField] private TextMeshProUGUI _noticeCommentLabel;
         [SerializeField] private TextMeshProUGUI _noticeEmployeeNameLabel;
-        [SerializeField] private Image           _noticeEmployeeIcon;
+        [SerializeField] private Image _noticeEmployeeIcon;
 
-        [Header("SynergyPopup")]
-        [SerializeField] private GameObject      _synergyPopup;
-        [SerializeField] private Transform       _synergyScrollContent;
-        [SerializeField] private Button          _synergyConfirmButton;
-
-        private const float NOTICE_DURATION     = 3f;
+        private const float NOTICE_DURATION = 3f;
         private const float POPUP_FADE_DURATION = 0.15f;
 
         private IDisposable _confirmPopupConfirmSubscription;
@@ -54,15 +49,13 @@ namespace GameDevTycoon.UI
         private IDisposable _fireConfirmSubscription;
         private IDisposable _fireCancelSubscription;
         private IDisposable _alertConfirmSubscription;
-        private IDisposable _synergyConfirmSubscription;
 
         private void Awake()
         {
-            if (_confirmPopup     != null) _confirmPopup.SetActive(false);
+            if (_confirmPopup != null) _confirmPopup.SetActive(false);
             if (_fireConfirmPopup != null) _fireConfirmPopup.SetActive(false);
-            if (_alertPopup       != null) _alertPopup.SetActive(false);
-            if (_noticePopup      != null) _noticePopup.SetActive(false);
-            if (_synergyPopup     != null) _synergyPopup.SetActive(false);
+            if (_alertPopup != null) _alertPopup.SetActive(false);
+            if (_noticePopup != null) _noticePopup.SetActive(false);
         }
 
         /// <summary>
@@ -102,9 +95,9 @@ namespace GameDevTycoon.UI
             if (_fireConfirmPopup == null) return;
 
             ClearFireConfirmPopupSubscriptions();
-            _fireCommentLabel.text   = employeeComment;
+            _fireCommentLabel.text = employeeComment;
             _fireEmployeeIcon.sprite = employeeSprite;
-            _fireMessageLabel.text   = message;
+            _fireMessageLabel.text = message;
             _fireConfirmPopup.SetActive(true);
 
             _fireConfirmSubscription = _fireConfirmButton.OnClickAsObservable()
@@ -150,12 +143,31 @@ namespace GameDevTycoon.UI
         {
             if (_noticePopup == null) return;
 
-            _noticeCommentLabel.text      = comment;
+            _noticeCommentLabel.text = comment;
             _noticeEmployeeNameLabel.text = employeeName;
-            _noticeEmployeeIcon.sprite    = employeeSprite;
+            _noticeEmployeeIcon.sprite = employeeSprite;
 
             _noticePopup.SetActive(true);
             WaitAndHideNoticeAsync().Forget();
+        }
+
+        public void HideAll()
+        {
+            ClearConfirmPopupSubscriptions();
+            ClearFireConfirmPopupSubscriptions();
+            ClearAlertPopupSubscription();
+
+            if (_confirmPopup != null) _confirmPopup.SetActive(false);
+            if (_fireConfirmPopup != null) _fireConfirmPopup.SetActive(false);
+            if (_alertPopup != null) _alertPopup.SetActive(false);
+            if (_noticePopup != null) _noticePopup.SetActive(false);
+        }
+
+        private void OnDestroy()
+        {
+            ClearConfirmPopupSubscriptions();
+            ClearFireConfirmPopupSubscriptions();
+            ClearAlertPopupSubscription();
         }
 
         private async UniTaskVoid WaitAndHideNoticeAsync()
@@ -165,50 +177,6 @@ namespace GameDevTycoon.UI
 
             if (_noticePopup != null)
                 _noticePopup.SetActive(false);
-        }
-
-        /// <summary>
-        /// 시너지 팝업. SynergyScrollContent는 외부에서 동적 생성 후 전달.
-        /// onConfirm 콜백으로 닫힘 시점을 전달.
-        /// </summary>
-        public void ShowSynergyPopup(Action onConfirm = null)
-        {
-            if (_synergyPopup == null) return;
-
-            ClearSynergyPopupSubscription();
-            _synergyPopup.SetActive(true);
-
-            _synergyConfirmSubscription = _synergyConfirmButton.OnClickAsObservable()
-                .Subscribe(_ =>
-                {
-                    ClearSynergyPopupSubscription();
-                    _synergyPopup.SetActive(false);
-                    onConfirm?.Invoke();
-                });
-        }
-
-        public Transform GetSynergyScrollContent() => _synergyScrollContent;
-
-        public void HideAll()
-        {
-            ClearConfirmPopupSubscriptions();
-            ClearFireConfirmPopupSubscriptions();
-            ClearAlertPopupSubscription();
-            ClearSynergyPopupSubscription();
-
-            if (_confirmPopup     != null) _confirmPopup.SetActive(false);
-            if (_fireConfirmPopup != null) _fireConfirmPopup.SetActive(false);
-            if (_alertPopup       != null) _alertPopup.SetActive(false);
-            if (_noticePopup      != null) _noticePopup.SetActive(false);
-            if (_synergyPopup     != null) _synergyPopup.SetActive(false);
-        }
-
-        private void OnDestroy()
-        {
-            ClearConfirmPopupSubscriptions();
-            ClearFireConfirmPopupSubscriptions();
-            ClearAlertPopupSubscription();
-            ClearSynergyPopupSubscription();
         }
 
         private void ClearConfirmPopupSubscriptions()
@@ -231,12 +199,6 @@ namespace GameDevTycoon.UI
         {
             _alertConfirmSubscription?.Dispose();
             _alertConfirmSubscription = null;
-        }
-
-        private void ClearSynergyPopupSubscription()
-        {
-            _synergyConfirmSubscription?.Dispose();
-            _synergyConfirmSubscription = null;
         }
     }
 }

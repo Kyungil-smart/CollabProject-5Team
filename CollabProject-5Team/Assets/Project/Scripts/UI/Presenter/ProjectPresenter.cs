@@ -121,10 +121,6 @@ namespace GameDevTycoon.UI.Ingame
                 .Subscribe(_ => RefreshStaffAssign())
                 .AddTo(this);
 
-            _view.OnSynergyClicked
-                .Subscribe(_ => OnSynergyClicked())
-                .AddTo(this);
-
             _view.OnStaffAssignBackClicked
                 .Subscribe(_ =>
                 {
@@ -202,14 +198,32 @@ namespace GameDevTycoon.UI.Ingame
                 var prefab = GetStaffCardPrefab(employee.so.role);
                 if (prefab == null) continue;
 
-                var card = Instantiate(prefab, _view.StaffGridContent);
-                card.GetComponent<IBindable<Employee>>().Bind(employee);
-                card.GetComponent<StaffCardView>()?.SetSelected(IsSelected(employee));
+                var cardGO = Instantiate(prefab, _view.StaffGridContent);
+                var cardView = cardGO.GetComponent<StaffCardView>();
+                cardGO.GetComponent<IBindable<Employee>>().Bind(employee);
+
+                bool isAssigned = IsSelected(employee);
+                bool isInEducation = false; // [TODO: 교육 시스템 연결 후 처리]
+                var assignState = isAssigned ? StaffAssignState.Assigned
+                                : isInEducation ? StaffAssignState.InEducation
+                                : StaffAssignState.Default;
+                cardView.SetAssignState(assignState);
 
                 var captured = employee;
-                card.GetComponentInChildren<UnityEngine.UI.Button>().onClick.AddListener(() =>
-                    OnStaffCardClicked(captured)
-                );
+
+                // 카드 클릭 시 ButtonOverlay 토글
+                cardGO.GetComponent<UnityEngine.UI.Button>()?.onClick.AddListener(() =>
+                {
+                    cardView.SetSelected(!cardView.IsOverlayVisible);
+                });
+
+                cardView.OnInfoClicked
+                    .Subscribe(_ => OnStaffInfoClicked(captured))
+                    .AddTo(this);
+
+                cardView.OnAssignClicked
+                    .Subscribe(_ => OnStaffCardClicked(captured))
+                    .AddTo(this);
             }
         }
 
@@ -311,10 +325,10 @@ namespace GameDevTycoon.UI.Ingame
             );
         }
 
-        private void OnSynergyClicked()
+        private void OnStaffInfoClicked(Employee employee)
         {
-            _alertView.ShowSynergyPopup();
-            // [TODO: SynergyItemView 동적 생성 — 배치 직원 조합 기반]
+            _view.ShowStaffDetailPopup();
+            // [TODO: StaffDetailContent에 직원 상세 정보 바인딩]
         }
 
         private void OnServiceStopClicked()
