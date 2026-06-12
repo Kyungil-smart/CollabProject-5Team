@@ -31,7 +31,12 @@ public class SaveLoadSystem : MonoBehaviour
     {
         if (slot < 0 || slot >= MaxSaveSlots) return;
 
-        tempData data = new tempData();
+        SaveData data = new SaveData();
+
+        if(DateTimeManager.Instance != null)
+        {
+            DateTimeManager.Instance.ExportSaveData(data);
+        }
 
         string keyName = GetSaveKey(slot);
         string jsonData = JsonUtility.ToJson(data, true);
@@ -41,7 +46,7 @@ public class SaveLoadSystem : MonoBehaviour
         Debug.Log("저장 완료");
     }
 
-    public tempData LoadGame(int slot)
+    public SaveData LoadGame(int slot)
     {
         if (slot < 0 || slot >= MaxSaveSlots) return null;
 
@@ -52,7 +57,13 @@ public class SaveLoadSystem : MonoBehaviour
         {
             try
             {
-                tempData data = JsonUtility.FromJson<tempData>(jsonData);
+                SaveData data = JsonUtility.FromJson<SaveData>(jsonData);
+
+                if(DateTimeManager.Instance != null)
+                {
+                    DateTimeManager.Instance.ImportSaveData(data);
+                }
+
                 Debug.Log("불러오기 성공");
                 return data;
             }

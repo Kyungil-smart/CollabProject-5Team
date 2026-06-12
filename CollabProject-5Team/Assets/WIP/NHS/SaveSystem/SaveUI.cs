@@ -46,7 +46,7 @@ public class SaveUI : MonoBehaviour
 
             if (SaveLoadSystem.Instance.HasSaveData(slotNumber))
             {
-                tempData data = SaveLoadSystem.Instance.LoadGame(slotNumber);
+                SaveData data = SaveLoadSystem.Instance.LoadGame(slotNumber);
 
                 if (data != null)
                 {

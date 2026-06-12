@@ -11,7 +11,7 @@ public class SaveTest : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.L))
         {
-            tempData data = SaveLoadSystem.Instance.LoadGame(0);
+            SaveData data = SaveLoadSystem.Instance.LoadGame(0);
 
             if (data != null)
             {
