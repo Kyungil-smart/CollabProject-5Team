@@ -14,15 +14,8 @@ public class Company : MonoBehaviour
     public int gold;         // 보유 자금
     public int level;        // 회사 레벨
 
-    public int ProjectSlots  // 값은 임의로 작성
-    {
-        get
-        {
-            if (level <= 1) return 1;
-            else if (level <= 3) return 2;
-            else return 3;
-        }
-    }
+    public int ProjectSlots = 1;  // 기획 변경으로 1고정(추후 삭제)
+
     public List<Project> projects = new(); // 현재 만들고 있는 프로젝트들
     public ReactiveProperty<int> activeProjectCount = new(0); // 만들고 있는 프로젝트 수
     public Project curProject; // 메인 프로젝트 (UI에 집중적으로 표시)

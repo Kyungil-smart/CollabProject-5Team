@@ -208,25 +208,38 @@ public class DateTimeManager : MonoBehaviour
         };
     }
 
-    // 영업일(day) 기준으로 "N월 N일 요일" 문자열 반환
-    // day=0 → 1월 1일 월요일, day=4 → 1월 5일 금요일, day=5 → 1월 8일 월요일
+    // 영업일(day) 기준으로 "00년 00월 0주 월요일" 문자열 반환
+    // day=0   → 01년 01월 1주 월요일
+    // day=4   → 01년 01월 1주 금요일
+    // day=5   → 01년 01월 2주 월요일
     public static string GetDateString(int day)
     {
-        int week = day / 5;
-        int dayOfWeek = day % 5;
-        int calendarDay = day + week * 2 + 1; // 1-based 달력 날짜 (주말 2일씩 추가)
+        const int daysPerWeek = 5;
+        const int weeksPerMonth = 4;
+        const int monthsPerYear = 12;
+        const int daysPerMonth = daysPerWeek * weeksPerMonth; // 20
+        const int daysPerYear = daysPerMonth * monthsPerYear; // 240
 
-        int month = 1;
-        int remaining = calendarDay;
-        while (month <= 12 && remaining > MonthDays[month - 1])
-        {
-            remaining -= MonthDays[month - 1];
-            month++;
-        }
-        return $"{month}월 {remaining}일 {WeekDayNames[dayOfWeek]}";
+        int year = day / daysPerYear + 1;
+        int dayOfYear = day % daysPerYear;
+
+        int month = dayOfYear / daysPerMonth + 1;
+        int dayOfMonth = dayOfYear % daysPerMonth;
+
+        int weekOfMonth = dayOfMonth / daysPerWeek + 1;
+        int dayOfWeek = dayOfMonth % daysPerWeek;
+
+        return $"{year:D2}년 {month:D2}월 {weekOfMonth}주 {WeekDayNames[dayOfWeek]}";
     }
     static readonly string[] WeekDayNames = { "월요일", "화요일", "수요일", "목요일", "금요일" };
-    static readonly int[] MonthDays = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
+    // 단순 "0월 0주차" 반환
+    public static string GetMonthWeekString(int day)
+    {
+        int month = (day % 240) / 20 + 1;
+        int week = (day % 20) / 5 + 1;
+        return $"{month}월 {week}주차";
+    }
+
     #endregion
 
 }
