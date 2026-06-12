@@ -7,16 +7,13 @@ namespace GameDevTycoon.UI.Ingame
     /// <summary>
     /// Canvas_DayBottom Presenter.
     /// 진척도 표시 갱신, 저장/퇴근 버튼 처리.
-    /// ProjectProgressItemView 동적 생성 및 바인딩 담당.
+    /// 진행 중인 프로젝트 1개 기준으로 직접 바인딩.
     /// </summary>
     public sealed class DayBottomPresenter : MonoBehaviour
     {
         [SerializeField] private DayBottomView _view;
         [SerializeField] private AlertView _alertView;
         [SerializeField] private SavePresenter _savePresenter;
-
-        [Header("ProjectProgressItemView 프리팹")]
-        [SerializeField] private GameObject _progressItemPrefab;
 
         private void Start()
         {
@@ -39,8 +36,6 @@ namespace GameDevTycoon.UI.Ingame
         {
             // 낮 진입 시 퇴근 버튼 비활성 — 업무 완료 후 활성화는 OnWorkCompleted()로 처리
             _view.SetDayQuitInteractable(false);
-
-            // 진척도 높은 순 정렬 후 표시
             RefreshProgressItems();
         }
 
@@ -66,11 +61,6 @@ namespace GameDevTycoon.UI.Ingame
             var projects = Company.Instance.projects;
 
             _view.SetProjectInfoVisible(projects.Count > 0);
-
-            // 기존 아이템 제거
-            foreach (Transform child in _view.ProjectListContent)
-                Destroy(child.gameObject);
-
             if (projects.Count == 0) return;
 
             // 진척도 높은 순 정렬 (동률 시 day 적은 순 — 먼저 시작한 프로젝트)
@@ -80,11 +70,8 @@ namespace GameDevTycoon.UI.Ingame
                 return cmp != 0 ? cmp : a.day.CompareTo(b.day);
             });
 
-            foreach (var project in projects)
-            {
-                var item = Instantiate(_progressItemPrefab, _view.ProjectListContent);
-                item.GetComponent<IBindable<Project>>().Bind(project);
-            }
+            var top = projects[0];
+            _view.SetProjectProgress(top.userNamed.Value, top.ProgressDayBar / 100f);
         }
 
         /// <summary>
