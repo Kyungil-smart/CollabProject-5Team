@@ -148,7 +148,6 @@ public class DateTimeManager : MonoBehaviour
             OnNightLoading?.Invoke();// 밤
 
             ResetWeekStatus();
-            ResetDayStatus();
             ProgressDay();
         }
         // 금요일 밤에 퇴근하면 다음 주 월요일 낮으로 전환
@@ -162,6 +161,7 @@ public class DateTimeManager : MonoBehaviour
             // 월요일 낮이 되면 퇴근했던 직원 다시 생성
             GameManager.Instance.SpawnNPCsAsync().Forget();
 
+            ResetDayStatus();
             OnDay?.Invoke();// 낮
         }
         // 월~목 낮에 퇴근하면 다음 날 낮으로

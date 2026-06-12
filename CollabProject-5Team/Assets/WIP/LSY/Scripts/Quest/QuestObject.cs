@@ -8,6 +8,11 @@ public class QuestObject : MonoBehaviour, IInteractable
     [SerializeField] private Collider targetCollider;     // 상호작용 거리 체크용 콜라이더
     [SerializeField] private Vector3 iconWorldOffset = new Vector3(0f, 1f, 0f); // 아이콘이 뜰 위치 (오브젝트 기준 오프셋)
 
+    // 커피머신처럼 씬에 항상 존재하는 오브젝트인 경우 체크.
+    // true면 QuestManager가 이 오브젝트를 켜고 끌 때 GameObject 전체가 아닌 이 컴포넌트(enabled)만 토글한다.
+    [SerializeField] private bool isPermanent;
+    public bool IsPermanent => isPermanent;
+
     private QuestIcon _bulbInstance;
     private QuestInteract _starInstance;
 
@@ -67,7 +72,10 @@ public class QuestObject : MonoBehaviour, IInteractable
     public void CompleteInteraction()
     {
         ClearIcons();
-        gameObject.SetActive(false);
+
+        // 항상 있는 오브젝트(커피머신 등)는 비활성화하지 않고 컴포넌트만 끔
+        if (isPermanent) enabled = false;
+        else gameObject.SetActive(false);
 
         // 상호작용 상태 해제 - 안 하면 플레이어가 다시 움직이지 못함
         GameManager.Instance.player.CloseInteractionUI();

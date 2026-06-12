@@ -144,7 +144,14 @@ public class QuestManager : MonoBehaviour
             if (trimmed == "" || trimmed == "None") continue;
 
             Transform target = FindDeepChild(questObjectsRoot, trimmed);
-            if (target != null) target.gameObject.SetActive(active);
+            if (target == null) continue;
+
+            // 항상 있는 오브젝트(커피머신 등)는 GameObject를 끄지 않고 QuestObject 컴포넌트만 토글
+            QuestObject questObject = target.GetComponent<QuestObject>();
+            if (questObject != null && questObject.IsPermanent)
+                questObject.enabled = active;
+            else
+                target.gameObject.SetActive(active);
         }
     }
 
