@@ -101,8 +101,8 @@ namespace GameDevTycoon.UI.Ingame
             int week = dtm.currentWeek.Value;
 
             // 이번 주 날짜 범위 표시 — 금요일 밤 기준 해당 주차 월~금
-            string dateRange = $"{DateTimeManager.GetDateString((week - 1) * 5)} ~ " +
-                               $"{DateTimeManager.GetDateString((week - 1) * 5 + 4)}";
+            string dateRange = $"{DateTimeManager.GetMonthWeekString((week - 1) * 5)}";
+            
 
             _view.SetCoverInfo(dateRange, Company.Instance.Name);
         }
