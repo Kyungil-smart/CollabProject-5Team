@@ -35,7 +35,9 @@ public class SaveLoadSystem : MonoBehaviour
 
         if(DateTimeManager.Instance != null)
         {
-            DateTimeManager.Instance.ExportSaveData(data);
+            DateTimeManager.Instance.ExportSaveData(data); // 날짜 정보
+            Company.Instance.ExportCompanyData(data); // 회사 정보
+            Company.Instance.curProject.ExportProjectData(data); // 프로젝트 정보
         }
 
         string keyName = GetSaveKey(slot);

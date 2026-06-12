@@ -16,7 +16,6 @@ public class SaveTest : MonoBehaviour
             if (data != null)
             {
                 Debug.Log(Application.persistentDataPath);
-                Debug.Log($"이름: {data.name} | 레벨: {data.level} | 골드: {data.gold}");
             }
             else
             {

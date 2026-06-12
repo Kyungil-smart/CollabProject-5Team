@@ -245,4 +245,28 @@ public class Company : MonoBehaviour
             }
         }
     }
+
+    public void ExportCompanyData(SaveData data)
+    {
+        data.company_Name  = this.name;
+        data.company_Gold  = this.gold;
+        data.company_Level = this.level;
+
+        data.company_Popularity = this.popularity;
+        data.company_Reputation = this.reputation;
+
+        data.company_DailyCost = this.dailyCost;
+        data.company_DailyProfit = this.dailyProfit;
+        data.company_weeklyProfit = this.weeklyProfit;
+    }
+
+    public void ImportCompanyData(SaveData data)
+    {
+        this.name  = data.company_Name; 
+        this.gold  = data.company_Gold;
+        this.level = data.company_Level;
+
+        this.popularity = data.company_Popularity;
+        this.reputation = data.company_Reputation;
+    }
 }

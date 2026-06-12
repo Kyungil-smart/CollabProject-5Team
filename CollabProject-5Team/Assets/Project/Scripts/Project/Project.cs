@@ -289,4 +289,58 @@ public class Project : MonoBehaviour
                   $"  최종 → 완성도={qualityScore:F1} 안정성={stabilityScore:F1} 매력도={charmScore:F1} | 평균={CurScore:F1}");
         Company.Instance.CompleteProject(this);
     }
+
+    public void ExportProjectData(SaveData data)
+    {
+        data.activeProjectsData.project_Id                 = Id;
+        data.activeProjectsData.project_Name               = name;
+        data.activeProjectsData.project_Desc               = Desc;
+        data.activeProjectsData.project_Scale              = Scale;
+        data.activeProjectsData.project_RequiredCost       = RequiredCost;
+        data.activeProjectsData.project_MaxEmployeePerpart = MaxEmployeePerPart;
+        data.activeProjectsData.project_DurationDays       = DurationDays;
+
+        data.activeProjectsData.project_day = day;
+        data.activeProjectsData.project_userNamed = userNamed.ToString();
+
+        data.activeProjectsData.project_PlanningEmployeeIds   = ConvertEmpArrayToIdList(plannings);
+        data.activeProjectsData.project_ProgrammerEmployeeIds = ConvertEmpArrayToIdList(programmer);
+        data.activeProjectsData.project_ArtistEmployeeIds     = ConvertEmpArrayToIdList(arts);
+
+        data.activeProjectsData.project_QualityScore   = qualityScore;
+        data.activeProjectsData.project_StabilityScore = stabilityScore;
+        data.activeProjectsData.project_CharmScore     = charmScore;
+    }
+
+    private List<int> ConvertEmpArrayToIdList(Employee[] arr)
+    {
+        var list = new List<int>();
+        if (arr == null) return list;
+
+        foreach (var emp in arr)
+        {
+            list.Add(emp != null && emp.so != null ? emp.so.id : -1);
+        }
+        return list;
+    }
+
+    private void RestoreEmployeeArray(List<int> ids, Employee[] targetArr)
+    {
+        if (ids == null || targetArr == null || _EmployeeManager.Instance == null) return;
+
+        var hiredList = _EmployeeManager.Instance.haveEmployees.haveEmployeeList;
+
+        for (int i = 0; i < targetArr.Length && i < ids.Count; i++)
+        {
+            int empId = ids[i];
+            if (empId == -1)
+            {
+                targetArr[i] = null;
+            }
+            else
+            {
+                targetArr[i] = hiredList.Find(e => e.so.id == empId);
+            }
+        }
+    }
 }
