@@ -20,9 +20,6 @@ public class DateTimeManager : MonoBehaviour
     public bool isWorkCompleted = false;        // 일일 업무 완료 여부
     private HashSet<string> talkedNpcsToday = new HashSet<string>();
 
-    // 이번 주에 대화한 직원 ID 목록 (방치 패널티 판정용)
-    private HashSet<Employee> _talkedEmployeesThisWeek = new HashSet<Employee>();
-
     public static Action OnDay;  // 낮
     public static event Action OnWorkCompleted;
     public static event Action OnNightLoading;
@@ -51,7 +48,6 @@ public class DateTimeManager : MonoBehaviour
     private void ResetDayStatus()
     {
         isWorkCompleted = false;
-        talkedNpcsToday.Clear();
 
         // 새로운 하루 시작 - 일일 퀘스트 자동 생성 (월~금 출근 시점)
         if (QuestManager.Instance != null)
@@ -65,7 +61,6 @@ public class DateTimeManager : MonoBehaviour
     /// </summary>
     private void ResetWeekStatus()
     {
-        _talkedEmployeesThisWeek.Clear();
         Company.Instance.ResetTalkedEmployees();
     }
 
@@ -107,7 +102,6 @@ public class DateTimeManager : MonoBehaviour
     /// </summary>
     public void MarkTalkedThisWeek(Employee e)
     {
-        _talkedEmployeesThisWeek.Add(e);
         e.hasTalkedThisWeek = true;
     }
 
@@ -250,13 +244,6 @@ public class DateTimeManager : MonoBehaviour
         data.day             = this.day.Value;
         data.isWorkCompleted = this.isWorkCompleted;
         data.talkedNpcsToday = new List<string>(this.talkedNpcsToday);
-
-        data.talkedEmployeeIdsThisWeek = new List<int>();
-        foreach(Employee emp in _talkedEmployeesThisWeek)
-        {
-            if (emp != null && emp.so != null)
-                data.talkedEmployeeIdsThisWeek.Add(emp.so.id);
-        }
     }
 
     public void ImportSaveData(SaveData data)
@@ -269,23 +256,5 @@ public class DateTimeManager : MonoBehaviour
         this.day.Value         = data.day;
         this.isWorkCompleted   = data.isWorkCompleted;
         this.talkedNpcsToday   = new HashSet<string>(data.talkedNpcsToday);
-
-        _talkedEmployeesThisWeek.Clear();
-
-        if(data.talkedEmployeeIdsThisWeek != null)
-        {
-            var hiredList = _EmployeeManager.Instance.haveEmployees.haveEmployeeList;
-
-            foreach (int empId in data.talkedEmployeeIdsThisWeek)
-            {
-                Employee emp = hiredList.Find(e => e.so.id == empId);
-
-                if(emp != null)
-                {
-                    _talkedEmployeesThisWeek.Add(emp);
-                    emp.hasTalkedThisWeek = true;
-                }
-            }
-        }
     }
 }
