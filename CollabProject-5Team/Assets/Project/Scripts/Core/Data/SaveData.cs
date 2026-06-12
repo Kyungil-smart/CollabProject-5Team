@@ -27,7 +27,7 @@ public class SaveData
     public int    company_weeklyProfit;
 
     // 완료된 프로젝트 목록 TODO - 프로젝트가 완료 될때 여기로 넣어주세요
-    public List<ProjectCompleted> completedProjectsData = new();
+    public List<ProjectCompletedSaveData> completedProjectsData = new();
     // 현재 진행 중인 프로젝트 목록
     public CurrentProjectSaveData activeProjectsData = new();
 }
@@ -59,4 +59,30 @@ public class CurrentProjectSaveData
     public float project_QualityScore;
     public float project_StabilityScore;
     public float project_CharmScore;
+}
+
+[Serializable]
+public class ProjectCompletedSaveData
+{
+    public int         projectID;
+    public string      projectName;
+    public ProjectSize scale;
+    public int         qualityScore;
+    public int         stabilityScore;
+    public int         charmScore;
+    public string      grade; 
+
+    public float rating;
+    public float retentionFactor;
+    public int   users;
+    public int   dailySales;
+    public int   goodsSales;
+    public int   dailyGold;
+    public int   dailyCost;
+    public int   weeklyGoldAccum;
+    public int   prevWeekUsers;
+    public int   prevWeekGold;
+
+    public List<int> weeklyGoldHistoryList;
+    public bool isServiceOver;
 }

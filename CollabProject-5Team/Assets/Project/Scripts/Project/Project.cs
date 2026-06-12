@@ -301,7 +301,7 @@ public class Project : MonoBehaviour
         data.activeProjectsData.project_DurationDays       = DurationDays;
 
         data.activeProjectsData.project_day = day;
-        data.activeProjectsData.project_userNamed = userNamed.ToString();
+        data.activeProjectsData.project_userNamed = userNamed.Value;
 
         data.activeProjectsData.project_PlanningEmployeeIds   = ConvertEmpArrayToIdList(plannings);
         data.activeProjectsData.project_ProgrammerEmployeeIds = ConvertEmpArrayToIdList(programmer);
@@ -310,6 +310,31 @@ public class Project : MonoBehaviour
         data.activeProjectsData.project_QualityScore   = qualityScore;
         data.activeProjectsData.project_StabilityScore = stabilityScore;
         data.activeProjectsData.project_CharmScore     = charmScore;
+        data.activeProjectsData.project_CurScore       = CurScore;
+    }
+
+    public void ImportProjectData(SaveData data)
+    {
+        this.so.id                 = data.activeProjectsData.project_Id;
+        this.so.name               = data.activeProjectsData.project_Name;
+        this.so.desc               = data.activeProjectsData.project_Desc;
+        this.so.scale              = data.activeProjectsData.project_Scale;
+        this.so.requiredCost       = data.activeProjectsData.project_RequiredCost;
+        this.so.maxEmployeePerPart = data.activeProjectsData.project_MaxEmployeePerpart;
+        this.so.durationDays       = data.activeProjectsData.project_DurationDays;
+
+        this.day = data.activeProjectsData.project_day;
+
+        EnsureInitialized();
+        this.userNamed.Value = data.activeProjectsData.project_userNamed;
+
+        this.qualityScore = data.activeProjectsData.project_QualityScore;
+        this.charmScore   = data.activeProjectsData.project_CharmScore;
+        this.CurScore     = data.activeProjectsData.project_CurScore;
+
+        RestoreEmployeeArray(data.activeProjectsData.project_PlanningEmployeeIds   ,  plannings);
+        RestoreEmployeeArray(data.activeProjectsData.project_ProgrammerEmployeeIds , programmer);
+        RestoreEmployeeArray(data.activeProjectsData.project_ArtistEmployeeIds     ,       arts);
     }
 
     private List<int> ConvertEmpArrayToIdList(Employee[] arr)

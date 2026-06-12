@@ -54,7 +54,6 @@ public class SaveUI : MonoBehaviour
             }
             else
             {
-                // 데이터 없을 때 UI 처리 (동일)
                 slotUIs[i].saveDateText.text = "----/--/--";
                 slotUIs[i].saveDataDetailText.text = "데이터 없음";
             }
