@@ -26,6 +26,9 @@ namespace GameDevTycoon.UI.Ingame
         // 직군 진행 순서
         static readonly Role[] RoleOrder = { Role.PLANNER, Role.ARTIST, Role.PROGRAMMER };
 
+        // [DEBUG] DebugUIPresenter에서 보고서 강제 진입용. 빌드 전 제거.
+        public void OpenForDebug() => OnNightStarted();
+
         private int              _roleIndex;
         private List<Report>     _currentReports;
         private List<ReportCardView> _currentCards = new();
