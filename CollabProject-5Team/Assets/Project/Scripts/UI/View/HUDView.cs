@@ -22,30 +22,39 @@ namespace GameDevTycoon.UI.Ingame
         [SerializeField] private Button _settingsButton;
 
         [Header("DayUI")]
-                         public GameObject _dayUI;
-        [SerializeField] private Button     _workStartButton;
+        public GameObject _dayUI;
+        [SerializeField] private Button _questIconButton;
+        [SerializeField] private Button _workStartButton;
+
+        [Header("DayUI — QuestBanner")]
+        [SerializeField] private GameObject _questBanner;
+        [SerializeField] private TextMeshProUGUI _questTypeLabel;
+        [SerializeField] private TextMeshProUGUI _questNameLabel;
+        [SerializeField] private TextMeshProUGUI _questProgressLabel;
 
         [Header("NightUI")]
         [SerializeField] private GameObject _nightUI;
-        [SerializeField] private Button     _hrButton;
-        [SerializeField] private Button     _projectButton;
-        [SerializeField] private Button     _companyButton;
-        [SerializeField] private Button     _saveButton;
-        [SerializeField] private Button     _nightQuitButton;
+        [SerializeField] private Button _hrButton;
+        [SerializeField] private Button _projectButton;
+        [SerializeField] private Button _companyButton;
+        [SerializeField] private Button _saveButton;
+        [SerializeField] private Button _nightQuitButton;
 
-        public Observable<Unit> OnSettingsClicked   => _settingsButton.OnClickAsObservable();
-        public Observable<Unit> OnWorkStartClicked  => _workStartButton.OnClickAsObservable();
-        public Observable<Unit> OnHRClicked         => _hrButton.OnClickAsObservable();
-        public Observable<Unit> OnProjectClicked    => _projectButton.OnClickAsObservable();
-        public Observable<Unit> OnCompanyClicked    => _companyButton.OnClickAsObservable();
-        public Observable<Unit> OnSaveClicked       => _saveButton.OnClickAsObservable();
-        public Observable<Unit> OnNightQuitClicked  => _nightQuitButton.OnClickAsObservable();
+        public Observable<Unit> OnSettingsClicked => _settingsButton.OnClickAsObservable();
+        public Observable<Unit> OnQuestIconClicked => _questIconButton.OnClickAsObservable();
+        public Observable<Unit> OnWorkStartClicked => _workStartButton.OnClickAsObservable();
+        public Observable<Unit> OnHRClicked => _hrButton.OnClickAsObservable();
+        public Observable<Unit> OnProjectClicked => _projectButton.OnClickAsObservable();
+        public Observable<Unit> OnCompanyClicked => _companyButton.OnClickAsObservable();
+        public Observable<Unit> OnSaveClicked => _saveButton.OnClickAsObservable();
+        public Observable<Unit> OnNightQuitClicked => _nightQuitButton.OnClickAsObservable();
 
         private void Awake()
         {
             _dayUI.SetActive(true);
             _nightUI.SetActive(false);
             _nightQuitButton.interactable = false;
+            _questBanner.SetActive(false);
         }
 
         public void SetTimeLabel(int week, string dayName, bool isNight)
@@ -80,6 +89,29 @@ namespace GameDevTycoon.UI.Ingame
             // [DoTween 페이드 연출 추가 예정]
             _dayUI.SetActive(false);
             _nightUI.SetActive(true);
+        }
+
+        public void ShowQuestBanner(string questName, int current, int total)
+        {
+            _questTypeLabel.text = "일일퀘스트";
+            _questNameLabel.text = questName;
+            _questProgressLabel.text = $"{current}/{total}";
+            _questBanner.SetActive(true);
+        }
+
+        public void HideQuestBanner() => _questBanner.SetActive(false);
+
+        public void SetQuestBannerProgress(int current, int total)
+        {
+            _questProgressLabel.text = $"{current}/{total}";
+        }
+
+        // 퀘스트 완료 시 반투명 처리
+        public void SetQuestBannerCompleted()
+        {
+            var group = _questBanner.GetComponent<CanvasGroup>();
+            if (group != null)
+                group.alpha = 0.5f;
         }
     }
 }
