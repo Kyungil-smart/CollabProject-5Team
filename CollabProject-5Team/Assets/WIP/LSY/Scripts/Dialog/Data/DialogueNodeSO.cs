@@ -29,9 +29,9 @@ namespace Dialogue
             desc = data[3].Trim(); // 화자
             text = data[4].Trim();
             choice01 = data[5].Trim();
-            nextId01 = ParseInt(data[6]);
+            nextId01 = string.IsNullOrEmpty(data[6].Trim()) ? 0 : ParseInt(data[6]);
             choice02 = data[7].Trim();
-            nextId02 = ParseInt(data[8]);
+            nextId02 = string.IsNullOrEmpty(data[8].Trim()) ? 0 : ParseInt(data[8]);
         }
     }
 }

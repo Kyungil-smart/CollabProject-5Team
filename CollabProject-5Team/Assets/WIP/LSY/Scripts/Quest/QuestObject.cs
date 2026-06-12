@@ -32,6 +32,7 @@ public class QuestObject : MonoBehaviour, IInteractable
 
         _bulbInstance = Instantiate(bulbIconPrefab, QuestManager.Instance.QuestCanvas).GetComponent<QuestIcon>();
         _bulbInstance.gameObject.SetActive(true);
+        _bulbInstance.transform.SetAsFirstSibling();
         _bulbInstance.SetTarget(transform, iconWorldOffset);
         _bulbInstance.Button.onClick.AddListener(OnIconClicked);
     }
@@ -42,6 +43,7 @@ public class QuestObject : MonoBehaviour, IInteractable
 
         _starInstance = Instantiate(starIconPrefab, QuestManager.Instance.QuestCanvas).GetComponent<QuestInteract>();
         _starInstance.gameObject.SetActive(true);
+        _starInstance.transform.SetAsFirstSibling();
         _starInstance.SetTarget(transform, iconWorldOffset);
         _starInstance.SetQuestObject(this);
     }
