@@ -18,20 +18,17 @@ public class HUDBinder : MonoBehaviour, IBindable<DateTimeManager>
         // day가 변경될 때마다 SetTimeLabel 호출
         data.day.Subscribe(d =>
         {
-            int week = data.currentWeek.Value;
+            // [TODO: DateTimeManager year/month 데이터 확정 후 형식 변경]
             string dayName = DateTimeManager.Instance.GetDayName();
-            bool isNight = data.currentTime == TimeOfDay.Night;
-            _view.SetTimeLabel(week, dayName, isNight); // 날짜
+            _view.SetTimeLabel($"{data.currentWeek.Value}주 {dayName}"); // 날짜
             _view.SetMoneyLabel(Company.Instance.gold); // 골드
-            _view.SetReputationLabel(Company.Instance.reputation); // 평판
         }).AddTo(this);
         // week 변경시
         data.currentWeek.Subscribe(d =>
         {
-            int week = data.currentWeek.Value;
-            _view.SetTimeLabel(week, "월요일", false); // 날짜
+            // [TODO: DateTimeManager year/month 데이터 확정 후 형식 변경]
+            _view.SetTimeLabel($"{data.currentWeek.Value}주 월요일"); // 날짜
             _view.SetMoneyLabel(Company.Instance.gold); // 골드
-            _view.SetReputationLabel(Company.Instance.reputation); // 평판
         }).AddTo(this);
 
         // 퇴근 버튼 클릭 시 다음 날짜로 진행

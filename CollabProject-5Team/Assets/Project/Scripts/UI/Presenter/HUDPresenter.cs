@@ -78,7 +78,7 @@ namespace GameDevTycoon.UI.Ingame
             _view.OnNightQuitClicked
                 .Subscribe(_ => OnNightQuitClicked())
                 .AddTo(this);
-            
+
             _view.OnSettingsClicked
                 .Subscribe(_ => _settingsPresenter.Show())
                 .AddTo(this);
@@ -88,24 +88,19 @@ namespace GameDevTycoon.UI.Ingame
                 .AddTo(this);
         }
 
-        private void RefreshMoneyLabel()
-        {
-            _view.SetMoneyLabel(Company.Instance.gold);
-        }
-
-        private void RefreshReputationLabel()
-        {
-            _view.SetReputationLabel(Company.Instance.reputation);
-        }
-
         /// <summary>
-        /// Company.gold / reputation 변경 시점에 외부에서 호출.
+        /// Company.gold 변경 시점에 외부에서 호출.
         /// ReactiveProperty 전환 전까지 사용.
         /// </summary>
         public void RefreshHUD()
         {
-            RefreshMoneyLabel();
-            RefreshReputationLabel();
+            _view.SetMoneyLabel(Company.Instance.gold);
+
+            // [TODO: DateTimeManager year/month 데이터 확정 후 시간 표시 형식 연결]
+            // 현재 형식: 00년 00월 0주 월요일
+            // DateTimeManager에 year/month 계산 메서드 또는 데이터 추가 요청 필요
+            var dtm = DateTimeManager.Instance;
+            _view.SetTimeLabel($"{dtm.currentWeek.Value}주 {dtm.GetDayName()}");
         }
 
         private void OnWorkStartClicked()

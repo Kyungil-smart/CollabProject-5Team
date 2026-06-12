@@ -16,7 +16,6 @@ namespace GameDevTycoon.UI.Ingame
         [Header("TopBar")]
         [SerializeField] private TextMeshProUGUI _timeLabel;
         [SerializeField] private TextMeshProUGUI _moneyLabel;
-        [SerializeField] private TextMeshProUGUI _reputationLabel;
 
         [Header("Buttons")]
         [SerializeField] private Button _settingsButton;
@@ -56,19 +55,15 @@ namespace GameDevTycoon.UI.Ingame
             _questBanner.SetActive(false);
         }
 
-        public void SetTimeLabel(int week, string dayName, bool isNight)
+        // [TODO: DateTimeManager에 year/month 데이터 추가 후 파라미터 확정]
+        public void SetTimeLabel(string timeText)
         {
-            _timeLabel.text = $"{week}주차 {dayName} {(isNight ? "밤" : "낮")}";
+            _timeLabel.text = timeText;
         }
 
         public void SetMoneyLabel(int money)
         {
             _moneyLabel.text = $"{money:N0}G";
-        }
-
-        public void SetReputationLabel(int reputation)
-        {
-            _reputationLabel.text = reputation.ToString();
         }
 
         public void SetNightQuitInteractable(int activeProjectCount)
