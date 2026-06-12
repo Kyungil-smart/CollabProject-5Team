@@ -147,7 +147,7 @@ public class DateTimeManager : MonoBehaviour
             currentTime = TimeOfDay.Day;
 
             // 월요일 낮이 되면 퇴근했던 직원 다시 생성
-            GameManager.Instance.SpawnNPCsAsync().Forget();
+            GameManager.Instance.GotoWorkNPCs();
 
             ResetDayStatus();
             OnDay?.Invoke();// 낮
