@@ -13,6 +13,7 @@ namespace GameDevTycoon.UI.Ingame
     {
         [SerializeField] private DayBottomView _view;
         [SerializeField] private AlertView _alertView;
+        [SerializeField] private SavePresenter _savePresenter;
 
         [Header("ProjectProgressItemView 프리팹")]
         [SerializeField] private GameObject _progressItemPrefab;
@@ -46,7 +47,7 @@ namespace GameDevTycoon.UI.Ingame
         private void BindButtons()
         {
             _view.OnSaveClicked
-                .Subscribe(_ => OnSaveClicked())
+                .Subscribe(_ => _savePresenter.Show())
                 .AddTo(this);
 
             _view.OnDayQuitClicked
@@ -99,18 +100,10 @@ namespace GameDevTycoon.UI.Ingame
             gameObject.SetActive(true);
             RefreshProgressItems();
         }
+
         public void Hide()
         {
             gameObject.SetActive(false);
-        }
-
-        private void OnSaveClicked()
-        {
-            _alertView.ShowConfirmPopup("저장하시겠습니까?", () =>
-            {
-                // [TODO: SaveSystem 연결]
-                Debug.Log("[DayBottomPresenter] 저장 처리");
-            });
         }
     }
 }

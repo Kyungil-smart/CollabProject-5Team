@@ -12,9 +12,10 @@ namespace GameDevTycoon.UI.Ingame
     /// </summary>
     public sealed class HUDPresenter : MonoBehaviour
     {
-        [SerializeField] private HUDView   _view;
+        [SerializeField] private HUDView _view;
         [SerializeField] private AlertView _alertView;
         [SerializeField] private SettingsPresenter _settingsPresenter;
+        [SerializeField] private SavePresenter _savePresenter;
 
         [Header("외부 연결")]
         [SerializeField] private HRPresenter _hrPresenter;
@@ -29,6 +30,7 @@ namespace GameDevTycoon.UI.Ingame
             BindButtons();
             DateTimeManager.OnReportEnd += SwitchToNight;
         }
+
         private void OnDestroy()
         {
             DateTimeManager.OnReportEnd -= SwitchToNight;
@@ -62,7 +64,7 @@ namespace GameDevTycoon.UI.Ingame
                 .AddTo(this);
 
             _view.OnSaveClicked
-                .Subscribe(_ => OnSaveClicked())
+                .Subscribe(_ => _savePresenter.Show())
                 .AddTo(this);
 
             _view.OnNightQuitClicked
@@ -126,14 +128,6 @@ namespace GameDevTycoon.UI.Ingame
         private void OnCompanyClicked()
         {
             //_companyPresenter.Show();
-        }
-
-        private void OnSaveClicked()
-        {
-            _alertView.ShowConfirmPopup("저장하시겠습니까?", () =>
-            {
-                // [TODO: SaveSystem 연결]
-            });
         }
 
         private void OnNightQuitClicked()
