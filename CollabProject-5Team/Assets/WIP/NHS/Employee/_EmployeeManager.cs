@@ -97,4 +97,74 @@ public class _EmployeeManager : MonoBehaviour
         Debug.Log($"[EM] {employee.so.Name} 해고 프로세스 완료.");
         return true;
     }
+
+    public void ExportEmployeeData(SaveData data)
+    {
+        data.savedEmployees.Clear();
+
+        for(int i=0;i<haveEmployees.haveEmployeeList.Count;i++)
+        {
+            Employee emp = haveEmployees.haveEmployeeList[i];
+
+            if (emp == null || emp.so == null) continue;
+
+            var empSave = new EmployeeSaveData
+            {
+                employeeId = emp.so.id,
+                
+                ability   = emp.MutableData.ability,
+                property1 = emp.MutableData.property1,
+                property2 = emp.MutableData.property2,
+                property3 = emp.MutableData.property3,
+                
+                desire    = emp.MutableData.desire,
+                loyalty   = emp.MutableData.loyalty,
+                fatigue   = emp.MutableData.fatigue,
+                
+                preDesire  = emp.MutableData.preDesire,
+                preLoyalty = emp.MutableData.preLoyalty,
+                preFatigue = emp.MutableData.preFatigue
+            };
+
+            data.savedEmployees.Add(empSave);
+        }
+    }
+
+    public void ImportEmployeeData(SaveData data)
+    {
+       if (data == null || data.savedEmployees == null) return;
+
+        haveEmployees.haveEmployeeList.Clear();
+
+        _employeeList = new EmployeeList(allEmployeeObj); 
+
+        for (int i = 0; i < data.savedEmployees.Count; i++)
+        {
+            EmployeeSaveData empSave = data.savedEmployees[i];
+            
+            Employee hiredEmp = HireEmployee(empSave.employeeId);
+
+            if (hiredEmp != null)
+            {
+                hiredEmp.MutableData = new EmployeeMutableData
+                {
+                    ability   = empSave.ability,
+                    property1 = empSave.property1,
+                    property2 = empSave.property2,
+                    property3 = empSave.property3,
+                    
+                    desire    = empSave.desire,
+                    loyalty   = empSave.loyalty,
+                    fatigue   = empSave.fatigue,
+                    
+                    preDesire  = empSave.preDesire,
+                    preLoyalty = empSave.preLoyalty,
+                    preFatigue = empSave.preFatigue
+                };
+            }
+            else
+            {
+                Debug.LogWarning($"세이브 복원 실패: ID {empSave.employeeId}번 직원을 찾을 수 없습니다.");
+            }
+    }
 }

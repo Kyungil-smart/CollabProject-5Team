@@ -49,6 +49,6 @@ public class Employee : MonoBehaviour, IPointerClickHandler
     {
         MutableData.preDesire  = MutableData.desire;
         MutableData.preFatigue = MutableData.fatigue;
-        MutableData.preLoyalty = MutableData.fatigue;
+        MutableData.preLoyalty = MutableData.loyalty;
     }
 }
