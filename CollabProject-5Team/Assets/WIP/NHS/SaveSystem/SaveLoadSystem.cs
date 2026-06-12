@@ -37,6 +37,8 @@ public class SaveLoadSystem : MonoBehaviour
         {
             DateTimeManager.Instance.ExportSaveData(data);       // 날짜 정보 저장
 
+            _EmployeeManager.Instance.ExportEmployeeData(data);  // 직원 정보 저장
+
             Company.Instance.ExportCompanyData(data);            // 회사, 지난 프로젝트 정보 저장
 
             Company.Instance.curProject.ExportProjectData(data); // 프로젝트 정보 저장
@@ -66,6 +68,8 @@ public class SaveLoadSystem : MonoBehaviour
                 if(DateTimeManager.Instance != null)
                 {
                     DateTimeManager.Instance.ImportSaveData(data);       // 날짜 정보 로드
+
+                    _EmployeeManager.Instance.ImportEmployeeData(data);  // 직원 정보 로드
 
                     Company.Instance.ImportCompanyData(data);            // 회사, 지난 프로젝트 정보 로드
 
