@@ -12,23 +12,33 @@ namespace GameDevTycoon.UI.Ingame
     /// </summary>
     public sealed class HUDPresenter : MonoBehaviour
     {
-        [SerializeField] private HUDView   _view;
+        [SerializeField] private HUDView _view;
         [SerializeField] private AlertView _alertView;
         [SerializeField] private SettingsPresenter _settingsPresenter;
+        [SerializeField] private SavePresenter _savePresenter;
 
         [Header("외부 연결")]
-        [SerializeField] private HRPresenter _hrPresenter;
-        [SerializeField] private ProjectPresenter _projectPresenter;
+        [SerializeField] private Canvas _popupCanvas;
         //[SerializeField] private ~Presenter _(IBottomNightUI)Presenter; 추후 IBottomNightUI가 추가로 존재하면 연결
 
         [Header("업무 시작 시 이동할 데스크탑 프리팹")]
         [SerializeField] private DeskInteract _desk;
+
+        private HRPresenter _hrPresenter;
+        private ProjectPresenter _projectPresenter;
+
+        private void Awake()
+        {
+            _hrPresenter = _popupCanvas.GetComponentInChildren<HRPresenter>(true);
+            _projectPresenter = _popupCanvas.GetComponentInChildren<ProjectPresenter>(true);
+        }
 
         private void Start()
         {
             BindButtons();
             DateTimeManager.OnReportEnd += SwitchToNight;
         }
+
         private void OnDestroy()
         {
             DateTimeManager.OnReportEnd -= SwitchToNight;
@@ -62,7 +72,7 @@ namespace GameDevTycoon.UI.Ingame
                 .AddTo(this);
 
             _view.OnSaveClicked
-                .Subscribe(_ => OnSaveClicked())
+                .Subscribe(_ => _savePresenter.Show())
                 .AddTo(this);
 
             _view.OnNightQuitClicked
@@ -77,7 +87,6 @@ namespace GameDevTycoon.UI.Ingame
                 .Subscribe(count => _view.SetNightQuitInteractable(count))
                 .AddTo(this);
         }
-
 
         private void RefreshMoneyLabel()
         {
@@ -126,14 +135,6 @@ namespace GameDevTycoon.UI.Ingame
         private void OnCompanyClicked()
         {
             //_companyPresenter.Show();
-        }
-
-        private void OnSaveClicked()
-        {
-            _alertView.ShowConfirmPopup("저장하시겠습니까?", () =>
-            {
-                // [TODO: SaveSystem 연결]
-            });
         }
 
         private void OnNightQuitClicked()
