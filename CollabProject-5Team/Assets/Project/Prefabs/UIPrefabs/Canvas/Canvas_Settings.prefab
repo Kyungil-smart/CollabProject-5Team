@@ -108,7 +108,7 @@ RectTransform:
   m_Father: {fileID: 4357600939191225519}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 50, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -260,12 +260,12 @@ RectTransform:
   - {fileID: 215311054549342689}
   - {fileID: 5197723663086734675}
   - {fileID: 6882705549592945389}
-  m_Father: {fileID: 7609703401867166845}
+  m_Father: {fileID: 888327544093584450}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
+  m_SizeDelta: {x: -80, y: -1816}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &1576549638491367981
 CanvasRenderer:
@@ -599,75 +599,6 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: -20, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!1 &2187968964200157461
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 7609703401867166845}
-  - component: {fileID: 7323979248505079690}
-  - component: {fileID: 4077862372101270907}
-  m_Layer: 5
-  m_Name: SettingsPanel
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 0
---- !u!224 &7609703401867166845
-RectTransform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2187968964200157461}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 5277276780929824748}
-  m_Father: {fileID: 888327544093584450}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 1000, y: 500}
-  m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &7323979248505079690
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2187968964200157461}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e1412c19da4ee9c4a9011cc544a1a104, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _settingsPanel: {fileID: 2187968964200157461}
-  _bgmSlider: {fileID: 0}
-  _sfxSlider: {fileID: 0}
-  _closeButton: {fileID: 0}
-  _gameQuitButton: {fileID: 0}
---- !u!114 &4077862372101270907
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2187968964200157461}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: dbd20e83e34c0514d869afbaea0a4704, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _view: {fileID: 7323979248505079690}
-  _alertView: {fileID: 0}
 --- !u!1 &2437542468701560800
 GameObject:
   m_ObjectHideFlags: 0
@@ -936,7 +867,7 @@ RectTransform:
   m_Father: {fileID: 2605098708529200850}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 10, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -1011,7 +942,7 @@ RectTransform:
   m_Father: {fileID: 4808457362656904283}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 10, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -1313,7 +1244,7 @@ RectTransform:
   m_Father: {fileID: 1764856691940195892}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 50, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -1767,6 +1698,8 @@ GameObject:
   - component: {fileID: 3179735243970982020}
   - component: {fileID: 1380295911122002763}
   - component: {fileID: 4778921819481114317}
+  - component: {fileID: 389073596404162144}
+  - component: {fileID: 1130583221770103916}
   m_Layer: 5
   m_Name: Canvas_Settings
   m_TagString: Untagged
@@ -1786,7 +1719,7 @@ RectTransform:
   m_LocalScale: {x: 0, y: 0, z: 0}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 7609703401867166845}
+  - {fileID: 5277276780929824748}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -1857,6 +1790,45 @@ MonoBehaviour:
   m_BlockingMask:
     serializedVersion: 2
     m_Bits: 4294967295
+--- !u!114 &389073596404162144
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6477594736803272556}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e1412c19da4ee9c4a9011cc544a1a104, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _settingsPanel: {fileID: 1289156741064901272}
+  _bgmSlider: {fileID: 2363080134901781972}
+  _sfxSlider: {fileID: 7350532940444675888}
+  _confirmButton: {fileID: 6324742315099808434}
+  _bgmToggle: {fileID: 5506399131637771158}
+  _bgmToggleLabel: {fileID: 827131492100224124}
+  _bgmToggleOnSprite: {fileID: 0}
+  _bgmToggleOffSprite: {fileID: 0}
+  _sfxToggle: {fileID: 3432533697809271714}
+  _sfxToggleLabel: {fileID: 5374048983763272185}
+  _sfxToggleOnSprite: {fileID: 0}
+  _sfxToggleOffSprite: {fileID: 0}
+  _titleButton: {fileID: 3766608970801251942}
+--- !u!114 &1130583221770103916
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6477594736803272556}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dbd20e83e34c0514d869afbaea0a4704, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _view: {fileID: 389073596404162144}
+  _alertView: {fileID: 8654902207363816660, guid: b82583b22905db24a86349a98bea2b01, type: 3}
 --- !u!1 &7056500280434822399
 GameObject:
   m_ObjectHideFlags: 0

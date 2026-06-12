@@ -18,7 +18,6 @@ namespace GameDevTycoon.UI
         [SerializeField] private Slider _sfxSlider;
 
         [Header("Buttons")]
-        [SerializeField] private Button _closeButton;
         [SerializeField] private Button _confirmButton;
         [SerializeField] private Button _bgmToggle;
         [SerializeField] private TextMeshProUGUI _bgmToggleLabel;
@@ -30,7 +29,6 @@ namespace GameDevTycoon.UI
         [SerializeField] private Sprite _sfxToggleOffSprite;
         [SerializeField] private Button _titleButton;
 
-        public Observable<Unit> OnCloseClicked => _closeButton.OnClickAsObservable();
         public Observable<Unit> OnConfirmClicked => _confirmButton.OnClickAsObservable();
         public Observable<Unit> OnBGMToggleClicked => _bgmToggle.OnClickAsObservable();
         public Observable<Unit> OnSFXToggleClicked => _sfxToggle.OnClickAsObservable();
@@ -42,10 +40,6 @@ namespace GameDevTycoon.UI
         {
             _settingsPanel.SetActive(false);
             _titleButton.gameObject.SetActive(false);
-
-            _closeButton.OnClickAsObservable()
-                .Subscribe(_ => Hide())
-                .AddTo(this);
         }
 
         public void Show() => _settingsPanel.SetActive(true);

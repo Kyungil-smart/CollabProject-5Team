@@ -67,8 +67,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: "\uB20C\uB7EC\uC11C \uC800\uC7A5\uD558\uC138\uC694."
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 47865496511cdeb44baa43a144e8b4ff, type: 2}
+  m_sharedMaterial: {fileID: 4134685016888260732, guid: 47865496511cdeb44baa43a144e8b4ff, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -2915,6 +2915,8 @@ GameObject:
   - component: {fileID: 5602145402402981879}
   - component: {fileID: 6701192471333630571}
   - component: {fileID: 7085677779136806692}
+  - component: {fileID: 6333983453602820237}
+  - component: {fileID: 6606674863280602556}
   m_Layer: 5
   m_Name: Canvas_Save
   m_TagString: Untagged
@@ -3005,6 +3007,63 @@ MonoBehaviour:
   m_BlockingMask:
     serializedVersion: 2
     m_Bits: 4294967295
+--- !u!114 &6333983453602820237
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4142855715494317952}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 809d8e4aa87372e40b4434a08c9aefab, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _savePopup: {fileID: 3266044766019789314}
+  _closeButton: {fileID: 6379346890455319445}
+  _autoSlotButton: {fileID: 4262051687483135854}
+  _autoSavedGroup: {fileID: 8769891354004335738}
+  _autoEmptyGroup: {fileID: 225813869828245094}
+  _autoCompanyNameLabel: {fileID: 1185322997810128678}
+  _autoDateTimeLabel: {fileID: 5790293325217651433}
+  _autoGoldLabel: {fileID: 8075154199272219877}
+  _autoEmployeeCountLabel: {fileID: 3447837582641646464}
+  _autoSlotSelectedSprite: {fileID: 0}
+  _autoSlotDefaultSprite: {fileID: 0}
+  _slot1Button: {fileID: 6817021611992653151}
+  _slot1SavedGroup: {fileID: 2359596598065240232}
+  _slot1EmptyGroup: {fileID: 2218067740319166743}
+  _slot1CompanyNameLabel: {fileID: 7700729744910437619}
+  _slot1DateTimeLabel: {fileID: 6524024004769989017}
+  _slot1GoldLabel: {fileID: 395941316608810385}
+  _slot1EmployeeCountLabel: {fileID: 3116464091616392992}
+  _slot1SelectedSprite: {fileID: 0}
+  _slot1DefaultSprite: {fileID: 0}
+  _slot2Button: {fileID: 2142124231511805104}
+  _slot2SavedGroup: {fileID: 7009037629691540315}
+  _slot2EmptyGroup: {fileID: 537918209579764847}
+  _slot2CompanyNameLabel: {fileID: 5297016989880685612}
+  _slot2DateTimeLabel: {fileID: 1399253077046966981}
+  _slot2GoldLabel: {fileID: 601194713524105568}
+  _slot2EmployeeCountLabel: {fileID: 2265227940440746850}
+  _slot2SelectedSprite: {fileID: 0}
+  _slot2DefaultSprite: {fileID: 0}
+  _saveButton: {fileID: 3667329468734904297}
+  _loadButton: {fileID: 4901934160273165273}
+--- !u!114 &6606674863280602556
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4142855715494317952}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3fa8c6b68909420438e49ec4421210a9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _view: {fileID: 6333983453602820237}
+  _alertView: {fileID: 8654902207363816660, guid: b82583b22905db24a86349a98bea2b01, type: 3}
 --- !u!1 &4254950425492199303
 GameObject:
   m_ObjectHideFlags: 0
@@ -3380,8 +3439,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: "\uB20C\uB7EC\uC11C \uC800\uC7A5\uD558\uC138\uC694."
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 47865496511cdeb44baa43a144e8b4ff, type: 2}
+  m_sharedMaterial: {fileID: 4134685016888260732, guid: 47865496511cdeb44baa43a144e8b4ff, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -4060,8 +4119,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: "\uB20C\uB7EC\uC11C \uC800\uC7A5\uD558\uC138\uC694."
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 47865496511cdeb44baa43a144e8b4ff, type: 2}
+  m_sharedMaterial: {fileID: 4134685016888260732, guid: 47865496511cdeb44baa43a144e8b4ff, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []

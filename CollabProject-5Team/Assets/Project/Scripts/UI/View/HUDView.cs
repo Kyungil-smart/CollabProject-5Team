@@ -28,7 +28,6 @@ namespace GameDevTycoon.UI.Ingame
 
         [Header("DayUI — QuestBanner")]
         [SerializeField] private GameObject _questBanner;
-        [SerializeField] private TextMeshProUGUI _questTypeLabel;
         [SerializeField] private TextMeshProUGUI _questNameLabel;
         [SerializeField] private TextMeshProUGUI _questProgressLabel;
 
@@ -93,7 +92,6 @@ namespace GameDevTycoon.UI.Ingame
 
         public void ShowQuestBanner(string questName, int current, int total)
         {
-            _questTypeLabel.text = "일일퀘스트";
             _questNameLabel.text = questName;
             _questProgressLabel.text = $"{current}/{total}";
             _questBanner.SetActive(true);
