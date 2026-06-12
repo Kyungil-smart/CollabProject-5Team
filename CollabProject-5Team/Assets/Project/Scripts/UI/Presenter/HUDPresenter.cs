@@ -17,8 +17,7 @@ namespace GameDevTycoon.UI.Ingame
         [SerializeField] private SettingsPresenter _settingsPresenter;
         [SerializeField] private SavePresenter _savePresenter;
 
-        [Header("외부 연결")]
-        [SerializeField] private Canvas _popupCanvas;
+        // [Header("외부 연결")]
         //[SerializeField] private ~Presenter _(IBottomNightUI)Presenter; 추후 IBottomNightUI가 추가로 존재하면 연결
 
         [Header("업무 시작 시 이동할 데스크탑 프리팹")]
@@ -29,8 +28,8 @@ namespace GameDevTycoon.UI.Ingame
 
         private void Awake()
         {
-            _hrPresenter = _popupCanvas.GetComponentInChildren<HRPresenter>(true);
-            _projectPresenter = _popupCanvas.GetComponentInChildren<ProjectPresenter>(true);
+            _hrPresenter = FindObjectOfType<HRPresenter>(true);
+            _projectPresenter = FindObjectOfType<ProjectPresenter>(true);
         }
 
         private void Start()
