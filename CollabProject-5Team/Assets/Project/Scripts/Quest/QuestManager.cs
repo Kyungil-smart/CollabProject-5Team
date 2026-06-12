@@ -51,8 +51,6 @@ public class QuestManager : MonoBehaviour
     // R3 구독을 통해 실행될 상태별 로직 처리부
     void OnDailyQuestChanged(QuestState newState)
     {
-        Debug.Log($"[QM] OnDailyQuestChanged 호출됨 - newState: {newState}, result: {curDailyQuest.result}");
-
         if (newState != QuestState.End) return;
 
         // 진행 중이던 활성 오브젝트는 정리
@@ -60,15 +58,11 @@ public class QuestManager : MonoBehaviour
 
         if (curDailyQuest.result == QuestResult.Success)
         {
-            Debug.Log("[QM] 퀘스트 성공 처리 시작");
-
             SetObjectsActive(curDailyQuest.so.resultObjects, true);
             ShowSpeechBubble(curDailyQuest.so.npcDialogue);
 
             AddBonusPoint(curDailyQuest.so.role, curDailyQuest.so.successEffect);
             DateTimeManager.Instance.CompleteDayWork();
-
-            Debug.Log("[QM] CompleteDayWork 호출 완료");
         }
     }
 
@@ -127,8 +121,6 @@ public class QuestManager : MonoBehaviour
         curDailyQuest.UpdateProgress(count);
         dailyQuestProgress.Value = curDailyQuest.curCount;
 
-        Debug.Log($"[QM] 진행도 갱신 - curCount: {curDailyQuest.curCount} / {curDailyQuest.TargetCount}, state: {curDailyQuest.state}");
-
         if (curDailyQuest.state == QuestState.End)
             dailyQuestState.Value = QuestState.End;
     }
@@ -144,7 +136,11 @@ public class QuestManager : MonoBehaviour
             if (trimmed == "" || trimmed == "None") continue;
 
             Transform target = FindDeepChild(questObjectsRoot, trimmed);
-            if (target == null) continue;
+            if (target == null)
+            {
+                Debug.LogWarning($"[QM] SetObjectsActive - '{trimmed}'를 questObjectsRoot 하위에서 못 찾음");
+                continue;
+            }
 
             // 항상 있는 오브젝트(커피머신 등)는 GameObject를 끄지 않고 QuestObject 컴포넌트만 토글
             QuestObject questObject = target.GetComponent<QuestObject>();
@@ -169,6 +165,8 @@ public class QuestManager : MonoBehaviour
             Debug.LogWarning("[QM] speechBubblePrefab에 SpeechBubble 컴포넌트가 없습니다.");
             return;
         }
+
+        bubble.transform.SetAsFirstSibling();
 
         bubble.Show(npcTransform, bubbleWorldOffset, message);
     }
