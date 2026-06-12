@@ -129,12 +129,6 @@ public class DateTimeManager : MonoBehaviour
     [ContextMenu("퇴근 처리")]
     public void OnClickEndDayButton()
     {
-        // 업무가 끝나지 않았다면 퇴근 불가
-        if (!isWorkCompleted)
-        {
-            return;
-        }
-
         // 금요일 낮에 퇴근하면 금요일 밤으로 전환
         if (currentDay == DayOfWeek.Friday && currentTime == TimeOfDay.Day)
         {
