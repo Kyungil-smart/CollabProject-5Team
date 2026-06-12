@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 
@@ -21,8 +23,8 @@ public class GameManager : MonoBehaviour
     [SerializeField] private Transform _map;                            // 의자가 있는 현재 맵
 
     private List<Transform> _sitPoints = new List<Transform>();         // 앉을 좌표 리스트
-
     private List<NPCController> _activeNpcs = new List<NPCController>();   // 활성화된 NPC를 담아둘 리스트
+    private List<int> _hiredEmployees  = new List<int>();                // 고용된 NPC
 
     [Header("자동 주입")]
     public PlayerMove player;
@@ -53,6 +55,7 @@ public class GameManager : MonoBehaviour
         _map = _officeMaps[0].transform;
     }
 
+    // 처음 게임 시작 시 플레이어, NPC생성 및 배치
     private async UniTask InitializeGameAsync()
     {
         // 플레이어 생성 및 GameManager에 참조 주입
@@ -67,8 +70,10 @@ public class GameManager : MonoBehaviour
 
         // NPC 생성
         await SpawnNPCsAsync();
+        GotoWorkNPCs();
     }
 
+    // 사무실 업그레이드 시 맵 교체 및 NPC재배치
     public void UpgradeOffice()
     {
         // 현재 맵의 인덱스가 맵의 개수와 같거나 크면 리턴
@@ -93,6 +98,7 @@ public class GameManager : MonoBehaviour
         SpawnNPCsAsync().Forget();
     }
 
+    // 현재 맵에서 SitPoint 위치를 찾아 리스트 갱신
     public void RefreshSitPoints()
     {
         // 의자 데이터 초기화
@@ -107,41 +113,40 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    // 신규 채용된 직원을 씬에 생성하고 관리 리스트에 추가
     public async UniTask SpawnNPCsAsync()
     {
         // 고용된 직원명단 가져오기
-        var emp = _EmployeeManager.Instance.haveEmployees.haveEmployeeList;
+        var empList = _EmployeeManager.Instance.haveEmployees.haveEmployeeList;
 
-        int count = Mathf.Min(emp.Count, _sitPoints.Count);
+        int sitIndex = _activeNpcs.Count;
 
-        for (int i = 0; i < count; i++)
+        foreach (var emp in empList)
         {
-            int id = emp[i].so.id;
-
-            // 생성할 NPC 프리팹이나 의자 리스트보다 인덱스가 크면 생성 중단
-            if (i >= _allNpcPrefabs.Count || i >= _sitPoints.Count)
-            {
-                break;
-            }
-
-            if (!_EmployeeManager.Instance.employeeList.allEmployeePrefabs.TryGetValue(id, out GameObject prefab))
-            {
+            // 이미 존재하는 직원인지 ID비교
+            if(_activeNpcs.Any(n => n.GetComponent<Employee>().so.id == emp.so.id))
                 continue;
-            }
 
+            // 프리팹 확인
+            if (!_EmployeeManager.Instance.employeeList.allEmployeePrefabs.TryGetValue(emp.so.id, out GameObject prefab))
+                continue;
+        
             // NPC 생성
             GameObject npcObj = Instantiate(prefab, NpcSpawnPoint.position, Quaternion.identity);
-            
-            // 데이터 주입
-            var employeeComponent = npcObj.GetComponent<Employee>();
-            employeeComponent.MutableData = emp[i].MutableData;
-            
-            // 각 NPC에게 의자 좌표를 전달해 이동시킴
-            var controller =  npcObj.GetComponent<NPCController>();
-            controller.TargetDesk = _sitPoints[i];
+            npcObj.GetComponent<Employee>().MutableData = emp.MutableData;
+
+            // 데이터 주입            
+            var controller = npcObj.GetComponent<NPCController>();
 
             // 생성된 NPC를 List에 담음
             _activeNpcs.Add(controller);
+
+            // 생성된 NPC의 자리를 정해줌
+            if (sitIndex < _sitPoints.Count)
+            {
+                controller.TargetDesk = _sitPoints[sitIndex];
+                sitIndex++;
+            }
 
             // 1초 간격으로 생성
             await UniTask.Delay(1000);
@@ -157,30 +162,74 @@ public class GameManager : MonoBehaviour
         return validNpcs[Random.Range(0, validNpcs.Count)].transform;
     }
 
-    // 퇴근 명령 함수
+    // 퇴근 명령 SpawnPoint로 이동 후 비활성화
     public void LeaveWorkNPCs()
     {
         foreach (var npc in _activeNpcs)
         {
             if (npc != null)
             {
-                var employeeComponent = npc.GetComponent<Employee>();
-
-                // 퇴근할 직원을 전체 직원 명부와 비교해 값을 찾음
-                var employees = _EmployeeManager.Instance.haveEmployees.haveEmployeeList;
-                var Data = employees.Find(e => e.so.id == employeeComponent.so.id);
-
-                // 찾은 값을 명부 데이터에 저장
-                if(Data != null)
-                {
-                    Data.MutableData = employeeComponent.MutableData;
-                }
-
                 npc.ChangeState(new NPCLeave());
+
+                npc.transform.position = NpcSpawnPoint.position;
+            }
+        }
+    }
+
+    // 현재 고용된 인원들 출근
+    public void GotoWorkNPCs()
+    {
+        // 현재 회사에 고용된 모든 직원 ID 가져오기
+        var currentEmployeeIds = _EmployeeManager.Instance.haveEmployees.haveEmployeeList
+                                    .Select(e => e.so.id).ToHashSet();
+
+        for (int i = _activeNpcs.Count - 1; i >= 0; i--)
+        {
+            var npc = _activeNpcs[i];
+
+            // 해고된 직원인지 확인
+            if (npc != null && !currentEmployeeIds.Contains(npc.GetComponent<Employee>().so.id))
+            {
+                // 명단에 없으면 파괴하고 리스트에서 제거
+                Destroy(npc.gameObject);
+                _activeNpcs.RemoveAt(i);
             }
         }
 
-        _activeNpcs.Clear();
+        // 남은 직원 출근, 자리 배치
+        for (int i = 0; i < _activeNpcs.Count; i++)
+        {
+            if (_activeNpcs[i] != null && i < _sitPoints.Count)
+            {
+                _activeNpcs[i].gameObject.SetActive(true);
+                _activeNpcs[i].TargetDesk = _sitPoints[i];
+                _activeNpcs[i].ChangeState(new NPCMove()); 
+            }
+        }
+    }
+
+
+    // 새로 채용한 직원 ID를 담아둠
+    public void ReserveHire(int employeeID)
+    {
+        _hiredEmployees.Add(employeeID);
+    }
+
+    // 고용, 해고 반영 후 출근 실행
+    public async Task HiredNPCGoToWork()
+    {
+        foreach (int id in _hiredEmployees)
+        {
+            _EmployeeManager.Instance.HireEmployee(id);
+        }
+        
+        _hiredEmployees.Clear();
+
+        // 신규직원 생성 기다리기
+        await SpawnNPCsAsync();
+        
+        // 모든 NPC에게 자리로 이동 명령
+        GotoWorkNPCs();
     }
 
     public void InjectPlayer(PlayerMove player)
