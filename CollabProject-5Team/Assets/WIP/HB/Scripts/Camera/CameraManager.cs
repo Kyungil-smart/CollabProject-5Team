@@ -34,8 +34,8 @@ public class CameraManager : MonoBehaviour
     [SerializeField] private float _diamondWidth = 15f;                       // 맵 중심에서 오른쪽 꼭지점까지의 길이
     [SerializeField] private float _diamondLength = 15f;                      // 맵 중심에서 위쪽 꼭지점까지의 길이
 
-    public SerializableReactiveProperty<bool> IsUIOpen { get; private set; } = new SerializableReactiveProperty<bool>(false);
-
+    public SerializableReactiveProperty<bool> IsUIOpen { get; private set; } = new SerializableReactiveProperty<bool>(false);   // UI가 열려있는지
+    private System.Collections.Generic.List<RaycastResult> _uiRaycastResults = new System.Collections.Generic.List<RaycastResult>(); // Raycast가 켜져있는 UI창이 있는지 찾아서 리스트화
     public static CameraManager Instance { get; private set; }
 
     private void Awake()
@@ -77,6 +77,8 @@ public class CameraManager : MonoBehaviour
     /// </summary>
     private void HandleTouchInput()
     {
+        if (IsPointerOverUIObject()) return;
+
         // 유니티 에디터용 마우스 휠 줌 처리
         float mouseScroll = Input.GetAxis("Mouse ScrollWheel");
         if (Mathf.Abs(mouseScroll) > 0.01f)
@@ -118,34 +120,36 @@ public class CameraManager : MonoBehaviour
         // 새로운 드래그가 시작되면 관성 트윈 멈춤
         if (touch.phase == TouchPhase.Began)
         {
+            if (IsPointerOverUIObject())
+            {
+                _isCameraDragValid = false;
+                return;
+            }
+
+            // UI창을 안 눌렀을 때만 카메라 이동
+            _isCameraDragValid = true;        
+            _lastTouchPosition = GetTouchWorldPosition(touch.position);
+            // 속도 초기화
+            _drag = Vector3.zero;
+
             if (_inertiaTweener != null && _inertiaTweener.IsActive())
             {
                 _inertiaTweener.Kill();
             }
         }
+        
+        if (!_isCameraDragValid) return;
 
         switch (touch.phase)
-        {
-            // 손가락이 화면에 처음 닿았을 때
-            case TouchPhase.Began:
-                // UI창 위 터치는 무효
+        {            
+            // 손가락을 화면에 댄 채로 움직이는 상태
+            case TouchPhase.Moved:
+                // 무효된 터치라면 드래그 연산하지 않음
                 if (IsPointerOverUIObject())
                 {
                     _isCameraDragValid = false;
                     return;
                 }
-
-                // UI창을 안 눌렀을 때만 카메라 이동
-                _isCameraDragValid = true;        
-                _lastTouchPosition = GetTouchWorldPosition(touch.position);
-                // 속도 초기화
-                _drag = Vector3.zero;
-                break;
-            
-            // 손가락을 화면에 댄 채로 움직이는 상태
-            case TouchPhase.Moved:
-                // 무효된 터치라면 드래그 연산하지 않음
-                if (!_isCameraDragValid) return;
 
                 Vector3 currentTouchWorldPos = GetTouchWorldPosition(touch.position);
                 // 현재 손 위치에서 처음 손을 댄 위치를 빼 변화량을 계산
@@ -336,14 +340,14 @@ public class CameraManager : MonoBehaviour
         // 이벤트 시스템이 안 켜져 있다면 UI안 누른 걸로 안전장치
         if (EventSystem.current == null) return false;
 
-        // 여러개가 동시에 터치됐을 경우 첫 번째 누른 것을 터치한 것으로 인정함
-        if (Input.touchCount > 0)
-        {
-            Touch touch = Input.GetTouch(0);
-            return EventSystem.current.IsPointerOverGameObject(touch.fingerId);
-        }
+        // 현재 터치 위치를 기반으로 포인터 생성(PC는 현재 마우스 위치)
+        PointerEventData eventData = new PointerEventData(EventSystem.current);
+        eventData.position = Input.touchCount > 0 ? Input.GetTouch(0).position : (Vector2)Input.mousePosition;
 
-        // 유니티 에디터 환경에선 마우스 커서 위치를 기준으로 체크
-        return EventSystem.current.IsPointerOverGameObject();
+        // Raycast가 켜져있는 UI창이 있는지 찾아서 열려있다면 카메라 동작을 멈춤
+        _uiRaycastResults.Clear();
+        EventSystem.current.RaycastAll(eventData, _uiRaycastResults);
+
+        return _uiRaycastResults.Count > 0;
     }
 }

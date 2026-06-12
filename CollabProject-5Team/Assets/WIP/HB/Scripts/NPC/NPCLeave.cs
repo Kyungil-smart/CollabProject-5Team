@@ -16,7 +16,9 @@ public class NPCLeave : INPCState
         {
             npc.Anim.SetBool("IsWalking", false);
             
-            Object.Destroy(npc.gameObject);
+            npc.gameObject.SetActive(false);
+
+            npc.Agent.enabled = false;
         }
     }
     public void Exit(NPCController npc)
