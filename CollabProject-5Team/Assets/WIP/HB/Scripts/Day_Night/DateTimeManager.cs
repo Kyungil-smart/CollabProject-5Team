@@ -242,4 +242,50 @@ public class DateTimeManager : MonoBehaviour
 
     #endregion
 
+    public void ExportSaveData(SaveData data)
+    {
+        data.currentWeek     = this.currentWeek.Value;
+        data.currentDay      = this.currentDay;
+        data.currentTime     = this.currentTime;
+        data.day             = this.day.Value;
+        data.isWorkCompleted = this.isWorkCompleted;
+        data.talkedNpcsToday = new List<string>(this.talkedNpcsToday);
+
+        data.talkedEmployeeIdsThisWeek = new List<int>();
+        foreach(Employee emp in _talkedEmployeesThisWeek)
+        {
+            if (emp != null && emp.so != null)
+                data.talkedEmployeeIdsThisWeek.Add(emp.so.id);
+        }
+    }
+
+    public void ImportSaveData(SaveData data)
+    {
+        if (data == null) return;
+
+        this.currentWeek.Value = data.currentWeek;
+        this.currentDay        = data.currentDay;
+        this.currentTime       = data.currentTime;
+        this.day.Value         = data.day;
+        this.isWorkCompleted   = data.isWorkCompleted;
+        this.talkedNpcsToday   = new HashSet<string>(data.talkedNpcsToday);
+
+        _talkedEmployeesThisWeek.Clear();
+
+        if(data.talkedEmployeeIdsThisWeek != null)
+        {
+            var hiredList = _EmployeeManager.Instance.haveEmployees.haveEmployeeList;
+
+            foreach (int empId in data.talkedEmployeeIdsThisWeek)
+            {
+                Employee emp = hiredList.Find(e => e.so.id == empId);
+
+                if(emp != null)
+                {
+                    _talkedEmployeesThisWeek.Add(emp);
+                    emp.hasTalkedThisWeek = true;
+                }
+            }
+        }
+    }
 }

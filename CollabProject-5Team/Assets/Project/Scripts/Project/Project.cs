@@ -289,4 +289,83 @@ public class Project : MonoBehaviour
                   $"  최종 → 완성도={qualityScore:F1} 안정성={stabilityScore:F1} 매력도={charmScore:F1} | 평균={CurScore:F1}");
         Company.Instance.CompleteProject(this);
     }
+
+    public void ExportProjectData(SaveData data)
+    {
+        data.activeProjectsData.project_Id                 = Id;
+        data.activeProjectsData.project_Name               = name;
+        data.activeProjectsData.project_Desc               = Desc;
+        data.activeProjectsData.project_Scale              = Scale;
+        data.activeProjectsData.project_RequiredCost       = RequiredCost;
+        data.activeProjectsData.project_MaxEmployeePerpart = MaxEmployeePerPart;
+        data.activeProjectsData.project_DurationDays       = DurationDays;
+
+        data.activeProjectsData.project_day = day;
+        data.activeProjectsData.project_userNamed = userNamed.Value;
+
+        data.activeProjectsData.project_PlanningEmployeeIds   = ConvertEmpArrayToIdList(plannings);
+        data.activeProjectsData.project_ProgrammerEmployeeIds = ConvertEmpArrayToIdList(programmer);
+        data.activeProjectsData.project_ArtistEmployeeIds     = ConvertEmpArrayToIdList(arts);
+
+        data.activeProjectsData.project_QualityScore   = qualityScore;
+        data.activeProjectsData.project_StabilityScore = stabilityScore;
+        data.activeProjectsData.project_CharmScore     = charmScore;
+        data.activeProjectsData.project_CurScore       = CurScore;
+    }
+
+    public void ImportProjectData(SaveData data)
+    {
+        this.so.id                 = data.activeProjectsData.project_Id;
+        this.so.name               = data.activeProjectsData.project_Name;
+        this.so.desc               = data.activeProjectsData.project_Desc;
+        this.so.scale              = data.activeProjectsData.project_Scale;
+        this.so.requiredCost       = data.activeProjectsData.project_RequiredCost;
+        this.so.maxEmployeePerPart = data.activeProjectsData.project_MaxEmployeePerpart;
+        this.so.durationDays       = data.activeProjectsData.project_DurationDays;
+
+        this.day = data.activeProjectsData.project_day;
+
+        EnsureInitialized();
+        this.userNamed.Value = data.activeProjectsData.project_userNamed;
+
+        this.qualityScore = data.activeProjectsData.project_QualityScore;
+        this.charmScore   = data.activeProjectsData.project_CharmScore;
+        this.CurScore     = data.activeProjectsData.project_CurScore;
+
+        RestoreEmployeeArray(data.activeProjectsData.project_PlanningEmployeeIds   ,  plannings);
+        RestoreEmployeeArray(data.activeProjectsData.project_ProgrammerEmployeeIds , programmer);
+        RestoreEmployeeArray(data.activeProjectsData.project_ArtistEmployeeIds     ,       arts);
+    }
+
+    private List<int> ConvertEmpArrayToIdList(Employee[] arr)
+    {
+        var list = new List<int>();
+        if (arr == null) return list;
+
+        foreach (var emp in arr)
+        {
+            list.Add(emp != null && emp.so != null ? emp.so.id : -1);
+        }
+        return list;
+    }
+
+    private void RestoreEmployeeArray(List<int> ids, Employee[] targetArr)
+    {
+        if (ids == null || targetArr == null || _EmployeeManager.Instance == null) return;
+
+        var hiredList = _EmployeeManager.Instance.haveEmployees.haveEmployeeList;
+
+        for (int i = 0; i < targetArr.Length && i < ids.Count; i++)
+        {
+            int empId = ids[i];
+            if (empId == -1)
+            {
+                targetArr[i] = null;
+            }
+            else
+            {
+                targetArr[i] = hiredList.Find(e => e.so.id == empId);
+            }
+        }
+    }
 }

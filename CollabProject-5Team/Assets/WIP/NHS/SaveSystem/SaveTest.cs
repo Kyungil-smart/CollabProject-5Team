@@ -11,12 +11,11 @@ public class SaveTest : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.L))
         {
-            tempData data = SaveLoadSystem.Instance.LoadGame(0);
+            SaveData data = SaveLoadSystem.Instance.LoadGame(0);
 
             if (data != null)
             {
                 Debug.Log(Application.persistentDataPath);
-                Debug.Log($"이름: {data.name} | 레벨: {data.level} | 골드: {data.gold}");
             }
             else
             {

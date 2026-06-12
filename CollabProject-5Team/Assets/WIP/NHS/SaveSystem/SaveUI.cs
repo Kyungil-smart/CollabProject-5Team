@@ -46,7 +46,7 @@ public class SaveUI : MonoBehaviour
 
             if (SaveLoadSystem.Instance.HasSaveData(slotNumber))
             {
-                tempData data = SaveLoadSystem.Instance.LoadGame(slotNumber);
+                SaveData data = SaveLoadSystem.Instance.LoadGame(slotNumber);
 
                 if (data != null)
                 {
@@ -54,7 +54,6 @@ public class SaveUI : MonoBehaviour
             }
             else
             {
-                // 데이터 없을 때 UI 처리 (동일)
                 slotUIs[i].saveDateText.text = "----/--/--";
                 slotUIs[i].saveDataDetailText.text = "데이터 없음";
             }

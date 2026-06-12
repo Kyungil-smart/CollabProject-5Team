@@ -238,4 +238,101 @@ public class Company : MonoBehaviour
             }
         }
     }
+
+    public void ExportCompanyData(SaveData data)
+    {
+        data.company_Name  = this.name;
+        data.company_Gold  = this.gold;
+        data.company_Level = this.level;
+
+        data.company_Popularity = this.popularity;
+        data.company_Reputation = this.reputation;
+
+        data.company_DailyCost    = this.dailyCost;
+        data.company_DailyProfit  = this.dailyProfit;
+        data.company_weeklyProfit = this.weeklyProfit;
+
+        data.completedProjectsData.Clear();
+
+        foreach (var p in completedProjects)
+        {
+            if (p == null) continue;
+
+            var pData = new ProjectCompletedSaveData
+            {
+                projectID       = p.projectID,
+                projectName     = p.projectName,
+                scale           = p.scale,
+                qualityScore    = p.qualityScore,
+                stabilityScore  = p.stabilityScore,
+                charmScore      = p.charmScore,
+                grade           = p.grade.ToString(),
+                rating          = p.Rating,
+                retentionFactor = p.RetentionFactor,
+                users           = p.users,
+                dailySales      = p.dailySales,
+                goodsSales      = p.goodsSales,
+                dailyGold       = p.dailyGold,
+                dailyCost       = p.dailyCost,
+                weeklyGoldAccum = p.weeklyGoldAccum,
+                prevWeekUsers   = p.prevWeekUsers,
+                prevWeekGold    = p.prevWeekGold,
+                isServiceOver   = p.isServiceOver,
+                
+                weeklyGoldHistoryList = new List<int>(p.weeklyGoldHistory)
+            };
+
+            data.completedProjectsData.Add(pData);
+        }
+    }
+
+    public void ImportCompanyData(SaveData data)
+    {
+        this.name  = data.company_Name; 
+        this.gold  = data.company_Gold;
+        this.level = data.company_Level;
+
+        this.popularity = data.company_Popularity;
+        this.reputation = data.company_Reputation;
+
+        completedProjects.Clear();
+        if (data.completedProjectsData != null)
+        {
+            foreach (var pData in data.completedProjectsData)
+            {
+                var p = new ProjectCompleted
+                {
+                    projectID       = pData.projectID,
+                    projectName     = pData.projectName,
+                    scale           = pData.scale,
+                    qualityScore    = pData.qualityScore,
+                    stabilityScore  = pData.stabilityScore,
+                    charmScore      = pData.charmScore,
+                    grade           = !string.IsNullOrEmpty(pData.grade) ? pData.grade[0] : 'B', 
+                    Rating          = pData.rating,
+                    RetentionFactor = pData.retentionFactor,
+                    users           = pData.users,
+                    dailySales      = pData.dailySales,
+                    goodsSales      = pData.goodsSales,
+                    dailyGold       = pData.dailyGold,
+                    dailyCost       = pData.dailyCost,
+                    weeklyGoldAccum = pData.weeklyGoldAccum,
+                    prevWeekUsers   = pData.prevWeekUsers,
+                    prevWeekGold    = pData.prevWeekGold,
+                    isServiceOver   = pData.isServiceOver
+                };
+
+                p.weeklyGoldHistory = new Queue<int>();
+                if (pData.weeklyGoldHistoryList != null)
+                {
+                    foreach (int goldValue in pData.weeklyGoldHistoryList)
+                    {
+                        p.weeklyGoldHistory.Enqueue(goldValue);
+                    }
+                }
+
+                completedProjects.Add(p);
+            }
+        }
+    }
 }
