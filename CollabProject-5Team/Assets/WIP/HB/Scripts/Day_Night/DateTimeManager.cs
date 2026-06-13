@@ -26,6 +26,8 @@ public class DateTimeManager : MonoBehaviour
     public static event Action OnNight;// 밤
     public static Action OnReportEnd;
 
+    private float playTime = 0f;
+
     #region 싱글톤 설정
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     public static void Init() => Instance = null;
@@ -40,6 +42,19 @@ public class DateTimeManager : MonoBehaviour
     private void Start()
     {
         ResetDayStatus();
+    }
+
+    void Update()
+    {
+        playTime += Time.deltaTime;
+    }
+
+    public string GetPlayTime()
+    {
+        int minutes = Mathf.FloorToInt(playTime / 60F);
+        int seconds = Mathf.FloorToInt(playTime - minutes * 60);
+
+        return string.Format("{0:00}:{1:00}", minutes, seconds);
     }
 
     /// <summary>
