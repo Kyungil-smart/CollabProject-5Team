@@ -2,6 +2,7 @@ using Cysharp.Threading.Tasks;
 using R3;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using UnityEngine;
 
@@ -259,6 +260,7 @@ public class DateTimeManager : MonoBehaviour
         data.day             = this.day.Value;
         data.isWorkCompleted = this.isWorkCompleted;
         data.talkedNpcsToday = new List<string>(this.talkedNpcsToday);
+        data.playTime        = this.playTime;
     }
 
     public void ImportSaveData(SaveData data)
@@ -271,5 +273,6 @@ public class DateTimeManager : MonoBehaviour
         this.day.Value         = data.day;
         this.isWorkCompleted   = data.isWorkCompleted;
         this.talkedNpcsToday   = new HashSet<string>(data.talkedNpcsToday);
+        this.playTime          = data.playTime;
     }
 }

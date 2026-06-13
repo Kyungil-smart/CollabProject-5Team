@@ -35,14 +35,16 @@ public class SaveLoadSystem : MonoBehaviour
 
         if(DateTimeManager.Instance != null)
         {
-            DateTimeManager.Instance.ExportSaveData(data);       // 날짜 정보 저장
-
             _EmployeeManager.Instance.ExportEmployeeData(data);  // 직원 정보 저장
 
             Company.Instance.ExportCompanyData(data);            // 회사, 지난 프로젝트 정보 저장
 
             Company.Instance.curProject.ExportProjectData(data); // 프로젝트 정보 저장
+
+            DateTimeManager.Instance.ExportSaveData(data);       // 날짜 정보 저장
         }
+
+        data.realSaveTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm");
 
         string keyName = GetSaveKey(slot);
         string jsonData = JsonUtility.ToJson(data, true);
@@ -56,7 +58,7 @@ public class SaveLoadSystem : MonoBehaviour
     {
         if (slot < 0 || slot >= MaxSaveSlots) return null;
 
-        string keyName = GetSaveKey(slot);
+        string  keyName = GetSaveKey(slot);
         string jsonData = LoadEncryptedData(keyName);
 
         if (!string.IsNullOrEmpty(jsonData))
@@ -65,35 +67,54 @@ public class SaveLoadSystem : MonoBehaviour
             {
                 SaveData data = JsonUtility.FromJson<SaveData>(jsonData);
 
-                if(DateTimeManager.Instance != null)
-                {
-                    DateTimeManager.Instance.ImportSaveData(data);       // 날짜 정보 로드
-
+                if (_EmployeeManager.Instance != null)
                     _EmployeeManager.Instance.ImportEmployeeData(data);  // 직원 정보 로드
 
+                if (Company.Instance != null)
                     Company.Instance.ImportCompanyData(data);            // 회사, 지난 프로젝트 정보 로드
 
+                if (Company.Instance != null && Company.Instance.curProject != null) 
                     Company.Instance.curProject.ImportProjectData(data); // 프로젝트 정보 로드
-                }
+
+                if(DateTimeManager.Instance != null) 
+                    DateTimeManager.Instance.ImportSaveData(data);       // 날짜 정보 로드
 
                 Debug.Log("불러오기 성공");
                 return data;
             }
             catch (Exception e)
             {
-                Debug.LogError("저장된 세이터 없음.");
+                Debug.LogError("저장된 데이터 없음.");
                 return null;
             }
 
         }
 
-        Debug.Log("저장된 데이터가 없습니다. 새 게임 시작");
+        Debug.Log("저장된 데이터가 없음. 새 게임 시작");
         return null;
     }
 
     private string GetSaveKey(int slot)
     {
         return $"SaveSlot_{slot}";
+    }
+
+    public SaveData GetSaveDataWithoutApply(int slot)
+    {
+        if (slot < 0 || slot >= MaxSaveSlots) return null;
+
+        string keyName = GetSaveKey(slot);
+        string jsonData = LoadEncryptedData(keyName);
+
+        if (!string.IsNullOrEmpty(jsonData))
+        {
+            try
+            {
+                return JsonUtility.FromJson<SaveData>(jsonData);
+            }
+            catch { return null; }
+        }
+        return null;
     }
 
     public bool HasSaveData(int slot)
