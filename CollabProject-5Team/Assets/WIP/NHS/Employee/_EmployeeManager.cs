@@ -166,5 +166,6 @@ public class _EmployeeManager : MonoBehaviour
             {
                 Debug.LogWarning($"세이브 복원 실패: ID {empSave.employeeId}번 직원을 찾을 수 없습니다.");
             }
+        }
     }
 }
