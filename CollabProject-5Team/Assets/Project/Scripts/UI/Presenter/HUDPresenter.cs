@@ -93,7 +93,7 @@ namespace GameDevTycoon.UI.Ingame
         /// </summary>
         public void RefreshHUD()
         {
-            _view.SetMoneyLabel(Company.Instance.gold);
+            _view.SetMoneyLabel(Company.Instance.gold.Value);
 
             // [TODO: DateTimeManager year/month 데이터 확정 후 시간 표시 형식 연결]
             // 현재 형식: 00년 00월 0주 월요일

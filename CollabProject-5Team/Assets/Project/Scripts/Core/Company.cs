@@ -11,7 +11,7 @@ public class Company : MonoBehaviour
 
     [Header("회사 정보")]
     public string Name;
-    public int gold;         // 보유 자금
+    public ReactiveProperty<int> gold = new(10000); // 보유 자금
     public int level;        // 회사 레벨
 
     public int ProjectSlots = 1;  // 기획 변경으로 1고정(추후 삭제)
@@ -85,7 +85,7 @@ public class Company : MonoBehaviour
     }
     public void StartNewProject(Project project)
     {
-        gold -= project.RequiredCost;
+        gold.Value -= project.RequiredCost;
 
         projects.Add(project);
         curProject = project;
@@ -183,7 +183,7 @@ public class Company : MonoBehaviour
     {
         foreach (var employee in _EmployeeManager.Instance.haveEmployees.haveEmployeeList)
         {
-            gold -= employee.so.weekSalary;
+            gold.Value -= employee.so.weekSalary;
             employee.AddAbilityDelta(PerkPolicy.CalcWeeklyAbilityDelta(employee.MutableData.loyalty));
         }
     }
@@ -200,7 +200,7 @@ public class Company : MonoBehaviour
             p.dailyGold = PerkPolicy.CalcDailyGold(p.scale, p.dailySales, p.goodsSales);
 
             p.weeklyGoldAccum += p.dailyGold;
-            gold += (p.dailyGold - p.dailyCost);
+            gold.Value += (p.dailyGold - p.dailyCost);
             p.RetentionFactor -= PerkPolicy.RETENTION_DECAY; // 유지력 감소
         }
     }
@@ -217,7 +217,7 @@ public class Company : MonoBehaviour
             PerkPolicy.TickWeeklyStats(p);
 
             // 유지비 차감
-            gold -= p.dailyCost;
+            gold.Value -= p.dailyCost;
 
             // 평판: 이번 주 매출 100G당 +1
             reputation += PerkPolicy.CalcReputationGainFromSales(p.prevWeekGold);
@@ -228,7 +228,7 @@ public class Company : MonoBehaviour
         }
 
         // 적자 패널티
-        if (gold < 0)
+        if (gold.Value < 0)
             reputation += PerkPolicy.PENALTY_DEFICIT_HIT;
 
         // TODO: 적자시 1회 빚 및 게임오버 시스템
@@ -266,7 +266,7 @@ public class Company : MonoBehaviour
     public void ExportCompanyData(SaveData data)
     {
         data.company_Name = this.name;
-        data.company_Gold = this.gold;
+        data.company_Gold = this.gold.Value;
         data.company_Level = this.level;
 
         data.company_Popularity = this.popularity;
@@ -313,7 +313,7 @@ public class Company : MonoBehaviour
     public void ImportCompanyData(SaveData data)
     {
         this.name = data.company_Name;
-        this.gold = data.company_Gold;
+        this.gold.Value = data.company_Gold;
         this.level = data.company_Level;
 
         this.popularity = data.company_Popularity;

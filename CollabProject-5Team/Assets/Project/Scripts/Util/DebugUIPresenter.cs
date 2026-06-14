@@ -53,7 +53,7 @@ public sealed class DebugUIPresenter : MonoBehaviour
             .AddTo(this);
 
         _addGoldButton.OnClickAsObservable()
-            .Subscribe(_ => Company.Instance.gold += 10000)
+            .Subscribe(_ => Company.Instance.gold.Value += 10000)
             .AddTo(this);
     }
 

@@ -386,13 +386,13 @@ namespace GameDevTycoon.UI.Ingame
         private void OnRecruitConfirmClicked()
         {
             int cost = CalculateRecruitCost();
-            if (Company.Instance.gold < cost)
+            if (Company.Instance.gold.Value < cost)
             {
                 _alertView.ShowAlertPopup("보유 자금이 부족합니다.");
                 return;
             }
 
-            Company.Instance.gold -= cost;
+            Company.Instance.gold.Value -= cost;
             _hudPresenter.RefreshHUD();
 
             foreach (var slider in _view.AllSliders)
@@ -408,13 +408,13 @@ namespace GameDevTycoon.UI.Ingame
             if (_selectedApplicant == null) return;
 
             int cost = _selectedApplicant.so.hiringCost;
-            if (Company.Instance.gold < cost)
+            if (Company.Instance.gold.Value < cost)
             {
                 _alertView.ShowAlertPopup("보유 자금이 부족합니다.");
                 return;
             }
 
-            Company.Instance.gold -= cost;
+            Company.Instance.gold.Value -= cost;
             _EmployeeManager.Instance.HireEmployee(_selectedApplicant.so.id);
             _hudPresenter.RefreshHUD();
 
@@ -450,7 +450,7 @@ namespace GameDevTycoon.UI.Ingame
                 $"퇴직금 {severancePay:N0}G를 지불해야합니다. 정말로 해고 하시겠습니까?",
                 onConfirm: () =>
                 {
-                    Company.Instance.gold -= severancePay;
+                    Company.Instance.gold.Value -= severancePay;
                     _EmployeeManager.Instance.FireEmployee(employee);
                     _hudPresenter.RefreshHUD();
 
