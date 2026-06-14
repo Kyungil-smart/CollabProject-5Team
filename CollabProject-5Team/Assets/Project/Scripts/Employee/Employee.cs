@@ -40,6 +40,14 @@ public class Employee : MonoBehaviour, IPointerClickHandler
         MutableData.property3 = newStat;
     }
 
+    public void AddAbilityDelta(int delta)
+    {
+        MutableData.ability += delta;
+        MutableData.property1 = MutableData.ability;
+        MutableData.property2 = MutableData.ability;
+        MutableData.property3 = MutableData.ability;
+    }
+
     public void OnPointerClick(PointerEventData eventData)
     {
         Debug.Log($"[직원 클릭됨] 이름: {so.Name} | 현재 피로도: {MutableData.fatigue}");

@@ -152,20 +152,42 @@ public class Company : MonoBehaviour
 
         // 회사 인기 반영
         popularity += PerkPolicy.CalcPopularityDelta(project.Grade);
+        ApplyCompletionEmployeeRewards(project);
 
         // 객체 정리
         completedProjects.Add(record);
         projects.Remove(project);
 
-        if (curProject == project)
-            curProject = projects.Count > 0 ? projects[0] : null;
+        curProject = null;
 
         activeProjectCount.Value--;
-
+#if UNITY_EDITOR
         Debug.Log($"[Company] '{record.projectName}' 완료 (등급:{record.grade} 평점:{record.rating:F1} 유저:{record.users} 일일매출:{record.dailyGold}G 유지비:{record.dailyCost}G)");
+#endif
     }
 
-    // ─ 매 영업일 호출 — 완료 프로젝트 수익 정산 ─
+    // 완료시 직원 보상 적용
+    void ApplyCompletionEmployeeRewards(Project project)
+    {
+        int abilityDelta = PerkPolicy.CalcCompletionAbilityDelta(project.Scale, project.Grade);
+        int loyaltyDelta = PerkPolicy.CalcCompletionLoyaltyDelta(project.Scale, project.Grade);
+
+        foreach (var employee in project.GetAllEmployees())
+        {
+            employee.AddAbilityDelta(abilityDelta);
+            employee.MutableData.loyalty += loyaltyDelta;
+        }
+    }
+
+    public void TickWeeklyEmployees()
+    {
+        foreach (var employee in _EmployeeManager.Instance.haveEmployees.haveEmployeeList)
+        {
+            gold -= employee.so.weekSalary;
+            employee.AddAbilityDelta(PerkPolicy.CalcWeeklyAbilityDelta(employee.MutableData.loyalty));
+        }
+    }
+
     public void TickDailyCompletedProjects()
     {
         foreach (var p in completedProjects)
