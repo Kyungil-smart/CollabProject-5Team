@@ -222,7 +222,9 @@ public class Company : MonoBehaviour
                 if (!e.hasTalkedThisWeek)
                 {
                     e.MutableData.loyalty -= 5;
-                    e.MutableData.fatigue += 10;
+                    e.MutableData.desire -= 5;
+                    e.MutableData.fatigue += 5;
+                    Debug.Log($"[C] 대화 하지않은 직원: {e.name}");
                 }
             }
         }
@@ -241,15 +243,15 @@ public class Company : MonoBehaviour
 
     public void ExportCompanyData(SaveData data)
     {
-        data.company_Name  = this.name;
-        data.company_Gold  = this.gold;
+        data.company_Name = this.name;
+        data.company_Gold = this.gold;
         data.company_Level = this.level;
 
         data.company_Popularity = this.popularity;
         data.company_Reputation = this.reputation;
 
-        data.company_DailyCost    = this.dailyCost;
-        data.company_DailyProfit  = this.dailyProfit;
+        data.company_DailyCost = this.dailyCost;
+        data.company_DailyProfit = this.dailyProfit;
         data.company_weeklyProfit = this.weeklyProfit;
 
         data.completedProjectsData.Clear();
@@ -260,25 +262,25 @@ public class Company : MonoBehaviour
 
             var pData = new ProjectCompletedSaveData
             {
-                projectID       = p.projectID,
-                projectName     = p.projectName,
-                scale           = p.scale,
-                qualityScore    = p.qualityScore,
-                stabilityScore  = p.stabilityScore,
-                charmScore      = p.charmScore,
-                grade           = p.grade.ToString(),
-                rating          = p.Rating,
+                projectID = p.projectID,
+                projectName = p.projectName,
+                scale = p.scale,
+                qualityScore = p.qualityScore,
+                stabilityScore = p.stabilityScore,
+                charmScore = p.charmScore,
+                grade = p.grade.ToString(),
+                rating = p.Rating,
                 retentionFactor = p.RetentionFactor,
-                users           = p.users,
-                dailySales      = p.dailySales,
-                goodsSales      = p.goodsSales,
-                dailyGold       = p.dailyGold,
-                dailyCost       = p.dailyCost,
+                users = p.users,
+                dailySales = p.dailySales,
+                goodsSales = p.goodsSales,
+                dailyGold = p.dailyGold,
+                dailyCost = p.dailyCost,
                 weeklyGoldAccum = p.weeklyGoldAccum,
-                prevWeekUsers   = p.prevWeekUsers,
-                prevWeekGold    = p.prevWeekGold,
-                isServiceOver   = p.isServiceOver,
-                
+                prevWeekUsers = p.prevWeekUsers,
+                prevWeekGold = p.prevWeekGold,
+                isServiceOver = p.isServiceOver,
+
                 weeklyGoldHistoryList = new List<int>(p.weeklyGoldHistory)
             };
 
@@ -288,8 +290,8 @@ public class Company : MonoBehaviour
 
     public void ImportCompanyData(SaveData data)
     {
-        this.name  = data.company_Name; 
-        this.gold  = data.company_Gold;
+        this.name = data.company_Name;
+        this.gold = data.company_Gold;
         this.level = data.company_Level;
 
         this.popularity = data.company_Popularity;
@@ -302,24 +304,24 @@ public class Company : MonoBehaviour
             {
                 var p = new ProjectCompleted
                 {
-                    projectID       = pData.projectID,
-                    projectName     = pData.projectName,
-                    scale           = pData.scale,
-                    qualityScore    = pData.qualityScore,
-                    stabilityScore  = pData.stabilityScore,
-                    charmScore      = pData.charmScore,
-                    grade           = !string.IsNullOrEmpty(pData.grade) ? pData.grade[0] : 'B', 
-                    Rating          = pData.rating,
+                    projectID = pData.projectID,
+                    projectName = pData.projectName,
+                    scale = pData.scale,
+                    qualityScore = pData.qualityScore,
+                    stabilityScore = pData.stabilityScore,
+                    charmScore = pData.charmScore,
+                    grade = !string.IsNullOrEmpty(pData.grade) ? pData.grade[0] : 'B',
+                    Rating = pData.rating,
                     RetentionFactor = pData.retentionFactor,
-                    users           = pData.users,
-                    dailySales      = pData.dailySales,
-                    goodsSales      = pData.goodsSales,
-                    dailyGold       = pData.dailyGold,
-                    dailyCost       = pData.dailyCost,
+                    users = pData.users,
+                    dailySales = pData.dailySales,
+                    goodsSales = pData.goodsSales,
+                    dailyGold = pData.dailyGold,
+                    dailyCost = pData.dailyCost,
                     weeklyGoldAccum = pData.weeklyGoldAccum,
-                    prevWeekUsers   = pData.prevWeekUsers,
-                    prevWeekGold    = pData.prevWeekGold,
-                    isServiceOver   = pData.isServiceOver
+                    prevWeekUsers = pData.prevWeekUsers,
+                    prevWeekGold = pData.prevWeekGold,
+                    isServiceOver = pData.isServiceOver
                 };
 
                 p.weeklyGoldHistory = new Queue<int>();
