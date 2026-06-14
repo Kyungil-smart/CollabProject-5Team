@@ -56,7 +56,6 @@ public class NPCInteract : MonoBehaviour, IInteractable
         // 업무 완료 후 첫 대화
         else if (state == 1)
         {
-            Debug.Log("진입");
             Dialogue.DialogueManager.Instance.StartDialogueById(emp);
             DateTimeManager.Instance.MarkTalkedThisWeek(emp);
             return;
