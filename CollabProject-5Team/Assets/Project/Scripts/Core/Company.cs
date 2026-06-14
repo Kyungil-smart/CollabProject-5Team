@@ -11,7 +11,7 @@ public class Company : MonoBehaviour
 
     [Header("회사 정보")]
     public string Name;
-    public int gold;         // 보유 자금
+    public ReactiveProperty<int> gold = new(10000); // 보유 자금
     public int level;        // 회사 레벨
 
     public int ProjectSlots = 1;  // 기획 변경으로 1고정(추후 삭제)
@@ -85,7 +85,7 @@ public class Company : MonoBehaviour
     }
     public void StartNewProject(Project project)
     {
-        gold -= project.RequiredCost;
+        gold.Value -= project.RequiredCost;
 
         projects.Add(project);
         curProject = project;
@@ -152,20 +152,42 @@ public class Company : MonoBehaviour
 
         // 회사 인기 반영
         popularity += PerkPolicy.CalcPopularityDelta(project.Grade);
+        ApplyCompletionEmployeeRewards(project);
 
         // 객체 정리
         completedProjects.Add(record);
         projects.Remove(project);
 
-        if (curProject == project)
-            curProject = projects.Count > 0 ? projects[0] : null;
+        curProject = null;
 
         activeProjectCount.Value--;
-
+#if UNITY_EDITOR
         Debug.Log($"[Company] '{record.projectName}' 완료 (등급:{record.grade} 평점:{record.rating:F1} 유저:{record.users} 일일매출:{record.dailyGold}G 유지비:{record.dailyCost}G)");
+#endif
     }
 
-    // ─ 매 영업일 호출 — 완료 프로젝트 수익 정산 ─
+    // 완료시 직원 보상 적용
+    void ApplyCompletionEmployeeRewards(Project project)
+    {
+        int abilityDelta = PerkPolicy.CalcCompletionAbilityDelta(project.Scale, project.Grade);
+        int loyaltyDelta = PerkPolicy.CalcCompletionLoyaltyDelta(project.Scale, project.Grade);
+
+        foreach (var employee in project.GetAllEmployees())
+        {
+            employee.AddAbilityDelta(abilityDelta);
+            employee.MutableData.loyalty += loyaltyDelta;
+        }
+    }
+
+    public void TickWeeklyEmployees()
+    {
+        foreach (var employee in _EmployeeManager.Instance.haveEmployees.haveEmployeeList)
+        {
+            gold.Value -= employee.so.weekSalary;
+            employee.AddAbilityDelta(PerkPolicy.CalcWeeklyAbilityDelta(employee.MutableData.loyalty));
+        }
+    }
+
     public void TickDailyCompletedProjects()
     {
         foreach (var p in completedProjects)
@@ -178,7 +200,7 @@ public class Company : MonoBehaviour
             p.dailyGold = PerkPolicy.CalcDailyGold(p.scale, p.dailySales, p.goodsSales);
 
             p.weeklyGoldAccum += p.dailyGold;
-            gold += (p.dailyGold - p.dailyCost);
+            gold.Value += (p.dailyGold - p.dailyCost);
             p.RetentionFactor -= PerkPolicy.RETENTION_DECAY; // 유지력 감소
         }
     }
@@ -195,7 +217,7 @@ public class Company : MonoBehaviour
             PerkPolicy.TickWeeklyStats(p);
 
             // 유지비 차감
-            gold -= p.dailyCost;
+            gold.Value -= p.dailyCost;
 
             // 평판: 이번 주 매출 100G당 +1
             reputation += PerkPolicy.CalcReputationGainFromSales(p.prevWeekGold);
@@ -206,7 +228,7 @@ public class Company : MonoBehaviour
         }
 
         // 적자 패널티
-        if (gold < 0)
+        if (gold.Value < 0)
             reputation += PerkPolicy.PENALTY_DEFICIT_HIT;
 
         // TODO: 적자시 1회 빚 및 게임오버 시스템
@@ -244,7 +266,7 @@ public class Company : MonoBehaviour
     public void ExportCompanyData(SaveData data)
     {
         data.company_Name = this.name;
-        data.company_Gold = this.gold;
+        data.company_Gold = this.gold.Value;
         data.company_Level = this.level;
 
         data.company_Popularity = this.popularity;
@@ -291,7 +313,7 @@ public class Company : MonoBehaviour
     public void ImportCompanyData(SaveData data)
     {
         this.name = data.company_Name;
-        this.gold = data.company_Gold;
+        this.gold.Value = data.company_Gold;
         this.level = data.company_Level;
 
         this.popularity = data.company_Popularity;

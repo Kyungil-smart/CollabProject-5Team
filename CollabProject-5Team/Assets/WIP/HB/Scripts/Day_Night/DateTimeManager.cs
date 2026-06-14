@@ -183,6 +183,7 @@ public class DateTimeManager : MonoBehaviour
         foreach (var project in Company.Instance.projects) project.ProgressNight();
 
         // 완료 프로젝트 주간 정산
+        Company.Instance.TickWeeklyEmployees();
         Company.Instance.TickWeeklyCompletedProjects();
 
         // 프로젝트의 모든 보고서가 전송될때까지 대기

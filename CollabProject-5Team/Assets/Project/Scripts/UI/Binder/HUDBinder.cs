@@ -15,34 +15,21 @@ public class HUDBinder : MonoBehaviour, IBindable<DateTimeManager>
 
     public void Bind(DateTimeManager data)
     {
-        // day가 변경될 때마다 SetTimeLabel 호출
+        // day가 변경시
         data.day.Subscribe(d =>
         {
-            // [TODO: DateTimeManager year/month 데이터 확정 후 형식 변경]
             string dayName = DateTimeManager.Instance.GetDayName();
             _view.SetTimeLabel($"{data.currentWeek.Value}주 {dayName}"); // 날짜
-            _view.SetMoneyLabel(Company.Instance.gold); // 골드
         }).AddTo(this);
         // week 변경시
         data.currentWeek.Subscribe(d =>
         {
-            // [TODO: DateTimeManager year/month 데이터 확정 후 형식 변경]
             _view.SetTimeLabel($"{data.currentWeek.Value}주 월요일"); // 날짜
-            _view.SetMoneyLabel(Company.Instance.gold); // 골드
         }).AddTo(this);
 
-        // 퇴근 버튼 클릭 시 다음 날짜로 진행
-        //_view.OnWorkStartClicked
-        //    .Subscribe(_ => data.OnClickEndDayButton())
-        //    .AddTo(this);
-
-        // 밤 종료 버튼 클릭시
-        //_view.OnNightQuitClicked
-        //    .Subscribe(_ =>
-        //    {
-        //        data.OnClickEndDayButton();
-        //        _view.SwitchToDay();
-        //    }).AddTo(this);
+        Company.Instance.gold
+            .Subscribe(gold => _view.SetMoneyLabel(gold)) // 골드
+            .AddTo(this);
     }
 
     public void SwitchToDay()
@@ -55,8 +42,6 @@ public class HUDBinder : MonoBehaviour, IBindable<DateTimeManager>
     public void SwitchToNight()
     {
         _view._dayUI.SetActive(false);
-        //if (CanvasDayBottom != null)
-        //    CanvasDayBottom.SetActive(false);
         ShowLoadingScreen();
     }
 
@@ -67,7 +52,7 @@ public class HUDBinder : MonoBehaviour, IBindable<DateTimeManager>
         DateTimeManager.OnDay += SwitchToDay;
         DateTimeManager.OnNightLoading += SwitchToNight;
 
-        SwitchToDay(); // 씬 시작 시 낮 상태로 초기화 (OnGameSceneLoad 에서 처리)
+        SwitchToDay(); // 씬 시작 시 낮 상태로 초기화 (OnGameSceneLoad?)
     }
 
     private void OnDestroy()

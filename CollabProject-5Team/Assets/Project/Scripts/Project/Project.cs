@@ -55,9 +55,6 @@ public class Project : MonoBehaviour
     // 플레이어가 역할당 1개씩 선택한 보고서
     public Dictionary<Role, Report> selectedReports = new();
 
-    // 상수
-    const int FATIGUE_LESS = 5; // 밤 종료 시 모든직원 피로도 감소량
-
     // 완료 관련 데이터
     public int nightCount;
     public ReactiveProperty<bool> isFinished = new(false); // 프로젝트 종료 여부
@@ -222,6 +219,8 @@ public class Project : MonoBehaviour
 
         float qualThisNight = 0f, stabThisNight = 0f, charmThisNight = 0f;
 
+        var acceptedReports = new HashSet<Report>(selectedReports.Values);
+
         foreach (var kv in selectedReports)
         {
             Report report = kv.Value;
@@ -244,17 +243,19 @@ public class Project : MonoBehaviour
             }
 
             // 피로도 반영
-            ReportPolicy.ApplyFatigue(report.owner, report.grade);
-
+            ReportPolicy.ApplyHighFatigueSelectionPenalty(report.owner);
+            ReportPolicy.ApplyAcceptedFatigue(report.owner, report.grade);
+#if UNITY_EDITOR
             Debug.Log($"{report.role} [{report.so.title} / {report.grade}등급] " +
                       $"직원={report.owner.so.Name} | " +
                       $"s1={weekScores[0]:F1} s2={weekScores[1]:F1} s3={weekScores[2]:F1} 가중치={(TraitTable.Get(report.trait).score * 2)} → 평균={roleAvg:F1}");
+#endif
         }
 
-        // 평일 일일 퀘스트 클리어 누적 포인트를 소급 적용 (최대 100점)
-        qualThisNight = Mathf.Min(qualThisNight + QuestManager.Instance.GetWeeklyBonus(Role.PLANNER), 100f);
-        stabThisNight = Mathf.Min(stabThisNight + QuestManager.Instance.GetWeeklyBonus(Role.PROGRAMMER), 100f);
-        charmThisNight = Mathf.Min(charmThisNight + QuestManager.Instance.GetWeeklyBonus(Role.ARTIST), 100f);
+        // 평일 일일 퀘스트 클리어 누적 포인트를 소급 적용
+        qualThisNight = qualThisNight + QuestManager.Instance.GetWeeklyBonus(Role.PLANNER);
+        stabThisNight = stabThisNight + QuestManager.Instance.GetWeeklyBonus(Role.PROGRAMMER);
+        charmThisNight = charmThisNight + QuestManager.Instance.GetWeeklyBonus(Role.ARTIST);
         QuestManager.Instance.ResetWeeklyBonus();
 
         // 주차 점수 → 누적 평균 갱신 (이전 평균에 이번 주차 값을 순차 합산)
@@ -262,19 +263,20 @@ public class Project : MonoBehaviour
         stabilityScore = (stabilityScore * (nightCount - 1) + stabThisNight) / nightCount;
         charmScore = (charmScore * (nightCount - 1) + charmThisNight) / nightCount;
         CurScore = (qualityScore + stabilityScore + charmScore) / 3f;
-
+#if UNITY_EDITOR
         Debug.Log($"[{userNamed.Value}] {nightCount}주차 점수 | " +
                   $"완성도={qualThisNight:F1} 안정성={stabThisNight:F1} 매력도={charmThisNight:F1}\n" +
                   $"  누적 평균 → 완성도={qualityScore:F1} 안정성={stabilityScore:F1} 매력도={charmScore:F1} | curScore={CurScore:F1}");
+#endif
+        foreach (var report in pendingReports)
+        {
+            if (!acceptedReports.Contains(report))
+                ReportPolicy.ApplyRejectedFatigue(report.owner);
+        }
 
         pendingReports.Clear();
         selectedReports.Clear();
         isReportDraftsReady = false;
-
-        // 모든 투입 직원 피로도 감소
-        foreach (var e in plannings) e.MutableData.fatigue -= FATIGUE_LESS;
-        foreach (var e in arts) e.MutableData.fatigue -= FATIGUE_LESS;
-        foreach (var e in programmer) e.MutableData.fatigue -= FATIGUE_LESS;
 
         if (day >= DurationDays)
             Finish();
@@ -285,11 +287,12 @@ public class Project : MonoBehaviour
     public void Finish()
     {
         isFinished.Value = true;
+#if UNITY_EDITOR
         Debug.Log($"[{userNamed.Value}] 프로젝트 완료! ({nightCount}주차) | 등급={Grade}\n" +
                   $"  최종 → 완성도={qualityScore:F1} 안정성={stabilityScore:F1} 매력도={charmScore:F1} | 평균={CurScore:F1}");
+#endif
         Company.Instance.CompleteProject(this);
     }
-
     public void ExportProjectData(SaveData data)
     {
         data.activeProjectsData.project_Id                 = Id;
