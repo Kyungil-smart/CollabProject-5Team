@@ -98,6 +98,9 @@ namespace GameDevTycoon.UI.Ingame
             _view.Show();
         }
 
+        // [DEBUG] DebugUIPresenter에서 보고서 강제 진입용. 빌드 전 제거.
+        public void OpenForDebug() => OnNightStarted();
+
         private void RefreshCoverInfo()
         {
             var dtm = DateTimeManager.Instance;
