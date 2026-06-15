@@ -47,18 +47,41 @@ public class GameManager : MonoBehaviour
         InitializeGameAsync().Forget();
     }
 
-    private void GenerateMap()
+    private void Update()
     {
-        for (int i = 0; i < _officeMaps.Count; i++)
+        if (Input.GetKeyDown(KeyCode.P))
         {
-            _officeMaps[i].SetActive(i == 0);
+            Debug.Log("P 키 입력: 사무실 업그레이드를 시도합니다.");
+            UpgradeOffice();
         }
-        _currentMapTransform = _officeMaps[0].transform;
     }
 
-    // 처음 게임 시작 시 플레이어, NPC생성 및 배치
+    private void GenerateMap()
+    {
+        if (_officeMaps == null || _officeMaps.Count == 0)
+        {
+            Debug.LogError("GameManager: _officeMaps가 비어있습니다. 인스펙터를 확인하세요.");
+            return;
+        }
+
+        for (int i = 0; i < _officeMaps.Count; i++)
+        {
+            if (_officeMaps[i] != null)
+                _officeMaps[i].SetActive(false);
+        }
+
+        if (_officeMaps[0] != null)
+        {
+            _officeMaps[0].SetActive(true);
+            _currentMapTransform = _officeMaps[0].transform;
+        }
+    }
+
+    // 처음 게임 시작 시 플레이어, NPC생성 및 배치f
     private async UniTask InitializeGameAsync()
     {
+        await UniTask.Yield();
+
         // 플레이어 생성 및 GameManager에 참조 주입
         GameObject playerObj = Instantiate(_playerPrefab, _playerSpawnPoint[_currentMapIndex].position, Quaternion.identity);
         InjectPlayer(playerObj.GetComponent<PlayerMove>());
@@ -80,11 +103,13 @@ public class GameManager : MonoBehaviour
         // 현재 맵의 인덱스가 맵의 개수와 같거나 크면 리턴
         if (_currentMapIndex + 1 >= _officeMaps.Count) return;
 
-        // 기존 맵 비활성화
-        _officeMaps[_currentMapIndex].SetActive(false);
+        // 1. 기존 맵 비활성화
+        if (_officeMaps[_currentMapIndex] != null)
+            _officeMaps[_currentMapIndex].SetActive(false);
 
-        // 인덱스 증가시키고 새 맵 활성화
+        // 2. 인덱스 증가시키고 새 맵 활성화
         _currentMapIndex++;
+
         _currentMapTransform = _officeMaps[_currentMapIndex].transform;
         _currentMapTransform.gameObject.SetActive(true);
             
@@ -97,6 +122,9 @@ public class GameManager : MonoBehaviour
 
         // 기존 NPC정리 및 새 맵에 맞춰 재배치
         LeaveWorkNPCs();
+
+        GotoWorkNPCs();
+
         SpawnNPCsAsync().Forget();
     }
 
@@ -105,6 +133,7 @@ public class GameManager : MonoBehaviour
     {
         // 의자 데이터 초기화
         _sitPoints.Clear();
+
         // 현재 맵의 자식 오브젝트 중 Seat.cs를 참조한 오브젝트 찾음
         Seat[] foundSeats = _currentMapTransform.GetComponentsInChildren<Seat>();
 
