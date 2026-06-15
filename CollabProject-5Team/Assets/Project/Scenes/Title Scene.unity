@@ -1038,7 +1038,8 @@ MonoBehaviour:
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 47865496511cdeb44baa43a144e8b4ff, type: 2}
   m_sharedMaterial: {fileID: 4134685016888260732, guid: 47865496511cdeb44baa43a144e8b4ff, type: 2}
-  m_fontSharedMaterials: []
+  m_fontSharedMaterials:
+  - {fileID: 4134685016888260732, guid: 47865496511cdeb44baa43a144e8b4ff, type: 2}
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
   m_fontColor32:
@@ -1508,7 +1509,8 @@ MonoBehaviour:
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 47865496511cdeb44baa43a144e8b4ff, type: 2}
   m_sharedMaterial: {fileID: 4134685016888260732, guid: 47865496511cdeb44baa43a144e8b4ff, type: 2}
-  m_fontSharedMaterials: []
+  m_fontSharedMaterials:
+  - {fileID: 4134685016888260732, guid: 47865496511cdeb44baa43a144e8b4ff, type: 2}
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
   m_fontColor32:
@@ -1782,7 +1784,8 @@ MonoBehaviour:
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 47865496511cdeb44baa43a144e8b4ff, type: 2}
   m_sharedMaterial: {fileID: 4134685016888260732, guid: 47865496511cdeb44baa43a144e8b4ff, type: 2}
-  m_fontSharedMaterials: []
+  m_fontSharedMaterials:
+  - {fileID: 4134685016888260732, guid: 47865496511cdeb44baa43a144e8b4ff, type: 2}
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
   m_fontColor32:
@@ -2567,9 +2570,6 @@ MonoBehaviour:
   _noticeCommentLabel: {fileID: 0}
   _noticeEmployeeNameLabel: {fileID: 0}
   _noticeEmployeeIcon: {fileID: 0}
-  _synergyPopup: {fileID: 0}
-  _synergyScrollContent: {fileID: 0}
-  _synergyConfirmButton: {fileID: 0}
 --- !u!114 &1680696603
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3542,8 +3542,16 @@ MonoBehaviour:
   _settingsPanel: {fileID: 2335035607027468631}
   _bgmSlider: {fileID: 0}
   _sfxSlider: {fileID: 0}
-  _closeButton: {fileID: 7989866640850567719}
-  _gameQuitButton: {fileID: 317622781261161572}
+  _confirmButton: {fileID: 0}
+  _bgmToggle: {fileID: 0}
+  _bgmToggleLabel: {fileID: 0}
+  _bgmToggleOnSprite: {fileID: 0}
+  _bgmToggleOffSprite: {fileID: 0}
+  _sfxToggle: {fileID: 0}
+  _sfxToggleLabel: {fileID: 0}
+  _sfxToggleOnSprite: {fileID: 0}
+  _sfxToggleOffSprite: {fileID: 0}
+  _titleButton: {fileID: 0}
 --- !u!222 &4390339873452580349
 CanvasRenderer:
   m_ObjectHideFlags: 0
