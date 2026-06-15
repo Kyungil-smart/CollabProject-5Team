@@ -60,21 +60,22 @@ public class GameManager : MonoBehaviour
     {
         if (_officeMaps == null || _officeMaps.Count == 0)
         {
-            Debug.LogError("GameManager: _officeMaps가 비어있습니다. 인스펙터를 확인하세요.");
+            Debug.LogError("GameManager: _officeMaps가 비어있습니다.");
             return;
         }
 
-        for (int i = 0; i < _officeMaps.Count; i++)
+        if (_currentMapTransform != null)
         {
-            if (_officeMaps[i] != null)
-                _officeMaps[i].SetActive(false);
+            Destroy(_currentMapTransform.gameObject);
+            _currentMapTransform = null;
         }
 
-        if (_officeMaps[0] != null)
-        {
-            _officeMaps[0].SetActive(true);
-            _currentMapTransform = _officeMaps[0].transform;
-        }
+        GameObject firstMap = Instantiate(_officeMaps[0], Vector3.zero, Quaternion.identity);
+        firstMap.SetActive(true);
+        _currentMapTransform = firstMap.transform;
+        _currentMapIndex = 0;
+
+        Debug.Log($"초기 맵 생성 완료: {_officeMaps[0].name}");
     }
 
     // 처음 게임 시작 시 플레이어, NPC생성 및 배치f
@@ -103,21 +104,26 @@ public class GameManager : MonoBehaviour
         // 현재 맵의 인덱스가 맵의 개수와 같거나 크면 리턴
         if (_currentMapIndex + 1 >= _officeMaps.Count) return;
 
-        // 1. 기존 맵 비활성화
-        if (_officeMaps[_currentMapIndex] != null)
-            _officeMaps[_currentMapIndex].SetActive(false);
+        // 1. 기존 맵 파괴
+        if (_currentMapTransform != null)
+        {
+            Debug.Log($"기존 맵 제거 시도: {_currentMapTransform.name}");
+            Destroy(_currentMapTransform.gameObject);
+            _currentMapTransform = null;        // ← 이 줄이 중요!
+        }
 
-        // 2. 인덱스 증가시키고 새 맵 활성화
+        // 2. 인덱스 증가시키고 새 맵 생성
         _currentMapIndex++;
 
-        _currentMapTransform = _officeMaps[_currentMapIndex].transform;
-        _currentMapTransform.gameObject.SetActive(true);
-            
+        GameObject newMap = Instantiate(_officeMaps[_currentMapIndex], Vector3.zero, Quaternion.identity);
+        _currentMapTransform = newMap.transform;
+        newMap.SetActive(true);
+
         // 의자 좌표 갱신
         RefreshSitPoints();
 
         // 플레이어 위치 갱신
-        if (player != null && _playerSpawnPoint != null)
+        if (player != null && _playerSpawnPoint[_currentMapIndex] != null)
             player.transform.position = _playerSpawnPoint[_currentMapIndex].position;
 
         // 기존 NPC정리 및 새 맵에 맞춰 재배치
@@ -163,7 +169,7 @@ public class GameManager : MonoBehaviour
                 continue;
         
             // NPC 생성
-            GameObject npcObj = Instantiate(prefab, NpcSpawnPoint[0].position, Quaternion.identity);
+            GameObject npcObj = Instantiate(prefab, NpcSpawnPoint[_currentMapIndex].position, Quaternion.identity);
             npcObj.GetComponent<Employee>().MutableData = emp.MutableData;
 
             // 데이터 주입            
