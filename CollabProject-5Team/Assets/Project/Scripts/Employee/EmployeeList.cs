@@ -20,11 +20,6 @@ public class EmployeeList
         {
             if (prefab == null) continue;
             Employee obj = prefab.GetComponent<Employee>();
-            if (obj == null || obj.so == null)
-            {
-                Debug.LogWarning($"[EmployeeList] 프리팹 {prefab.name}에 EmployeeObj 또는 ImmutableData가 없습니다.");
-                continue;
-            }
             int id = obj.so.id;
             _allEmployeePrefabs[id] = prefab;
             _leftEmployees[id]      = prefab;

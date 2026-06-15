@@ -55,6 +55,17 @@ public class EmployeeSaveData
     public int preDesire;
     public int preLoyalty;
     public int preFatigue;
+
+    public EmployeeWorkStatus workStatus;
+
+    public int trainingRemainingWeeks;
+    public int trainingStartedWeek;
+    public string trainingCourseName;
+    public int trainingCost;
+    public int trainingMinAbilityDelta;
+    public int trainingMaxAbilityDelta;
+    public float trainingFailureRate;
+    public EmployeeMutableData trainingStartData;
 }
 
 [System.Serializable]

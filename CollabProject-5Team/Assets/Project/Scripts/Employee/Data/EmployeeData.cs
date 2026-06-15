@@ -1,6 +1,13 @@
 using System;
 using UnityEngine;
 
+public enum EmployeeWorkStatus
+{
+    Standby,
+    InProject,
+    InTraining
+}
+
 public enum Role
 {
     PROGRAMMER, PLANNER, ARTIST, MARKETING, QA

@@ -1,6 +1,4 @@
-using Dialogue;
 using UnityEngine;
-using UnityEngine.EventSystems;
 
 // 직원 게임오브젝트에 부착 방식
 public class Employee : MonoBehaviour
@@ -12,6 +10,8 @@ public class Employee : MonoBehaviour
 
     [Header("플래그")]
     public bool hasTalkedThisWeek;
+
+    public EmployeeWorkStatus WorkStatus;
 
     public void Init()
     {
