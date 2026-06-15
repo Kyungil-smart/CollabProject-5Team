@@ -155,6 +155,7 @@ public class Company : MonoBehaviour
         ApplyCompletionEmployeeRewards(project);
 
         // 객체 정리
+        _EmployeeManager.Instance.ReleaseProjectEmployees(project.GetAllEmployees());
         completedProjects.Add(record);
         projects.Remove(project);
 
@@ -181,9 +182,13 @@ public class Company : MonoBehaviour
 
     public void TickWeeklyEmployees()
     {
-        foreach (var employee in _EmployeeManager.Instance.haveEmployees.haveEmployeeList)
+        var employeeManager = _EmployeeManager.Instance;
+
+        foreach (var employee in employeeManager.haveEmployees.haveEmployeeList)
         {
             gold.Value -= employee.so.weekSalary;
+            if (employee.WorkStatus != EmployeeWorkStatus.InProject)
+                continue; // 프로젝트 중인 직원만 능력치 증가
             employee.AddAbilityDelta(PerkPolicy.CalcWeeklyAbilityDelta(employee.MutableData.loyalty));
         }
     }

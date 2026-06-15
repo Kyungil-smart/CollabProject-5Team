@@ -101,12 +101,6 @@ public class Project : MonoBehaviour
 
     public bool HireEmployee(Employee e)
     {
-        if (e == null)
-        {
-            Debug.Log("[Project] 고용할 직원이 null 입니다");
-            return false;
-        }
-
         Employee[] targetArray = null;
         switch (e.so.role)
         {
@@ -124,12 +118,18 @@ public class Project : MonoBehaviour
                 return false;
         }
 
+        if (Array.IndexOf(targetArray, e) >= 0)
+            return true;
+
         int emptyIndex = Array.FindIndex(targetArray, m => m == null);
         if (emptyIndex < 0)
         {
             Debug.LogWarning($"[{userNamed.Value}] {e.so.role} 파트 투입 슬롯이 가득 찼습니다.");
             return false;
         }
+
+        _EmployeeManager.Instance.MarkProjectEmployee(e); //직원 상태 변경
+
 
         targetArray[emptyIndex] = e;
         Debug.Log($"[{userNamed.Value}] {e.so.Name} 직원이 {e.so.role} 파트로 투입되었습니다.");
@@ -183,7 +183,7 @@ public class Project : MonoBehaviour
         // 주간 정산
         foreach (var e in GetAllEmployees())
         {
-           e.SaveCurrentData();
+            e.SaveCurrentData();
         }
 
         // 보고서 산출
@@ -231,13 +231,16 @@ public class Project : MonoBehaviour
 
             switch (report.role)
             {
-                case Role.PLANNER: qualThisNight = roleAvg;
+                case Role.PLANNER:
+                    qualThisNight = roleAvg;
                     if (nightCount == 1) genre = report.so.uiCategory;
                     break;
-                case Role.ARTIST: charmThisNight = roleAvg;
+                case Role.ARTIST:
+                    charmThisNight = roleAvg;
                     if (nightCount == 1) artStyle = report.so.uiCategory;
                     break;
-                case Role.PROGRAMMER: stabThisNight = roleAvg;
+                case Role.PROGRAMMER:
+                    stabThisNight = roleAvg;
                     if (nightCount == 1) engine = report.so.uiCategory;
                     break;
             }
@@ -293,38 +296,39 @@ public class Project : MonoBehaviour
 #endif
         Company.Instance.CompleteProject(this);
     }
+
+    #region 세이브/로드
     public void ExportProjectData(SaveData data)
     {
-        data.activeProjectsData.project_Id                 = Id;
-        data.activeProjectsData.project_Name               = name;
-        data.activeProjectsData.project_Desc               = Desc;
-        data.activeProjectsData.project_Scale              = Scale;
-        data.activeProjectsData.project_RequiredCost       = RequiredCost;
+        data.activeProjectsData.project_Id = Id;
+        data.activeProjectsData.project_Name = name;
+        data.activeProjectsData.project_Desc = Desc;
+        data.activeProjectsData.project_Scale = Scale;
+        data.activeProjectsData.project_RequiredCost = RequiredCost;
         data.activeProjectsData.project_MaxEmployeePerpart = MaxEmployeePerPart;
-        data.activeProjectsData.project_DurationDays       = DurationDays;
+        data.activeProjectsData.project_DurationDays = DurationDays;
 
         data.activeProjectsData.project_day = day;
         data.activeProjectsData.project_userNamed = userNamed.Value;
 
-        data.activeProjectsData.project_PlanningEmployeeIds   = ConvertEmpArrayToIdList(plannings);
+        data.activeProjectsData.project_PlanningEmployeeIds = ConvertEmpArrayToIdList(plannings);
         data.activeProjectsData.project_ProgrammerEmployeeIds = ConvertEmpArrayToIdList(programmer);
-        data.activeProjectsData.project_ArtistEmployeeIds     = ConvertEmpArrayToIdList(arts);
+        data.activeProjectsData.project_ArtistEmployeeIds = ConvertEmpArrayToIdList(arts);
 
-        data.activeProjectsData.project_QualityScore   = qualityScore;
+        data.activeProjectsData.project_QualityScore = qualityScore;
         data.activeProjectsData.project_StabilityScore = stabilityScore;
-        data.activeProjectsData.project_CharmScore     = charmScore;
-        data.activeProjectsData.project_CurScore       = CurScore;
+        data.activeProjectsData.project_CharmScore = charmScore;
+        data.activeProjectsData.project_CurScore = CurScore;
     }
-
     public void ImportProjectData(SaveData data)
     {
-        this.so.id                 = data.activeProjectsData.project_Id;
-        this.so.name               = data.activeProjectsData.project_Name;
-        this.so.desc               = data.activeProjectsData.project_Desc;
-        this.so.scale              = data.activeProjectsData.project_Scale;
-        this.so.requiredCost       = data.activeProjectsData.project_RequiredCost;
+        this.so.id = data.activeProjectsData.project_Id;
+        this.so.name = data.activeProjectsData.project_Name;
+        this.so.desc = data.activeProjectsData.project_Desc;
+        this.so.scale = data.activeProjectsData.project_Scale;
+        this.so.requiredCost = data.activeProjectsData.project_RequiredCost;
         this.so.maxEmployeePerPart = data.activeProjectsData.project_MaxEmployeePerpart;
-        this.so.durationDays       = data.activeProjectsData.project_DurationDays;
+        this.so.durationDays = data.activeProjectsData.project_DurationDays;
 
         this.day = data.activeProjectsData.project_day;
 
@@ -332,14 +336,13 @@ public class Project : MonoBehaviour
         this.userNamed.Value = data.activeProjectsData.project_userNamed;
 
         this.qualityScore = data.activeProjectsData.project_QualityScore;
-        this.charmScore   = data.activeProjectsData.project_CharmScore;
-        this.CurScore     = data.activeProjectsData.project_CurScore;
+        this.charmScore = data.activeProjectsData.project_CharmScore;
+        this.CurScore = data.activeProjectsData.project_CurScore;
 
-        RestoreEmployeeArray(data.activeProjectsData.project_PlanningEmployeeIds   ,  plannings);
-        RestoreEmployeeArray(data.activeProjectsData.project_ProgrammerEmployeeIds , programmer);
-        RestoreEmployeeArray(data.activeProjectsData.project_ArtistEmployeeIds     ,       arts);
+        RestoreEmployeeArray(data.activeProjectsData.project_PlanningEmployeeIds, plannings);
+        RestoreEmployeeArray(data.activeProjectsData.project_ProgrammerEmployeeIds, programmer);
+        RestoreEmployeeArray(data.activeProjectsData.project_ArtistEmployeeIds, arts);
     }
-
     private List<int> ConvertEmpArrayToIdList(Employee[] arr)
     {
         var list = new List<int>();
@@ -351,10 +354,9 @@ public class Project : MonoBehaviour
         }
         return list;
     }
-
     private void RestoreEmployeeArray(List<int> ids, Employee[] targetArr)
     {
-        if (ids == null || targetArr == null || _EmployeeManager.Instance == null) return;
+        if (ids == null || targetArr == null) return;
 
         var hiredList = _EmployeeManager.Instance.haveEmployees.haveEmployeeList;
 
@@ -368,7 +370,10 @@ public class Project : MonoBehaviour
             else
             {
                 targetArr[i] = hiredList.Find(e => e.so.id == empId);
+                if (targetArr[i] != null)
+                    _EmployeeManager.Instance.MarkProjectEmployee(targetArr[i]);
             }
         }
     }
+    #endregion
 }
