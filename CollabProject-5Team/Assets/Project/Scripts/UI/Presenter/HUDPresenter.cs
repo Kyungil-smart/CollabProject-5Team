@@ -37,6 +37,7 @@ namespace GameDevTycoon.UI.Ingame
         private void Start()
         {
             BindButtons();
+            BindQuestBanner();
             DateTimeManager.OnReportEnd += SwitchToNight;
         }
 
@@ -87,6 +88,45 @@ namespace GameDevTycoon.UI.Ingame
             Company.Instance.activeProjectCount
                 .Subscribe(count => _view.SetNightQuitInteractable(count))
                 .AddTo(this);
+        }
+
+        // QuestManager 상태/진행도 변화를 퀘스트 배너에 반영
+        private void BindQuestBanner()
+        {
+            QuestManager.Instance.dailyQuestState
+                .Subscribe(OnDailyQuestStateChanged)
+                .AddTo(this);
+
+            QuestManager.Instance.dailyQuestProgress
+                .Subscribe(progress =>
+                {
+                    DailyQuest quest = QuestManager.Instance.curDailyQuest;
+                    if (quest == null) return;
+
+                    _view.SetQuestBannerProgress(progress, quest.TargetCount);
+                })
+                .AddTo(this);
+        }
+
+        private void OnDailyQuestStateChanged(QuestState state)
+        {
+            DailyQuest quest = QuestManager.Instance.curDailyQuest;
+            if (quest == null) return;
+
+            switch (state)
+            {
+                case QuestState.Playing:
+                    _view.ShowQuestBanner(quest.so.Name, quest.curCount, quest.TargetCount);
+                    break;
+
+                case QuestState.End:
+                    _view.SetQuestBannerCompleted();
+                    break;
+
+                case QuestState.Ready:
+                    _view.HideQuestBanner();
+                    break;
+            }
         }
 
         /// <summary>
