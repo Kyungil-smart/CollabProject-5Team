@@ -59,6 +59,9 @@ public class QuestInteract : MonoBehaviour, IPointerClickHandler, IPointerDownHa
         if (progressGauge != null)
             progressGauge.localScale = new Vector3(Mathf.Clamp01(_holdTime / quest.so.targetCount), 1f, 1f);
 
+        // 퀘스트 배너 진행도 실시간 갱신 (1초 단위)
+        QuestManager.Instance.SetDisplayProgress(Mathf.FloorToInt(_holdTime));
+
         if (_holdTime >= quest.so.targetCount)
         {
             _isHolding = false;
@@ -84,6 +87,10 @@ public class QuestInteract : MonoBehaviour, IPointerClickHandler, IPointerDownHa
         int tapsNeeded = quest.so.ActiveObjectCount > 1 ? 1 : quest.so.targetCount;
 
         _tapCount++;
+
+        // 퀘스트 배너 진행도 실시간 갱신
+        QuestManager.Instance.SetDisplayProgress(_tapCount);
+
         if (_tapCount >= tapsNeeded)
             _questObject.CompleteInteraction();
     }

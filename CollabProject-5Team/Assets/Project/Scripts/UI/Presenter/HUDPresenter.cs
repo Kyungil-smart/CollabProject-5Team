@@ -17,7 +17,7 @@ namespace GameDevTycoon.UI.Ingame
         [SerializeField] private SettingsPresenter _settingsPresenter;
         [SerializeField] private SavePresenter _savePresenter;
 
-        // [Header("외부 연결")]
+        [Header("외부 연결")]
         //[SerializeField] private ~Presenter _(IBottomNightUI)Presenter; 추후 IBottomNightUI가 추가로 존재하면 연결
 
         [Header("업무 시작 시 이동할 데스크탑 프리팹")]
@@ -25,16 +25,19 @@ namespace GameDevTycoon.UI.Ingame
 
         private HRPresenter _hrPresenter;
         private ProjectPresenter _projectPresenter;
+        private CompanyPresenter _companyPresenter;
 
         private void Awake()
         {
             _hrPresenter = FindObjectOfType<HRPresenter>(true);
             _projectPresenter = FindObjectOfType<ProjectPresenter>(true);
+            _companyPresenter = FindObjectOfType<CompanyPresenter>(true);
         }
 
         private void Start()
         {
             BindButtons();
+            BindQuestBanner();
             DateTimeManager.OnReportEnd += SwitchToNight;
         }
 
@@ -45,7 +48,7 @@ namespace GameDevTycoon.UI.Ingame
 
         public void SwitchToNight()
         {
-            CloseAllBottomPopups();  // HR, Project 닫기
+            CloseAllBottomPopups();  // HR, Project, Company 닫기
             _settingsPresenter.Hide();  // 세팅도 같이 닫기
             _view.SwitchToNight();
         }
@@ -87,17 +90,52 @@ namespace GameDevTycoon.UI.Ingame
                 .AddTo(this);
         }
 
+        // QuestManager 상태/진행도 변화를 퀘스트 배너에 반영
+        private void BindQuestBanner()
+        {
+            QuestManager.Instance.dailyQuestState
+                .Subscribe(OnDailyQuestStateChanged)
+                .AddTo(this);
+
+            QuestManager.Instance.dailyQuestProgress
+                .Subscribe(progress =>
+                {
+                    DailyQuest quest = QuestManager.Instance.curDailyQuest;
+                    if (quest == null) return;
+
+                    _view.SetQuestBannerProgress(progress, quest.TargetCount);
+                })
+                .AddTo(this);
+        }
+
+        private void OnDailyQuestStateChanged(QuestState state)
+        {
+            DailyQuest quest = QuestManager.Instance.curDailyQuest;
+            if (quest == null) return;
+
+            switch (state)
+            {
+                case QuestState.Playing:
+                    _view.ShowQuestBanner(quest.so.Name, quest.curCount, quest.TargetCount);
+                    break;
+
+                case QuestState.End:
+                    _view.SetQuestBannerCompleted();
+                    break;
+
+                case QuestState.Ready:
+                    _view.HideQuestBanner();
+                    break;
+            }
+        }
+
         /// <summary>
-        /// Company.gold 변경 시점에 외부에서 호출.
-        /// ReactiveProperty 전환 전까지 사용.
+        /// DateTimeManager year/month 확정 후 시간 표시 형식 연결.
         /// </summary>
         public void RefreshHUD()
         {
-            _view.SetMoneyLabel(Company.Instance.gold.Value);
-
             // [TODO: DateTimeManager year/month 데이터 확정 후 시간 표시 형식 연결]
             // 현재 형식: 00년 00월 0주 월요일
-            // DateTimeManager에 year/month 계산 메서드 또는 데이터 추가 요청 필요
             var dtm = DateTimeManager.Instance;
             _view.SetTimeLabel($"{dtm.currentWeek.Value}주 {dtm.GetDayName()}");
         }
@@ -128,7 +166,7 @@ namespace GameDevTycoon.UI.Ingame
 
         private void OnCompanyClicked()
         {
-            //_companyPresenter.Show();
+            ToggleBottomPopup(_companyPresenter);
         }
 
         private void OnNightQuitClicked()
@@ -171,6 +209,11 @@ namespace GameDevTycoon.UI.Ingame
             if (yielded.Add(_projectPresenter))
             {
                 yield return _projectPresenter;
+            }
+
+            if (yielded.Add(_companyPresenter))
+            {
+                yield return _companyPresenter;
             }
             //추후 IBottomNightUI가 추가로 존재하면 여기에 추가
         }

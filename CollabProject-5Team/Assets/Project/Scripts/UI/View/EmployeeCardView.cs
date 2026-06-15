@@ -22,6 +22,8 @@ namespace GameDevTycoon.UI.Ingame
         [Header("태그 프리팹")]
         [SerializeField] private DepartmentTagView _departmentTagPrefab;
 
+        private DepartmentTagView _departmentTag;
+
         public void Bind(Employee employee)
         {
             var so = employee.so;
@@ -31,9 +33,9 @@ namespace GameDevTycoon.UI.Ingame
             _nameLabel.text = so.Name;
             _abilityValue.text = mutable.ability.ToString();
 
-            ClearAnchor(_departmentTagAnchor);
-            var tag = Instantiate(_departmentTagPrefab, _departmentTagAnchor);
-            tag.Bind(so.role);
+            if (_departmentTag == null)
+                _departmentTag = Instantiate(_departmentTagPrefab, _departmentTagAnchor);
+            _departmentTag.Bind(so.role);
 
             _deployBadge.SetActive(IsDeployed(employee));
 
@@ -58,10 +60,5 @@ namespace GameDevTycoon.UI.Ingame
             return false;
         }
 
-        private static void ClearAnchor(Transform anchor)
-        {
-            foreach (Transform child in anchor)
-                Destroy(child.gameObject);
-        }
     }
 }

@@ -82,7 +82,7 @@ public class SaveLoadSystem : MonoBehaviour
                 Debug.Log("불러오기 성공");
                 return data;
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 Debug.LogError("저장된 데이터 없음.");
                 return null;
@@ -163,7 +163,7 @@ public class SaveLoadSystem : MonoBehaviour
 
             return reader.ReadToEnd();
         }
-        catch (Exception e)
+        catch (Exception)
         {
             Debug.Log("복호화 실패");
             return null;

@@ -198,17 +198,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &116338635 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 4077862372101270907, guid: e41d67e75d3a4d74887e02a74341ded9, type: 3}
-  m_PrefabInstance: {fileID: 7904083483452275291}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: dbd20e83e34c0514d869afbaea0a4704, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1001 &183164564
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1566,6 +1555,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 235594752814185094, guid: d50dd60ba5d683e4d980e6a3c7b748b8, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 713473367287974635, guid: d50dd60ba5d683e4d980e6a3c7b748b8, type: 3}
       propertyPath: m_Padding.m_Top
       value: 75
@@ -2249,7 +2242,7 @@ PrefabInstance:
     - target: {fileID: 2838642515319906603, guid: 93dd82dcc61417c458e403da87a9c416, type: 3}
       propertyPath: _settingsPresenter
       value: 
-      objectReference: {fileID: 116338635}
+      objectReference: {fileID: 0}
     - target: {fileID: 9087901013417183150, guid: 93dd82dcc61417c458e403da87a9c416, type: 3}
       propertyPath: m_Name
       value: Canvas_HUD
