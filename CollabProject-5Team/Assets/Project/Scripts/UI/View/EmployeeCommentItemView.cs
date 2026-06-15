@@ -19,6 +19,8 @@ namespace GameDevTycoon.UI.Ingame
         [Header("태그 프리팹")]
         [SerializeField] private DepartmentTagView _departmentTagPrefab;
 
+        private DepartmentTagView _departmentTag;
+
         [Header("충성도 변화")]
         [SerializeField] private TextMeshProUGUI _loyaltyChangeTitleLabel;
         [SerializeField] private TextMeshProUGUI _loyaltyChangeValue;
@@ -39,9 +41,9 @@ namespace GameDevTycoon.UI.Ingame
             _profileIcon.sprite = GetProfileSprite(so, mutable);
             _nameLabel.text = so.Name;
 
-            ClearAnchor(_departmentTagAnchor);
-            var tag = Instantiate(_departmentTagPrefab, _departmentTagAnchor);
-            tag.Bind(so.role);
+            if (_departmentTag == null)
+                _departmentTag = Instantiate(_departmentTagPrefab, _departmentTagAnchor);
+            _departmentTag.Bind(so.role);
 
             // [TODO: 주차별 충성도 변화량 데이터 구조 확정 후 실제 값 연결]
             SetLoyaltyChange(0);
@@ -104,10 +106,5 @@ namespace GameDevTycoon.UI.Ingame
             return so.iconNormal;
         }
 
-        private static void ClearAnchor(Transform anchor)
-        {
-            foreach (Transform child in anchor)
-                Destroy(child.gameObject);
-        }
     }
 }

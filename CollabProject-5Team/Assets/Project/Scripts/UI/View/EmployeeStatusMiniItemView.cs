@@ -21,6 +21,9 @@ namespace GameDevTycoon.UI.Ingame
         [SerializeField] private DepartmentTagView _departmentTagPrefab;
         [SerializeField] private MBTITagView _mbtiTagPrefab;
 
+        private DepartmentTagView _departmentTag;
+        private MBTITagView _mbtiTag;
+
         [Header("의욕도")]
         [SerializeField] private Slider _motivationBar;
         [SerializeField] private TextMeshProUGUI _motivationValue;
@@ -39,13 +42,13 @@ namespace GameDevTycoon.UI.Ingame
             _profileIcon.sprite = GetProfileSprite(so, mutable);
             _nameLabel.text = so.Name;
 
-            ClearAnchor(_departmentTagAnchor);
-            var deptTag = Instantiate(_departmentTagPrefab, _departmentTagAnchor);
-            deptTag.Bind(so.role);
+            if (_departmentTag == null)
+                _departmentTag = Instantiate(_departmentTagPrefab, _departmentTagAnchor);
+            _departmentTag.Bind(so.role);
 
-            ClearAnchor(_mbtiTagAnchor);
-            var mbtiTag = Instantiate(_mbtiTagPrefab, _mbtiTagAnchor);
-            mbtiTag.Bind(so.mbtiParsed);
+            if (_mbtiTag == null)
+                _mbtiTag = Instantiate(_mbtiTagPrefab, _mbtiTagAnchor);
+            _mbtiTag.Bind(so.mbtiParsed);
 
             _motivationBar.value = mutable.desire;
             _motivationValue.text = mutable.desire.ToString();
@@ -80,10 +83,5 @@ namespace GameDevTycoon.UI.Ingame
             return so.iconNormal;
         }
 
-        private static void ClearAnchor(Transform anchor)
-        {
-            foreach (Transform child in anchor)
-                Destroy(child.gameObject);
-        }
     }
 }
