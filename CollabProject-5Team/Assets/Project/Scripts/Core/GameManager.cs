@@ -10,7 +10,7 @@ public class GameManager : MonoBehaviour
 
     [Header("맵 관리")]
     [SerializeField] private List<GameObject> _officeMaps;              // 사무실 맵 프리팹
-    private int _currentMapIndex = 0;
+    private int _currentMapIndex = 1;
 
     [Header("프리팹")]
     [SerializeField] private GameObject _playerPrefab;                  // 플레이어 프리팹
@@ -50,9 +50,17 @@ public class GameManager : MonoBehaviour
     {
         for (int i = 0; i < _officeMaps.Count; i++)
         {
-            _officeMaps[i].SetActive(i == 0);
+            _officeMaps[i].SetActive(i == _currentMapIndex);
         }
-        _map = _officeMaps[0].transform;
+        _map = _officeMaps[_currentMapIndex].transform;
+
+        var mapInfo = _map.GetComponent<MapInfo>();
+        if (mapInfo != null)
+        {
+            _playerSpawnPoint = mapInfo.SpawnPoint;
+            NpcSpawnPoint = mapInfo.SpawnPoint;
+        }
+
     }
 
     // 처음 게임 시작 시 플레이어, NPC생성 및 배치
@@ -89,6 +97,13 @@ public class GameManager : MonoBehaviour
         _currentMapIndex++;
         _map = _officeMaps[_currentMapIndex].transform;
         _map.gameObject.SetActive(true);
+
+        var MapInfo = _map.GetComponent<MapInfo>();
+        if (MapInfo != null)
+        {
+            _playerSpawnPoint = MapInfo.SpawnPoint;
+            NpcSpawnPoint = MapInfo.SpawnPoint;
+        }
 
         // 의자 좌표 갱신
         RefreshSitPoints();
@@ -170,8 +185,6 @@ public class GameManager : MonoBehaviour
             if (npc != null)
             {
                 npc.ChangeState(new NPCLeave());
-
-                npc.transform.position = NpcSpawnPoint.position;
             }
         }
     }

@@ -31,8 +31,8 @@ public class CameraManager : MonoBehaviour
     private bool _isZooming = false;                                          // 줌 상태 여부
 
     [Header("맵의 카메라 움직임 제한 영역")]
-    [SerializeField] private float _diamondWidth = 15f;                       // 맵 중심에서 오른쪽 꼭지점까지의 길이
-    [SerializeField] private float _diamondLength = 15f;                      // 맵 중심에서 위쪽 꼭지점까지의 길이
+    [SerializeField] private float _diamondWidth = 10f;                       // 맵 중심에서 오른쪽 꼭지점까지의 길이
+    [SerializeField] private float _diamondLength = 10f;                      // 맵 중심에서 위쪽 꼭지점까지의 길이
 
     public SerializableReactiveProperty<bool> IsUIOpen { get; private set; } = new SerializableReactiveProperty<bool>(false);   // UI가 열려있는지
     private System.Collections.Generic.List<RaycastResult> _uiRaycastResults = new System.Collections.Generic.List<RaycastResult>(); // Raycast가 켜져있는 UI창이 있는지 찾아서 리스트화
