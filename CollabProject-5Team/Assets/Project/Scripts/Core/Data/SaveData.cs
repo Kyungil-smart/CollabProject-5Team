@@ -5,6 +5,8 @@ using UnityEngine;
 [Serializable]
 public class SaveData
 {
+    public string realSaveTime;
+
     // DateTimeManager 저장
     [Header("Date Data")]
     public int          currentWeek;
@@ -14,6 +16,7 @@ public class SaveData
     public bool         isWorkCompleted;
     public List<string> talkedNpcsToday;
     public List<int>    talkedEmployeeIdsThisWeek;
+    public float        playTime;
 
     // Employee 저장
     public List<EmployeeSaveData> savedEmployees = new List<EmployeeSaveData>();
