@@ -13,26 +13,25 @@ namespace GameDevTycoon.UI.Ingame
     /// </summary>
     public sealed class ReportPresenter : MonoBehaviour
     {
-        [SerializeField] private ReportView   _view;
+        [SerializeField] private ReportView _view;
         [SerializeField] private HUDPresenter _hudPresenter;
 
         [Header("직군별 보고서 Next Buttons")]
-        [SerializeField]        Button[] _nextButtons;
+        [SerializeField] Button[] _nextButtons;
 
         [Header("프리팹")]
-        [SerializeField] private GameObject _employeeStatusMiniItemPrefab;
+        [SerializeField] private EmployeeStatusMiniItemView _employeeStatusMiniItemPrefab;
         [SerializeField] private ReportCardView _reportCardViewPrefab;
+
+        private UIObjectPool<EmployeeStatusMiniItemView> _employeeStatusMiniItemPool;
 
         // 직군 진행 순서
         static readonly Role[] RoleOrder = { Role.PLANNER, Role.ARTIST, Role.PROGRAMMER };
 
-        // [DEBUG] DebugUIPresenter에서 보고서 강제 진입용. 빌드 전 제거.
-        public void OpenForDebug() => OnNightStarted();
-
-        private int              _roleIndex;
-        private List<Report>     _currentReports;
+        private int _roleIndex;
+        private List<Report> _currentReports;
         private List<ReportCardView> _currentCards = new();
-        private Report           _viewingReport;
+        private Report _viewingReport;
 
         private void OnEnable()
         {
@@ -46,6 +45,7 @@ namespace GameDevTycoon.UI.Ingame
 
         private void Start()
         {
+            _employeeStatusMiniItemPool = new UIObjectPool<EmployeeStatusMiniItemView>(_employeeStatusMiniItemPrefab, _view.SlidePreviewContent, initialSize: 6);
             BindButtons();
         }
 
@@ -56,7 +56,7 @@ namespace GameDevTycoon.UI.Ingame
                 {
                     _view.ShowPanel(ReportPanel.EmployeeComment);
                     // [TODO: 담당자 EmployeeComment 패널 초기화 호출]
-                    
+
                 })
                 .AddTo(this);
 
@@ -105,15 +105,14 @@ namespace GameDevTycoon.UI.Ingame
 
             // 이번 주 날짜 범위 표시 — 금요일 밤 기준 해당 주차 월~금
             string dateRange = $"{DateTimeManager.GetMonthWeekString((week - 1) * 5)}";
-            
+
 
             _view.SetCoverInfo(dateRange, Company.Instance.Name);
         }
 
-        private void RefreshEmployeeStatusSlide() // 하단 참고용 직원 상태 슬라이드
+        private void RefreshEmployeeStatusSlide()
         {
-            foreach (Transform child in _view.SlidePreviewContent)
-                Destroy(child.gameObject);
+            _employeeStatusMiniItemPool.ReleaseAll(_view.SlidePreviewContent);
 
             // 직군순(기획→아트→개발) + 이름순 정렬
             var employees = _EmployeeManager.Instance.haveEmployees.haveEmployeeList
@@ -123,8 +122,8 @@ namespace GameDevTycoon.UI.Ingame
 
             foreach (var employee in employees)
             {
-                var item = Instantiate(_employeeStatusMiniItemPrefab, _view.SlidePreviewContent);
-                item.GetComponent<IBindable<Employee>>().Bind(employee);
+                var item = _employeeStatusMiniItemPool.Get(_view.SlidePreviewContent);
+                item.Bind(employee);
             }
 
             // 슬라이드 코멘트 — 직원 상태 요약
@@ -158,7 +157,7 @@ namespace GameDevTycoon.UI.Ingame
             }
 
             Role currentRole = RoleOrder[_roleIndex];
-            _currentReports  = GetReportsByRole(currentRole);
+            _currentReports = GetReportsByRole(currentRole);
 
             if (_currentReports == null || _currentReports.Count == 0)
             {
@@ -243,10 +242,10 @@ namespace GameDevTycoon.UI.Ingame
 
         private static int GetRoleOrder(Role role) => role switch
         {
-            Role.PLANNER    => 0,
-            Role.ARTIST     => 1,
+            Role.PLANNER => 0,
+            Role.ARTIST => 1,
             Role.PROGRAMMER => 2,
-            _               => 3,
+            _ => 3,
         };
     }
 }
