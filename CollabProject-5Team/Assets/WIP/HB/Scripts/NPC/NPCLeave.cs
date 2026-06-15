@@ -7,7 +7,7 @@ public class NPCLeave : INPCState
         npc.Agent.enabled = true;
         npc.Anim.SetBool("IsWalking", true);
 
-        npc.Agent.SetDestination(GameManager.Instance.NpcSpawnPoint.position);
+        npc.Agent.SetDestination(GameManager.Instance.NpcSpawnPoint[GameManager.Instance._currentMapIndex].position);
     }
 
     public void Update(NPCController npc)
