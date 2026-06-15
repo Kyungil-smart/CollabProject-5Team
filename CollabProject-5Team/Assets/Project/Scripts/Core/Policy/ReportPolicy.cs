@@ -98,8 +98,28 @@ public static class ReportPolicy
     };
 
     // 보고서 등급에 따른 피로도 증가
-    public static void ApplyFatigue(Employee e, int grade)
+    public static void ApplyHighFatigueSelectionPenalty(Employee e)
     {
-        e.MutableData.fatigue += grade == 1 ? 10 : 20;
+        if (e.MutableData.fatigue < 80) return;
+
+        e.MutableData.desire -= 20;
+        e.MutableData.loyalty -= 20;
     }
+
+    public static void ApplyAcceptedFatigue(Employee e, int grade)
+    {
+        e.MutableData.fatigue += CalcAcceptedFatigueDelta(grade);
+    }
+
+    public static void ApplyRejectedFatigue(Employee e)
+    {
+        e.MutableData.fatigue -= 5;
+    }
+
+    static int CalcAcceptedFatigueDelta(int grade) => grade switch
+    {
+        1 => 5,
+        2 => Random.value < 0.5f ? 5 : 15,
+        _ => 15,
+    };
 }

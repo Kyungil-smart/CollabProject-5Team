@@ -269,7 +269,7 @@ namespace GameDevTycoon.UI.Ingame
             _selectedScale = scale;
 
             int cost = GetRequiredCost(scale);
-            bool canAfford = Company.Instance.gold >= cost;
+            bool canAfford = Company.Instance.gold.Value >= cost;
 
             if (!canAfford)
             {
@@ -298,7 +298,7 @@ namespace GameDevTycoon.UI.Ingame
         private void OnStaffAssignConfirmClicked()
         {
             int cost = GetRequiredCost(_selectedScale);
-            if (Company.Instance.gold < cost)
+            if (Company.Instance.gold.Value < cost)
             {
                 _alertView.ShowAlertPopup("보유 자금이 부족합니다.");
                 return;

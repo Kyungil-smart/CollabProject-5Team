@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 
 // 직원 게임오브젝트에 부착 방식
-public class Employee : MonoBehaviour, IPointerClickHandler
+public class Employee : MonoBehaviour
 {
     [Header("기본 데이터 (SO 할당)")]
     public EmployeeImmutableData so;
@@ -40,15 +40,18 @@ public class Employee : MonoBehaviour, IPointerClickHandler
         MutableData.property3 = newStat;
     }
 
-    public void OnPointerClick(PointerEventData eventData)
+    public void AddAbilityDelta(int delta)
     {
-        Debug.Log($"[직원 클릭됨] 이름: {so.Name} | 현재 피로도: {MutableData.fatigue}");
+        MutableData.ability += delta;
+        MutableData.property1 = MutableData.ability;
+        MutableData.property2 = MutableData.ability;
+        MutableData.property3 = MutableData.ability;
     }
 
     public void SaveCurrentData()
     {
         MutableData.preDesire  = MutableData.desire;
         MutableData.preFatigue = MutableData.fatigue;
-        MutableData.preLoyalty = MutableData.fatigue;
+        MutableData.preLoyalty = MutableData.loyalty;
     }
 }

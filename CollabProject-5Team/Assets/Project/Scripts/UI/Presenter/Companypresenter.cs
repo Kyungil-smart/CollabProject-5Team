@@ -117,7 +117,7 @@ namespace GameDevTycoon.UI.Ingame
                 reputation: company.reputation,
                 popularity: 0,        // [TODO: CompanySO.popularity 연결]
                 cohesion: "좋음",   // [TODO: 내부결속력 단계 문자열 연결]
-                gold: company.gold,
+                gold: company.gold.Value,
                 totalRevenue: 0         // [TODO: 누적매출액 연결]
             );
         }
@@ -213,7 +213,7 @@ namespace GameDevTycoon.UI.Ingame
 
             var data = GetExpansionData(_selectedExpansionCard.Level);
 
-            if (Company.Instance.gold < data.cost)
+            if (Company.Instance.gold.Value < data.cost)
             {
                 _alertView.ShowAlertPopup("보유 자금이 부족하여 실행할 수 없습니다.");
                 return;
@@ -222,7 +222,7 @@ namespace GameDevTycoon.UI.Ingame
             _alertView.ShowConfirmPopup("구매하시겠습니까?", onConfirm: () =>
             {
                 // [TODO: CompanyManager 증축 처리 연결]
-                Company.Instance.gold -= data.cost;
+                Company.Instance.gold.Value -= data.cost;
                 _hudPresenter.RefreshHUD();
 
                 _selectedExpansionCard = null;

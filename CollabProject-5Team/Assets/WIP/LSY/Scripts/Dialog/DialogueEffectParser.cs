@@ -44,7 +44,7 @@ namespace Dialogue
                 case "loyalty": delta.loyaltyDelta += value; break;
                 case "gold":
                     if (Company.Instance != null)
-                        Company.Instance.gold += value;
+                        Company.Instance.gold.Value += value;
                     else
                         Debug.LogWarning("[DialogueEffectParser] Company.Instance가 null — gold 효과 미적용");
                     break;

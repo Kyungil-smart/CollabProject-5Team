@@ -46,15 +46,22 @@ public class SaveUI : MonoBehaviour
 
             if (SaveLoadSystem.Instance.HasSaveData(slotNumber))
             {
-                SaveData data = SaveLoadSystem.Instance.LoadGame(slotNumber);
+                SaveData data = SaveLoadSystem.Instance.GetSaveDataWithoutApply(slotNumber);
 
                 if (data != null)
                 {
+                    slotUIs[slotNumber].saveDateText.text = data.realSaveTime;
+                    slotUIs[slotNumber].saveDataText.text = $"{data.activeProjectsData.project_userNamed}";
+                    slotUIs[slotNumber].saveDataDetailText.text = $"{data.currentWeek}주차 {data.day}일 {data.currentDay}({data.currentTime})\n " +
+                                                                  $"플레이 시간 {data.playTime} \n " +
+                                                                  $"자금: {data.company_Gold}G \n " +
+                                                                  $"직원 수 : {data.savedEmployees.Count}";
                 }
             }
             else
             {
                 slotUIs[i].saveDateText.text = "----/--/--";
+                slotUIs[i].saveDataText.text = "빈 슬롯";
                 slotUIs[i].saveDataDetailText.text = "데이터 없음";
             }
         }

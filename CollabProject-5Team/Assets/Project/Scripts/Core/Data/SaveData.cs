@@ -5,6 +5,8 @@ using UnityEngine;
 [Serializable]
 public class SaveData
 {
+    public string realSaveTime;
+
     // DateTimeManager 저장
     [Header("Date Data")]
     public int          currentWeek;
@@ -14,6 +16,10 @@ public class SaveData
     public bool         isWorkCompleted;
     public List<string> talkedNpcsToday;
     public List<int>    talkedEmployeeIdsThisWeek;
+    public float        playTime;
+
+    // Employee 저장
+    public List<EmployeeSaveData> savedEmployees = new List<EmployeeSaveData>();
 
     // Company 저장
     [Header("Company Data")]
@@ -30,6 +36,25 @@ public class SaveData
     public List<ProjectCompletedSaveData> completedProjectsData = new();
     // 현재 진행 중인 프로젝트 목록
     public CurrentProjectSaveData activeProjectsData = new();
+}
+
+[System.Serializable]
+public class EmployeeSaveData
+{
+    public int employeeId;
+
+    public int ability;
+    public int property1;
+    public int property2;
+    public int property3;
+
+    public int desire;
+    public int loyalty;
+    public int fatigue;
+
+    public int preDesire;
+    public int preLoyalty;
+    public int preFatigue;
 }
 
 [System.Serializable]

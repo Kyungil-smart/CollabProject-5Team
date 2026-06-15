@@ -2,6 +2,7 @@ using Cysharp.Threading.Tasks;
 using R3;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using UnityEngine;
 
@@ -26,6 +27,8 @@ public class DateTimeManager : MonoBehaviour
     public static event Action OnNight;// 밤
     public static Action OnReportEnd;
 
+    private float playTime = 0f;
+
     #region 싱글톤 설정
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     public static void Init() => Instance = null;
@@ -40,6 +43,19 @@ public class DateTimeManager : MonoBehaviour
     private void Start()
     {
         ResetDayStatus();
+    }
+
+    void Update()
+    {
+        playTime += Time.deltaTime;
+    }
+
+    public string GetPlayTime()
+    {
+        int minutes = Mathf.FloorToInt(playTime / 60F);
+        int seconds = Mathf.FloorToInt(playTime - minutes * 60);
+
+        return string.Format("{0:00}:{1:00}", minutes, seconds);
     }
 
     /// <summary>
@@ -183,6 +199,7 @@ public class DateTimeManager : MonoBehaviour
         foreach (var project in Company.Instance.projects) project.ProgressNight();
 
         // 완료 프로젝트 주간 정산
+        Company.Instance.TickWeeklyEmployees();
         Company.Instance.TickWeeklyCompletedProjects();
 
         // 프로젝트의 모든 보고서가 전송될때까지 대기
@@ -244,6 +261,7 @@ public class DateTimeManager : MonoBehaviour
         data.day             = this.day.Value;
         data.isWorkCompleted = this.isWorkCompleted;
         data.talkedNpcsToday = new List<string>(this.talkedNpcsToday);
+        data.playTime        = this.playTime;
     }
 
     public void ImportSaveData(SaveData data)
@@ -256,5 +274,6 @@ public class DateTimeManager : MonoBehaviour
         this.day.Value         = data.day;
         this.isWorkCompleted   = data.isWorkCompleted;
         this.talkedNpcsToday   = new HashSet<string>(data.talkedNpcsToday);
+        this.playTime          = data.playTime;
     }
 }
