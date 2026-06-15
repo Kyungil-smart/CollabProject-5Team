@@ -125,6 +125,14 @@ public class QuestManager : MonoBehaviour
             dailyQuestState.Value = QuestState.End;
     }
 
+    // HOLD 진행 중 실시간 표시용 - curCount(실제 완료 판정)는 건드리지 않고 배너 진행도만 갱신
+    public void SetDisplayProgress(int current)
+    {
+        if (dailyQuestState.Value != QuestState.Playing) return;
+
+        dailyQuestProgress.Value = Mathf.Min(current, curDailyQuest.TargetCount);
+    }
+
     // 콤마로 구분된 오브젝트 이름들을 questObjectsRoot 하위에서 찾아 활성/비활성 처리
     private void SetObjectsActive(string names, bool active)
     {
