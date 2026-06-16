@@ -83,6 +83,9 @@ public class GameManager : MonoBehaviour
     {
         await UniTask.Yield();
 
+        // 새로 생성된 맵의 퀘스트 오브젝트 루트를 QuestManager에 주입
+        QuestManager.Instance?.SetQuestObjectsRoot(_currentMapTransform);
+
         // 플레이어 생성 및 GameManager에 참조 주입
         GameObject playerObj = Instantiate(_playerPrefab, _currentPlayerSpawnPoint.position, Quaternion.identity);
         InjectPlayer(playerObj.GetComponent<PlayerMove>());
@@ -126,6 +129,9 @@ public class GameManager : MonoBehaviour
 
         // 의자 좌표 갱신
         RefreshSitPoints();
+
+        // 교체된 맵의 퀘스트 오브젝트 루트를 QuestManager에 재주입
+        QuestManager.Instance?.SetQuestObjectsRoot(_currentMapTransform);
 
         // 플레이어 위치 갱신
         if (player != null && _currentPlayerSpawnPoint != null)

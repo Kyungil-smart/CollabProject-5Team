@@ -85,6 +85,7 @@ namespace GameDevTycoon.UI.Ingame
         public void Show()
         {
             gameObject.SetActive(true);
+            _view.SetDayQuitInteractable(false);
             RefreshProgressItems();
         }
 
