@@ -96,6 +96,12 @@ namespace GameDevTycoon.UI.Ingame
         [SerializeField] private Button          _educationCourseConfirmButton;
         [SerializeField] private Button          _educationCourseBackButton;
 
+        [Header("Tab_Education — CourseCards")]
+        [SerializeField] private ToggleGroup _courseToggleGroup;
+        [SerializeField] private Toggle _courseToggle0;
+        [SerializeField] private Toggle _courseToggle1;
+        [SerializeField] private Toggle _courseToggle2;
+
         // Tab 이벤트
         public Observable<Unit> OnEmployeeManageTabClicked => _employeeManageTabButton.OnClickAsObservable();
         public Observable<Unit> OnHireTabClicked           => _hireTabButton.OnClickAsObservable();
@@ -131,6 +137,13 @@ namespace GameDevTycoon.UI.Ingame
         public Observable<Unit> OnEducationDetailBackClicked  => _educationDetailBackButton.OnClickAsObservable();
         public Observable<Unit> OnEducationCourseConfirmClicked => _educationCourseConfirmButton.OnClickAsObservable();
         public Observable<Unit> OnEducationCourseBackClicked  => _educationCourseBackButton.OnClickAsObservable();
+
+        // 코스 선택 시 인덱스(0~2) 발행
+        public Observable<int> OnCourseSelected => Observable.Merge(
+            _courseToggle0.OnValueChangedAsObservable().Where(v => v).Select(_ => 0),
+            _courseToggle1.OnValueChangedAsObservable().Where(v => v).Select(_ => 1),
+            _courseToggle2.OnValueChangedAsObservable().Where(v => v).Select(_ => 2)
+        );
 
         // Content Transform (Presenter에서 프리팹 Instantiate 위치로 사용)
         public Transform EmployeeGridContent       => _employeeGridContent;
@@ -258,6 +271,8 @@ namespace GameDevTycoon.UI.Ingame
 
         public void ShowEducationCourse()
         {
+            // 코스 패널 진입 시 이전 선택 초기화
+            _courseToggleGroup.SetAllTogglesOff();
             _panelEducationCourse.SetActive(true);
         }
 
