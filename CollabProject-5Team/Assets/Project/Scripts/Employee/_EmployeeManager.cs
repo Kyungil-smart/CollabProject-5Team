@@ -108,6 +108,14 @@ public class _EmployeeManager : MonoBehaviour
         Debug.Log($"[교육] {employee.so.Name} 직원이 {course.courseName}을 시작했습니다. 비용 {course.cost}G, 기간 {TrainingDurationWeeks}주");
     }
 
+    void InitTrainingCourses()
+    {
+        trainingCourses.Clear();
+        trainingCourses.Add(new EmployeeTrainingCourse("기본 교육", 1000, 1, 3, 0.1f));
+        trainingCourses.Add(new EmployeeTrainingCourse("전문 교육", 3000, 3, 6, 0.2f));
+        trainingCourses.Add(new EmployeeTrainingCourse("집중 교육", 5000, 5, 10, 0.3f));
+    }
+
     public void TickWeeklyTraining()
     {
         for (int i = activeTrainings.Count - 1; i >= 0; i--)
@@ -146,26 +154,18 @@ public class _EmployeeManager : MonoBehaviour
         else
         {
             int delta = UnityEngine.Random.Range(course.minAbilityDelta, course.maxAbilityDelta + 1);
-            int before = employee.MutableData.ability;
             employee.AddAbilityDelta(delta);
+#if UNITY_EDITOR
+            int before = employee.MutableData.ability;
             Debug.Log($"[교육] {employee.so.Name} 직원의 {course.courseName} 성공. 능력치 {before} -> {employee.MutableData.ability}");
+#endif
         }
-
         haveEmployees.SetStatus(employee, EmployeeWorkStatus.Standby);
     }
 
     void RemoveTraining(Employee employee)
     {
         activeTrainings.Remove(GetTraining(employee));
-    }
-
-    void InitTrainingCourses()
-    {
-        if (trainingCourses.Count > 0) return;
-
-        trainingCourses.Add(new EmployeeTrainingCourse("기본 교육", 1000, 1, 3, 0.1f));
-        trainingCourses.Add(new EmployeeTrainingCourse("전문 교육", 3000, 3, 6, 0.2f));
-        trainingCourses.Add(new EmployeeTrainingCourse("집중 교육", 5000, 5, 10, 0.3f));
     }
     #endregion
 
