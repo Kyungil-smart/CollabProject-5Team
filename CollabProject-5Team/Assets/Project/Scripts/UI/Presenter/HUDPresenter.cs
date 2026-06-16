@@ -142,6 +142,8 @@ namespace GameDevTycoon.UI.Ingame
 
         private void OnWorkStartClicked()
         {
+            QuestManager.Instance.StartDailyQuest();
+
             // 참조한 플레이어 책상의 데스크탑으로 이동하도록 수정함
             if (_desk != null)
             {
