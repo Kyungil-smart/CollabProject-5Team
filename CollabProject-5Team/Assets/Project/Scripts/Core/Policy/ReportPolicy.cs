@@ -26,7 +26,7 @@ public static class ReportPolicy
     }
 
     // 직원 배열을 기반으로 보고서 초안 생성 → project.pendingReports에 추가
-    public static void GenerateReportForRole(Project project, Employee[] employees)
+    public static void GenerateReportForRole(Project project, IEnumerable<Employee> employees)
     {
         foreach (Employee e in employees)
         {

@@ -66,6 +66,9 @@ public class _EmployeeManager : MonoBehaviour
 
     public void FireEmployee(Employee employee)
     {
+        if (Company.Instance.curProject != null && Company.Instance.curProject.GetAllEmployees().Contains(employee))
+            Company.Instance.curProject.RemoveEmployee(employee);
+
         RemoveTraining(employee);
         haveEmployees.RemoveEmployee(employee);
         employeeList.RestoreEmployee(employee.so.id);
@@ -74,6 +77,14 @@ public class _EmployeeManager : MonoBehaviour
     #endregion
 
     #region 상태 관리
+
+    public void AssignProjectEmployee(Employee employee)
+    {
+        if (employee.WorkStatus != EmployeeWorkStatus.Standby)
+            throw new InvalidOperationException($"{employee.so.Name} 吏곸썝? ?湲?以묒씪 ?뚮쭔 ?꾨줈?앺듃???ъ엯?????덉뒿?덈떎.");
+
+        haveEmployees.SetStatus(employee, EmployeeWorkStatus.InProject);
+    }
 
     public void MarkProjectEmployee(Employee employee)
     {

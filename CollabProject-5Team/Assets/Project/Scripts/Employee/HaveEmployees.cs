@@ -10,17 +10,18 @@ public class HaveEmployees
 
     public void AddEmployee(Employee employee)
     {
-        haveEmployeeList.Add(employee);
+        if (!haveEmployeeList.Contains(employee))
+            haveEmployeeList.Add(employee);
         SetStatus(employee, EmployeeWorkStatus.Standby);
         Debug.Log($"[인사] {employee.so.Name} 직원이 입사했습니다.");
     }
 
     public void RemoveEmployee(Employee employee)
     {
-        haveEmployeeList.Remove(employee);
-        standbyEmployees.Remove(employee);
-        projectEmployees.Remove(employee);
-        trainingEmployees.Remove(employee);
+        haveEmployeeList.RemoveAll(e => e == employee);
+        standbyEmployees.RemoveAll(e => e == employee);
+        projectEmployees.RemoveAll(e => e == employee);
+        trainingEmployees.RemoveAll(e => e == employee);
         Debug.Log($"[인사] {employee.so.Name} 직원이 퇴사했습니다.");
     }
 
@@ -35,12 +36,14 @@ public class HaveEmployees
     // 한 직원은 한 상태 리스트에만 존재하도록 정리한 뒤 새 상태에 넣는다.
     public void SetStatus(Employee employee, EmployeeWorkStatus status)
     {
-        standbyEmployees.Remove(employee);
-        projectEmployees.Remove(employee);
-        trainingEmployees.Remove(employee);
+        standbyEmployees.RemoveAll(e => e == employee);
+        projectEmployees.RemoveAll(e => e == employee);
+        trainingEmployees.RemoveAll(e => e == employee);
 
         employee.WorkStatus = status;
-        GetList(status).Add(employee);
+        List<Employee> statusList = GetList(status);
+        if (!statusList.Contains(employee))
+            statusList.Add(employee);
     }
 
     List<Employee> GetList(EmployeeWorkStatus status)

@@ -21,15 +21,15 @@ public class Project : MonoBehaviour
     public ReactiveProperty<string> userNamed = new("a"); // 유저가 붙인 프로젝트 이름
 
     // 투입된 직원
-    public Employee[] plannings;
-    public Employee[] arts;
-    public Employee[] programmer;
+    public List<Employee> plannings = new();
+    public List<Employee> arts = new();
+    public List<Employee> programmer = new();
     public List<Employee> GetAllEmployees()
     {
         var result = new List<Employee>();
-        foreach (var arr in new[] { plannings, programmer, arts })
-            foreach (var e in arr)
-                if (e != null) result.Add(e);
+        result.AddRange(plannings);
+        result.AddRange(programmer);
+        result.AddRange(arts);
         return result;
     }
 
@@ -93,53 +93,52 @@ public class Project : MonoBehaviour
         if (_isRuntimeInitialized) return;
 
         userNamed.Value = Name;
-        plannings = new Employee[MaxEmployeePerPart];
-        programmer = new Employee[MaxEmployeePerPart];
-        arts = new Employee[MaxEmployeePerPart];
+        plannings = new List<Employee>();
+        programmer = new List<Employee>();
+        arts = new List<Employee>();
         _isRuntimeInitialized = true;
     }
 
     public bool HireEmployee(Employee e)
     {
-        Employee[] targetArray = null;
+        List<Employee> targetList = null;
         switch (e.so.role)
         {
             case Role.PLANNER:
-                targetArray = plannings;
+                targetList = plannings;
                 break;
             case Role.PROGRAMMER:
-                targetArray = programmer;
+                targetList = programmer;
                 break;
             case Role.ARTIST:
-                targetArray = arts;
+                targetList = arts;
                 break;
             default:
                 Debug.LogWarning($"[{userNamed.Value}] {e.so.Name}의 파트({e.so.role})고용은 구현되지 않았습니다.");
                 return false;
         }
 
-        if (Array.IndexOf(targetArray, e) >= 0)
+        if (targetList.Contains(e))
             return true;
 
-        int emptyIndex = Array.FindIndex(targetArray, m => m == null);
-        if (emptyIndex < 0)
+        if (targetList.Count >= MaxEmployeePerPart)
         {
             Debug.LogWarning($"[{userNamed.Value}] {e.so.role} 파트 투입 슬롯이 가득 찼습니다.");
             return false;
         }
 
-        _EmployeeManager.Instance.MarkProjectEmployee(e); //직원 상태 변경
+        _EmployeeManager.Instance.AssignProjectEmployee(e); //직원 상태 변경
 
 
-        targetArray[emptyIndex] = e;
+        targetList.Add(e);
         Debug.Log($"[{userNamed.Value}] {e.so.Name} 직원이 {e.so.role} 파트로 투입되었습니다.");
         return true;
     }
 
     // 프로젝트에서 직원을 제거하고 해고 처리
-    public bool FireEmployee(Employee e)
+    public void RemoveEmployee(Employee e)
     {
-        Employee[] targetArray = e.so.role switch
+        List<Employee> targetList = e.so.role switch
         {
             Role.PLANNER => plannings,
             Role.PROGRAMMER => programmer,
@@ -147,24 +146,14 @@ public class Project : MonoBehaviour
             _ => null,
         };
 
-        if (targetArray == null)
+        if (targetList == null)
         {
             Debug.LogWarning($"[{userNamed.Value}] {e.so.Name}의 파트({e.so.role})해고는 구현되지 않았습니다.");
-            return false;
+            return;
         }
 
-        int index = Array.IndexOf(targetArray, e);
-        if (index < 0)
-        {
-            Debug.LogWarning($"[{userNamed.Value}] {e.so.Name}은 이 프로젝트에 투입되어 있지 않습니다.");
-            return false;
-        }
-
-        targetArray[index] = null;
+        targetList.Remove(e);
         Debug.Log($"[{userNamed.Value}] {e.so.Name} 직원이 {e.so.role} 파트에서 제거되었습니다.");
-
-        _EmployeeManager.Instance.FireEmployee(e);
-        return true;
     }
 
     // 날짜가 하루 진행될 때마다 호출되는 메서드
@@ -311,9 +300,9 @@ public class Project : MonoBehaviour
         data.activeProjectsData.project_day = day;
         data.activeProjectsData.project_userNamed = userNamed.Value;
 
-        data.activeProjectsData.project_PlanningEmployeeIds = ConvertEmpArrayToIdList(plannings);
-        data.activeProjectsData.project_ProgrammerEmployeeIds = ConvertEmpArrayToIdList(programmer);
-        data.activeProjectsData.project_ArtistEmployeeIds = ConvertEmpArrayToIdList(arts);
+        data.activeProjectsData.project_PlanningEmployeeIds = ConvertEmployeeListToIdList(plannings);
+        data.activeProjectsData.project_ProgrammerEmployeeIds = ConvertEmployeeListToIdList(programmer);
+        data.activeProjectsData.project_ArtistEmployeeIds = ConvertEmployeeListToIdList(arts);
 
         data.activeProjectsData.project_QualityScore = qualityScore;
         data.activeProjectsData.project_StabilityScore = stabilityScore;
@@ -339,40 +328,32 @@ public class Project : MonoBehaviour
         this.charmScore = data.activeProjectsData.project_CharmScore;
         this.CurScore = data.activeProjectsData.project_CurScore;
 
-        RestoreEmployeeArray(data.activeProjectsData.project_PlanningEmployeeIds, plannings);
-        RestoreEmployeeArray(data.activeProjectsData.project_ProgrammerEmployeeIds, programmer);
-        RestoreEmployeeArray(data.activeProjectsData.project_ArtistEmployeeIds, arts);
+        RestoreEmployeeList(data.activeProjectsData.project_PlanningEmployeeIds, plannings);
+        RestoreEmployeeList(data.activeProjectsData.project_ProgrammerEmployeeIds, programmer);
+        RestoreEmployeeList(data.activeProjectsData.project_ArtistEmployeeIds, arts);
     }
-    private List<int> ConvertEmpArrayToIdList(Employee[] arr)
+    private List<int> ConvertEmployeeListToIdList(List<Employee> employees)
     {
         var list = new List<int>();
-        if (arr == null) return list;
 
-        foreach (var emp in arr)
+        foreach (var emp in employees)
         {
-            list.Add(emp != null && emp.so != null ? emp.so.id : -1);
+            list.Add(emp.so.id);
         }
         return list;
     }
-    private void RestoreEmployeeArray(List<int> ids, Employee[] targetArr)
+    private void RestoreEmployeeList(List<int> ids, List<Employee> targetList)
     {
-        if (ids == null || targetArr == null) return;
-
+        targetList.Clear();
         var hiredList = _EmployeeManager.Instance.haveEmployees.haveEmployeeList;
 
-        for (int i = 0; i < targetArr.Length && i < ids.Count; i++)
+        foreach (int empId in ids)
         {
-            int empId = ids[i];
-            if (empId == -1)
-            {
-                targetArr[i] = null;
-            }
-            else
-            {
-                targetArr[i] = hiredList.Find(e => e.so.id == empId);
-                if (targetArr[i] != null)
-                    _EmployeeManager.Instance.MarkProjectEmployee(targetArr[i]);
-            }
+            if (empId == -1) continue;
+
+            Employee employee = hiredList.Find(e => e.so.id == empId);
+            targetList.Add(employee);
+            _EmployeeManager.Instance.MarkProjectEmployee(employee);
         }
     }
     #endregion
