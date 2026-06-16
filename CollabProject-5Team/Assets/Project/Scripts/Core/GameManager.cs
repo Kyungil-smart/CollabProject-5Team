@@ -201,8 +201,6 @@ public class GameManager : MonoBehaviour
             if (npc != null)
             {
                 npc.ChangeState(new NPCLeave());
-
-                npc.transform.position = NpcSpawnPoint[_currentMapIndex].position;
             }
         }
     }
