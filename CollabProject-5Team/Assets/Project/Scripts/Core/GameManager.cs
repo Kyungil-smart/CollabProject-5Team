@@ -9,18 +9,16 @@ public class GameManager : MonoBehaviour
     public static GameManager Instance;
 
     [Header("맵 관리")]
-    [SerializeField] private List<GameObject> _officeMaps;              // 사무실 맵 프리팹
-    public int _currentMapIndex = 0;
+    [SerializeField] private List<GameObject> _offices;              // 사무실 맵 프리팹
+    public int _currentOfficeIndex = 0;
 
     [Header("프리팹")]
     [SerializeField] private GameObject _playerPrefab;                  // 플레이어 프리팹
     [SerializeField] private List<GameObject> _allNpcPrefabs;           // NPC프리팹
-   
 
-    [Header("자리 배치")]
-    [SerializeField] private List<Transform> _playerSpawnPoint;             // 플레이어 스폰 지점
-    [SerializeField] public  List<Transform>     NpcSpawnPoint;             // NPC 스폰 지점
-
+    private Transform _currentPlayerSpawnPoint;
+    public  Transform  currentNpcSpawnPoint => _currentNpcSpawnPoint;
+    private Transform _currentNpcSpawnPoint;
     private Transform _currentMapTransform;                                 // 의자가 있는 현재 맵
 
     private List<Transform>          _sitPoints = new List<Transform>();       // 앉을 좌표 리스트
@@ -38,7 +36,7 @@ public class GameManager : MonoBehaviour
     {
         Instance = this;
 
-        GenerateMap();
+        GenerateOffice();
     #endregion
     }
 
@@ -56,9 +54,9 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    private void GenerateMap()
+    private void GenerateOffice()
     {
-        if (_officeMaps == null || _officeMaps.Count == 0)
+        if (_offices == null || _offices.Count == 0)
         {
             Debug.LogError("GameManager: _officeMaps가 비어있습니다.");
             return;
@@ -70,21 +68,23 @@ public class GameManager : MonoBehaviour
             _currentMapTransform = null;
         }
 
-        GameObject firstMap = Instantiate(_officeMaps[0], Vector3.zero, Quaternion.identity);
+        GameObject firstMap = Instantiate(_offices[_currentOfficeIndex], Vector3.zero, Quaternion.identity);
         firstMap.SetActive(true);
         _currentMapTransform = firstMap.transform;
-        _currentMapIndex = 0;
+        _currentOfficeIndex = 0;
 
-        Debug.Log($"초기 맵 생성 완료: {_officeMaps[0].name}");
+        FindSpawnPoints();
+
+        Debug.Log($"초기 맵 생성 완료: {_offices[0].name}");
     }
 
-    // 처음 게임 시작 시 플레이어, NPC생성 및 배치f
+    // 처음 게임 시작 시 플레이어, NPC생성 및 배치
     private async UniTask InitializeGameAsync()
     {
         await UniTask.Yield();
 
         // 플레이어 생성 및 GameManager에 참조 주입
-        GameObject playerObj = Instantiate(_playerPrefab, _playerSpawnPoint[_currentMapIndex].position, Quaternion.identity);
+        GameObject playerObj = Instantiate(_playerPrefab, _currentPlayerSpawnPoint.position, Quaternion.identity);
         InjectPlayer(playerObj.GetComponent<PlayerMove>());
 
         // 플레이어가 생성되고 1초 대기
@@ -102,36 +102,65 @@ public class GameManager : MonoBehaviour
     public void UpgradeOffice()
     {
         // 현재 맵의 인덱스가 맵의 개수와 같거나 크면 리턴
-        if (_currentMapIndex + 1 >= _officeMaps.Count) return;
+        if (_currentOfficeIndex + 1 >= _offices.Count) return;
+
+        LeaveWorkNPCs();
 
         // 1. 기존 맵 파괴
         if (_currentMapTransform != null)
         {
             Debug.Log($"기존 맵 제거 시도: {_currentMapTransform.name}");
             Destroy(_currentMapTransform.gameObject);
-            _currentMapTransform = null;        // ← 이 줄이 중요!
+            _currentMapTransform = null;
         }
 
         // 2. 인덱스 증가시키고 새 맵 생성
-        _currentMapIndex++;
+        _currentOfficeIndex++;
 
-        GameObject newMap = Instantiate(_officeMaps[_currentMapIndex], Vector3.zero, Quaternion.identity);
-        _currentMapTransform = newMap.transform;
-        newMap.SetActive(true);
+        GameObject newOffice = Instantiate(_offices[_currentOfficeIndex], Vector3.zero, Quaternion.identity);
+        newOffice.SetActive(true);
+        _currentMapTransform = newOffice.transform;
+
+        // 스폰 포인트 찾기
+        FindSpawnPoints();
 
         // 의자 좌표 갱신
         RefreshSitPoints();
 
         // 플레이어 위치 갱신
-        if (player != null && _playerSpawnPoint[_currentMapIndex] != null)
-            player.transform.position = _playerSpawnPoint[_currentMapIndex].position;
-
-        // 기존 NPC정리 및 새 맵에 맞춰 재배치
-        LeaveWorkNPCs();
+        if (player != null && _currentPlayerSpawnPoint != null)
+        {
+            player.transform.position = _currentPlayerSpawnPoint.position;
+            player.transform.rotation = Quaternion.identity; // 필요하면 회전도 초기화
+        }
 
         GotoWorkNPCs();
 
         SpawnNPCsAsync().Forget();
+    }
+
+    private void FindSpawnPoints()
+    {
+        if (_currentMapTransform == null)
+        {
+            Debug.LogError("FindSpawnPoints: 현재 맵이 없습니다!");
+            return;
+        }
+
+        _currentPlayerSpawnPoint = _currentMapTransform.Find("PlayerSpawnPoint");
+           _currentNpcSpawnPoint = _currentMapTransform.Find("NpcSpawnPoint");
+
+        if (_currentPlayerSpawnPoint == null)
+        {
+            _currentPlayerSpawnPoint = _currentMapTransform.GetComponentsInChildren<Transform>(true)
+                .FirstOrDefault(t => t.name == "PlayerSpawnPoint");
+        }
+
+        if (_currentNpcSpawnPoint == null)
+        {
+            _currentNpcSpawnPoint = _currentMapTransform.GetComponentsInChildren<Transform>(true)
+                .FirstOrDefault(t => t.name == "NpcSpawnPoint");
+        }
     }
 
     // 현재 맵에서 SitPoint 위치를 찾아 리스트 갱신
@@ -169,7 +198,7 @@ public class GameManager : MonoBehaviour
                 continue;
         
             // NPC 생성
-            GameObject npcObj = Instantiate(prefab, NpcSpawnPoint[_currentMapIndex].position, Quaternion.identity);
+            GameObject npcObj = Instantiate(prefab, _currentNpcSpawnPoint.position, Quaternion.identity);
             npcObj.GetComponent<Employee>().MutableData = emp.MutableData;
 
             // 데이터 주입            

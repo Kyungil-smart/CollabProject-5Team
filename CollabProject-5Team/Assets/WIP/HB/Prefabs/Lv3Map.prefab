@@ -144,7 +144,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2921110285375993578}
   m_Layer: 0
-  m_Name: SpawnPoint
+  m_Name: PlayerSpawnPoint
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -159,7 +159,7 @@ Transform:
   m_GameObject: {fileID: 1226778345339327250}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -12.889, y: -16.195, z: -21.079998}
+  m_LocalPosition: {x: -18.889, y: -16.195, z: -27.079998}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -747,6 +747,37 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   sitPoint: {fileID: 3356232739159986629}
   isSeated: 0
+--- !u!1 &7235853142248546008
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 517307442053251165}
+  m_Layer: 0
+  m_Name: NpcSpawnPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &517307442053251165
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7235853142248546008}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 8353802816526412682}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &7515167387822524609
 GameObject:
   m_ObjectHideFlags: 0
@@ -2049,6 +2080,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 5320123411764541932, guid: 387a34684bb041b4d996acbf26757bb3, type: 3}
       insertIndex: 0
       addedObject: {fileID: 85679457682106704}
+    - targetCorrespondingSourceObject: {fileID: 4357999020792441866, guid: 387a34684bb041b4d996acbf26757bb3, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 517307442053251165}
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 3057860036793672611, guid: 387a34684bb041b4d996acbf26757bb3, type: 3}
       insertIndex: -1
@@ -4882,6 +4916,11 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 7.049349, y: 0.12, z: 7.049348}
   m_Center: {x: -0.0027064085, y: 0.060000036, z: -0.0026876926}
+--- !u!4 &8353802816526412682 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 4357999020792441866, guid: 387a34684bb041b4d996acbf26757bb3, type: 3}
+  m_PrefabInstance: {fileID: 5734228445037299584}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &8367975930907894252 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 4302371019238876780, guid: 387a34684bb041b4d996acbf26757bb3, type: 3}
