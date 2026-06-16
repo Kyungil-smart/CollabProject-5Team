@@ -15,6 +15,8 @@ public class QuestManager : MonoBehaviour
 
     public RectTransform QuestCanvas => questCanvas;
 
+    public void SetQuestObjectsRoot(Transform root) => questObjectsRoot = root;
+
     // 직전에 나온 퀘스트 기억 (다음 뽑기에서 제외 + 결과물 정리용)
     private QuestSO _lastPicked;
 
@@ -181,12 +183,9 @@ public class QuestManager : MonoBehaviour
 
     private Transform FindDeepChild(Transform root, string name)
     {
-        foreach (Transform child in root)
+        foreach (Transform t in root.GetComponentsInChildren<Transform>(true))
         {
-            if (child.name == name) return child;
-
-            Transform found = FindDeepChild(child, name);
-            if (found != null) return found;
+            if (t.name == name) return t;
         }
         return null;
     }
