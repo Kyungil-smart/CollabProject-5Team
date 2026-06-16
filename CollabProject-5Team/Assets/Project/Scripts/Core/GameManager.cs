@@ -71,7 +71,7 @@ public class GameManager : MonoBehaviour
         GameObject firstMap = Instantiate(_offices[_currentOfficeIndex], Vector3.zero, Quaternion.identity);
         firstMap.SetActive(true);
         _currentMapTransform = firstMap.transform;
-        _currentOfficeIndex = 0;
+        //_currentOfficeIndex = 0;
 
         FindSpawnPoints();
 
