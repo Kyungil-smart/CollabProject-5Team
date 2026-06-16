@@ -7,7 +7,7 @@ public class QuestObject : MonoBehaviour, IInteractable
     [SerializeField] private GameObject starIconPrefab;   // 별 아이콘 프리팹 (TAP/HOLD/SWIPE 입력 처리)
     [SerializeField] private Collider targetCollider;     // 상호작용 거리 체크용 콜라이더
     [SerializeField] private Vector3 iconWorldOffset = new Vector3(0f, 1f, 0f); // 아이콘이 뜰 위치 (오브젝트 기준 오프셋)
-    [SerializeField] private float interactionRange = 1f; // 별 아이콘으로 자동 전환되는 거리
+    [SerializeField] private float interactionRange = 1f;
 
     // 커피머신처럼 씬에 항상 존재하는 오브젝트인 경우 체크.
     // true면 QuestManager가 이 오브젝트를 켜고 끌 때 GameObject 전체가 아닌 이 컴포넌트(enabled)만 토글한다.
@@ -17,15 +17,8 @@ public class QuestObject : MonoBehaviour, IInteractable
     private QuestIcon _bulbInstance;
     private QuestInteract _starInstance;
 
-    private void OnEnable()
-    {
-        ShowBulb();
-    }
-
-    private void OnDisable()
-    {
-        ClearIcons();
-    }
+    private void OnEnable() { ShowBulb(); }
+    private void OnDisable() { ClearIcons(); }
 
     private void Update()
     {
@@ -37,17 +30,29 @@ public class QuestObject : MonoBehaviour, IInteractable
         Vector3 closestPoint = col.ClosestPoint(GameManager.Instance.player.transform.position);
         float distance = Vector3.Distance(GameManager.Instance.player.transform.position, closestPoint);
 
-        // 전구 표시 중 상호작용 거리 안에 들어오면 자동으로 별 아이콘으로 전환
         if (_bulbInstance != null && distance <= interactionRange)
             OnInteract();
-        // 별 표시 중 상호작용 거리를 벗어나면 다시 전구로 전환 (멀리서 입력 불가)
-        // 경계에서 미세하게 떨려 별이 계속 재생성되며 진행도(_tapCount/_holdTime)가 초기화되는 것을 막기 위해 여유 거리를 둠
         else if (_starInstance != null && distance > interactionRange + 0.5f)
             ShowBulb();
     }
 
+    // QuestManager에서 직접 호출 — 이미 enabled 상태여도 ShowBulb 강제 실행
+    public void Activate()
+    {
+        Debug.Log($"[QO] Activate 호출 - {gameObject.name}, enabled={enabled}, activeInHierarchy={gameObject.activeInHierarchy}");
+        enabled = true;
+        ShowBulb();
+    }
+
+    public void Deactivate()
+    {
+        ClearIcons();
+        enabled = false;
+    }
+
     private void ShowBulb()
     {
+        Debug.Log($"[QO] ShowBulb 호출 - bulbPrefab={bulbIconPrefab != null}, canvas={QuestManager.Instance?.QuestCanvas != null}");
         ClearIcons();
 
         _bulbInstance = Instantiate(bulbIconPrefab, QuestManager.Instance.QuestCanvas).GetComponent<QuestIcon>();

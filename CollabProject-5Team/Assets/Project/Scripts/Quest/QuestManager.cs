@@ -145,19 +145,28 @@ public class QuestManager : MonoBehaviour
             string trimmed = objName.Trim();
             if (trimmed == "" || trimmed == "None") continue;
 
+            // QuestObject 컴포넌트가 있는 오브젝트 우선 탐색 (같은 이름의 메쉬 오브젝트와 혼동 방지)
+            QuestObject questObject = FindQuestObject(trimmed);
+            if (questObject != null)
+            {
+                if (questObject.IsPermanent)
+                {
+                    if (active) questObject.Activate();
+                    else questObject.Deactivate();
+                }
+                else
+                    questObject.gameObject.SetActive(active);
+                continue;
+            }
+
+            // QuestObject 없는 일반 오브젝트 (resultObjects 등) — 이름으로 탐색
             Transform target = FindDeepChild(questObjectsRoot, trimmed);
             if (target == null)
             {
                 Debug.LogWarning($"[QM] SetObjectsActive - '{trimmed}'를 questObjectsRoot 하위에서 못 찾음");
                 continue;
             }
-
-            // 항상 있는 오브젝트(커피머신 등)는 GameObject를 끄지 않고 QuestObject 컴포넌트만 토글
-            QuestObject questObject = target.GetComponent<QuestObject>();
-            if (questObject != null && questObject.IsPermanent)
-                questObject.enabled = active;
-            else
-                target.gameObject.SetActive(active);
+            target.gameObject.SetActive(active);
         }
     }
 
@@ -179,6 +188,15 @@ public class QuestManager : MonoBehaviour
         bubble.transform.SetAsFirstSibling();
 
         bubble.Show(npcTransform, bubbleWorldOffset, message);
+    }
+
+    private QuestObject FindQuestObject(string name)
+    {
+        foreach (QuestObject qo in questObjectsRoot.GetComponentsInChildren<QuestObject>(true))
+        {
+            if (qo.gameObject.name == name) return qo;
+        }
+        return null;
     }
 
     private Transform FindDeepChild(Transform root, string name)
