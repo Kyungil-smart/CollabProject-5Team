@@ -109,7 +109,7 @@ public class GameManager : MonoBehaviour
         {
             Debug.Log($"기존 맵 제거 시도: {_currentMapTransform.name}");
             Destroy(_currentMapTransform.gameObject);
-            _currentMapTransform = null;        // ← 이 줄이 중요!
+            _currentMapTransform = null;
         }
 
         // 2. 인덱스 증가시키고 새 맵 생성
