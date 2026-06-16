@@ -1,5 +1,36 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!1 &20622276200904555
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7756603648446202615}
+  m_Layer: 0
+  m_Name: PlayerSpawnPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7756603648446202615
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 20622276200904555}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 3287543885824220967}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &595269173977101259
 GameObject:
   m_ObjectHideFlags: 0
@@ -814,7 +845,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7707884053564855044}
   m_Layer: 0
-  m_Name: SpawnPoint
+  m_Name: NpcSpawnPoint
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1968,6 +1999,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 201111245781958638, guid: 94b6b1cacc679784ea23ca1861c27741, type: 3}
       insertIndex: -1
       addedObject: {fileID: 7707884053564855044}
+    - targetCorrespondingSourceObject: {fileID: 5714732517106980627, guid: 94b6b1cacc679784ea23ca1861c27741, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 7756603648446202615}
     - targetCorrespondingSourceObject: {fileID: 6443361448330111957, guid: 94b6b1cacc679784ea23ca1861c27741, type: 3}
       insertIndex: 5
       addedObject: {fileID: 1586789672176712214}
@@ -3316,6 +3350,11 @@ MonoBehaviour:
   m_IgnoreFromBuild: 0
   m_ApplyToChildren: 1
   m_AffectedAgents: ffffffff
+--- !u!4 &3287543885824220967 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 5714732517106980627, guid: 94b6b1cacc679784ea23ca1861c27741, type: 3}
+  m_PrefabInstance: {fileID: 7120610254416922676}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &3378155018679082358 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 5490137929539360066, guid: 94b6b1cacc679784ea23ca1861c27741, type: 3}
