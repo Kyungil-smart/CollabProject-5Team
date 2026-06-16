@@ -121,7 +121,7 @@ public class Project : MonoBehaviour
         if (targetList.Contains(e))
             return true;
 
-        _EmployeeManager.Instance.AssignProjectEmployee(e); //직원 상태 변경
+        _EmployeeManager.Instance.MarkProjectEmployee(e);
 
         targetList.Add(e);
         Debug.Log($"[{userNamed.Value}] {e.so.Name} 직원이 {e.so.role} 파트로 투입되었습니다.");

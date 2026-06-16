@@ -77,15 +77,6 @@ public class _EmployeeManager : MonoBehaviour
     #endregion
 
     #region 상태 관리
-
-    public void AssignProjectEmployee(Employee employee)
-    {
-        if (employee.WorkStatus != EmployeeWorkStatus.Standby)
-            throw new InvalidOperationException($"{employee.so.Name}(은)는 대기상태가 아니라 프로젝트 투입 불가");
-
-        haveEmployees.SetStatus(employee, EmployeeWorkStatus.InProject);
-    }
-
     public void MarkProjectEmployee(Employee employee)
     {
         haveEmployees.SetStatus(employee, EmployeeWorkStatus.InProject);

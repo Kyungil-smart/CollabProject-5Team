@@ -92,13 +92,12 @@ namespace GameDevTycoon.UI.Ingame
 
         private string GetStatusString(Employee employee)
         {
-            foreach (var project in Company.Instance.projects)
+            return employee.WorkStatus switch
             {
-                if (project.GetAllEmployees().Contains(employee))
-                    return $"{project.userNamed.Value} 진행중";
-            }
-            // [TODO: 교육 시스템 연결 후 교육활동 참여중 상태 추가]
-            return "대기중";
+                EmployeeWorkStatus.InProject => "프로젝트중",
+                EmployeeWorkStatus.InTraining => "교육중",
+                _ => "대기중"
+            };
         }
 
         private void SpawnTag(Transform anchor, DepartmentTagView prefab, Role role)
