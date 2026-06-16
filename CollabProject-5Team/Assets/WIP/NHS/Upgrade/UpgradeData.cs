@@ -1,13 +1,13 @@
-using NUnit.Framework;
-using UnityEngine;
+using UnityEngine;  
 using System.Collections.Generic;
 
+[System.Serializable]
 public struct UpgradeRequired
 {
-    int gold;
-    int dailyGold;
-    int reputation;
-    int loyality;
+    public int gold;
+    public int dailyGold;
+    public int reputation;
+    public int loyality;
 
     public UpgradeRequired(int gold, int dailyGold, int reputation, int loyality)
     {

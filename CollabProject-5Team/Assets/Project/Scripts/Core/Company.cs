@@ -1,6 +1,7 @@
 using System.Collections.Generic;
-using R3;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
+using R3;
 
 public class Company : MonoBehaviour
 {
@@ -282,18 +283,54 @@ public class Company : MonoBehaviour
     public bool CheckCanUpgrade()
     {
         int curLevel = GameManager.Instance._currentOfficeIndex;
+            
+        if (curLevel >= _upgradeData.UpgradeRequiredDatas.Count || curLevel < 0) return false;
 
-        if (curLevel   >  2) return false;
-        if (reputation < 20) return false;
+        UpgradeRequired req = _upgradeData.UpgradeRequiredDatas[curLevel];
+
+        if (reputation < req.reputation) return false;
 
         return true;
     }
 
     // 회사 증축
+    // 회사 증축
     public void UpgradeOffice()
     {
-        if (!CheckCanUpgrade())
+        int currentLevel = GameManager.Instance._currentOfficeIndex;
+
+        if (!CheckCanUpgrade()) return;
+        if (currentLevel >= _upgradeData.UpgradeRequiredDatas.Count) return;
+
+        UpgradeRequired req = _upgradeData.UpgradeRequiredDatas[currentLevel];
+
+        if (gold.Value < req.gold)
+        {
+            Debug.LogWarning("골드가 부족합니다.");
             return;
+        }
+
+        // 재화 차감
+        gold.Value -= req.gold;
+
+        // 스탯 추가 (현재 레벨업 대상 보상 스탯 반영)
+        reputation += req.reputation;
+
+        // 직원 충성도 강화 (SO 오염 방지 -> MutableData에 반영)
+        var empList = _EmployeeManager.Instance?.haveEmployees?.haveEmployeeList;
+        if (empList != null)
+        {
+            foreach (var emp in empList)
+            {
+                if (emp?.MutableData != null)
+                {
+                    emp.MutableData.loyalty += req.loyality;
+                }
+            }
+        }
+
+        // 대기 및 연출 제어를 위해 비동기 실행 흐름으로 호출
+        GameManager.Instance.UpgradeOfficeAsync().Forget();
     }
 
     #region 세이브/로드
