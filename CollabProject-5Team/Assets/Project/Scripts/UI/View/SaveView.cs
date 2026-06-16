@@ -1,3 +1,4 @@
+using GameDevTycoon.UI.Title;
 using R3;
 using TMPro;
 using UnityEngine;
@@ -136,13 +137,5 @@ namespace GameDevTycoon.UI.Ingame
             if (image != null)
                 image.sprite = sprite;
         }
-    }
-
-    public sealed class SaveSlotData
-    {
-        public string companyName;
-        public string dateTime;
-        public string gold;
-        public int employeeCount;
     }
 }
