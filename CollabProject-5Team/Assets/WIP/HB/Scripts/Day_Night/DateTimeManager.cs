@@ -175,6 +175,7 @@ public class DateTimeManager : MonoBehaviour
 
             ProgressDay();
             ResetDayStatus();
+            OnDay?.Invoke();
         }
     }
 

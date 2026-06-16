@@ -39,11 +39,13 @@ namespace GameDevTycoon.UI.Ingame
             BindButtons();
             BindQuestBanner();
             DateTimeManager.OnReportEnd += SwitchToNight;
+            DateTimeManager.OnDay += OnNewDay;
         }
 
         private void OnDestroy()
         {
             DateTimeManager.OnReportEnd -= SwitchToNight;
+            DateTimeManager.OnDay -= OnNewDay;
         }
 
         public void SwitchToNight()
@@ -140,8 +142,14 @@ namespace GameDevTycoon.UI.Ingame
             _view.SetTimeLabel($"{dtm.currentWeek.Value}주 {dtm.GetDayName()}");
         }
 
+        private void OnNewDay()
+        {
+            _view.SetWorkStartActive(true);
+        }
+
         private void OnWorkStartClicked()
         {
+            _view.SetWorkStartActive(false);
             QuestManager.Instance.StartDailyQuest();
 
             // 참조한 플레이어 책상의 데스크탑으로 이동하도록 수정함
