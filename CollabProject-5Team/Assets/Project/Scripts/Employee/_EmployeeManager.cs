@@ -81,7 +81,7 @@ public class _EmployeeManager : MonoBehaviour
     public void AssignProjectEmployee(Employee employee)
     {
         if (employee.WorkStatus != EmployeeWorkStatus.Standby)
-            throw new InvalidOperationException($"{employee.so.Name} 吏곸썝? ?湲?以묒씪 ?뚮쭔 ?꾨줈?앺듃???ъ엯?????덉뒿?덈떎.");
+            throw new InvalidOperationException($"{employee.so.Name}(은)는 대기상태가 아니라 프로젝트 투입 불가");
 
         haveEmployees.SetStatus(employee, EmployeeWorkStatus.InProject);
     }

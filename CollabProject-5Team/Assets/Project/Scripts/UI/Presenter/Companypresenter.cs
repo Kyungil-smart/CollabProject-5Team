@@ -115,7 +115,7 @@ namespace GameDevTycoon.UI.Ingame
                 employeeCount: GetEmployeeCount(),
                 releasedGameCount: company.completedProjects.Count,
                 reputation: company.reputation,
-                popularity: 0,        // [TODO: CompanySO.popularity 연결]
+                popularity: company.popularity,
                 cohesion: "좋음",   // [TODO: 내부결속력 단계 문자열 연결]
                 gold: company.gold.Value,
                 totalRevenue: 0         // [TODO: 누적매출액 연결]
@@ -269,8 +269,7 @@ namespace GameDevTycoon.UI.Ingame
 
         private static int GetEmployeeCount()
         {
-            // [TODO: _EmployeeManager.Instance.haveEmployees 연결]
-            return 0;
+            return _EmployeeManager.Instance.haveEmployees.haveEmployeeList.Count;
         }
     }
 

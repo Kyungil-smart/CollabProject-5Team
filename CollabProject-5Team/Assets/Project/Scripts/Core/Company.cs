@@ -269,6 +269,7 @@ public class Company : MonoBehaviour
         }
     }
 
+    #region 세이브/로드
     public void ExportCompanyData(SaveData data)
     {
         data.company_Name = this.name;
@@ -281,6 +282,7 @@ public class Company : MonoBehaviour
         data.company_WeeklyCost = this.weeklyCost;
         data.company_DailyProfit = this.dailyProfit;
         data.company_WeeklyProfit = this.weeklyProfit;
+        data.company_TotalRevenue = this.totalRevenue;
 
         data.completedProjectsData.Clear();
 
@@ -325,6 +327,11 @@ public class Company : MonoBehaviour
         this.popularity = data.company_Popularity;
         this.reputation = data.company_Reputation;
 
+        this.weeklyCost = data.company_WeeklyCost;
+        this.dailyProfit = data.company_DailyProfit;
+        this.weeklyProfit = data.company_WeeklyProfit;
+        this.totalRevenue = data.company_TotalRevenue;
+
         completedProjects.Clear();
         if (data.completedProjectsData != null)
         {
@@ -365,4 +372,5 @@ public class Company : MonoBehaviour
             }
         }
     }
+    #endregion
 }

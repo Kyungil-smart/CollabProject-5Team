@@ -121,14 +121,7 @@ public class Project : MonoBehaviour
         if (targetList.Contains(e))
             return true;
 
-        if (targetList.Count >= MaxEmployeePerPart)
-        {
-            Debug.LogWarning($"[{userNamed.Value}] {e.so.role} 파트 투입 슬롯이 가득 찼습니다.");
-            return false;
-        }
-
         _EmployeeManager.Instance.AssignProjectEmployee(e); //직원 상태 변경
-
 
         targetList.Add(e);
         Debug.Log($"[{userNamed.Value}] {e.so.Name} 직원이 {e.so.role} 파트로 투입되었습니다.");
@@ -352,6 +345,8 @@ public class Project : MonoBehaviour
             if (empId == -1) continue;
 
             Employee employee = hiredList.Find(e => e.so.id == empId);
+            if (employee == null) continue;
+
             targetList.Add(employee);
             _EmployeeManager.Instance.MarkProjectEmployee(employee);
         }
