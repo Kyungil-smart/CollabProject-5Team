@@ -59,13 +59,13 @@ public class EmployeeSaveData
 
     public EmployeeWorkStatus workStatus;
 
-    public int trainingRemainingWeeks;
-    public int trainingStartedWeek;
+    public int    trainingRemainingWeeks;
+    public int    trainingStartedWeek;
     public string trainingCourseName;
-    public int trainingCost;
-    public int trainingMinAbilityDelta;
-    public int trainingMaxAbilityDelta;
-    public float trainingFailureRate;
+    public int    trainingCost;
+    public int    trainingMinAbilityDelta;
+    public int    trainingMaxAbilityDelta;
+    public float  trainingFailureRate;
     public EmployeeMutableData trainingStartData;
 }
 
