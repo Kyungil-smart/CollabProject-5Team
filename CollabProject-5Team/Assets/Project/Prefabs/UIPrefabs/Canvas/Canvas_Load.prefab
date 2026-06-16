@@ -2260,6 +2260,8 @@ GameObject:
   - component: {fileID: 1829741059229174870}
   - component: {fileID: 1076194204730000638}
   - component: {fileID: 6864569477049876947}
+  - component: {fileID: 1354126425058799591}
+  - component: {fileID: 1833756450982837649}
   m_Layer: 5
   m_Name: Canvas_Load
   m_TagString: Untagged
@@ -2350,6 +2352,62 @@ MonoBehaviour:
   m_BlockingMask:
     serializedVersion: 2
     m_Bits: 4294967295
+--- !u!114 &1354126425058799591
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4047928490665459400}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 624052db38e2db6469cfdab15dba148b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _loadPopup: {fileID: 5355271230476791951}
+  _closeButton: {fileID: 3694553074653475198}
+  _autoSlotButton: {fileID: 1151062962836959270}
+  _autoSavedGroup: {fileID: 5494689544637352608}
+  _autoEmptyGroup: {fileID: 467207318976210780}
+  _autoCompanyNameLabel: {fileID: 9062587115763409167}
+  _autoDateTimeLabel: {fileID: 6789349211926630579}
+  _autoGoldLabel: {fileID: 3867620270027688494}
+  _autoEmployeeCountLabel: {fileID: 6736770813753462319}
+  _autoSlotSelectedSprite: {fileID: 0}
+  _autoSlotDefaultSprite: {fileID: 0}
+  _slot1Button: {fileID: 5809050875349718533}
+  _slot1SavedGroup: {fileID: 6369546891435389095}
+  _slot1EmptyGroup: {fileID: 7404591349656351056}
+  _slot1CompanyNameLabel: {fileID: 8519132918967951381}
+  _slot1DateTimeLabel: {fileID: 5155790326123025234}
+  _slot1GoldLabel: {fileID: 4288626007961335719}
+  _slot1EmployeeCountLabel: {fileID: 7683422603160095058}
+  _slot1SelectedSprite: {fileID: 0}
+  _slot1DefaultSprite: {fileID: 0}
+  _slot2Button: {fileID: 6981170044600298931}
+  _slot2SavedGroup: {fileID: 802102469940498429}
+  _slot2EmptyGroup: {fileID: 1761226540161683419}
+  _slot2CompanyNameLabel: {fileID: 4922002312896952491}
+  _slot2DateTimeLabel: {fileID: 2255700457366191747}
+  _slot2GoldLabel: {fileID: 9008762951470241773}
+  _slot2EmployeeCountLabel: {fileID: 373542056913074407}
+  _slot2SelectedSprite: {fileID: 0}
+  _slot2DefaultSprite: {fileID: 0}
+  _loadButton: {fileID: 6633619579153800659}
+--- !u!114 &1833756450982837649
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4047928490665459400}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7273666bd7616f349960f4124a7f8e2c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _view: {fileID: 1354126425058799591}
+  _alertView: {fileID: 8654902207363816660, guid: b82583b22905db24a86349a98bea2b01, type: 3}
 --- !u!1 &4063085628077542582
 GameObject:
   m_ObjectHideFlags: 0
