@@ -28,9 +28,10 @@ public class SaveData
     public int    company_Level;
     public int    company_Popularity;
     public int    company_Reputation;
-    public int    company_DailyCost;
+    public int    company_WeeklyCost;
     public int    company_DailyProfit;
-    public int    company_weeklyProfit;
+    public int    company_WeeklyProfit;
+    public int    company_TotalRevenue;
 
     // 완료된 프로젝트 목록 TODO - 프로젝트가 완료 될때 여기로 넣어주세요
     public List<ProjectCompletedSaveData> completedProjectsData = new();

@@ -25,9 +25,10 @@ public class Company : MonoBehaviour
     [Header("사후 관리")]
     public int popularity;   // 회사 인기
     public int reputation;   // 회사 평판
-    public int dailyCost;    // 유지비 (프로젝트들 합산)
+    public int weeklyCost;    // 유지비
     public int dailyProfit;  // 데일리 캐시 (완료 프로젝트 합산)
     public int weeklyProfit; // 데일리캐시를 일주일동안 누적한 값 (UI 히스토리용)
+    public int totalRevenue;  // 총 누적 매출 (게임 전체 히스토리용)
 
     #region 싱글톤 설정
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
@@ -277,9 +278,9 @@ public class Company : MonoBehaviour
         data.company_Popularity = this.popularity;
         data.company_Reputation = this.reputation;
 
-        data.company_DailyCost = this.dailyCost;
+        data.company_WeeklyCost = this.weeklyCost;
         data.company_DailyProfit = this.dailyProfit;
-        data.company_weeklyProfit = this.weeklyProfit;
+        data.company_WeeklyProfit = this.weeklyProfit;
 
         data.completedProjectsData.Clear();
 
