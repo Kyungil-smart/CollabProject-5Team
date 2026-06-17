@@ -46,9 +46,9 @@ public class Project : MonoBehaviour
     public float ProgressDayBar => Mathf.Clamp01((float)day / DurationDays) * 100f;
 
     // 이벤트 발생으로 인한 수치 변화
-    //public float weeklyPlanningWeight;
-    //public float weeklyDevelopWeight;
-    //public float weeklyArtWeight;
+    public float weeklyPlanningWeight;
+    public float weeklyDevelopWeight;
+    public float weeklyArtWeight;
 
     // 보고서 승인 대기 목록 (Friday Night 생성, 역할별 다수)
     public List<Report> pendingReports = new();
@@ -121,7 +121,7 @@ public class Project : MonoBehaviour
         if (targetList.Contains(e))
             return true;
 
-        _EmployeeManager.Instance.AssignProjectEmployee(e); //직원 상태 변경
+        _EmployeeManager.Instance.MarkProjectEmployee(e);
 
         targetList.Add(e);
         Debug.Log($"[{userNamed.Value}] {e.so.Name} 직원이 {e.so.role} 파트로 투입되었습니다.");

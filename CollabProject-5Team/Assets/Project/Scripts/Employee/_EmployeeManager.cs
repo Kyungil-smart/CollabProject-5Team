@@ -77,15 +77,6 @@ public class _EmployeeManager : MonoBehaviour
     #endregion
 
     #region 상태 관리
-
-    public void AssignProjectEmployee(Employee employee)
-    {
-        if (employee.WorkStatus != EmployeeWorkStatus.Standby)
-            throw new InvalidOperationException($"{employee.so.Name}(은)는 대기상태가 아니라 프로젝트 투입 불가");
-
-        haveEmployees.SetStatus(employee, EmployeeWorkStatus.InProject);
-    }
-
     public void MarkProjectEmployee(Employee employee)
     {
         haveEmployees.SetStatus(employee, EmployeeWorkStatus.InProject);
@@ -115,6 +106,14 @@ public class _EmployeeManager : MonoBehaviour
         activeTrainings.Add(new EmployeeTrainingProgress(employee, course, DateTimeManager.Instance.currentWeek.Value));
 
         Debug.Log($"[교육] {employee.so.Name} 직원이 {course.courseName}을 시작했습니다. 비용 {course.cost}G, 기간 {TrainingDurationWeeks}주");
+    }
+
+    void InitTrainingCourses()
+    {
+        trainingCourses.Clear();
+        trainingCourses.Add(new EmployeeTrainingCourse("기본 교육", 1000, 1, 3, 0.1f));
+        trainingCourses.Add(new EmployeeTrainingCourse("전문 교육", 3000, 3, 6, 0.2f));
+        trainingCourses.Add(new EmployeeTrainingCourse("집중 교육", 5000, 5, 10, 0.3f));
     }
 
     public void TickWeeklyTraining()
@@ -155,26 +154,18 @@ public class _EmployeeManager : MonoBehaviour
         else
         {
             int delta = UnityEngine.Random.Range(course.minAbilityDelta, course.maxAbilityDelta + 1);
-            int before = employee.MutableData.ability;
             employee.AddAbilityDelta(delta);
+#if UNITY_EDITOR
+            int before = employee.MutableData.ability;
             Debug.Log($"[교육] {employee.so.Name} 직원의 {course.courseName} 성공. 능력치 {before} -> {employee.MutableData.ability}");
+#endif
         }
-
         haveEmployees.SetStatus(employee, EmployeeWorkStatus.Standby);
     }
 
     void RemoveTraining(Employee employee)
     {
         activeTrainings.Remove(GetTraining(employee));
-    }
-
-    void InitTrainingCourses()
-    {
-        if (trainingCourses.Count > 0) return;
-
-        trainingCourses.Add(new EmployeeTrainingCourse("기본 교육", 1000, 1, 3, 0.1f));
-        trainingCourses.Add(new EmployeeTrainingCourse("전문 교육", 3000, 3, 6, 0.2f));
-        trainingCourses.Add(new EmployeeTrainingCourse("집중 교육", 5000, 5, 10, 0.3f));
     }
     #endregion
 

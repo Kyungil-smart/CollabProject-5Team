@@ -1276,6 +1276,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: ReportManager
       objectReference: {fileID: 0}
+    - target: {fileID: 1535892901838676486, guid: d852079e724da6948b68bf35934b6330, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 2534335667243629290, guid: d852079e724da6948b68bf35934b6330, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -2289,7 +2293,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 660424298994184194, guid: 784d4d1f2c4795b4cbec56e163fc0a80, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4122444248155649962, guid: 784d4d1f2c4795b4cbec56e163fc0a80, type: 3}
       propertyPath: m_LocalPosition.x
@@ -2501,37 +2505,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1430552627}
   m_CullTransparentMesh: 1
---- !u!1 &1554373832
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1554373833}
-  m_Layer: 0
-  m_Name: Level3
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &1554373833
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1554373832}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 3.6353035, y: -12.166408, z: -33.380726}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1564096057 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 8286266096719058074, guid: 6c5ae5954f787ed49a62c7e5894d4715, type: 3}
@@ -3864,6 +3837,10 @@ PrefabInstance:
       propertyPath: m_AnchorMax.y
       value: 0.99983007
       objectReference: {fileID: 0}
+    - target: {fileID: 1188413019511421833, guid: fe3b3f93eea92f046b65a5628cd3e875, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 1364222832789852140, guid: fe3b3f93eea92f046b65a5628cd3e875, type: 3}
       propertyPath: m_AnchorMax.x
       value: 1
@@ -3887,10 +3864,18 @@ PrefabInstance:
     - target: {fileID: 1717335055259909067, guid: fe3b3f93eea92f046b65a5628cd3e875, type: 3}
       propertyPath: m_AnchorMin.x
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1821220846886263592, guid: fe3b3f93eea92f046b65a5628cd3e875, type: 3}
+      propertyPath: m_text
+      value: "\uBE44\uC6A9 : 5000"
       objectReference: {fileID: 0}
     - target: {fileID: 1893529195363375083, guid: fe3b3f93eea92f046b65a5628cd3e875, type: 3}
       propertyPath: m_IsActive
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2373473591779336402, guid: fe3b3f93eea92f046b65a5628cd3e875, type: 3}
+      propertyPath: m_text
+      value: "\uBE44\uC6A9 : 1000"
       objectReference: {fileID: 0}
     - target: {fileID: 2435561712665922904, guid: fe3b3f93eea92f046b65a5628cd3e875, type: 3}
       propertyPath: m_AnchorMax.x
@@ -3940,6 +3925,10 @@ PrefabInstance:
       propertyPath: _hudPresenter
       value: 
       objectReference: {fileID: 1352439378}
+    - target: {fileID: 5796817210420276314, guid: fe3b3f93eea92f046b65a5628cd3e875, type: 3}
+      propertyPath: m_text
+      value: "\uBE44\uC6A9 : 3000"
+      objectReference: {fileID: 0}
     - target: {fileID: 5822381232984552788, guid: fe3b3f93eea92f046b65a5628cd3e875, type: 3}
       propertyPath: m_AnchoredPosition.y
       value: 0.00027766547
@@ -4005,6 +3994,10 @@ PrefabInstance:
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7607442376922382128, guid: fe3b3f93eea92f046b65a5628cd3e875, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7720492922251260030, guid: fe3b3f93eea92f046b65a5628cd3e875, type: 3}
       propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
@@ -4784,4 +4777,3 @@ SceneRoots:
   - {fileID: 2866119293566667412}
   - {fileID: 1868167127}
   - {fileID: 883283753}
-  - {fileID: 1554373833}
