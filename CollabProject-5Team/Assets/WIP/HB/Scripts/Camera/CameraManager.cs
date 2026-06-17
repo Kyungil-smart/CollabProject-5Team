@@ -17,6 +17,7 @@ public class CameraManager : MonoBehaviour
     [SerializeField] private float _minSize = 5f;                            // 최대 줌
     [SerializeField] private float _maxSize = 13f;                           // 최소 줌
 
+    private MapInfo currentMapInfo;
     private Camera _cam;
     private Tweener _inertiaTweener;                                         // 관성 이동 제어
     private CompositeDisposable _disposable = new CompositeDisposable();     // R3 구독 해제용
@@ -260,53 +261,53 @@ public class CameraManager : MonoBehaviour
     /// 다이아몬드꼴맵 경계에 맞게 카메라 위치를 제한
     /// </summary>
     private Vector3 GetClampedCameraPosition(Vector3 targetPos)
-    {
+    {       
         // 카메라가 이동할 가상 목적지에서 화면 중앙으로 레이저를 쏴봄
         Ray ray = _cam.ScreenPointToRay(new Vector2(Screen.width * 0.5f, Screen.height * 0.5f));
         Vector3 rayOffset = targetPos - transform.position;
         ray.origin += rayOffset;
-
+    
         // 가상의 바닥과 레이저가 만나는 좌표를 쏨
         Plane groundPlane = new Plane(Vector3.up, Vector3.zero);
         Vector3 currentLookAtPos = Vector3.zero;
-
+    
         // 바닥에 레이저를 쏴서 좌표를 받아오고 그 곳을 바라봄
         if (groundPlane.Raycast(ray, out float enter))
         {
             currentLookAtPos = ray.GetPoint(enter);
         }
-
+    
         // 비스듬한 카메라 각돋 때문에 발생하는 카메라와 바닥 중심점 사이의 간격을 구함
         // 나중에 보정된 바닥 좌표에 이 간격을 더해 카메라 위치를 잡아줌
         Vector3 cameraToGroundOffset = targetPos - currentLookAtPos;
-
+    
         // 현재 카메라가 비추는 화면의 가로/세로 월드 크기 계산
         float camHeight = _cam.orthographicSize;
         float camWidth = camHeight * _cam.aspect;
-
+    
         // 사각형인 카메라 화면을 45도 회전된 마름모꼴 맵 경계에 맞추기 위한 작업
         // 맵이 정방형 마름모꼴이기 떄문에 45도 직각삼각형의 대각선 비율인 sin(45도) = 약 0.7을 곱함
         // 마름모 결계선과 맞닿는 카메라의 실제 대각선방향을 계산
         float scaleX = camWidth * 0.7f;
         float scaleZ = camHeight * 0.7f;
-
+    
         // Mathf.Max로 두 수를 비교해서 큰 값을 반환(음수 값을 차단하고 최하 한계선을 0으로 설정)
         // (맵의 꼭지점 - 카메라의 크기)를 빼서 카메라의 확대/축소 배율에 따라 이동할 수 있는 범위가 달라짐
         float clampWidth = Mathf.Max(0, _diamondWidth - scaleX);
         float clampHeight = Mathf.Max(0, _diamondLength - scaleZ);
-        
+    
         // X, Z를 더한 뒤 빼면 마름모꼴 바깥쪽 임의의 사각형의 가로, 세로를 구할 수 있음
         float sumXZ = currentLookAtPos.x + currentLookAtPos.z;
         float diffXZ = currentLookAtPos.x - currentLookAtPos.z;
-
+    
         // 계산한 사각형의 꼭지점 거리안으로 카메라의 움직임을 제어할 벽을 만듦
         sumXZ = Mathf.Clamp(sumXZ, -clampWidth, clampWidth);
         diffXZ = Mathf.Clamp(diffXZ, -clampHeight, clampHeight);
-
+    
         // 다시 3D월드 좌표로 역계산(더하고 뺀 값을 2로 나누면 원래 X,Z 좌표로 복구)
         currentLookAtPos.x = (sumXZ + diffXZ) * 0.5f;
         currentLookAtPos.z = (sumXZ - diffXZ) * 0.5f;
-
+    
         // 목표지점에 위에 계산해둔 거리를 더해 카메라를 움직여 줌
         return currentLookAtPos + cameraToGroundOffset;
     }
@@ -349,5 +350,21 @@ public class CameraManager : MonoBehaviour
         EventSystem.current.RaycastAll(eventData, _uiRaycastResults);
 
         return _uiRaycastResults.Count > 0;
+    }
+
+    public void MapSettings(MapInfo mapInfo)
+    {
+        this.currentMapInfo = mapInfo;
+
+        this._diamondWidth = mapInfo.DiamondWidth;
+        this._diamondLength = mapInfo.DiamondLength;
+
+        this._minSize = mapInfo.MinSize;
+        this._maxSize = mapInfo.MaxSize;
+        this._defaultSize = mapInfo.DefaultSize;
+
+        _cam.orthographicSize = Mathf.Clamp(_cam.orthographicSize, _minSize, _maxSize);
+
+        transform.position = GetClampedCameraPosition(transform.position);
     }
 }

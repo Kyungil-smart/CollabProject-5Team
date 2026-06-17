@@ -42,13 +42,20 @@ public class Company : MonoBehaviour
     {
         if (Instance != null && Instance != this) { Destroy(gameObject); return; }
         Instance = this; DontDestroyOnLoad(gameObject);
+
+        if (_upgradeData == null)
+        {
+            // UpgradeData가 일반 클래스라면 아래와 같이 생성
+            _upgradeData = new UpgradeData();
+        }
+        _upgradeData.Init();
     #endregion
     }
 
-    private void OnEnable()
-    {
-        _upgradeData.Init();
-    }
+    // private void OnEnable()
+    // {
+    //     _upgradeData.Init();
+    // }
 
     private void Start()
     {

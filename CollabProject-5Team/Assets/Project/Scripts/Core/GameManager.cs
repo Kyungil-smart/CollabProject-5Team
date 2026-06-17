@@ -3,13 +3,14 @@ using Cysharp.Threading.Tasks;
 using System.Threading.Tasks;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.AI;
 
 public class GameManager : MonoBehaviour
 {
     public static GameManager Instance;
 
     [Header("맵 관리")]
-    [SerializeField] private List<GameObject> _offices;              // 사무실 맵 프리팹
+    [SerializeField] private List<MapInfo> _offices;              // 사무실 맵 프리팹
     public int _currentOfficeIndex = 0;
 
     [Header("프리팹")]
@@ -36,22 +37,29 @@ public class GameManager : MonoBehaviour
     {
         Instance = this;
 
-        GenerateOffice();
+        
     #endregion
     }
 
     private void Start()
     {
+        GenerateOffice();
         InitializeGameAsync().Forget();
     }
 
     private void GenerateOffice()
     {
-        if (_offices == null || _offices.Count == 0)
+        if (_offices == null || _offices[_currentOfficeIndex] == null)
         {
-            Debug.LogError("GameManager: _officeMaps가 비어있습니다.");
+            Debug.LogError("GameManager: _officeMaps가 비어있습니다. 인덱스 : {_currentOfficeIndex}");
             return;
         }
+
+        MapInfo prefab = _offices[_currentOfficeIndex];
+        MapInfo firstMap = Instantiate(prefab, Vector3.zero, Quaternion.identity);
+
+        if (firstMap.PlayerSpawn == null)
+            Debug.Log($"{prefab.name} 프리팹 내부에 PlayerSpawn이 연결되지 않음");
 
         if (_currentMapTransform != null)
         {
@@ -59,10 +67,13 @@ public class GameManager : MonoBehaviour
             _currentMapTransform = null;
         }
 
-        GameObject firstMap = Instantiate(_offices[_currentOfficeIndex], Vector3.zero, Quaternion.identity);
+        // MapInfo firstMap = Instantiate(_offices[_currentOfficeIndex], Vector3.zero, Quaternion.identity);
+        // GameObject firstMap = Instantiate(_offices[_currentOfficeIndex], Vector3.zero, Quaternion.identity);
         _currentMapTransform = firstMap.transform;
 
-        FindSpawnPoints();
+        // FindSpawnPoints();
+        _currentPlayerSpawnPoint = firstMap.PlayerSpawn;
+        _currentNpcSpawnPoint = firstMap.NpcSpawn;
 
         Debug.Log($"초기 맵 생성 완료: {_offices[0].name}");
     }
@@ -71,6 +82,14 @@ public class GameManager : MonoBehaviour
     private async UniTask InitializeGameAsync()
     {
         await UniTask.Yield();
+
+        Debug.Log($"InitializeGameAsync 진입 - PlayerSpawn: {_currentPlayerSpawnPoint}, NpcSpawn: {_currentNpcSpawnPoint}");
+
+        if (_currentPlayerSpawnPoint == null)
+        {
+            Debug.LogError("스폰 포인트가 비어있습니다! Awake에서 할당이 안 되었나요?");
+            return;
+        }
 
         // 새로 생성된 맵의 퀘스트 오브젝트 루트를 QuestManager에 주입
         QuestManager.Instance?.SetQuestObjectsRoot(_currentMapTransform);
@@ -111,12 +130,20 @@ public class GameManager : MonoBehaviour
         // 2. 인덱스 증가시키고 새 맵 생성
         _currentOfficeIndex++;
 
-        GameObject newOffice = Instantiate(_offices[_currentOfficeIndex], Vector3.zero, Quaternion.identity);
-        newOffice.SetActive(true);
+        MapInfo newOffice = Instantiate(_offices[_currentOfficeIndex], Vector3.zero, Quaternion.identity);
+        // GameObject newOffice = Instantiate(_offices[_currentOfficeIndex], Vector3.zero, Quaternion.identity);
+        // newOffice.SetActive(true);
         _currentMapTransform = newOffice.transform;
 
+        if (CameraManager.Instance != null)
+        {
+            CameraManager.Instance.MapSettings(newOffice);
+        }
+
         // 스폰 포인트 찾기
-        FindSpawnPoints();
+        _currentPlayerSpawnPoint = newOffice.PlayerSpawn;
+        _currentNpcSpawnPoint = newOffice.NpcSpawn;
+        // FindSpawnPoints();
 
         // 의자 좌표 갱신
         RefreshSitPoints();
@@ -127,14 +154,39 @@ public class GameManager : MonoBehaviour
         // 플레이어 위치 갱신
         if (player != null && _currentPlayerSpawnPoint != null)
         {
-            player.transform.position = _currentPlayerSpawnPoint.position;
+            player.ResetMovementState();
+
+            // transform.position 대신 NavMeshAgent.Warp 사용
+            var agent = player.GetComponent<NavMeshAgent>();
+            if (agent != null)
+            {
+                agent.Warp(_currentPlayerSpawnPoint.position);
+            }
+            else
+            {
+                player.transform.position = _currentPlayerSpawnPoint.position;
+            }
+
             player.transform.rotation = Quaternion.identity;
         }
-        await SpawnNPCsAsync();
+
+        foreach (var npc in _activeNpcs)
+        {
+            if (npc != null)
+            {
+                npc.transform.position = _currentNpcSpawnPoint.position;
+                npc.transform.rotation = Quaternion.identity;
+
+                npc.ChangeState(new NPCIdle());
+            }
+        }
+
+        // await SpawnNPCsAsync();
 
         GotoWorkNPCs();
     }
 
+    /*
     private void FindSpawnPoints()
     {
         if (_currentMapTransform == null)
@@ -158,6 +210,7 @@ public class GameManager : MonoBehaviour
                 .FirstOrDefault(t => t.name == "NpcSpawnPoint");
         }
     }
+    */
 
     // 현재 맵에서 SitPoint 위치를 찾아 리스트 갱신
     public void RefreshSitPoints()
