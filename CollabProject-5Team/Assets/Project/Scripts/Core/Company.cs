@@ -8,7 +8,7 @@ public class Company : MonoBehaviour
     public static Company Instance;
 
     [Header("프리펩 참조")]
-    public GameObject smallProjectPrefab; // 프로젝트 프리팹 (Project 컴포넌트 포함)
+    public GameObject[] projectPrefab; // 소형, 중형, 대형 순서 (Project 컴포넌트 포함)
 
     [Header("회사 정보")]
     public string Name;
@@ -139,8 +139,9 @@ public class Company : MonoBehaviour
 
     private GameObject GetProjectPrefab(ProjectSize scale) => scale switch
     {
-        ProjectSize.small => smallProjectPrefab,
-        _ => null,
+        ProjectSize.medium => projectPrefab[1],
+        ProjectSize.large => projectPrefab[2],
+        _ => projectPrefab[0],
     };
     #endregion
 
@@ -150,7 +151,6 @@ public class Company : MonoBehaviour
         // 이전 데이터 연동
         var record = new ProjectCompleted
         {
-            projectID = project.Id,
             projectName = project.userNamed.Value,
             scale = project.Scale,
             qualityScore = Mathf.RoundToInt(project.qualityScore),
@@ -357,7 +357,6 @@ public class Company : MonoBehaviour
 
             var pData = new ProjectCompletedSaveData
             {
-                projectID       = p.projectID,
                 projectName     = p.projectName,
                 scale           = p.scale,
                 qualityScore    = p.qualityScore,
@@ -404,7 +403,6 @@ public class Company : MonoBehaviour
             {
                 var p = new ProjectCompleted
                 {
-                    projectID       = pData.projectID,
                     projectName     = pData.projectName,
                     scale           = pData.scale,
                     qualityScore    = pData.qualityScore,

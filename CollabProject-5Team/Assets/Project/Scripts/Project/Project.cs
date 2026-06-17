@@ -8,9 +8,7 @@ public class Project : MonoBehaviour
 {
     [Header(" 초기값 데이터 ")]
     public ProjectSO so;
-    public int Id => so.id;
     public string Name => so.Name;
-    public string Desc => so.desc;
     public ProjectSize Scale => so.scale;
     public int RequiredCost => so.requiredCost;
     public int MaxEmployeePerPart => so.maxEmployeePerPart;
@@ -263,9 +261,7 @@ public class Project : MonoBehaviour
     #region 세이브/로드
     public void ExportProjectData(SaveData data)
     {
-        data.activeProjectsData.project_Id = Id;
         data.activeProjectsData.project_Name = name;
-        data.activeProjectsData.project_Desc = Desc;
         data.activeProjectsData.project_Scale = Scale;
         data.activeProjectsData.project_RequiredCost = RequiredCost;
         data.activeProjectsData.project_MaxEmployeePerpart = MaxEmployeePerPart;
@@ -285,9 +281,7 @@ public class Project : MonoBehaviour
     }
     public void ImportProjectData(SaveData data)
     {
-        this.so.id = data.activeProjectsData.project_Id;
         this.so.name = data.activeProjectsData.project_Name;
-        this.so.desc = data.activeProjectsData.project_Desc;
         this.so.scale = data.activeProjectsData.project_Scale;
         this.so.requiredCost = data.activeProjectsData.project_RequiredCost;
         this.so.maxEmployeePerPart = data.activeProjectsData.project_MaxEmployeePerpart;
