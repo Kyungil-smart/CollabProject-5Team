@@ -8,7 +8,7 @@ public class Company : MonoBehaviour
     public static Company Instance;
 
     [Header("프리펩 참조")]
-    public GameObject smallProjectPrefab; // 프로젝트 프리팹 (Project 컴포넌트 포함)
+    public GameObject[] projectPrefab; // 소형, 중형, 대형 순서 (Project 컴포넌트 포함)
 
     [Header("회사 정보")]
     public string Name;
@@ -32,7 +32,7 @@ public class Company : MonoBehaviour
     public int totalRevenue;  // 총 누적 매출 (게임 전체 히스토리용)
 
     [Header("회사 업그레이드 데이터")]
-    private UpgradeData _upgradeData;
+    private UpgradeData _upgradeData = new UpgradeData();
 
     #region 싱글톤 설정
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
@@ -104,6 +104,7 @@ public class Company : MonoBehaviour
     public void StartNewProject(Project project)
     {
         gold.Value -= project.RequiredCost;
+        QuestManager.Instance.ResetWeeklyBonus();
 
         projects.Add(project);
         curProject = project;
@@ -145,8 +146,9 @@ public class Company : MonoBehaviour
 
     private GameObject GetProjectPrefab(ProjectSize scale) => scale switch
     {
-        ProjectSize.small => smallProjectPrefab,
-        _ => null,
+        ProjectSize.medium => projectPrefab[1],
+        ProjectSize.large => projectPrefab[2],
+        _ => projectPrefab[0],
     };
     #endregion
 
@@ -156,7 +158,6 @@ public class Company : MonoBehaviour
         // 이전 데이터 연동
         var record = new ProjectCompleted
         {
-            projectID = project.Id,
             projectName = project.userNamed.Value,
             scale = project.Scale,
             qualityScore = Mathf.RoundToInt(project.qualityScore),
@@ -186,7 +187,7 @@ public class Company : MonoBehaviour
     }
 
     // 완료시 직원 보상 적용
-    void ApplyCompletionEmployeeRewards(Project project)
+    public void ApplyCompletionEmployeeRewards(Project project)
     {
         int abilityDelta = PerkPolicy.CalcCompletionAbilityDelta(project.Scale, project.Grade);
         int loyaltyDelta = PerkPolicy.CalcCompletionLoyaltyDelta(project.Scale, project.Grade);
@@ -363,7 +364,6 @@ public class Company : MonoBehaviour
 
             var pData = new ProjectCompletedSaveData
             {
-                projectID       = p.projectID,
                 projectName     = p.projectName,
                 scale           = p.scale,
                 qualityScore    = p.qualityScore,
@@ -410,7 +410,6 @@ public class Company : MonoBehaviour
             {
                 var p = new ProjectCompleted
                 {
-                    projectID       = pData.projectID,
                     projectName     = pData.projectName,
                     scale           = pData.scale,
                     qualityScore    = pData.qualityScore,
