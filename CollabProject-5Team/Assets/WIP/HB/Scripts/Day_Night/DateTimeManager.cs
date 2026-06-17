@@ -2,7 +2,6 @@ using Cysharp.Threading.Tasks;
 using R3;
 using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Linq;
 using UnityEngine;
 
@@ -194,7 +193,8 @@ public class DateTimeManager : MonoBehaviour
     }
     public async UniTask ProgressNight()
     {
-        foreach (var project in Company.Instance.projects) project.ProgressNight();
+        if (Company.Instance.curProject != null)
+            Company.Instance.curProject.ProgressNight();
 
         // 완료 프로젝트 주간 정산
         Company.Instance.TickWeeklyEmployees();

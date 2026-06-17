@@ -32,7 +32,7 @@ public class Company : MonoBehaviour
     public int totalRevenue;  // 총 누적 매출 (게임 전체 히스토리용)
 
     [Header("회사 업그레이드 데이터")]
-    private UpgradeData _upgradeData;
+    private UpgradeData _upgradeData = new UpgradeData();
 
     #region 싱글톤 설정
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
@@ -97,6 +97,7 @@ public class Company : MonoBehaviour
     public void StartNewProject(Project project)
     {
         gold.Value -= project.RequiredCost;
+        QuestManager.Instance.ResetWeeklyBonus();
 
         projects.Add(project);
         curProject = project;
@@ -179,7 +180,7 @@ public class Company : MonoBehaviour
     }
 
     // 완료시 직원 보상 적용
-    void ApplyCompletionEmployeeRewards(Project project)
+    public void ApplyCompletionEmployeeRewards(Project project)
     {
         int abilityDelta = PerkPolicy.CalcCompletionAbilityDelta(project.Scale, project.Grade);
         int loyaltyDelta = PerkPolicy.CalcCompletionLoyaltyDelta(project.Scale, project.Grade);

@@ -42,7 +42,18 @@ public class Employee : MonoBehaviour
 
     public void AddAbilityDelta(int delta)
     {
-        MutableData.ability += delta;
+        int ability = MutableData.ability;
+        int adjustedDelta = delta;
+
+        if (delta > 0)
+        {
+            float growthRate = ability <= 40 ? 1.0f :
+                               ability <= 60 ? 0.8f :
+                               ability <= 80 ? 0.6f : 0.4f;
+            adjustedDelta = Mathf.CeilToInt(delta * growthRate);//올림
+        }
+
+        MutableData.ability = ability + adjustedDelta;
         MutableData.property1 = MutableData.ability;
         MutableData.property2 = MutableData.ability;
         MutableData.property3 = MutableData.ability;

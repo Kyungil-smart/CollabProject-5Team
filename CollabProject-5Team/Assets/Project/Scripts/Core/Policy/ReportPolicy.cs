@@ -53,11 +53,12 @@ public static class ReportPolicy
         EmployeeMutableData d = e.MutableData;
         TraitStat[] stats = GetRoleStats(e.so.role);
 
+        int ability = CalcLoyaltyAdjustedAbility(d.ability, d.loyalty);
         var scores = new Dictionary<TraitStat, float>
         {
-            [stats[0]] = d.ability,
-            [stats[1]] = d.ability,
-            [stats[2]] = d.ability,
+            [stats[0]] = ability,
+            [stats[1]] = ability,
+            [stats[2]] = ability,
         };
 
         // 등급별 특성 delta (대표/보조/리스크)
@@ -76,6 +77,16 @@ public static class ReportPolicy
             result[i] = Mathf.Clamp(scores[stats[i]], 0f, 100f);
 
         return result;
+    }
+
+    public static int CalcLoyaltyAdjustedAbility(int ability, int loyalty)
+    {
+        float rate = loyalty >= 81 ? 1.3f :
+                     loyalty >= 61 ? 1.15f :
+                     loyalty >= 41 ? 1.0f :
+                     loyalty >= 21 ? 0.85f : 0.7f;
+
+        return Mathf.Clamp((int)(ability * rate), 0, 100);
     }
 
     // 특성이 영향을 주는 stat에 delta 적용
