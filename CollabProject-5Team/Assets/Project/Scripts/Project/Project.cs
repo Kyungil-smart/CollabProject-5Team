@@ -8,9 +8,7 @@ public class Project : MonoBehaviour
 {
     [Header(" 초기값 데이터 ")]
     public ProjectSO so;
-    public int Id => so.id;
     public string Name => so.Name;
-    public string Desc => so.desc;
     public ProjectSize Scale => so.scale;
     public int RequiredCost => so.requiredCost;
     public int MaxEmployeePerPart => so.maxEmployeePerPart;
@@ -45,11 +43,6 @@ public class Project : MonoBehaviour
     public float charmScore;      // 매력도 점수 (아트)
     public float ProgressDayBar => Mathf.Clamp01((float)day / DurationDays) * 100f;
 
-    // 이벤트 발생으로 인한 수치 변화
-    public float weeklyPlanningWeight;
-    public float weeklyDevelopWeight;
-    public float weeklyArtWeight;
-
     // 보고서 승인 대기 목록 (Friday Night 생성, 역할별 다수)
     public List<Report> pendingReports = new();
     // 플레이어가 역할당 1개씩 선택한 보고서
@@ -75,8 +68,13 @@ public class Project : MonoBehaviour
     bool _isRuntimeInitialized;
     public void InitializeRuntime(string projectName)
     {
-        EnsureInitialized();
+        if (_isRuntimeInitialized) return;
+        _isRuntimeInitialized = true;
+
         userNamed.Value = projectName;
+        plannings = new();
+        programmer = new();
+        arts = new();
         day = 0;
         nightCount = 0;
         qualityScore = 0f;
@@ -87,16 +85,6 @@ public class Project : MonoBehaviour
         pendingReports.Clear();
         selectedReports.Clear();
         isReportDraftsReady = false;
-    }
-    private void EnsureInitialized()
-    {
-        if (_isRuntimeInitialized) return;
-
-        userNamed.Value = Name;
-        plannings = new List<Employee>();
-        programmer = new List<Employee>();
-        arts = new List<Employee>();
-        _isRuntimeInitialized = true;
     }
 
     public bool HireEmployee(Employee e)
@@ -128,7 +116,7 @@ public class Project : MonoBehaviour
         return true;
     }
 
-    // 프로젝트에서 직원을 제거하고 해고 처리
+    // 프로젝트에서 직원을 제거
     public void RemoveEmployee(Employee e)
     {
         List<Employee> targetList = e.so.role switch
@@ -138,12 +126,6 @@ public class Project : MonoBehaviour
             Role.ARTIST => arts,
             _ => null,
         };
-
-        if (targetList == null)
-        {
-            Debug.LogWarning($"[{userNamed.Value}] {e.so.Name}의 파트({e.so.role})해고는 구현되지 않았습니다.");
-            return;
-        }
 
         targetList.Remove(e);
         Debug.Log($"[{userNamed.Value}] {e.so.Name} 직원이 {e.so.role} 파트에서 제거되었습니다.");
@@ -161,15 +143,15 @@ public class Project : MonoBehaviour
     // 금요일 밤(평일 5일 경과 후) 주 1회 호출되는 메서드
     public void ProgressNight()
     {
-        Debug.Log($"{userNamed}: 밤 이벤트 발생!");
         // 주간 정산
         foreach (var e in GetAllEmployees())
         {
             e.SaveCurrentData();
         }
 
-        // 보고서 산출
-        GenerateReportDrafts();
+        // 마지막 목표날이 아니라면 보고서 산출
+        if (day < DurationDays) GenerateReportDrafts();
+        else Finish();
     }
 
     #region 보고서 부분
@@ -249,9 +231,9 @@ public class Project : MonoBehaviour
         charmScore = (charmScore * (nightCount - 1) + charmThisNight) / nightCount;
         CurScore = (qualityScore + stabilityScore + charmScore) / 3f;
 #if UNITY_EDITOR
-        Debug.Log($"[{userNamed.Value}] {nightCount}주차 점수 | " +
+        Debug.Log($"<color=green>[{userNamed.Value}] {nightCount}주차 점수 | " +
                   $"완성도={qualThisNight:F1} 안정성={stabThisNight:F1} 매력도={charmThisNight:F1}\n" +
-                  $"  누적 평균 → 완성도={qualityScore:F1} 안정성={stabilityScore:F1} 매력도={charmScore:F1} | curScore={CurScore:F1}");
+                  $"  누적 평균 → 완성도={qualityScore:F1} 안정성={stabilityScore:F1} 매력도={charmScore:F1} | curScore={CurScore:F1}</color>");
 #endif
         foreach (var report in pendingReports)
         {
@@ -262,9 +244,6 @@ public class Project : MonoBehaviour
         pendingReports.Clear();
         selectedReports.Clear();
         isReportDraftsReady = false;
-
-        if (day >= DurationDays)
-            Finish();
     }
     #endregion
 
@@ -282,9 +261,7 @@ public class Project : MonoBehaviour
     #region 세이브/로드
     public void ExportProjectData(SaveData data)
     {
-        data.activeProjectsData.project_Id = Id;
         data.activeProjectsData.project_Name = name;
-        data.activeProjectsData.project_Desc = Desc;
         data.activeProjectsData.project_Scale = Scale;
         data.activeProjectsData.project_RequiredCost = RequiredCost;
         data.activeProjectsData.project_MaxEmployeePerpart = MaxEmployeePerPart;
@@ -304,9 +281,7 @@ public class Project : MonoBehaviour
     }
     public void ImportProjectData(SaveData data)
     {
-        this.so.id = data.activeProjectsData.project_Id;
         this.so.name = data.activeProjectsData.project_Name;
-        this.so.desc = data.activeProjectsData.project_Desc;
         this.so.scale = data.activeProjectsData.project_Scale;
         this.so.requiredCost = data.activeProjectsData.project_RequiredCost;
         this.so.maxEmployeePerPart = data.activeProjectsData.project_MaxEmployeePerpart;
@@ -314,7 +289,6 @@ public class Project : MonoBehaviour
 
         this.day = data.activeProjectsData.project_day;
 
-        EnsureInitialized();
         this.userNamed.Value = data.activeProjectsData.project_userNamed;
 
         this.qualityScore = data.activeProjectsData.project_QualityScore;

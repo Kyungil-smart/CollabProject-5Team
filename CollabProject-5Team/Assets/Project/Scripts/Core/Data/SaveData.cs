@@ -73,9 +73,7 @@ public class EmployeeSaveData
 public class CurrentProjectSaveData
 {
     [Header("초기값 데이터")]
-    public int         project_Id;
-    public string      project_Name;   
-    public string      project_Desc;
+    public string      project_Name;
     public ProjectSize project_Scale;
     public int         project_RequiredCost;
     public int         project_MaxEmployeePerpart;            
@@ -101,7 +99,6 @@ public class CurrentProjectSaveData
 [Serializable]
 public class ProjectCompletedSaveData
 {
-    public int         projectID;
     public string      projectName;
     public ProjectSize scale;
     public int         qualityScore;
