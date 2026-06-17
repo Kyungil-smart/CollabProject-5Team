@@ -16,7 +16,7 @@ public class Project : MonoBehaviour
 
     [Header(" 런타임 데이터 ")]
     public int day;      // 현재 진행 일수 (영업일 기준)
-    public ReactiveProperty<string> userNamed = new("a"); // 유저가 붙인 프로젝트 이름
+    public ReactiveProperty<string> userNamed = new(""); // 유저가 붙인 프로젝트 이름
 
     // 투입된 직원
     public List<Employee> plannings = new();
@@ -262,9 +262,14 @@ public class Project : MonoBehaviour
     public void ExportProjectData(SaveData data)
     {
         // so 대신에 프로젝트 존재 여부와 규모를 확인
+        data.activeProjectsData.project_Scale = Scale;
 
         data.activeProjectsData.project_day = day;
         data.activeProjectsData.project_userNamed = userNamed.Value;
+        data.activeProjectsData.project_NightCount = nightCount;
+        data.activeProjectsData.project_Genre = genre;
+        data.activeProjectsData.project_ArtStyle = artStyle;
+        data.activeProjectsData.project_Engine = engine;
 
         data.activeProjectsData.project_PlanningEmployeeIds = ConvertEmployeeListToIdList(plannings);
         data.activeProjectsData.project_ProgrammerEmployeeIds = ConvertEmployeeListToIdList(programmer);
@@ -278,15 +283,21 @@ public class Project : MonoBehaviour
     public void ImportProjectData(SaveData data)
     {
         // so 대신에 프로젝트 존재 여부와 규모를 확인
-
         this.day = data.activeProjectsData.project_day;
-
         this.userNamed.Value = data.activeProjectsData.project_userNamed;
+        this.nightCount = data.activeProjectsData.project_NightCount;
+        this.genre = data.activeProjectsData.project_Genre;
+        this.artStyle = data.activeProjectsData.project_ArtStyle;
+        this.engine = data.activeProjectsData.project_Engine;
 
         this.qualityScore = data.activeProjectsData.project_QualityScore;
         this.stabilityScore = data.activeProjectsData.project_StabilityScore;
         this.charmScore = data.activeProjectsData.project_CharmScore;
         this.CurScore = data.activeProjectsData.project_CurScore;
+        this.isFinished.Value = false;
+        this.pendingReports.Clear();
+        this.selectedReports.Clear();
+        this.isReportDraftsReady = false;
 
         RestoreEmployeeList(data.activeProjectsData.project_PlanningEmployeeIds, plannings);
         RestoreEmployeeList(data.activeProjectsData.project_ProgrammerEmployeeIds, programmer);
@@ -305,6 +316,7 @@ public class Project : MonoBehaviour
     private void RestoreEmployeeList(List<int> ids, List<Employee> targetList)
     {
         targetList.Clear();
+
         var hiredList = _EmployeeManager.Instance.haveEmployees.haveEmployeeList;
 
         foreach (int empId in ids)

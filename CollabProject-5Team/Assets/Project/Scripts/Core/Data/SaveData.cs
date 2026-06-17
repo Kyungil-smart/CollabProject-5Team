@@ -73,10 +73,16 @@ public class EmployeeSaveData
 public class CurrentProjectSaveData
 {
     // so 대신에 프로젝트 존재 여부와 규모를 확인
+    public bool hasActiveProject;
+    public ProjectSize project_Scale;
 
     [Header(" 런타임 데이터 ")]
     public int project_day;
     public string project_userNamed;
+    public int project_NightCount;
+    public string project_Genre;
+    public string project_ArtStyle;
+    public string project_Engine;
 
     // 투입된 직원
     public List<int> project_PlanningEmployeeIds;
