@@ -2,6 +2,7 @@ using R3;
 using UnityEngine;
 using UnityEngine.UI;
 using GameDevTycoon.UI.Ingame;
+using Cysharp.Threading.Tasks;
 
 /// <summary>
 /// 테스트 전용 디버그 패널 Presenter.
@@ -17,6 +18,7 @@ public sealed class DebugUIPresenter : MonoBehaviour
     [SerializeField] private Button _openProjectButton;
     [SerializeField] private Button _openReportButton;
     [SerializeField] private Button _addGoldButton;
+    [SerializeField] private Button _upgradeOfficeButton;
 
     // ReportPresenter.OnNightStarted()는 private이므로 이벤트를 통해 우회
     private HRPresenter _hrPresenter;
@@ -54,6 +56,10 @@ public sealed class DebugUIPresenter : MonoBehaviour
 
         _addGoldButton.OnClickAsObservable()
             .Subscribe(_ => Company.Instance.gold.Value += 10000)
+            .AddTo(this);
+        
+        _upgradeOfficeButton.OnClickAsObservable()
+            .Subscribe(_ => GameManager.Instance?.UpgradeOfficeAsync().Forget())
             .AddTo(this);
     }
 
