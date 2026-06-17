@@ -34,31 +34,18 @@ public class Company : MonoBehaviour
     [Header("회사 업그레이드 데이터")]
     private UpgradeData _upgradeData = new UpgradeData();
 
-    #region 싱글톤 설정
+    #region DontDestroyOnLoad 없는 Instance
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     public static void Init() => Instance = null;
-
     private void Awake()
     {
-        if (Instance != null && Instance != this) { Destroy(gameObject); return; }
-        Instance = this; DontDestroyOnLoad(gameObject);
-
-        if (_upgradeData == null)
-        {
-            // UpgradeData가 일반 클래스라면 아래와 같이 생성
-            _upgradeData = new UpgradeData();
-        }
-        _upgradeData.Init();
+        Instance = this;
     #endregion
     }
 
-    // private void OnEnable()
-    // {
-    //     _upgradeData.Init();
-    // }
-
     private void Start()
     {
+        _upgradeData.Init();
         InitProjects();
     }
 

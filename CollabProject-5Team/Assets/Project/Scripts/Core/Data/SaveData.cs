@@ -72,12 +72,7 @@ public class EmployeeSaveData
 [System.Serializable]
 public class CurrentProjectSaveData
 {
-    [Header("초기값 데이터")]
-    public string      project_Name;
-    public ProjectSize project_Scale;
-    public int         project_RequiredCost;
-    public int         project_MaxEmployeePerpart;            
-    public int         project_DurationDays;
+    // so 대신에 프로젝트 존재 여부와 규모를 확인
 
     [Header(" 런타임 데이터 ")]
     public int project_day;

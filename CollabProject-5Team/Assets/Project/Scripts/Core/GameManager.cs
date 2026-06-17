@@ -29,15 +29,12 @@ public class GameManager : MonoBehaviour
     [Header("자동 주입")]
     public PlayerMove player;
 
-    #region DontDestroyOnLoad없는 그냥 Instance 설정
+    #region DontDestroyOnLoad 없는 Instance
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     public static void Init() => Instance = null;
-
     private void Awake()
     {
         Instance = this;
-
-        
     #endregion
     }
 

@@ -261,11 +261,7 @@ public class Project : MonoBehaviour
     #region 세이브/로드
     public void ExportProjectData(SaveData data)
     {
-        data.activeProjectsData.project_Name = name;
-        data.activeProjectsData.project_Scale = Scale;
-        data.activeProjectsData.project_RequiredCost = RequiredCost;
-        data.activeProjectsData.project_MaxEmployeePerpart = MaxEmployeePerPart;
-        data.activeProjectsData.project_DurationDays = DurationDays;
+        // so 대신에 프로젝트 존재 여부와 규모를 확인
 
         data.activeProjectsData.project_day = day;
         data.activeProjectsData.project_userNamed = userNamed.Value;
@@ -281,17 +277,14 @@ public class Project : MonoBehaviour
     }
     public void ImportProjectData(SaveData data)
     {
-        this.so.name = data.activeProjectsData.project_Name;
-        this.so.scale = data.activeProjectsData.project_Scale;
-        this.so.requiredCost = data.activeProjectsData.project_RequiredCost;
-        this.so.maxEmployeePerPart = data.activeProjectsData.project_MaxEmployeePerpart;
-        this.so.durationDays = data.activeProjectsData.project_DurationDays;
+        // so 대신에 프로젝트 존재 여부와 규모를 확인
 
         this.day = data.activeProjectsData.project_day;
 
         this.userNamed.Value = data.activeProjectsData.project_userNamed;
 
         this.qualityScore = data.activeProjectsData.project_QualityScore;
+        this.stabilityScore = data.activeProjectsData.project_StabilityScore;
         this.charmScore = data.activeProjectsData.project_CharmScore;
         this.CurScore = data.activeProjectsData.project_CurScore;
 

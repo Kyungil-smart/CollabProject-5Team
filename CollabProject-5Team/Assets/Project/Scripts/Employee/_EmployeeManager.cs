@@ -21,10 +21,9 @@ public class _EmployeeManager : MonoBehaviour
     public List<EmployeeTrainingProgress> activeTrainings = new();
     public const int TrainingDurationWeeks = 4;
 
-    #region 싱글톤 (DontDestroyOnLoad 없는 그냥 Instance)
+    #region DontDestroyOnLoad 없는 Instance
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     public static void Init() => Instance = null;
-
     private void Awake()
     {
         Instance = this;

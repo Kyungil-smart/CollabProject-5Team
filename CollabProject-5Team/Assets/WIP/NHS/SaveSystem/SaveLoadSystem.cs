@@ -29,8 +29,6 @@ public class SaveLoadSystem : MonoBehaviour
 
     public void SaveGame(int slot)
     {
-        if (slot < 0 || slot >= MaxSaveSlots) return;
-
         SaveData data = new SaveData();
 
         if(DateTimeManager.Instance != null)
@@ -56,8 +54,6 @@ public class SaveLoadSystem : MonoBehaviour
 
     public SaveData LoadGame(int slot)
     {
-        if (slot < 0 || slot >= MaxSaveSlots) return null;
-
         string  keyName = GetSaveKey(slot);
         string jsonData = LoadEncryptedData(keyName);
 
