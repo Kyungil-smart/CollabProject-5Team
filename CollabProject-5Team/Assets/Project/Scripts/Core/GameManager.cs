@@ -1,7 +1,7 @@
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
+using System.Threading.Tasks;
+using System.Linq;
 using UnityEngine;
 
 public class GameManager : MonoBehaviour
@@ -45,15 +45,6 @@ public class GameManager : MonoBehaviour
         InitializeGameAsync().Forget();
     }
 
-    private void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.P))
-        {
-            Debug.Log("P 키 입력: 사무실 업그레이드를 시도합니다.");
-            UpgradeOffice();
-        }
-    }
-
     private void GenerateOffice()
     {
         if (_offices == null || _offices.Count == 0)
@@ -69,9 +60,7 @@ public class GameManager : MonoBehaviour
         }
 
         GameObject firstMap = Instantiate(_offices[_currentOfficeIndex], Vector3.zero, Quaternion.identity);
-        firstMap.SetActive(true);
         _currentMapTransform = firstMap.transform;
-        //_currentOfficeIndex = 0;
 
         FindSpawnPoints();
 
@@ -102,12 +91,14 @@ public class GameManager : MonoBehaviour
     }
 
     // 사무실 업그레이드 시 맵 교체 및 NPC재배치
-    public void UpgradeOffice()
+    public async UniTask UpgradeOfficeAsync()
     {
         // 현재 맵의 인덱스가 맵의 개수와 같거나 크면 리턴
         if (_currentOfficeIndex + 1 >= _offices.Count) return;
 
         LeaveWorkNPCs();
+
+        await UniTask.Yield();
 
         // 1. 기존 맵 파괴
         if (_currentMapTransform != null)
@@ -137,12 +128,11 @@ public class GameManager : MonoBehaviour
         if (player != null && _currentPlayerSpawnPoint != null)
         {
             player.transform.position = _currentPlayerSpawnPoint.position;
-            player.transform.rotation = Quaternion.identity; // 필요하면 회전도 초기화
+            player.transform.rotation = Quaternion.identity;
         }
+        await SpawnNPCsAsync();
 
         GotoWorkNPCs();
-
-        SpawnNPCsAsync().Forget();
     }
 
     private void FindSpawnPoints()
@@ -277,7 +267,6 @@ public class GameManager : MonoBehaviour
             }
         }
     }
-
 
     // 새로 채용한 직원 ID를 담아둠
     public void ReserveHire(int employeeID)
