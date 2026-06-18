@@ -1,6 +1,6 @@
+using R3;
 using System;
 using System.Collections.Generic;
-using R3;
 using UnityEngine;
 
 public class _EmployeeManager : MonoBehaviour
@@ -19,7 +19,7 @@ public class _EmployeeManager : MonoBehaviour
     public EmployeeList employeeList;
     public HaveEmployees haveEmployees;
     public List<EmployeeTrainingProgress> activeTrainings = new();
-    public const int TrainingDurationWeeks = 1;
+    public const int TrainingDurationWeeks = 4;
 
     #region DontDestroyOnLoad 없는 Instance
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
@@ -148,15 +148,14 @@ public class _EmployeeManager : MonoBehaviour
 
         if (UnityEngine.Random.value < course.failureRate)
         {
-            Debug.Log($"[교육] {employee.so.Name} 직원의 {course.courseName} 실패. 능력치는 변동되지 않았습니다.");
+            Debug.Log($"[EM] {employee.so.Name} 직원의 {course.courseName} 실패. 능력치는 변동되지 않았습니다.");
         }
         else
         {
             int delta = UnityEngine.Random.Range(course.minAbilityDelta, course.maxAbilityDelta + 1);
             employee.MutableData.ability += delta; // 성장패널티 없음
 #if UNITY_EDITOR
-            int before = employee.MutableData.ability;
-            Debug.Log($"[교육] {employee.so.Name} 직원의 {course.courseName} 성공. 능력치 {before} -> {employee.MutableData.ability}");
+            Debug.Log($"[EM] {employee.so.Name} 직원의 {course.courseName} 성공. 증가량:{delta} 능력치:{employee.MutableData.ability}");
 #endif
         }
         haveEmployees.SetStatus(employee, EmployeeWorkStatus.Standby);
