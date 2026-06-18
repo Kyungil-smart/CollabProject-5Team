@@ -10,10 +10,6 @@ public class EmployeeTrainingCourse
     public int maxAbilityDelta;
     [Range(0f, 1f)] public float failureRate;
 
-    public EmployeeTrainingCourse()
-    {
-    }
-
     public EmployeeTrainingCourse(string courseName, int cost, int minAbilityDelta, int maxAbilityDelta, float failureRate)
     {
         this.courseName = courseName;

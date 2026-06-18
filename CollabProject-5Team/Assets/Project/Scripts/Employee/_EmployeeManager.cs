@@ -19,7 +19,7 @@ public class _EmployeeManager : MonoBehaviour
     public EmployeeList employeeList;
     public HaveEmployees haveEmployees;
     public List<EmployeeTrainingProgress> activeTrainings = new();
-    public const int TrainingDurationWeeks = 4;
+    public const int TrainingDurationWeeks = 1;
 
     #region DontDestroyOnLoad 없는 Instance
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
@@ -153,7 +153,7 @@ public class _EmployeeManager : MonoBehaviour
         else
         {
             int delta = UnityEngine.Random.Range(course.minAbilityDelta, course.maxAbilityDelta + 1);
-            employee.AddAbilityDelta(delta);
+            employee.MutableData.ability += delta; // 성장패널티 없음
 #if UNITY_EDITOR
             int before = employee.MutableData.ability;
             Debug.Log($"[교육] {employee.so.Name} 직원의 {course.courseName} 성공. 능력치 {before} -> {employee.MutableData.ability}");
