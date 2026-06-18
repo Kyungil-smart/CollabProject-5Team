@@ -1,8 +1,7 @@
 using R3;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 public class DateTimeManager : MonoBehaviour
@@ -133,7 +132,7 @@ public class DateTimeManager : MonoBehaviour
     /// 퇴근 버튼을 누르면 다음 날짜를 계산하는 로직
     /// </summary>
     [ContextMenu("퇴근 처리")]
-    public async Task OnClickEndDayButton()
+    public async UniTask OnClickEndDayButton()
     {
         // 금요일 낮에 퇴근하면 금요일 밤으로 전환
         if (currentDay == DayOfWeek.Friday && currentTime == TimeOfDay.Day)

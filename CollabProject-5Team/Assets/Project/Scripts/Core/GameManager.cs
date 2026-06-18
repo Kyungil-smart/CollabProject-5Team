@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
-using System.Threading.Tasks;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.AI;
@@ -135,12 +134,11 @@ public class GameManager : MonoBehaviour
             _currentMapTransform = null;
         }
 
-        // 2. 인덱스 증가시키고 새 맵 생성
+        // 인덱스 증가시키고 새 맵 생성
         _currentOfficeLevel++;
 
         MapInfo newOffice = Instantiate(_offices[_currentOfficeLevel], Vector3.zero, Quaternion.identity);
-        // GameObject newOffice = Instantiate(_offices[_currentOfficeIndex], Vector3.zero, Quaternion.identity);
-        // newOffice.SetActive(true);
+        
         _currentMapTransform = newOffice.transform;
 
         if (CameraManager.Instance != null)
@@ -188,7 +186,7 @@ public class GameManager : MonoBehaviour
             }
         }
 
-        await SpawnNPCsAsync();
+        
 
         GotoWorkNPCs();
     }

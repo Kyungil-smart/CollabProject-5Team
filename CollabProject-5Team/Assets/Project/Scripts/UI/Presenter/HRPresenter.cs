@@ -414,7 +414,7 @@ namespace GameDevTycoon.UI.Ingame
 
             // 프리팹 생성
             var detail = Instantiate(_applicantDetailPrefab, _view.ApplicantDetailContent);
-            detail.GetComponent<IBindable<Employee>>().Bind(applicant);
+            detail.GetComponent<IBindable<EmployeeImmutableData>>().Bind(applicant.so);
 
             Debug.Log($"[상세보기] {applicant.so.Name} 데이터 바인딩 완료");
 
