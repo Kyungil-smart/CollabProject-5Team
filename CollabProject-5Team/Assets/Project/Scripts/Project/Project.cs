@@ -80,7 +80,6 @@ public class Project : MonoBehaviour
         charmScore          = 0f;
         CurScore            = 0f;
         isFinished.Value    = false;
-        isReportDraftsReady = false;
 
         pendingReports. Clear();
         selectedReports.Clear();
