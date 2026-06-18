@@ -34,70 +34,56 @@ public class Company : MonoBehaviour
     [Header("회사 업그레이드 데이터")]
     private UpgradeData _upgradeData = new UpgradeData();
 
-    #region 싱글톤 설정
+    #region DontDestroyOnLoad 없는 Instance
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     public static void Init() => Instance = null;
-
     private void Awake()
     {
-        if (Instance != null && Instance != this) { Destroy(gameObject); return; }
-        Instance = this; DontDestroyOnLoad(gameObject);
-
-        if (_upgradeData == null)
-        {
-            // UpgradeData가 일반 클래스라면 아래와 같이 생성
-            _upgradeData = new UpgradeData();
-        }
-        _upgradeData.Init();
+        Instance = this;
     #endregion
     }
 
-    // private void OnEnable()
-    // {
-    //     _upgradeData.Init();
-    // }
-
     private void Start()
     {
-        InitProjects();
+        _upgradeData.Init();
+        InitProjects(); // 테스트 코드
     }
-
-    // 자식 오브젝트의 Project 컴포넌트를 수집해 projects 리스트에 세팅
+    // 자식 오브젝트의 Project를 curProject로 세팅하는 "테스트"코드
     public void InitProjects()
     {
         projects.Clear();
         projects.AddRange(GetComponentsInChildren<Project>());
-        if (projects.Count > 0)
-        {
-            curProject = projects[0];
-            activeProjectCount.Value++;
-        }
+        curProject = projects.Count > 0 ? projects[0] : null;
+        activeProjectCount.Value = curProject != null ? 1 : 0;
+
+        if (curProject == null) return;
         // _EmployeeManager HaveEmployees들을 curProject에 고용
         foreach (var employee in _EmployeeManager.Instance.haveEmployees.haveEmployeeList)
         {
-            if (curProject != null)
-                curProject.HireEmployee(employee);
+            curProject.HireEmployee(employee);
         }
     }
 
     #region 프로젝트 시작 관리
     public Project CreateProject(ProjectSize scale, string projectName)
     {
-        var prefab = GetProjectPrefab(scale);
-        if (prefab == null)
+        var project = InstantiateProject(scale, projectName);
+
+        foreach (var employee in selectedProjectEmployees)
         {
-            Debug.LogWarning($"[Company] {scale} 규모 프로젝트 프리팹이 없습니다.");
-            return null;
+            project.HireEmployee(employee);
         }
+
+        return project;
+    }
+    private Project InstantiateProject(ProjectSize scale, string projectName)
+    {
+        var prefab = GetProjectPrefab(scale);
 
         var projectObject = Instantiate(prefab, transform);
         var project = projectObject.GetComponent<Project>();
 
         project.InitializeRuntime(projectName);
-        foreach (var employee in selectedProjectEmployees)
-        {
-            project.HireEmployee(employee);
-        }
 
         return project;
     }
@@ -106,9 +92,11 @@ public class Company : MonoBehaviour
         gold.Value -= project.RequiredCost;
         QuestManager.Instance.ResetWeeklyBonus();
 
-        projects.Add(project);
+        if (!projects.Contains(project))
+            projects.Add(project);
+
         curProject = project;
-        activeProjectCount.Value++;
+        activeProjectCount.Value = 1;
     }
 
     public void ClearSelectedProjectEmployees()
@@ -144,12 +132,16 @@ public class Company : MonoBehaviour
         return true;
     }
 
-    private GameObject GetProjectPrefab(ProjectSize scale) => scale switch
+    private GameObject GetProjectPrefab(ProjectSize scale)
     {
-        ProjectSize.medium => projectPrefab[1],
-        ProjectSize.large => projectPrefab[2],
-        _ => projectPrefab[0],
-    };
+        int index = scale switch
+        {
+            ProjectSize.medium => 1,
+            ProjectSize.large => 2,
+            _ => 0,
+        };
+        return projectPrefab[index];
+    }
     #endregion
 
     // 프로젝트 완료 처리
@@ -180,7 +172,7 @@ public class Company : MonoBehaviour
 
         curProject = null;
 
-        activeProjectCount.Value--;
+        activeProjectCount.Value = 0;
 #if UNITY_EDITOR
         Debug.Log($"[Company] '{record.projectName}' 완료 (등급:{record.grade} 평점:{record.rating:F1} 유저:{record.users} 일일매출:{record.dailyGold}G 유지비:{record.dailyCost}G)");
 #endif
@@ -342,6 +334,53 @@ public class Company : MonoBehaviour
     }
 
     #region 세이브/로드
+    public void ExportActiveProjectData(SaveData data)
+    {
+        if (data.activeProjectsData == null)
+            data.activeProjectsData = new CurrentProjectSaveData();
+
+        data.activeProjectsData.hasActiveProject = curProject != null;
+        if (curProject == null) return;
+
+        data.activeProjectsData.project_Scale = curProject.Scale;
+        curProject.ExportProjectData(data);
+    }
+
+    public void ImportActiveProjectData(SaveData data)
+    {
+        ClearActiveProjectForLoad();
+
+        var projectData = data.activeProjectsData;
+        bool shouldRestoreProject = projectData.hasActiveProject
+                                 || !string.IsNullOrEmpty(projectData.project_userNamed);
+        if (!shouldRestoreProject) return;
+
+        Project project = InstantiateProject(projectData.project_Scale, projectData.project_userNamed);
+
+        projects.Add(project);
+        curProject = project;
+        activeProjectCount.Value = 1;
+
+        project.ImportProjectData(data);
+    }
+
+    private void ClearActiveProjectForLoad()
+    {
+        if (curProject != null && !projects.Contains(curProject))
+            Destroy(curProject.gameObject);
+
+        foreach (var project in projects)
+        {
+            if (project != null)
+                Destroy(project.gameObject);
+        }
+
+        projects.Clear();
+        curProject = null;
+        activeProjectCount.Value = 0;
+        selectedProjectEmployees.Clear();
+    }
+
     public void ExportCompanyData(SaveData data)
     {
         data.company_Name  = this.name;
@@ -415,7 +454,7 @@ public class Company : MonoBehaviour
                     qualityScore    = pData.qualityScore,
                     stabilityScore  = pData.stabilityScore,
                     charmScore      = pData.charmScore,
-                    grade           = !string.IsNullOrEmpty(pData.grade) ? pData.grade[0] : 'B',
+                    grade           = pData.grade[0],
                     Rating          = pData.rating,
                     RetentionFactor = pData.retentionFactor,
                     users           = pData.users,

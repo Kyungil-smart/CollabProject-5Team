@@ -34,7 +34,6 @@ namespace Dialogue
         {
             if (Instance != null && Instance != this) { Destroy(gameObject); return; }
             Instance = this;
-            DontDestroyOnLoad(gameObject);
 
             DialogueEvents.OnDialogueReady
                 .Subscribe(payload => BindViews(payload))

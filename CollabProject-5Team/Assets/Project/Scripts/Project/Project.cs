@@ -16,7 +16,7 @@ public class Project : MonoBehaviour
 
     [Header(" 런타임 데이터 ")]
     public int day;      // 현재 진행 일수 (영업일 기준)
-    public ReactiveProperty<string> userNamed = new("a"); // 유저가 붙인 프로젝트 이름
+    public ReactiveProperty<string> userNamed = new(""); // 유저가 붙인 프로젝트 이름
 
     // 투입된 직원
     public List<Employee> plannings = new();
@@ -62,8 +62,6 @@ public class Project : MonoBehaviour
     [Header("UI 표시용 데이터")]
     public string genre; public string artStyle; public string engine;
 
-    // 보고서 생성완료시 true
-    public bool isReportDraftsReady;
 
     bool _isRuntimeInitialized;
     public void InitializeRuntime(string projectName)
@@ -84,7 +82,6 @@ public class Project : MonoBehaviour
         isFinished.Value = false;
         pendingReports.Clear();
         selectedReports.Clear();
-        isReportDraftsReady = false;
     }
 
     public bool HireEmployee(Employee e)
@@ -165,7 +162,6 @@ public class Project : MonoBehaviour
         ReportPolicy.GenerateReportForRole(this, programmer);
         ReportPolicy.GenerateReportForRole(this, arts);
 
-        isReportDraftsReady = true;
         Debug.Log($"[{userNamed.Value}] 보고서 생성 완료: {pendingReports.Count}건");
     }
 
@@ -243,7 +239,6 @@ public class Project : MonoBehaviour
 
         pendingReports.Clear();
         selectedReports.Clear();
-        isReportDraftsReady = false;
     }
     #endregion
 
@@ -261,14 +256,15 @@ public class Project : MonoBehaviour
     #region 세이브/로드
     public void ExportProjectData(SaveData data)
     {
-        data.activeProjectsData.project_Name = name;
+        // so 대신에 프로젝트 존재 여부와 규모를 확인
         data.activeProjectsData.project_Scale = Scale;
-        data.activeProjectsData.project_RequiredCost = RequiredCost;
-        data.activeProjectsData.project_MaxEmployeePerpart = MaxEmployeePerPart;
-        data.activeProjectsData.project_DurationDays = DurationDays;
 
         data.activeProjectsData.project_day = day;
         data.activeProjectsData.project_userNamed = userNamed.Value;
+        data.activeProjectsData.project_NightCount = nightCount;
+        data.activeProjectsData.project_Genre = genre;
+        data.activeProjectsData.project_ArtStyle = artStyle;
+        data.activeProjectsData.project_Engine = engine;
 
         data.activeProjectsData.project_PlanningEmployeeIds = ConvertEmployeeListToIdList(plannings);
         data.activeProjectsData.project_ProgrammerEmployeeIds = ConvertEmployeeListToIdList(programmer);
@@ -281,19 +277,21 @@ public class Project : MonoBehaviour
     }
     public void ImportProjectData(SaveData data)
     {
-        this.so.name = data.activeProjectsData.project_Name;
-        this.so.scale = data.activeProjectsData.project_Scale;
-        this.so.requiredCost = data.activeProjectsData.project_RequiredCost;
-        this.so.maxEmployeePerPart = data.activeProjectsData.project_MaxEmployeePerpart;
-        this.so.durationDays = data.activeProjectsData.project_DurationDays;
-
+        // so 대신에 프로젝트 존재 여부와 규모를 확인
         this.day = data.activeProjectsData.project_day;
-
         this.userNamed.Value = data.activeProjectsData.project_userNamed;
+        this.nightCount = data.activeProjectsData.project_NightCount;
+        this.genre = data.activeProjectsData.project_Genre;
+        this.artStyle = data.activeProjectsData.project_ArtStyle;
+        this.engine = data.activeProjectsData.project_Engine;
 
         this.qualityScore = data.activeProjectsData.project_QualityScore;
+        this.stabilityScore = data.activeProjectsData.project_StabilityScore;
         this.charmScore = data.activeProjectsData.project_CharmScore;
         this.CurScore = data.activeProjectsData.project_CurScore;
+        this.isFinished.Value = false;
+        this.pendingReports.Clear();
+        this.selectedReports.Clear();
 
         RestoreEmployeeList(data.activeProjectsData.project_PlanningEmployeeIds, plannings);
         RestoreEmployeeList(data.activeProjectsData.project_ProgrammerEmployeeIds, programmer);
@@ -312,6 +310,7 @@ public class Project : MonoBehaviour
     private void RestoreEmployeeList(List<int> ids, List<Employee> targetList)
     {
         targetList.Clear();
+
         var hiredList = _EmployeeManager.Instance.haveEmployees.haveEmployeeList;
 
         foreach (int empId in ids)

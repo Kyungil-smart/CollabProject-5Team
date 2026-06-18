@@ -206,6 +206,14 @@ namespace GameDevTycoon.UI.Ingame
                 })
                 .AddTo(this);
 
+            _view.OnCourseSelected
+                .Subscribe(index =>
+                {
+                    _selectedCourseIndex = index;
+                    _view.SetEducationCourseConfirmInteractable(true);
+                })
+                .AddTo(this);
+
             _view.OnEducationDetailBackClicked
                 .Subscribe(_ =>
                 {
@@ -380,7 +388,7 @@ namespace GameDevTycoon.UI.Ingame
                 Destroy(child.gameObject);
 
             var detail = Instantiate(_applicantDetailPrefab, _view.ApplicantDetailContent);
-            detail.GetComponent<IBindable<EmployeeImmutableData>>().Bind(applicant.so);
+            detail.GetComponent<IBindable<Employee>>().Bind(applicant);
         }
 
         private void OnRecruitConfirmClicked()
@@ -471,7 +479,17 @@ namespace GameDevTycoon.UI.Ingame
         {
             if (_selectedEmployee == null || _selectedCourseIndex < 0) return;
 
-            // [TODO: 교육 비용 및 과정 데이터 SO 연결 후 실제 처리]
+            try
+            {
+                _EmployeeManager.Instance.StartTraining(_selectedEmployee, _selectedCourseIndex);
+                _hudPresenter.RefreshHUD();
+            }
+            catch (System.InvalidOperationException e)
+            {
+                _alertView.ShowAlertPopup(e.Message);
+                return;
+            }
+
             _selectedEmployee = null;
             _selectedCourseIndex = -1;
             _view.ShowEducationList();
@@ -494,8 +512,8 @@ namespace GameDevTycoon.UI.Ingame
         /// </summary>
         private bool IsEmployeeBusy(Employee employee)
         {
-            foreach (var project in Company.Instance.projects)
-                if (project.GetAllEmployees().Contains(employee)) return true;
+            if (Company.Instance.curProject != null)
+                if (Company.Instance.curProject.GetAllEmployees().Contains(employee)) return true;
             return false;
         }
 
