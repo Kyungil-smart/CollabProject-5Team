@@ -1,8 +1,6 @@
-using Cysharp.Threading.Tasks;
 using R3;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 public class DateTimeManager : MonoBehaviour
@@ -189,20 +187,18 @@ public class DateTimeManager : MonoBehaviour
 
         // 금요일 밤:
         day.Value++;
-        if (day.Value % 5 == 0) ProgressNight().Forget();
+        if (day.Value % 5 == 0) ProgressNight();
     }
-    public async UniTask ProgressNight()
+    public void ProgressNight()
     {
+        // 완료 프로젝트 주간 정산
+        _EmployeeManager.Instance.TickWeeklyTraining();
+        Company.Instance.TickWeeklyEmployees();
+        Company.Instance.TickWeeklyCompletedProjects();
+
         if (Company.Instance.curProject != null)
             Company.Instance.curProject.ProgressNight();
 
-        // 완료 프로젝트 주간 정산
-        Company.Instance.TickWeeklyEmployees();
-        Company.Instance.TickWeeklyCompletedProjects();
-        _EmployeeManager.Instance.TickWeeklyTraining();
-
-        // 프로젝트의 모든 보고서가 전송될때까지 대기
-        await UniTask.WaitUntil(() => Company.Instance.projects.All(p => p.isReportDraftsReady));
         OnNight?.Invoke();
     }
 
