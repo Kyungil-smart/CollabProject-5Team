@@ -32,7 +32,7 @@ public class Company : MonoBehaviour
     public int totalRevenue;  // 총 누적 매출 (게임 전체 히스토리용)
 
     [Header("회사 업그레이드 데이터")]
-    private UpgradeData _upgradeData = new UpgradeData();
+    [SerializeField] public UpgradeData _upgradeData;
 
     #region DontDestroyOnLoad 없는 Instance
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
@@ -45,9 +45,9 @@ public class Company : MonoBehaviour
 
     private void Start()
     {
-        _upgradeData.Init();
         InitProjects(); // 테스트 코드
     }
+
     // 자식 오브젝트의 Project를 curProject로 세팅하는 "테스트"코드
     public void InitProjects()
     {
@@ -280,41 +280,45 @@ public class Company : MonoBehaviour
     }
 
     // 회사 증축 가능 판단 
-    public bool CheckCanUpgrade()
+    public bool CheckCanUpgrade(int targetLevel = -1)
     {
-        int curLevel = GameManager.Instance._currentOfficeIndex;
-            
-        if (curLevel >= _upgradeData.UpgradeRequiredDatas.Count || curLevel < 0) return false;
+        int curLevel = GameManager.Instance._currentOfficeLevel;
+        if (targetLevel == -1) 
+            targetLevel = curLevel + 1;
 
-        UpgradeRequired req = _upgradeData.UpgradeRequiredDatas[curLevel];
+        var data = _upgradeData?.GetData(targetLevel);
 
-        if (reputation < req.reputation) return false;
+        if (data == null) 
+            return false;
+
+        if (reputation < data.RequiredReputation)
+            return false;
 
         return true;
     }
 
     // 회사 증축
-    // 회사 증축
-    public void UpgradeOffice()
+    public void UpgradeOffice(int targetLevel = -1)
     {
-        int currentLevel = GameManager.Instance._currentOfficeIndex;
+        int currentLevel = GameManager.Instance._currentOfficeLevel;
+
+        if (targetLevel == -1) targetLevel = currentLevel + 1;
+        var data = _upgradeData?.GetData(targetLevel);
+        if (data == null) return;
 
         if (!CheckCanUpgrade()) return;
-        if (currentLevel >= _upgradeData.UpgradeRequiredDatas.Count) return;
 
-        UpgradeRequired req = _upgradeData.UpgradeRequiredDatas[currentLevel];
-
-        if (gold.Value < req.gold)
+        if (gold.Value < data.GoldCost)
         {
             Debug.LogWarning("골드가 부족합니다.");
             return;
         }
 
         // 재화 차감
-        gold.Value -= req.gold;
+        gold.Value -= data.GoldCost;
 
         // 스탯 추가 (현재 레벨업 대상 보상 스탯 반영)
-        reputation += req.reputation;
+        reputation += data.ReputationBonus;
 
         // 직원 충성도 강화 (SO 오염 방지 -> MutableData에 반영)
         var empList = _EmployeeManager.Instance?.haveEmployees?.haveEmployeeList;
@@ -324,7 +328,7 @@ public class Company : MonoBehaviour
             {
                 if (emp?.MutableData != null)
                 {
-                    emp.MutableData.loyalty += req.loyality;
+                    emp.MutableData.loyalty += data.LoyaltyBonus;
                 }
             }
         }

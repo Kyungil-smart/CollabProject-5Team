@@ -62,8 +62,6 @@ public class Project : MonoBehaviour
     [Header("UI 표시용 데이터")]
     public string genre; public string artStyle; public string engine;
 
-    // 보고서 생성완료시 true
-    public bool isReportDraftsReady;
 
     bool _isRuntimeInitialized;
     public void InitializeRuntime(string projectName)
@@ -71,20 +69,20 @@ public class Project : MonoBehaviour
         if (_isRuntimeInitialized) return;
         _isRuntimeInitialized = true;
 
-        userNamed.Value = projectName;
-        plannings = new();
-        programmer = new();
-        arts = new();
-        day = 0;
-        nightCount = 0;
-        qualityScore = 0f;
-        stabilityScore = 0f;
-        charmScore = 0f;
-        CurScore = 0f;
-        isFinished.Value = false;
-        pendingReports.Clear();
+        userNamed.Value     = projectName;
+        plannings           = new();
+        programmer          = new();
+        arts                = new();
+        day                 = 0;
+        nightCount          = 0;
+        qualityScore        = 0f;
+        stabilityScore      = 0f;
+        charmScore          = 0f;
+        CurScore            = 0f;
+        isFinished.Value    = false;
+
+        pendingReports. Clear();
         selectedReports.Clear();
-        isReportDraftsReady = false;
     }
 
     public bool HireEmployee(Employee e)
@@ -165,7 +163,6 @@ public class Project : MonoBehaviour
         ReportPolicy.GenerateReportForRole(this, programmer);
         ReportPolicy.GenerateReportForRole(this, arts);
 
-        isReportDraftsReady = true;
         Debug.Log($"[{userNamed.Value}] 보고서 생성 완료: {pendingReports.Count}건");
     }
 
@@ -243,7 +240,6 @@ public class Project : MonoBehaviour
 
         pendingReports.Clear();
         selectedReports.Clear();
-        isReportDraftsReady = false;
     }
     #endregion
 
@@ -264,44 +260,44 @@ public class Project : MonoBehaviour
         // so 대신에 프로젝트 존재 여부와 규모를 확인
         data.activeProjectsData.project_Scale = Scale;
 
-        data.activeProjectsData.project_day = day;
-        data.activeProjectsData.project_userNamed = userNamed.Value;
+        data.activeProjectsData.project_day        = day;
+        data.activeProjectsData.project_userNamed  = userNamed.Value;
         data.activeProjectsData.project_NightCount = nightCount;
-        data.activeProjectsData.project_Genre = genre;
-        data.activeProjectsData.project_ArtStyle = artStyle;
-        data.activeProjectsData.project_Engine = engine;
+        data.activeProjectsData.project_Genre      = genre;
+        data.activeProjectsData.project_ArtStyle   = artStyle;
+        data.activeProjectsData.project_Engine     = engine;
 
-        data.activeProjectsData.project_PlanningEmployeeIds = ConvertEmployeeListToIdList(plannings);
+        data.activeProjectsData.project_PlanningEmployeeIds   = ConvertEmployeeListToIdList(plannings);
         data.activeProjectsData.project_ProgrammerEmployeeIds = ConvertEmployeeListToIdList(programmer);
-        data.activeProjectsData.project_ArtistEmployeeIds = ConvertEmployeeListToIdList(arts);
+        data.activeProjectsData.project_ArtistEmployeeIds     = ConvertEmployeeListToIdList(arts);
 
-        data.activeProjectsData.project_QualityScore = qualityScore;
+        data.activeProjectsData.project_QualityScore   = qualityScore;
         data.activeProjectsData.project_StabilityScore = stabilityScore;
-        data.activeProjectsData.project_CharmScore = charmScore;
-        data.activeProjectsData.project_CurScore = CurScore;
+        data.activeProjectsData.project_CharmScore     = charmScore;
+        data.activeProjectsData.project_CurScore       = CurScore;
     }
     public void ImportProjectData(SaveData data)
     {
         // so 대신에 프로젝트 존재 여부와 규모를 확인
-        this.day = data.activeProjectsData.project_day;
+        this.day             = data.activeProjectsData.project_day;
         this.userNamed.Value = data.activeProjectsData.project_userNamed;
-        this.nightCount = data.activeProjectsData.project_NightCount;
-        this.genre = data.activeProjectsData.project_Genre;
-        this.artStyle = data.activeProjectsData.project_ArtStyle;
-        this.engine = data.activeProjectsData.project_Engine;
+        this.nightCount      = data.activeProjectsData.project_NightCount;
+        this.genre           = data.activeProjectsData.project_Genre;
+        this.artStyle        = data.activeProjectsData.project_ArtStyle;
+        this.engine          = data.activeProjectsData.project_Engine;
 
-        this.qualityScore = data.activeProjectsData.project_QualityScore;
+        this.qualityScore   = data.activeProjectsData.project_QualityScore;
         this.stabilityScore = data.activeProjectsData.project_StabilityScore;
-        this.charmScore = data.activeProjectsData.project_CharmScore;
-        this.CurScore = data.activeProjectsData.project_CurScore;
-        this.isFinished.Value = false;
-        this.pendingReports.Clear();
-        this.selectedReports.Clear();
-        this.isReportDraftsReady = false;
+        this.charmScore     = data.activeProjectsData.project_CharmScore;
+        this.CurScore       = data.activeProjectsData.project_CurScore;
 
-        RestoreEmployeeList(data.activeProjectsData.project_PlanningEmployeeIds, plannings);
+        this.isFinished.Value = false;
+        this.pendingReports. Clear();
+        this.selectedReports.Clear();
+
+        RestoreEmployeeList(data.activeProjectsData.project_PlanningEmployeeIds,   plannings);
         RestoreEmployeeList(data.activeProjectsData.project_ProgrammerEmployeeIds, programmer);
-        RestoreEmployeeList(data.activeProjectsData.project_ArtistEmployeeIds, arts);
+        RestoreEmployeeList(data.activeProjectsData.project_ArtistEmployeeIds,     arts);
     }
     private List<int> ConvertEmployeeListToIdList(List<Employee> employees)
     {

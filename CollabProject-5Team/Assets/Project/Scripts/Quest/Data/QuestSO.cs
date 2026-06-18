@@ -7,6 +7,8 @@ public class QuestSO : SheetDataSOBase
     public Role role;
     public ControlType controlType;
     public int targetCount;
+    public ControlType controlType2;
+    public int targetCount2;
     public string activeObjects;
     public string resultObjects;
     public string targetMap;
@@ -36,10 +38,12 @@ public class QuestSO : SheetDataSOBase
         role = ParseEnum<Role>(data[2]);
         controlType = ParseEnum<ControlType>(data[3]);
         targetCount = ParseInt(data[4]);
-        activeObjects = data[5];
-        resultObjects = data[6];
-        targetMap = data[7];
-        successEffect = ParseInt(data[8]);
-        npcDialogue = data[9];
+        controlType2 = string.IsNullOrWhiteSpace(data[5]) ? ControlType.NONE : ParseEnum<ControlType>(data[5]);
+        targetCount2 = string.IsNullOrWhiteSpace(data[6]) ? 0 : ParseInt(data[6]);
+        activeObjects = data[7];
+        resultObjects = data[8];
+        targetMap = data[9];
+        successEffect = ParseInt(data[10]);
+        npcDialogue = data[11];
     }
 }

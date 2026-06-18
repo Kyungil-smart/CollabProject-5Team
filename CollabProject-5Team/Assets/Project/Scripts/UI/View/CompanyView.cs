@@ -10,7 +10,7 @@ namespace GameDevTycoon.UI.Ingame
     /// 탭 전환, 패널 전환, 버튼 이벤트 발행.
     /// 프리팹 동적 생성 및 데이터 바인딩은 Presenter에서 담당.
     /// </summary>
-    public sealed class CompanyView : MonoBehaviour, IBottomNightUI
+    public sealed class CompanyView : MonoBehaviour
     {
         [Header("Popup")]
         [SerializeField] private GameObject _companyPopup;
@@ -101,7 +101,7 @@ namespace GameDevTycoon.UI.Ingame
 
         private void Awake()
         {
-            _companyPopup.SetActive(false);
+            
             _expansionConfirmButton.interactable = false;
         }
 
