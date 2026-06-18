@@ -62,8 +62,6 @@ public class Project : MonoBehaviour
     [Header("UI 표시용 데이터")]
     public string genre; public string artStyle; public string engine;
 
-    // 보고서 생성완료시 true
-    public bool isReportDraftsReady;
 
     bool _isRuntimeInitialized;
     public void InitializeRuntime(string projectName)
@@ -166,7 +164,6 @@ public class Project : MonoBehaviour
         ReportPolicy.GenerateReportForRole(this, programmer);
         ReportPolicy.GenerateReportForRole(this, arts);
 
-        isReportDraftsReady = true;
         Debug.Log($"[{userNamed.Value}] 보고서 생성 완료: {pendingReports.Count}건");
     }
 
@@ -244,7 +241,6 @@ public class Project : MonoBehaviour
 
         pendingReports.Clear();
         selectedReports.Clear();
-        isReportDraftsReady = false;
     }
     #endregion
 
@@ -299,7 +295,6 @@ public class Project : MonoBehaviour
         this.isFinished.Value = false;
         this.pendingReports. Clear();
         this.selectedReports.Clear();
-        this.isReportDraftsReady = false;
 
         RestoreEmployeeList(data.activeProjectsData.project_PlanningEmployeeIds,   plannings);
         RestoreEmployeeList(data.activeProjectsData.project_ProgrammerEmployeeIds, programmer);
