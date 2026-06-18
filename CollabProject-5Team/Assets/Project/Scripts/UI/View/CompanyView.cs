@@ -101,7 +101,6 @@ namespace GameDevTycoon.UI.Ingame
 
         private void Awake()
         {
-            
             _expansionConfirmButton.interactable = false;
         }
 

@@ -227,6 +227,7 @@ namespace GameDevTycoon.UI.Ingame
             int targetLevel = _selectedExpansionCard.Level;
             var data = GetExpansionData(targetLevel);
 
+
             if (Company.Instance.gold.Value < data.GoldCost)
             {
                 _alertView.ShowAlertPopup("보유 자금이 부족하여 실행할 수 없습니다.");
@@ -241,9 +242,8 @@ namespace GameDevTycoon.UI.Ingame
 
             _alertView.ShowConfirmPopup("구매하시겠습니까?", onConfirm: () =>
             {
-
+                Debug.Log("업그레이드 실행");
                 Company.Instance.UpgradeOffice(targetLevel);
-
 
                 _selectedExpansionCard = null;
                 _view.SetExpansionConfirmInteractable(false);

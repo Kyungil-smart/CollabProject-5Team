@@ -39,7 +39,7 @@ public class OfficeUpgradeData
 [CreateAssetMenu(fileName = "UpgradeData", menuName = "Scriptable Objects/Upgrade Data")]
 public class UpgradeData : ScriptableObject
 {
-    [SerializeField] public List<OfficeUpgradeData> _datas = new List<OfficeUpgradeData>();
+    [SerializeField] public List<OfficeUpgradeData> _datas;
 
     public OfficeUpgradeData GetData(int level)
     {
