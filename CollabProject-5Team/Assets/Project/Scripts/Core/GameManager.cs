@@ -11,7 +11,7 @@ public class GameManager : MonoBehaviour
 
     [Header("맵 관리")]
     [SerializeField] private List<MapInfo> _offices;              // 사무실 맵 프리팹
-    public int _currentOfficeIndex = 0;
+    public int _currentOfficeLevel = 0;
 
     [Header("프리팹")]
     [SerializeField] private GameObject _playerPrefab;                  // 플레이어 프리팹
@@ -46,13 +46,13 @@ public class GameManager : MonoBehaviour
 
     private void GenerateOffice()
     {
-        if (_offices == null || _offices[_currentOfficeIndex] == null)
+        if (_offices == null || _offices[_currentOfficeLevel] == null)
         {
             Debug.LogError("GameManager: _officeMaps가 비어있습니다. 인덱스 : {_currentOfficeIndex}");
             return;
         }
 
-        MapInfo prefab = _offices[_currentOfficeIndex];
+        MapInfo prefab = _offices[_currentOfficeLevel];
         MapInfo firstMap = Instantiate(prefab, Vector3.zero, Quaternion.identity);
 
         if (firstMap.PlayerSpawn == null)
@@ -110,7 +110,7 @@ public class GameManager : MonoBehaviour
     public async UniTask UpgradeOfficeAsync()
     {
         // 현재 맵의 인덱스가 맵의 개수와 같거나 크면 리턴
-        if (_currentOfficeIndex + 1 >= _offices.Count) return;
+        if (_currentOfficeLevel + 1 >= _offices.Count) return;
 
         LeaveWorkNPCs();
 
@@ -125,9 +125,9 @@ public class GameManager : MonoBehaviour
         }
 
         // 2. 인덱스 증가시키고 새 맵 생성
-        _currentOfficeIndex++;
+        _currentOfficeLevel++;
 
-        MapInfo newOffice = Instantiate(_offices[_currentOfficeIndex], Vector3.zero, Quaternion.identity);
+        MapInfo newOffice = Instantiate(_offices[_currentOfficeLevel], Vector3.zero, Quaternion.identity);
         // GameObject newOffice = Instantiate(_offices[_currentOfficeIndex], Vector3.zero, Quaternion.identity);
         // newOffice.SetActive(true);
         _currentMapTransform = newOffice.transform;
@@ -140,7 +140,7 @@ public class GameManager : MonoBehaviour
         // 스폰 포인트 찾기
         _currentPlayerSpawnPoint = newOffice.PlayerSpawn;
         _currentNpcSpawnPoint = newOffice.NpcSpawn;
-        // FindSpawnPoints();
+        //FindSpawnPoints();
 
         // 의자 좌표 갱신
         RefreshSitPoints();
@@ -178,7 +178,7 @@ public class GameManager : MonoBehaviour
             }
         }
 
-        // await SpawnNPCsAsync();
+        await SpawnNPCsAsync();
 
         GotoWorkNPCs();
     }
