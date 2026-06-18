@@ -36,10 +36,8 @@ public class QuestObject : MonoBehaviour, IInteractable
             ShowBulb();
     }
 
-    // QuestManager에서 직접 호출 — 이미 enabled 상태여도 ShowBulb 강제 실행
     public void Activate()
     {
-        Debug.Log($"[QO] Activate 호출 - {gameObject.name}, enabled={enabled}, activeInHierarchy={gameObject.activeInHierarchy}");
         enabled = true;
         ShowBulb();
     }
@@ -52,7 +50,6 @@ public class QuestObject : MonoBehaviour, IInteractable
 
     private void ShowBulb()
     {
-        Debug.Log($"[QO] ShowBulb 호출 - bulbPrefab={bulbIconPrefab != null}, canvas={QuestManager.Instance?.QuestCanvas != null}");
         ClearIcons();
 
         _bulbInstance = Instantiate(bulbIconPrefab, QuestManager.Instance.QuestCanvas).GetComponent<QuestIcon>();
@@ -108,9 +105,11 @@ public class QuestObject : MonoBehaviour, IInteractable
         GameManager.Instance.player.CloseInteractionUI();
 
         DailyQuest quest = QuestManager.Instance.curDailyQuest;
+        ControlType effectiveType = QuestManager.Instance.EffectiveControlType;
+        int effectiveTarget = QuestManager.Instance.EffectiveTargetCount;
 
-        // 활성 오브젝트가 여러 개인 TAP: 오브젝트 1개당 1진행도 / 그 외(단일 오브젝트 연타, HOLD, SWIPE): 한 번에 퀘스트 전체 완료
-        int amount = (quest.so.controlType == ControlType.TAP && quest.so.ActiveObjectCount > 1) ? 1 : quest.TargetCount;
+        // 활성 오브젝트가 여러 개인 TAP: 오브젝트 1개당 1진행도 / 그 외: 한 번에 퀘스트 전체 완료
+        int amount = (effectiveType == ControlType.TAP && quest.so.ActiveObjectCount > 1) ? 1 : effectiveTarget;
         QuestManager.Instance.UpdateProgress(amount);
     }
 
