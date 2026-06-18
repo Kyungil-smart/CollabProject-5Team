@@ -34,8 +34,10 @@ namespace GameDevTycoon.UI.Ingame
             _companyPresenter = FindObjectOfType<CompanyPresenter>(true);
         }
 
-        private void Start()
+        // 모든 Presenter의 Start() 완료 후 바인딩을 보장하기 위해 한 프레임 대기
+        private async void Start()
         {
+            await UniTask.Yield();
             BindButtons();
             BindQuestBanner();
             DateTimeManager.OnReportEnd += SwitchToNight;
@@ -92,7 +94,6 @@ namespace GameDevTycoon.UI.Ingame
                 .AddTo(this);
         }
 
-        // QuestManager 상태/진행도 변화를 퀘스트 배너에 반영
         private void BindQuestBanner()
         {
             QuestManager.Instance.dailyQuestState
@@ -137,7 +138,6 @@ namespace GameDevTycoon.UI.Ingame
         public void RefreshHUD()
         {
             // [TODO: DateTimeManager year/month 데이터 확정 후 시간 표시 형식 연결]
-            // 현재 형식: 00년 00월 0주 월요일
             var dtm = DateTimeManager.Instance;
             _view.SetTimeLabel($"{dtm.currentWeek.Value}주 {dtm.GetDayName()}");
         }
@@ -152,16 +152,12 @@ namespace GameDevTycoon.UI.Ingame
             _view.SetWorkStartActive(false);
             QuestManager.Instance.StartDailyQuest();
 
-            // 참조한 플레이어 책상의 데스크탑으로 이동하도록 수정함
             if (_desk != null)
             {
                 _desk.OnClickWorkButton();
             }
 
-            // DateTimeManager.Instance.CompleteDayWork();
-            // WorkStartBubble은 업무 시작 후 비활성화 — View에서 직접 처리하거나 Presenter에서 호출
             // [TODO: WorkStartBubble 비활성화 메서드 HUDView에 추가 후 연결]
-            // ★~퀘스트 구현 전에 임시로 그냥 임무 완료되게 처리중~☆
         }
 
         private void OnHRClicked()
@@ -212,19 +208,14 @@ namespace GameDevTycoon.UI.Ingame
             var yielded = new HashSet<IBottomNightUI>();
 
             if (yielded.Add(_hrPresenter))
-            {
                 yield return _hrPresenter;
-            }
 
             if (yielded.Add(_projectPresenter))
-            {
                 yield return _projectPresenter;
-            }
 
             if (yielded.Add(_companyPresenter))
-            {
                 yield return _companyPresenter;
-            }
+
             //추후 IBottomNightUI가 추가로 존재하면 여기에 추가
         }
     }
