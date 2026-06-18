@@ -475,6 +475,7 @@ MonoBehaviour:
   _projectPopup: {fileID: 40402747381282606}
   _newProjectTabButton: {fileID: 5935322842627781000}
   _inProgressTabButton: {fileID: 8048740464403350866}
+  _completedTabButton: {fileID: 0}
   _tabNewProject: {fileID: 1182981710107381477}
   _contentFrame: {fileID: 4133393133719466858}
   _activeProjectLabel: {fileID: 1822141141740771455}
@@ -510,17 +511,54 @@ MonoBehaviour:
   _operationGroup: {fileID: 4365340555098967994}
   _operationEmptyLabel: {fileID: 6402433656389728560}
   _statusGroup: {fileID: 1674689620280437494}
-  _userCountGroup: {fileID: 6343198638860022379}
-  _salesGroup: {fileID: 4748947537977137663}
-  _maintenanceGroup: {fileID: 6669747045764196987}
-  _profitGroup: {fileID: 3461795719110165738}
-  _revenueGraph: {fileID: 475114980299856017}
   _statusValue: {fileID: 6925183998739647332}
+  _userCountGroup: {fileID: 6343198638860022379}
   _userCountValue: {fileID: 6027440499425562571}
+  _salesGroup: {fileID: 4748947537977137663}
   _salesValue: {fileID: 7323652998507888969}
+  _maintenanceGroup: {fileID: 6669747045764196987}
   _maintenanceValue: {fileID: 5992015327662393988}
+  _profitGroup: {fileID: 3461795719110165738}
   _profitValue: {fileID: 1918764044216125803}
+  _revenueGraph: {fileID: 475114980299856017}
   _serviceStopButton: {fileID: 2200616656860471531}
+  _updateButton: {fileID: 8916850140252256711}
+  _panelUpdateManagement: {fileID: 5855233316513472377}
+  _updateProjectNameLabel: {fileID: 2197327609031323061}
+  _updateItem_Plan: {fileID: 7402961549129166437}
+  _updateItem_Art: {fileID: 6284960161785280902}
+  _updateItem_Dev: {fileID: 57379124536876924}
+  _completedOverlay_Plan: {fileID: 1361023151848610392}
+  _completedOverlay_Art: {fileID: 4195109731266664162}
+  _completedOverlay_Dev: {fileID: 8199772198005939731}
+  _updateBackButton: {fileID: 8028994747210680352}
+  _updateConfirmButton: {fileID: 3160268652491360113}
+  _tabCompleted: {fileID: 3083483167148780928}
+  _completedSortDropdown: {fileID: 8957649586071984190}
+  _completedListContent: {fileID: 1443556430725997677}
+  _completedEmptyLabel: {fileID: 4400814998026603752}
+  _completedPanelProjectDetail: {fileID: 9058932064940124269}
+  _completedDetailBackButton: {fileID: 6442664515327016349}
+  _completedGameNameValue: {fileID: 8152340353844282532}
+  _completedScaleValue: {fileID: 2234465688239504276}
+  _completedGenreValue: {fileID: 4091224220548755001}
+  _completedArtValue: {fileID: 5898947644759395569}
+  _completedEngineValue: {fileID: 4697532515349318076}
+  _completedProgressBar: {fileID: 5369971770505914846}
+  _completedProgressValueLabel: {fileID: 8129685997441643905}
+  _completedOperationGroup: {fileID: 5166386547183287460}
+  _completedOperationEmptyLabel: {fileID: 511264011914294779}
+  _completedStatusGroup: {fileID: 3628406374509097351}
+  _completedStatusValue: {fileID: 6584276664914126833}
+  _completedUserCountGroup: {fileID: 5757711250735586178}
+  _completedUserCountValue: {fileID: 4676624657607551104}
+  _completedSalesGroup: {fileID: 9106947050679246743}
+  _completedSalesValue: {fileID: 130297387004134458}
+  _completedMaintenanceGroup: {fileID: 2053814406956225065}
+  _completedMaintenanceValue: {fileID: 3816164366354475972}
+  _completedProfitGroup: {fileID: 7514799015075670497}
+  _completedProfitValue: {fileID: 3196637133914982189}
+  _completedRevenueGraph: {fileID: 6448343054814320472}
   _panelStaffDetailPopup: {fileID: 206443512283035953}
   _staffDetailContent: {fileID: 8983553604799454892}
   _staffDetailCloseButton: {fileID: 4943982436899033756}
@@ -537,8 +575,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _view: {fileID: 3486894926078723152}
-  _alertView: {fileID: 0}
-  _hudPresenter: {fileID: 0}
+  _alertView: {fileID: 8654902207363816660, guid: b82583b22905db24a86349a98bea2b01, type: 3}
+  _hudPresenter: {fileID: 2838642515319906603, guid: 93dd82dcc61417c458e403da87a9c416, type: 3}
   _staffCardPrefabs:
   - role: 2
     prefab: {fileID: 2635262187321517769, guid: 9f1e02b1b0ce38647b12fa7c2194f469, type: 3}
@@ -43617,6 +43655,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1315346467333164575}
+  - component: {fileID: 4992387061651679157}
   m_Layer: 5
   m_Name: ProjectCompletedPopup
   m_TagString: Untagged
@@ -43644,6 +43683,28 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &4992387061651679157
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5887724752626655005}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 704d2a2d9faf30a45a920ec0f008518d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _popup: {fileID: 3645643631041376325}
+  _celebrationLabel: {fileID: 4247948178786523413}
+  _projectResultLabel: {fileID: 8063262475252331887}
+  _completionBar: {fileID: 586676961851343608}
+  _completionValueLabel: {fileID: 7402611222778566188}
+  _stabilityBar: {fileID: 6183902335736650853}
+  _stabilityValueLabel: {fileID: 8044159515084879214}
+  _appealBar: {fileID: 3038853080906904372}
+  _appealValueLabel: {fileID: 5665125164894275138}
+  _confirmButton: {fileID: 7224392672495839172}
 --- !u!1 &5897784458396053421
 GameObject:
   m_ObjectHideFlags: 0
