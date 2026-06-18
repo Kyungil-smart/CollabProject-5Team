@@ -25,9 +25,6 @@ namespace GameDevTycoon.UI.Ingame
 
         public bool IsVisible => _view.IsVisible;
 
-        [Header("업그레이드")]
-        [SerializeField] private UpgradeData _upgradeData;
-
         private void Start()
         {
             BindTabs();
@@ -166,7 +163,7 @@ namespace GameDevTycoon.UI.Ingame
             foreach (Transform child in _view.ExpansionListContent)
                 Destroy(child.gameObject);
 
-            if (_upgradeData == null)
+            if (Company.Instance._upgradeData == null)
             {
                 Debug.LogError("(UpgradeData)가 인스펙터에 할당되지 않았습니다!");
                 return;
@@ -274,7 +271,7 @@ namespace GameDevTycoon.UI.Ingame
 
         private OfficeUpgradeData GetExpansionData(int level)
         {
-            return _upgradeData?.GetData(level);
+            return Company.Instance._upgradeData?.GetData(level);
         }
 
         private static string BuildPeriodLabel()

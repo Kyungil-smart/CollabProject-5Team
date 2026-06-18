@@ -32,7 +32,7 @@ public class Company : MonoBehaviour
     public int totalRevenue;  // 총 누적 매출 (게임 전체 히스토리용)
 
     [Header("회사 업그레이드 데이터")]
-    [SerializeField] private UpgradeData _upgradeData;
+    [SerializeField] public UpgradeData _upgradeData;
 
     #region DontDestroyOnLoad 없는 Instance
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
