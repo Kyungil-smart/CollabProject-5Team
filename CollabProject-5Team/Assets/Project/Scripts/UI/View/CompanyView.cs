@@ -101,7 +101,7 @@ namespace GameDevTycoon.UI.Ingame
 
         private void Awake()
         {
-            _companyPopup.SetActive(false);
+            
             _expansionConfirmButton.interactable = false;
         }
 
