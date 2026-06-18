@@ -20,6 +20,10 @@ public class QuestManager : MonoBehaviour
     // 직전에 나온 퀘스트 기억 (다음 뽑기에서 제외 + 결과물 정리용)
     private QuestSO _lastPicked;
 
+    private int _questPhase = 1;
+    public ControlType EffectiveControlType => _questPhase == 2 ? curDailyQuest.so.controlType2 : curDailyQuest.so.controlType;
+    public int EffectiveTargetCount => _questPhase == 2 ? curDailyQuest.so.targetCount2 : curDailyQuest.TargetCount;
+
     public ReactiveProperty<QuestState> dailyQuestState = new(QuestState.Ready);
     public DailyQuest curDailyQuest;
 
@@ -55,14 +59,17 @@ public class QuestManager : MonoBehaviour
     {
         if (newState != QuestState.End) return;
 
-        // 진행 중이던 활성 오브젝트는 정리
-        SetObjectsActive(curDailyQuest.so.activeObjects, false);
+        if (_questPhase == 2)
+            SetObjectsActive(curDailyQuest.so.resultObjects, false);
+        else
+            SetObjectsActive(curDailyQuest.so.activeObjects, false);
 
         if (curDailyQuest.result == QuestResult.Success)
         {
-            SetObjectsActive(curDailyQuest.so.resultObjects, true);
-            ShowSpeechBubble(curDailyQuest.so.npcDialogue);
+            if (_questPhase != 2)
+                SetObjectsActive(curDailyQuest.so.resultObjects, true);
 
+            ShowSpeechBubble(curDailyQuest.so.npcDialogue);
             AddBonusPoint(curDailyQuest.so.role, curDailyQuest.so.successEffect);
             DateTimeManager.Instance.CompleteDayWork();
         }
@@ -97,6 +104,7 @@ public class QuestManager : MonoBehaviour
         QuestSO picked = candidates[Random.Range(0, candidates.Count)];
         _lastPicked = picked;
 
+        _questPhase = 1;
         curDailyQuest = new DailyQuest();
         curDailyQuest.Init(picked);
         dailyQuestProgress.Value = 0;
@@ -124,7 +132,20 @@ public class QuestManager : MonoBehaviour
         dailyQuestProgress.Value = curDailyQuest.curCount;
 
         if (curDailyQuest.state == QuestState.End)
-            dailyQuestState.Value = QuestState.End;
+        {
+            if (_questPhase == 1 && curDailyQuest.so.controlType2 != ControlType.NONE)
+            {
+                _questPhase = 2;
+                SetObjectsActive(curDailyQuest.so.activeObjects, false);
+                SetObjectsActive(curDailyQuest.so.resultObjects, true);
+                curDailyQuest.ResetForPhase2(curDailyQuest.so.targetCount2);
+                dailyQuestProgress.Value = 0;
+            }
+            else
+            {
+                dailyQuestState.Value = QuestState.End;
+            }
+        }
     }
 
     // HOLD 진행 중 실시간 표시용 - curCount(실제 완료 판정)는 건드리지 않고 배너 진행도만 갱신
@@ -132,7 +153,7 @@ public class QuestManager : MonoBehaviour
     {
         if (dailyQuestState.Value != QuestState.Playing) return;
 
-        dailyQuestProgress.Value = Mathf.Min(current, curDailyQuest.TargetCount);
+        dailyQuestProgress.Value = Mathf.Min(current, EffectiveTargetCount);
     }
 
     // 콤마로 구분된 오브젝트 이름들을 questObjectsRoot 하위에서 찾아 활성/비활성 처리
