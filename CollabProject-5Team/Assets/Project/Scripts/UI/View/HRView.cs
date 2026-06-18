@@ -67,7 +67,7 @@ namespace GameDevTycoon.UI.Ingame
         [Header("Tab_Hire — Panel_ApplicantDetail")]
         [SerializeField] private GameObject _panelApplicantDetail;
         [SerializeField] private Transform  _applicantDetailContent;
-        [SerializeField] private Button     _hireButton;
+        [SerializeField] public Button     HireButton;
         [SerializeField] private Button     _cancelHireButton;
         [SerializeField] private Button     _applicantDetailBackButton;
 
@@ -122,7 +122,7 @@ namespace GameDevTycoon.UI.Ingame
         public Observable<Unit> OnApplicantListBackClicked   => _applicantListBackButton.OnClickAsObservable();
         public Observable<int>  OnApplicantSortChanged    => _applicantSortDropdown.OnValueChangedAsObservable();
         public Observable<Unit> OnFinalHireClicked        => _finalHireButton.OnClickAsObservable();
-        public Observable<Unit> OnHireClicked             => _hireButton.OnClickAsObservable();
+        public Observable<Unit> OnHireClicked             => HireButton.OnClickAsObservable();
         public Observable<Unit> OnCancelHireClicked       => _cancelHireButton.OnClickAsObservable();
         public Observable<Unit> OnApplicantDetailBackClicked => _applicantDetailBackButton.OnClickAsObservable();
 
@@ -173,7 +173,7 @@ namespace GameDevTycoon.UI.Ingame
             _panelEducationCourse.SetActive(false);
 
             _finalHireButton.interactable     = false;
-            _hireButton.interactable          = false;
+            HireButton.interactable          = false;
             _cancelHireButton.interactable    = false;
             _educationButton.interactable     = false;
             _educationCourseConfirmButton.interactable = false;
@@ -300,7 +300,7 @@ namespace GameDevTycoon.UI.Ingame
             => _finalHireButton.interactable = interactable;
 
         public void SetHireButtonInteractable(bool interactable)
-            => _hireButton.interactable = interactable;
+            => HireButton.interactable = interactable;
 
         public void SetCancelHireButtonInteractable(bool interactable)
             => _cancelHireButton.interactable = interactable;
