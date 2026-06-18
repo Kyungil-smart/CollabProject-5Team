@@ -16,13 +16,13 @@ public class NPCController : MonoBehaviour
         Anim = GetComponent<Animator>();    
     }
 
-    private void Start()
-    {
-        ChangeState(new NPCMove());
-    }
-
     public void ChangeState(INPCState newState)
     {
+        if (newState is NPCMove)
+        {
+            if (Agent != null && !Agent.enabled) Agent.enabled = true;
+        }
+        
         _currentState?.Exit(this);
         _currentState = newState;
         _currentState.Enter(this);
