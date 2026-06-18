@@ -31,8 +31,6 @@ namespace GameDevTycoon.UI.Ingame
         private List<ReportCardView> _currentCards = new();
         private Report _viewingReport;
 
-
-
         private void Start()
         {
             BindButtons();
