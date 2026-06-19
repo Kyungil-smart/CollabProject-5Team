@@ -87,10 +87,10 @@ namespace GameDevTycoon.UI.Ingame
 
         private void BindEmployeeManage()
         {
-            // [TODO: 드롭다운 정렬 기능 확정 후 활성화]
-            // _view.OnEmployeeManageSortChanged
-            //     .Subscribe(_ => RefreshEmployeeManageList())
-            //     .AddTo(this);
+            _view.OnEmployeeManageSortChanged
+                .Skip(1)
+                .Subscribe(_ => RefreshEmployeeManageList())
+                .AddTo(this);
 
             _view.OnEmployeeManageEducationClicked
                 .Subscribe(_ =>
@@ -143,10 +143,10 @@ namespace GameDevTycoon.UI.Ingame
                 .Subscribe(_ => _view.ShowHireMain())
                 .AddTo(this);
 
-            // [TODO: 드롭다운 정렬 기능 확정 후 활성화]
-            // _view.OnApplicantSortChanged
-            //     .Subscribe(_ => RefreshApplicantList())
-            //     .AddTo(this);
+            _view.OnApplicantSortChanged
+                .Skip(1)
+                .Subscribe(_ => RefreshApplicantList())
+                .AddTo(this);
 
             _view.OnFinalHireClicked
                 .Subscribe(_ => OnFinalHireClicked())
@@ -171,10 +171,10 @@ namespace GameDevTycoon.UI.Ingame
 
         private void BindFire()
         {
-            // [TODO: 드롭다운 정렬 기능 확정 후 활성화]
-            // _view.OnFireSortChanged
-            //     .Subscribe(_ => RefreshFireList())
-            //     .AddTo(this);
+            _view.OnFireSortChanged
+                .Skip(1)
+                .Subscribe(_ => RefreshFireList())
+                .AddTo(this);
 
             _view.OnFireConfirmClicked
                 .Subscribe(_ => OnFireButtonClicked(_selectedEmployee))
@@ -191,10 +191,10 @@ namespace GameDevTycoon.UI.Ingame
 
         private void BindEducation()
         {
-            // [TODO: 드롭다운 정렬 기능 확정 후 활성화]
-            // _view.OnEducationSortChanged
-            //     .Subscribe(_ => RefreshEducationList())
-            //     .AddTo(this);
+            _view.OnEducationSortChanged
+                .Skip(1)
+                .Subscribe(_ => RefreshEducationList())
+                .AddTo(this);
 
             _view.OnEducationClicked
                 .Subscribe(_ =>
@@ -261,7 +261,7 @@ namespace GameDevTycoon.UI.Ingame
 
         private void RefreshEmployeeManageList()
         {
-            var employees = GetSortedEmployees();
+            var employees = GetSortedEmployees(_view.EmployeeManageSortIndex);
 
             foreach (Transform child in _view.EmployeeGridContent)
                 Destroy(child.gameObject);
@@ -291,12 +291,19 @@ namespace GameDevTycoon.UI.Ingame
             foreach (Transform child in _view.ApplicantScrollContent)
                 Destroy(child.gameObject);
 
-            var applicants = _EmployeeManager.Instance.employeeList.leftEmployees.Values
+            var raw = _EmployeeManager.Instance.employeeList.leftEmployees.Values
                 .Select(go => go.GetComponent<Employee>())
-                .Where(e => e != null)
-                .ToList();
+                .Where(e => e != null);
 
-            foreach (var applicant in applicants)
+            // 0:이름순 1:직군순 2:능력치순
+            var applicants = _view.ApplicantSortIndex switch
+            {
+                1 => raw.OrderBy(e => GetRoleOrder(e.so.role)).ThenBy(e => e.so.Name),
+                2 => raw.OrderByDescending(e => e.so.ability),
+                _ => raw.OrderBy(e => e.so.Name),
+            };
+
+            foreach (var applicant in applicants.ToList())
             {
                 var card = Instantiate(_applicantCardPrefab, _view.ApplicantScrollContent);
                 card.GetComponent<IBindable<Employee>>().Bind(applicant);
@@ -313,7 +320,7 @@ namespace GameDevTycoon.UI.Ingame
 
                 var captured = applicant;
                 btn.onClick.AddListener(() =>
-                {           
+                {
                     _selectedApplicant = captured;
                     RefreshApplicantDetail(captured);
                     _view.ShowApplicantDetail();
@@ -321,34 +328,12 @@ namespace GameDevTycoon.UI.Ingame
                     _view.SetHireButtonInteractable(true);
                     _view.SetCancelHireButtonInteractable(false);
                 });
-                /*
-                var card = Instantiate(_applicantCardPrefab, _view.ApplicantScrollContent);
-                card.GetComponent<IBindable<Employee>>().Bind(applicant);
-
-                // 마케팅, QA는 잠금 처리 — 버튼 비활성 + LockOverlay 활성
-                bool isLocked = applicant.so.role == Role.MARKETING || applicant.so.role == Role.QA;
-                if (isLocked)
-                {
-                    card.GetComponent<UnityEngine.UI.Button>().interactable = false;
-                    continue;
-                }
-
-                var captured = applicant;
-                card.GetComponent<UnityEngine.UI.Button>()?.onClick.AddListener(() =>
-                {
-                    _selectedApplicant = captured;
-                    RefreshApplicantDetail(captured);
-                    _view.ShowApplicantDetail();
-
-                    _view.SetHireButtonInteractable(true);
-                    _view.SetCancelHireButtonInteractable(false);
-                });*/
             }
         }
 
         private void RefreshFireList()
         {
-            var employees = GetSortedEmployees();
+            var employees = GetSortedEmployees(_view.FireSortIndex);
 
             foreach (Transform child in _view.FireListContent)
                 Destroy(child.gameObject);
@@ -372,7 +357,7 @@ namespace GameDevTycoon.UI.Ingame
 
         private void RefreshEducationList()
         {
-            var employees = GetSortedEmployees()
+            var employees = GetSortedEmployees(_view.EducationSortIndex)
                 .Where(e => !IsEmployeeBusy(e))
                 .ToList();
 
@@ -423,9 +408,7 @@ namespace GameDevTycoon.UI.Ingame
             _view.HireButton.onClick.AddListener(() =>
             {
                 Debug.Log($"[고정버튼 클릭] {applicant.so.Name} 채용 시도");
-
-                // 기존 OnDetailHireButtonClicked()가 _selectedApplicant를 참조
-                OnFinalHireLogic(applicant); 
+                OnFinalHireLogic(applicant);
             });
         }
 
@@ -453,13 +436,10 @@ namespace GameDevTycoon.UI.Ingame
             {
                 Debug.LogError("선택된 지원자가 없음.");
                 return;
-            } 
+            }
 
-            // 중복 고용 방지
             bool isAlreadyHired = _EmployeeManager.Instance.haveEmployees.haveEmployeeList
                                   .Any(e => e.so.id == _selectedApplicant.so.id);
-
-            // 예약된 직원인지 확인 (GameManager의 _hiredEmployees 접근)
             bool isAlreadyReserved = GameManager.Instance.IsReserved(_selectedApplicant.so.id);
 
             if (isAlreadyHired || isAlreadyReserved)
@@ -468,7 +448,6 @@ namespace GameDevTycoon.UI.Ingame
                 return;
             }
 
-            // 자금 체크 및 즉시 차감
             int cost = _selectedApplicant.so.hiringCost;
             if (Company.Instance.gold.Value < cost)
             {
@@ -476,34 +455,16 @@ namespace GameDevTycoon.UI.Ingame
                 return;
             }
 
-            // 자금 차감 및 UI 갱신
             Company.Instance.gold.Value -= cost;
             _hudPresenter.RefreshHUD();
 
-            // GameManager에 예약 등록 (월요일에 출근할 명단에 추가)
             GameManager.Instance.ReserveHire(_selectedApplicant.so.id);
 
             RefreshApplicantList();
 
-            // UI 피드백 및 화면 전환
             _view.SetApplicantButtonLabel(true);
             _view.ShowHireMain();
             _alertView.ShowAlertPopup($"{_selectedApplicant.so.Name}님을 채용했습니다.\n월요일에 출근합니다!");
-            // if (_selectedApplicant == null) return;
-// 
-            // int cost = _selectedApplicant.so.hiringCost;
-            // if (Company.Instance.gold.Value < cost)
-            // {
-            //     _alertView.ShowAlertPopup("보유 자금이 부족합니다.");
-            //     return;
-            // }
-// 
-            // Company.Instance.gold.Value -= cost;
-            // _EmployeeManager.Instance.HireEmployee(_selectedApplicant.so.id);
-            // _hudPresenter.RefreshHUD();
-// 
-            // _view.SetApplicantButtonLabel(true);
-            // _view.ShowHireMain();
         }
 
         private void OnHireClicked()
@@ -538,7 +499,6 @@ namespace GameDevTycoon.UI.Ingame
                     _EmployeeManager.Instance.FireEmployee(employee);
                     GameManager.Instance.RemoveNpcFromScene(employee.so.id);
                     _hudPresenter.RefreshHUD();
-                    
 
                     _alertView.ShowNoticePopup(
                         employee.so.fireText2,
@@ -575,14 +535,18 @@ namespace GameDevTycoon.UI.Ingame
         }
 
         /// <summary>
-        /// 직원 목록 이름순 반환.
-        /// [TODO: 드롭다운 정렬 기능 확정 후 분기 처리]
+        /// 드랍다운 인덱스 기준 직원 목록 정렬 반환.
+        /// 0:이름순 1:직군순 2:능력치순
         /// </summary>
-        private List<Employee> GetSortedEmployees()
+        private List<Employee> GetSortedEmployees(int sortIndex)
         {
-            return _EmployeeManager.Instance.haveEmployees.haveEmployeeList
-                .OrderBy(e => e.so.Name)
-                .ToList();
+            var raw = _EmployeeManager.Instance.haveEmployees.haveEmployeeList;
+            return sortIndex switch
+            {
+                1 => raw.OrderBy(e => GetRoleOrder(e.so.role)).ThenBy(e => e.so.Name).ToList(),
+                2 => raw.OrderByDescending(e => e.MutableData.ability).ToList(),
+                _ => raw.OrderBy(e => e.so.Name).ToList(),
+            };
         }
 
         /// <summary>
@@ -600,7 +564,16 @@ namespace GameDevTycoon.UI.Ingame
             return _view.AllSliders.Sum(s => s.Count) * 1000;
         }
 
-        //추가
+        private static int GetRoleOrder(Role role) => role switch
+        {
+            Role.PLANNER => 0,
+            Role.ARTIST => 1,
+            Role.PROGRAMMER => 2,
+            Role.QA => 3,
+            Role.MARKETING => 4,
+            _ => 5,
+        };
+
         private void OnFinalHireLogic(Employee applicant)
         {
             // 자리 체크 로직
