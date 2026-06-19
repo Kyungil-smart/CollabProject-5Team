@@ -3361,6 +3361,17 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1963137582}
   m_CullTransparentMesh: 1
+--- !u!114 &1969656012 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 1130583221770103916, guid: e41d67e75d3a4d74887e02a74341ded9, type: 3}
+  m_PrefabInstance: {fileID: 7904083483452275291}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dbd20e83e34c0514d869afbaea0a4704, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!114 &1978770123 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 8693179404126162737, guid: ba98d300911aed842a0d6f6a43824720, type: 3}
@@ -4104,13 +4115,13 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 251402929}
     - target: {fileID: 2838642515319906603, guid: 93dd82dcc61417c458e403da87a9c416, type: 3}
-      propertyPath: _desk
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 2838642515319906603, guid: 93dd82dcc61417c458e403da87a9c416, type: 3}
       propertyPath: _alertView
       value: 
       objectReference: {fileID: 1204401006}
+    - target: {fileID: 2838642515319906603, guid: 93dd82dcc61417c458e403da87a9c416, type: 3}
+      propertyPath: _settingsPresenter
+      value: 
+      objectReference: {fileID: 1969656012}
     - target: {fileID: 9087901013417183150, guid: 93dd82dcc61417c458e403da87a9c416, type: 3}
       propertyPath: m_Name
       value: Canvas_HUD
@@ -4819,6 +4830,10 @@ PrefabInstance:
       propertyPath: _settingsPanel
       value: 
       objectReference: {fileID: 7904083483452275292}
+    - target: {fileID: 7469698755795812749, guid: e41d67e75d3a4d74887e02a74341ded9, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

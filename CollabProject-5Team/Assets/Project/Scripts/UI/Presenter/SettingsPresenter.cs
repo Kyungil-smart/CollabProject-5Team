@@ -28,6 +28,9 @@ namespace GameDevTycoon.UI
             _view.SetBGMToggle(_isBGMOn);
             _view.SetSFXToggle(_isSFXOn);
 
+            bool isGameScene = gameObject.scene.name == "GameScene";
+            _view.SetTitleButtonVisible(isGameScene);
+
             BindButtons();
 
             // [추후 활성화]
