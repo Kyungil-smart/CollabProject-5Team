@@ -154,6 +154,10 @@ namespace GameDevTycoon.UI.Ingame
         public Transform FireDetailContent         => _fireDetailContent;
         public Transform EducationListContent      => _educationListContent;
         public Transform EducationDetailContent    => _educationDetailContent;
+        public int EmployeeManageSortIndex => _employeeManageSortDropdown.value;
+        public int ApplicantSortIndex => _applicantSortDropdown.value;
+        public int FireSortIndex => _fireSortDropdown.value;
+        public int EducationSortIndex => _educationSortDropdown.value;
 
         private void Awake()
         {
