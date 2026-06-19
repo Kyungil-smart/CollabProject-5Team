@@ -1,34 +1,53 @@
-using UnityEngine;  
 using System.Collections.Generic;
+using UnityEngine;
 
 [System.Serializable]
-public struct UpgradeRequired
+public class OfficeUpgradeData
 {
-    public int gold;
-    public int dailyGold;
-    public int reputation;
-    public int loyality;
+    public int Level;
 
-    public UpgradeRequired(int gold, int dailyGold, int reputation, int loyality)
+    public int GoldCost;
+    public int maintainCost;
+    public int RequiredReputation;
+
+    public int ReputationBonus;
+    public int    LoyaltyBonus;
+
+    public int MaxEmployee;
+
+    public string Effects;
+    public string LockCondition1;
+    public string LockCondition2;
+
+    public OfficeUpgradeData(int level, int gold, int maintain, int reqRep, int repBonus, 
+                           int loyalty, int maxEmp, string effects, 
+                           string lock1, string lock2)
     {
-        this.gold       = gold;
-        this.dailyGold  = dailyGold;
-        this.reputation = reputation;
-        this.loyality   = loyality;
+        Level              = level;
+        GoldCost           = gold;
+        maintainCost       = maintain;
+        RequiredReputation = reqRep;
+        ReputationBonus    = repBonus;
+        LoyaltyBonus       = loyalty;
+        MaxEmployee        = maxEmp;
+        Effects            = effects;
+        LockCondition1     = lock1;
+        LockCondition2     = lock2;
     }
 }
-public class UpgradeData
+
+[CreateAssetMenu(fileName = "UpgradeData", menuName = "Scriptable Objects/Upgrade Data")]
+public class UpgradeData : ScriptableObject
 {
-    public List<UpgradeRequired> UpgradeRequiredDatas = new List<UpgradeRequired>();
+    [SerializeField] public List<OfficeUpgradeData> _datas;
 
-    public void Init()
+    public OfficeUpgradeData GetData(int level)
     {
-        UpgradeRequiredDatas.Clear();
+        return _datas.Find(x => x.Level == level);
+    }
 
-        UpgradeRequiredDatas.Add(new UpgradeRequired(    0, 200,  0, 0));
-        UpgradeRequiredDatas.Add(new UpgradeRequired( 5000, 400, 10, 0));
-        UpgradeRequiredDatas.Add(new UpgradeRequired(12000, 800, 20, 0));
-
-        Debug.Log($"UpgradeData 초기화 완료: {UpgradeRequiredDatas.Count} 단계");
+    public OfficeUpgradeData GetNextData(int currentLevel)
+    {
+        return GetData(currentLevel + 1);
     }
 }

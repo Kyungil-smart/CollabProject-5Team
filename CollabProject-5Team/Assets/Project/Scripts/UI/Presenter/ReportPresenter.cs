@@ -31,8 +31,6 @@ namespace GameDevTycoon.UI.Ingame
         private List<ReportCardView> _currentCards = new();
         private Report _viewingReport;
 
-
-
         private void Start()
         {
             BindButtons();
@@ -84,14 +82,12 @@ namespace GameDevTycoon.UI.Ingame
                 DateTimeManager.OnReportEnd?.Invoke();
                 return;
             }
+            _view.Show();
+
             RefreshCoverInfo();
             RefreshEmployeeStatusSlide();
-
-            _view.Show();
         }
 
-        // [DEBUG] DebugUIPresenter에서 보고서 강제 진입용. 빌드 전 제거.
-        public void OpenForDebug() => StartNightSequence();
 
         private void RefreshCoverInfo()
         {

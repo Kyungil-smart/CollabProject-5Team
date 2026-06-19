@@ -168,6 +168,11 @@ namespace GameDevTycoon.UI.Ingame
         public Transform StaffDetailContent => _staffDetailContent;
         public string ProjectNameInput => _projectNameInput.text;
 
+        // 현재 정렬 인덱스
+        public int StaffSortIndex => _staffSortDropdown.value;
+        public int InProgressSortIndex => _inProgressSortDropdown.value;
+        public int CompletedSortIndex => _completedSortDropdown.value;
+
         private void Awake()
         {
             ShowTab(ProjectTab.NewProject);

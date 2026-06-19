@@ -163,23 +163,36 @@ namespace GameDevTycoon.UI.Ingame
             foreach (Transform child in _view.ExpansionListContent)
                 Destroy(child.gameObject);
 
+            if (Company.Instance._upgradeData == null)
+            {
+                Debug.LogError("(UpgradeData)가 인스펙터에 할당되지 않았습니다!");
+                return;
+            }
+
             int currentLevel = Company.Instance.level;
 
-            for (int level = 1; level <= 7; level++)
+            for (int level = 0; level <= 2; level++)
             {
                 var data = GetExpansionData(level);
+
+                if (data == null)
+                {
+                    Debug.LogWarning($"[CompanyPresenter] 레벨 {level}에 해당하는 오피스 업그레이드 데이터가 없습니다.");
+                    continue;
+                }
+
                 var state = GetExpansionCardState(level, currentLevel);
 
                 var card = Instantiate(_expansionItemPrefab, _view.ExpansionListContent);
                 card.Setup(
                     level: level,
                     sizeSprite: null,   // [TODO: 사무실 크기 스프라이트 연결]
-                    cost: data.cost,
-                    maxEmployee: data.maxEmployee,
-                    description: GetDescriptionText(level, state),
+                    cost: data.GoldCost,
+                    maxEmployee: data.MaxEmployee,
+                    description: GetDescriptionText(level, state, data),
                     state: state,
-                    lockCondition1: data.lockCondition1,
-                    lockCondition2: data.lockCondition2
+                    lockCondition1: data.LockCondition1,
+                    lockCondition2: data.LockCondition2
                 );
 
                 if (state == ExpansionCardState.Unlocked)
@@ -211,23 +224,33 @@ namespace GameDevTycoon.UI.Ingame
         {
             if (_selectedExpansionCard == null) return;
 
-            var data = GetExpansionData(_selectedExpansionCard.Level);
+            int targetLevel = _selectedExpansionCard.Level;
+            var data = GetExpansionData(targetLevel);
 
-            if (Company.Instance.gold.Value < data.cost)
+
+            if (Company.Instance.gold.Value < data.GoldCost)
             {
                 _alertView.ShowAlertPopup("보유 자금이 부족하여 실행할 수 없습니다.");
                 return;
             }
 
+            if (!Company.Instance.CheckCanUpgrade(targetLevel))
+            {
+                _alertView.ShowAlertPopup("증축 조건을 만족하지 않습니다.");
+                return;
+            }
+
             _alertView.ShowConfirmPopup("구매하시겠습니까?", onConfirm: () =>
             {
-                // [TODO: CompanyManager 증축 처리 연결]
-                Company.Instance.gold.Value -= data.cost;
-                _hudPresenter.RefreshHUD();
+                Debug.Log("업그레이드 실행");
+                Company.Instance.UpgradeOffice(targetLevel);
 
                 _selectedExpansionCard = null;
                 _view.SetExpansionConfirmInteractable(false);
+
                 RefreshExpansionList();
+                RefreshCompanyInfo();
+                _hudPresenter.RefreshHUD();
             });
         }
 
@@ -239,26 +262,17 @@ namespace GameDevTycoon.UI.Ingame
             return ExpansionCardState.Locked;
         }
 
-        private static string GetDescriptionText(int level, ExpansionCardState state) => state switch
+        private string GetDescriptionText(int level, ExpansionCardState state, OfficeUpgradeData data) => state switch
         {
             ExpansionCardState.Current => "현재 적용된 상태 입니다.",
             ExpansionCardState.Owned => "보유",
-            _ => GetExpansionData(level).effects,
+            _ => data != null ? data.Effects : string.Empty,
         };
 
-        // 기획서(System_회사 통합 시스템 v0.2) 증축 테이블
-        // [TODO: SO 연결 후 하드코딩 교체]
-        private static ExpansionLevelData GetExpansionData(int level) => level switch
+        private OfficeUpgradeData GetExpansionData(int level)
         {
-            1 => new ExpansionLevelData(0, 3, "초기 형태", "-", "-"),
-            2 => new ExpansionLevelData(100000, 5, "직원들의 충성도 수치 상승\nQA 직원 고용 가능", "-", "-"),
-            3 => new ExpansionLevelData(4000, 6, "직원들의 충성도 수치 상승\n중형 프로젝트 해금", "사무실 Level 2 상태", "직원들의 능력치 합 200 이상"),
-            4 => new ExpansionLevelData(6000, 8, "직원들의 충성도 수치 상승\n대형 프로젝트 해금\n마케터 직원 고용 가능", "사무실 Level 3 상태\n회사 평판이 20점 이상", "A등급 이상의 프로젝트 이력 보유"),
-            5 => new ExpansionLevelData(8000, 11, "회사 평판 10 상승\n게임 판매 가격 10% 증가", "사무실 Level 4 상태\n직원들의 능력치 합 400 이상", "회사 평판이 40점 이상"),
-            6 => new ExpansionLevelData(10000, 15, "회사 평판 20 상승\n게임 판매 가격 20% 증가", "사무실 Level 5 상태", "회사 평판이 60점 이상"),
-            7 => new ExpansionLevelData(20000, 20, "게임 판매 가격 40% 증가", "사무실 Level 6 상태\n직원들의 능력치 합 1,000 이상", "회사 랭킹 1위 달성"),
-            _ => new ExpansionLevelData(0, 0, "-", "-", "-"),
-        };
+            return Company.Instance._upgradeData?.GetData(level);
+        }
 
         private static string BuildPeriodLabel()
         {

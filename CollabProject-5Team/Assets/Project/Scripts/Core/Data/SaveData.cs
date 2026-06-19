@@ -77,9 +77,9 @@ public class CurrentProjectSaveData
     public ProjectSize project_Scale;
 
     [Header(" 런타임 데이터 ")]
-    public int project_day;
+    public int    project_day;
     public string project_userNamed;
-    public int project_NightCount;
+    public int    project_NightCount;
     public string project_Genre;
     public string project_ArtStyle;
     public string project_Engine;
@@ -107,11 +107,9 @@ public class ProjectCompletedSaveData
     public int         charmScore;
     public string      grade; 
 
-    public float rating;
     public float retentionFactor;
     public int   users;
     public int   dailySales;
-    public int   goodsSales;
     public int   dailyGold;
     public int   dailyCost;
     public int   weeklyGoldAccum;

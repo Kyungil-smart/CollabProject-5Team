@@ -20,7 +20,7 @@ public enum QuestType
 
 public enum ControlType
 {
-    TAP, HOLD, SWIPE,
+    NONE, TAP, HOLD,
 }
 
 public abstract class QuestBase
@@ -34,7 +34,8 @@ public class DailyQuest : QuestBase
     public QuestSO so;
     public QuestResult result;
 
-    public int TargetCount => so.targetCount;
+    private int _targetCount;
+    public int TargetCount => _targetCount;
     public int curCount;
 
     // 퀘스트 초기화
@@ -45,6 +46,7 @@ public class DailyQuest : QuestBase
         so = questSO;
         result = QuestResult.None;
         curCount = 0;
+        _targetCount = questSO.targetCount;
     }
 
     // 퀘스트 진행 업데이트
@@ -57,6 +59,15 @@ public class DailyQuest : QuestBase
             state = QuestState.End;
             result = QuestResult.Success;
         }
+    }
+
+    // 복합 조작 phase 2 전환 시 호출
+    public void ResetForPhase2(int newTargetCount)
+    {
+        state = QuestState.Playing;
+        result = QuestResult.None;
+        curCount = 0;
+        _targetCount = newTargetCount;
     }
 
     // 시간 초과 등으로 실패 처리
