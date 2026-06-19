@@ -228,10 +228,19 @@ namespace GameDevTycoon.UI.Ingame
             foreach (Transform child in _view.StaffGridContent)
                 Destroy(child.gameObject);
 
-            var employees = _EmployeeManager.Instance.haveEmployees.haveEmployeeList
-                .Where(e => !IsEmployeeInProject(e))
-                .OrderBy(e => e.so.Name)
-                .ToList();
+            var raw = _EmployeeManager.Instance.haveEmployees.haveEmployeeList
+                .Where(e => !IsEmployeeInProject(e));
+
+            // 0:직군순 1:이름순 2:능력치순 3:배치순
+            var employees = _view.StaffSortIndex switch
+            {
+                1 => raw.OrderBy(e => e.so.Name),
+                2 => raw.OrderByDescending(e => e.MutableData.ability),
+                3 => raw.OrderByDescending(e => IsSelected(e)),
+                _ => raw.OrderBy(e => GetRoleOrder(e.so.role)).ThenBy(e => e.so.Name),
+            };
+
+            var employeeList = employees.ToList();
 
             // 최소 인원 표시 — 선택된 규모 기준
             int max = GetMaxEmployeePerPart(_selectedScale);
@@ -247,7 +256,7 @@ namespace GameDevTycoon.UI.Ingame
                            && CountAssigned(Role.PROGRAMMER) >= 1;
             _view.SetStaffAssignConfirmInteractable(canConfirm);
 
-            foreach (var employee in employees)
+            foreach (var employee in employeeList)
             {
                 var prefab = GetStaffCardPrefab(employee.so.role);
                 if (prefab == null) continue;
@@ -288,9 +297,22 @@ namespace GameDevTycoon.UI.Ingame
             var allProjects = GetInProgressProjects();
             _view.SetInProgressEmptyVisible(allProjects.Count == 0);
 
-            for (int i = 0; i < allProjects.Count; i++)
+            // 0:진행순 1:이름순 2:매출순
+            var sorted = _view.InProgressSortIndex switch
             {
-                var project = allProjects[i];
+                1 => allProjects.OrderBy(p => p.userNamed.Value).ToList(),
+                2 => allProjects.OrderByDescending(p =>
+                {
+                    var record = Company.Instance.completedProjects
+                        .FirstOrDefault(r => r.projectName == p.userNamed.Value);
+                    return record?.dailyGold ?? 0;
+                }).ToList(),
+                _ => allProjects,
+            };
+
+            for (int i = 0; i < sorted.Count; i++)
+            {
+                var project = sorted[i];
                 var item = Instantiate(_projectListItemPrefab, _view.InProgressListContent);
                 var itemView = item.GetComponent<ProjectListItemView>();
 
@@ -314,9 +336,17 @@ namespace GameDevTycoon.UI.Ingame
 
             if (completed == null) return;
 
-            for (int i = 0; i < completed.Count; i++)
+            // 0:진행순 1:이름순 2:매출순
+            var sorted = _view.CompletedSortIndex switch
             {
-                var record = completed[i];
+                1 => completed.OrderBy(r => r.projectName).ToList(),
+                2 => completed.OrderByDescending(r => r.dailyGold).ToList(),
+                _ => completed.ToList(),
+            };
+
+            for (int i = 0; i < sorted.Count; i++)
+            {
+                var record = sorted[i];
                 var item = Instantiate(_projectListItemPrefab, _view.CompletedListContent);
                 var itemView = item.GetComponent<ProjectListItemView>();
 
@@ -561,6 +591,14 @@ namespace GameDevTycoon.UI.Ingame
         };
 
         private string GetCurrentProjectName() => _view.ProjectNameInput;
+
+        private static int GetRoleOrder(Role role) => role switch
+        {
+            Role.PLANNER => 0,
+            Role.ARTIST => 1,
+            Role.PROGRAMMER => 2,
+            _ => 3,
+        };
 
         private GameObject GetStaffCardPrefab(Role role)
         {
