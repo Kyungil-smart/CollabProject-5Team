@@ -31,6 +31,8 @@ public class DateTimeManager : MonoBehaviour
 
     private float playTime = 0f;
 
+    public static Func<UniTask> OnDateChangedVisual;
+
     #region 싱글톤 설정
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     public static void Init() => Instance = null;
@@ -138,6 +140,8 @@ public class DateTimeManager : MonoBehaviour
     [ContextMenu("퇴근 처리")]
     public async UniTask OnClickEndDayButton()
     {
+        if (OnDateChangedVisual != null) await OnDateChangedVisual.Invoke();
+
         // 금요일 낮에 퇴근하면 금요일 밤으로 전환
         if (currentDay == DayOfWeek.Friday && currentTime == TimeOfDay.Day)
         {
