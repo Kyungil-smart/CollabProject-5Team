@@ -18,10 +18,14 @@ namespace GameDevTycoon.UI.Ingame
 
         [Header("프리팹")]
         [SerializeField] private RankingItemView _rankingItemPrefab;
-        [SerializeField] private ExpansionItemView _expansionItemPrefab;
 
         private ManagementFilter _currentFilter = ManagementFilter.Monthly;
-        private ExpansionItemView _selectedExpansionCard;
+
+        // 현재 선택된 카드 인덱스 (1~3), 미선택 시 -1
+        private int _selectedCardIndex = -1;
+
+        // 카드별 현재 상태 캐싱 — SetSelected 시 Unlocked 복원에 사용
+        private readonly ExpansionCardState[] _cardStates = new ExpansionCardState[4];
 
         public bool IsVisible => _view.IsVisible;
 
@@ -70,9 +74,8 @@ namespace GameDevTycoon.UI.Ingame
                 .Subscribe(_ =>
                 {
                     _view.ShowTab(CompanyTab.Expansion);
-                    _selectedExpansionCard = null;
-                    _view.SetExpansionConfirmInteractable(false);
-                    RefreshExpansionList();
+                    ResetExpansionSelection();
+                    RefreshExpansionCards();
                 })
                 .AddTo(this);
         }
@@ -100,6 +103,18 @@ namespace GameDevTycoon.UI.Ingame
             _view.OnExpansionConfirmClicked
                 .Subscribe(_ => OnExpansionConfirmClicked())
                 .AddTo(this);
+
+            _view.OnExpansionCardLv1Clicked
+                .Subscribe(OnExpansionCardClicked)
+                .AddTo(this);
+
+            _view.OnExpansionCardLv2Clicked
+                .Subscribe(OnExpansionCardClicked)
+                .AddTo(this);
+
+            _view.OnExpansionCardLv3Clicked
+                .Subscribe(OnExpansionCardClicked)
+                .AddTo(this);
         }
 
         private void RefreshCompanyInfo()
@@ -111,14 +126,14 @@ namespace GameDevTycoon.UI.Ingame
             _view.SetCompanyInfoLabels(
                 companyName: company.Name,
                 officeLevel: company.level,
-                ranking: 0,        // [TODO: RankingManager 연결]
+                ranking: 0,
                 employeeCount: GetEmployeeCount(),
                 releasedGameCount: company.completedProjects.Count,
                 reputation: company.reputation,
                 popularity: company.popularity,
                 cohesion: "좋음",   // [TODO: 내부결속력 단계 문자열 연결]
                 gold: company.gold.Value,
-                totalRevenue: 0         // [TODO: 누적매출액 연결]
+                totalRevenue: 0     // [TODO: 누적매출액 연결]
             );
         }
 
@@ -158,11 +173,8 @@ namespace GameDevTycoon.UI.Ingame
             _view.SetManagementStatusValues(current, previous);
         }
 
-        private void RefreshExpansionList()
+        private void RefreshExpansionCards()
         {
-            foreach (Transform child in _view.ExpansionListContent)
-                Destroy(child.gameObject);
-
             if (Company.Instance._upgradeData == null)
             {
                 Debug.LogError("(UpgradeData)가 인스펙터에 할당되지 않았습니다!");
@@ -171,62 +183,58 @@ namespace GameDevTycoon.UI.Ingame
 
             int currentLevel = Company.Instance.level;
 
-            for (int level = 0; level <= 2; level++)
+            for (int cardIndex = 1; cardIndex <= 3; cardIndex++)
             {
-                var data = GetExpansionData(level);
+                // cardIndex 1~3은 레벨 1~3에 대응
+                var state = GetExpansionCardState(cardIndex, currentLevel);
+                _cardStates[cardIndex] = state;
 
-                if (data == null)
-                {
-                    Debug.LogWarning($"[CompanyPresenter] 레벨 {level}에 해당하는 오피스 업그레이드 데이터가 없습니다.");
-                    continue;
-                }
+                _view.SetExpansionCardState(cardIndex, state);
 
-                var state = GetExpansionCardState(level, currentLevel);
-
-                var card = Instantiate(_expansionItemPrefab, _view.ExpansionListContent);
-                card.Setup(
-                    level: level,
-                    sizeSprite: null,   // [TODO: 사무실 크기 스프라이트 연결]
-                    cost: data.GoldCost,
-                    maxEmployee: data.MaxEmployee,
-                    description: GetDescriptionText(level, state, data),
-                    state: state,
-                    lockCondition1: data.LockCondition1,
-                    lockCondition2: data.LockCondition2
-                );
-
-                if (state == ExpansionCardState.Unlocked)
-                {
-                    card.OnCardClicked
-                        .Subscribe(clicked => OnExpansionCardClicked(clicked))
-                        .AddTo(this);
-                }
+                // Lv1은 LockOverlay 없음
+                if (cardIndex >= 2)
+                    _view.SetLockOverlayActive(cardIndex, state == ExpansionCardState.Locked);
             }
         }
 
-        private void OnExpansionCardClicked(ExpansionItemView clicked)
+        private void OnExpansionCardClicked(int cardIndex)
         {
-            if (_selectedExpansionCard == clicked)
+            // Unlocked 상태 카드만 클릭 가능 — interactable로 이미 막혀있지만 이중 방어
+            if (_cardStates[cardIndex] != ExpansionCardState.Unlocked &&
+                _cardStates[cardIndex] != ExpansionCardState.Selected) return;
+
+            if (_selectedCardIndex == cardIndex)
             {
-                _selectedExpansionCard.SetSelected(false);
-                _selectedExpansionCard = null;
+                // 같은 카드 재클릭 시 선택 해제
+                _cardStates[cardIndex] = ExpansionCardState.Unlocked;
+                _view.SetExpansionCardState(cardIndex, ExpansionCardState.Unlocked);
+                _selectedCardIndex = -1;
                 _view.SetExpansionConfirmInteractable(false);
                 return;
             }
 
-            _selectedExpansionCard?.SetSelected(false);
-            _selectedExpansionCard = clicked;
-            _selectedExpansionCard.SetSelected(true);
+            // 이전 선택 카드 복원
+            if (_selectedCardIndex != -1)
+            {
+                _cardStates[_selectedCardIndex] = ExpansionCardState.Unlocked;
+                _view.SetExpansionCardState(_selectedCardIndex, ExpansionCardState.Unlocked);
+            }
+
+            _selectedCardIndex = cardIndex;
+            _cardStates[cardIndex] = ExpansionCardState.Selected;
+            _view.SetExpansionCardState(cardIndex, ExpansionCardState.Selected);
             _view.SetExpansionConfirmInteractable(true);
         }
 
         private void OnExpansionConfirmClicked()
         {
-            if (_selectedExpansionCard == null) return;
+            if (_selectedCardIndex == -1) return;
 
-            int targetLevel = _selectedExpansionCard.Level;
-            var data = GetExpansionData(targetLevel);
+            // cardIndex와 레벨이 1:1 대응
+            int targetLevel = _selectedCardIndex;
+            var data = Company.Instance._upgradeData?.GetData(targetLevel);
 
+            if (data == null) return;
 
             if (Company.Instance.gold.Value < data.GoldCost)
             {
@@ -242,36 +250,27 @@ namespace GameDevTycoon.UI.Ingame
 
             _alertView.ShowConfirmPopup("구매하시겠습니까?", onConfirm: () =>
             {
-                Debug.Log("업그레이드 실행");
                 Company.Instance.UpgradeOffice(targetLevel);
 
-                _selectedExpansionCard = null;
-                _view.SetExpansionConfirmInteractable(false);
-
-                RefreshExpansionList();
+                ResetExpansionSelection();
+                RefreshExpansionCards();
                 RefreshCompanyInfo();
                 _hudPresenter.RefreshHUD();
             });
         }
 
-        private static ExpansionCardState GetExpansionCardState(int level, int currentLevel)
+        private void ResetExpansionSelection()
         {
-            if (level < currentLevel) return ExpansionCardState.Owned;
-            if (level == currentLevel) return ExpansionCardState.Current;
-            if (level == currentLevel + 1) return ExpansionCardState.Unlocked;
-            return ExpansionCardState.Locked;
+            _selectedCardIndex = -1;
+            _view.SetExpansionConfirmInteractable(false);
         }
 
-        private string GetDescriptionText(int level, ExpansionCardState state, OfficeUpgradeData data) => state switch
+        private static ExpansionCardState GetExpansionCardState(int cardIndex, int currentLevel)
         {
-            ExpansionCardState.Current => "현재 적용된 상태 입니다.",
-            ExpansionCardState.Owned => "보유",
-            _ => data != null ? data.Effects : string.Empty,
-        };
-
-        private OfficeUpgradeData GetExpansionData(int level)
-        {
-            return Company.Instance._upgradeData?.GetData(level);
+            if (cardIndex < currentLevel) return ExpansionCardState.Owned;
+            if (cardIndex == currentLevel) return ExpansionCardState.Current;
+            if (cardIndex == currentLevel + 1) return ExpansionCardState.Unlocked;
+            return ExpansionCardState.Locked;
         }
 
         private static string BuildPeriodLabel()
@@ -284,25 +283,6 @@ namespace GameDevTycoon.UI.Ingame
         private static int GetEmployeeCount()
         {
             return _EmployeeManager.Instance.haveEmployees.haveEmployeeList.Count;
-        }
-    }
-
-    internal sealed class ExpansionLevelData
-    {
-        public readonly int cost;
-        public readonly int maxEmployee;
-        public readonly string effects;
-        public readonly string lockCondition1;
-        public readonly string lockCondition2;
-
-        public ExpansionLevelData(int cost, int maxEmployee, string effects,
-            string lockCondition1, string lockCondition2)
-        {
-            this.cost = cost;
-            this.maxEmployee = maxEmployee;
-            this.effects = effects;
-            this.lockCondition1 = lockCondition1;
-            this.lockCondition2 = lockCondition2;
         }
     }
 }
