@@ -159,6 +159,9 @@ public class Company : MonoBehaviour
             stabilityScore = Mathf.RoundToInt(project.stabilityScore),
             charmScore = Mathf.RoundToInt(project.charmScore),
             grade = project.Grade,
+            genre = project.genre,
+            artStyle = project.artStyle,
+            engine = project.engine,
         };
 
         // 초기 정산 (계산영역: 평점·유저수·유지력·굿즈·일일매출·유지비)
@@ -428,6 +431,9 @@ public class Company : MonoBehaviour
                 stabilityScore  = p.stabilityScore,
                 charmScore      = p.charmScore,
                 grade           = p.grade.ToString(),
+                genre           = p.genre,
+                artStyle        = p.artStyle,
+                engine          = p.engine,
                 retentionFactor = p.RetentionFactor,
                 users           = p.users,
                 dailySales      = p.dailySales,
@@ -474,6 +480,9 @@ public class Company : MonoBehaviour
                     stabilityScore  = pData.stabilityScore,
                     charmScore      = pData.charmScore,
                     grade           = pData.grade[0],
+                    genre           = pData.genre,
+                    artStyle        = pData.artStyle,
+                    engine          = pData.engine,
                     RetentionFactor = pData.retentionFactor,
                     users           = pData.users,
                     dailySales      = pData.dailySales,
