@@ -9,9 +9,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 0}
+  m_Script: {fileID: 11500000, guid: f0421598a13c01f46810fbddda82f026, type: 3}
   m_Name: UpgradeData
-  m_EditorClassIdentifier: Assembly-CSharp::UpgradeData
+  m_EditorClassIdentifier: 
   _datas:
   - Level: 0
     GoldCost: 0
@@ -20,9 +20,9 @@ MonoBehaviour:
     ReputationBonus: 0
     LoyaltyBonus: 0
     MaxEmployee: 4
-    Effects: 1
-    LockCondition1: 2
-    LockCondition2: 3
+    Effects: "\uCD08\uAE30 \uD615\uD0DC\uC774\uB2E4"
+    LockCondition1: 
+    LockCondition2: 
   - Level: 1
     GoldCost: 5000
     maintainCost: 400
@@ -32,9 +32,9 @@ MonoBehaviour:
     MaxEmployee: 8
     Effects: "\uD68C\uC0AC \uD3C9\uD310 10 \uC0C1\uC2B9\\n\uC804 \uC9C1\uC6D0 \uCDA9\uC131\uB3C4
       10 \uC0C1\uC2B9\\n\uC911\uD615 \uD504\uB85C\uC81D\uD2B8 \uD574\uAE08 "
-    LockCondition1: 
-    LockCondition2: "\uD68C\uC0AC \uD3C9\uD310 20\uC810 \uC774\uC0C1\\nB\uB4F1\uAE09
-      \uC774\uC0C1\uC758 \uC18C\uD615 \uD504\uB85C\uC81D\uD2B8 \uC774\uB825 \uBCF4\uC720"
+    LockCondition1: "\uD68C\uC0AC \uD3C9\uD310 20\uC810 \uC774\uC0C1"
+    LockCondition2: "B\uB4F1\uAE09 \uC774\uC0C1\uC758 \uC18C\uD615 \uD504\uB85C\uC81D\uD2B8
+      \uC774\uB825 \uBCF4\uC720"
   - Level: 2
     GoldCost: 10000
     maintainCost: 600
@@ -42,7 +42,8 @@ MonoBehaviour:
     ReputationBonus: 20
     LoyaltyBonus: 20
     MaxEmployee: 12
-    Effects: 7
-    LockCondition1: "\uC774\uC804 \uB2E8\uACC4\uB97C \uD574\uAE08\uD558\uC138\uC694"
-    LockCondition2: "\uD68C\uC0AC\uD3C9\uD310 40\uC810 \uC774\uC0C1\\nB\uB4F1\uAE09
-      \uC774\uC0C1\uC758 \uC911\uD615 \uD504\uB85C\uC81D\uD2B8 \uC774\uB825 \uBCF4"
+    Effects: "\uD68C\uC0AC \uD3C9\uD310 20 \uC0C1\uC2B9\\n\uC804 \uC9C1\uC6D0 \uCDA9\uC131\uB3C4
+      20 \uC0C1\uC2B9\\n\uB300\uD615 \uD504\uB85C\uC81D\uD2B8 \uD574\uAE08"
+    LockCondition1: "\uD68C\uC0AC \uD3C9\uD310 40\uC810 \uC774\uC0C1"
+    LockCondition2: "B\uB4F1\uAE09 \uC774\uC0C1\uC758 \uC911\uD615 \uD504\uB85C\uC81D\uD2B8
+      \uC774\uB825 \uBCF4\uC720"
