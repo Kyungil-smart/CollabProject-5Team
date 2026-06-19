@@ -13,10 +13,6 @@ namespace GameDevTycoon.UI.Ingame
         [SerializeField] private ProjectCompletedPopupView _view;
         [SerializeField] private ReportPresenter _reportPresenter;
 
-        // 직전 OnNight 시점의 완료 프로젝트 수 — 새로 완료된 항목 감지용
-        private int _prevCompletedCount;
-        private ProjectCompleted _pendingRecord;
-
         private void OnEnable()
         {
             DateTimeManager.OnNight += OnNightStarted;
@@ -29,8 +25,6 @@ namespace GameDevTycoon.UI.Ingame
 
         private void Start()
         {
-            _prevCompletedCount = Company.Instance.completedProjects.Count;
-
             _view.OnConfirmClicked
                 .Subscribe(_ => OnConfirmClicked())
                 .AddTo(this);
@@ -38,22 +32,16 @@ namespace GameDevTycoon.UI.Ingame
 
         private void OnNightStarted()
         {
-            var completed = Company.Instance.completedProjects;
-
-            // 이번 OnNight에서 새로 추가된 프로젝트 확인
-            if (completed.Count > _prevCompletedCount)
+            if (!Company.Instance.hasPendingCompletedProject)
             {
-                // 가장 마지막에 추가된 항목이 이번에 완료된 프로젝트
-                _pendingRecord = completed[completed.Count - 1];
-                _prevCompletedCount = completed.Count;
-
-                ShowPopup(_pendingRecord);
-            }
-            else
-            {
-                _prevCompletedCount = completed.Count;
                 ProceedToReport();
+                return;
             }
+
+            var completedProject = Company.Instance.pendingCompletedProject;
+            Company.Instance.hasPendingCompletedProject = false;
+            Company.Instance.pendingCompletedProject = null;
+            ShowPopup(completedProject);
         }
 
         private void ShowPopup(ProjectCompleted record)
@@ -71,7 +59,6 @@ namespace GameDevTycoon.UI.Ingame
         private void OnConfirmClicked()
         {
             _view.Hide();
-            _pendingRecord = null;
             ProceedToReport();
         }
 

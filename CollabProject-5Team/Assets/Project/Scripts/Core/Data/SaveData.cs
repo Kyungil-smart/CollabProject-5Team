@@ -107,11 +107,9 @@ public class ProjectCompletedSaveData
     public int         charmScore;
     public string      grade; 
 
-    public float rating;
     public float retentionFactor;
     public int   users;
     public int   dailySales;
-    public int   goodsSales;
     public int   dailyGold;
     public int   dailyCost;
     public int   weeklyGoldAccum;
