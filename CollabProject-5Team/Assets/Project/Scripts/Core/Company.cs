@@ -1,7 +1,8 @@
-using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
-using UnityEngine;
 using R3;
+using System.Collections.Generic;
+using UnityEditor.Localization.Plugins.XLIFF.V20;
+using UnityEngine;
 
 public class Company : MonoBehaviour
 {
@@ -43,11 +44,11 @@ public class Company : MonoBehaviour
     #endregion
     }
 
+    #region 테스트 코드
     private void Start()
     {
         InitProjects(); // 테스트 코드
     }
-
     // 자식 오브젝트의 Project를 curProject로 세팅하는 "테스트"코드
     public void InitProjects()
     {
@@ -63,6 +64,7 @@ public class Company : MonoBehaviour
             curProject.HireEmployee(employee);
         }
     }
+    #endregion
 
     #region 프로젝트 시작 관리
     public Project CreateProject(ProjectSize scale, string projectName)
@@ -144,7 +146,7 @@ public class Company : MonoBehaviour
     }
     #endregion
 
-    // 프로젝트 완료 처리
+    #region 프로젝트 완료 처리
     public void CompleteProject(Project project)
     {
         // 이전 데이터 연동
@@ -174,11 +176,62 @@ public class Company : MonoBehaviour
 
         activeProjectCount.Value = 0;
 #if UNITY_EDITOR
-        Debug.Log($"[Company] '{record.projectName}' 완료 (등급:{record.grade} 평점:{record.rating:F1} 유저:{record.users} 일일매출:{record.dailyGold}G 유지비:{record.dailyCost}G)");
+        Debug.Log($"[Company] '{record.projectName}' 완료 (등급:{record.grade} 유저:{record.users} 일일매출:{record.dailyGold}G 유지비:{record.dailyCost}G)");
 #endif
     }
 
-    // 완료시 직원 보상 적용
+    // - 완료 프로젝트 일일 정산 -
+    public void TickDailyCompletedProjects()
+    {
+        foreach (var p in completedProjects)
+        {
+            if (p.isServiceOver) continue;
+
+            // 판매량 재계산
+            p.dailySales = PerkPolicy.CalcDailySales(p.scale, p.qualityScore, p.stabilityScore, p.charmScore, p.RetentionFactor, popularity);
+            p.dailyGold = PerkPolicy.CalcDailyGold(p.scale, p.dailySales);
+
+            p.weeklyGoldAccum += p.dailyGold;              // 주간 매출 누적
+            gold.Value += (p.dailyGold - p.dailyCost);      // 순수익 증가
+            p.RetentionFactor -= PerkPolicy.RETENTION_DECAY; // 유지력 감소
+        }
+    }
+
+    // — 완료 프로젝트 주간 정산 ─
+    /// <summary>유지비 차감, 유지력·유저수·매출 재계산, 히스토리 기록, 평판 갱신</summary>
+    public void TickWeeklyCompletedProjects()
+    {
+        foreach (var p in completedProjects)
+        {
+            if (p.isServiceOver) continue;
+
+            // 이번 주 수치를 지난 주로 백업
+            p.prevWeekUsers = p.users;
+            p.prevWeekGold = p.weeklyGoldAccum;
+
+            // 히스토리에 이번 주 누적 매출 push
+            p.QueueWeeklyGold(p.weeklyGoldAccum);
+            p.weeklyGoldAccum = 0;
+
+            // 유저수 재계산 (이탈자 반영)
+            p.users = PerkPolicy.CalcUsers(p.scale, p.qualityScore, p.prevWeekUsers);
+
+            // 유지비 차감
+            gold.Value -= p.dailyCost;
+
+            // 평판: 이번 주 매출 100G당 +1
+            reputation += PerkPolicy.CalcReputationGainFromSales(p.prevWeekGold);
+
+        }
+
+        // 적자 패널티
+        if (gold.Value < 0)
+            reputation += PerkPolicy.PENALTY_DEFICIT_HIT;
+
+        // TODO: 적자시 1회 빚 및 게임오버 시스템
+    }
+
+    // 프로젝트 완료시 직원 보상 적용
     public void ApplyCompletionEmployeeRewards(Project project)
     {
         int abilityDelta = PerkPolicy.CalcCompletionAbilityDelta(project.Scale, project.Grade);
@@ -190,7 +243,9 @@ public class Company : MonoBehaviour
             employee.MutableData.loyalty += loyaltyDelta;
         }
     }
+    #endregion
 
+    #region 직원 관리
     public void TickWeeklyEmployees()
     {
         var employeeManager = _EmployeeManager.Instance;
@@ -202,52 +257,6 @@ public class Company : MonoBehaviour
                 continue; // 프로젝트 중인 직원만 능력치 증가
             employee.AddAbilityDelta(PerkPolicy.CalcWeeklyAbilityDelta(employee.MutableData.loyalty));
         }
-    }
-
-    public void TickDailyCompletedProjects()
-    {
-        foreach (var p in completedProjects)
-        {
-            if (p.isServiceOver) continue;
-
-            // 판매량 재계산
-            p.goodsSales = PerkPolicy.CalcGoodsSales(p.charmScore);
-            p.dailySales = PerkPolicy.CalcDailySales(p.scale, p.Rating, p.RetentionFactor, popularity);
-            p.dailyGold = PerkPolicy.CalcDailyGold(p.scale, p.dailySales, p.goodsSales);
-
-            p.weeklyGoldAccum += p.dailyGold;
-            gold.Value += (p.dailyGold - p.dailyCost);
-            p.RetentionFactor -= PerkPolicy.RETENTION_DECAY; // 유지력 감소
-        }
-    }
-
-    // ─ 매주 금요일 밤 호출 — 완료 프로젝트 주간 정산 ─
-    /// <summary>유지비 차감, 유지력·유저수·매출 재계산, 히스토리 기록, 평판 갱신</summary>
-    public void TickWeeklyCompletedProjects()
-    {
-        foreach (var p in completedProjects)
-        {
-            if (p.isServiceOver) continue;
-
-            // 주간 정산 (유저수·매출 재계산, 히스토리 push, prevWeek 갱신)
-            PerkPolicy.TickWeeklyStats(p);
-
-            // 유지비 차감
-            gold.Value -= p.dailyCost;
-
-            // 평판: 이번 주 매출 100G당 +1
-            reputation += PerkPolicy.CalcReputationGainFromSales(p.prevWeekGold);
-
-            // 평점 2점 이하 패널티
-            if (p.rating <= 2f)
-                reputation += PerkPolicy.PENALTY_LOW_RATING;
-        }
-
-        // 적자 패널티
-        if (gold.Value < 0)
-            reputation += PerkPolicy.PENALTY_DEFICIT_HIT;
-
-        // TODO: 적자시 1회 빚 및 게임오버 시스템
     }
 
     // 방치 패널티 적용
@@ -278,7 +287,9 @@ public class Company : MonoBehaviour
             }
         }
     }
+    #endregion
 
+    #region 회사 증축
     // 회사 증축 가능 판단 
     public bool CheckCanUpgrade(int targetLevel = -1)
     {
@@ -297,7 +308,7 @@ public class Company : MonoBehaviour
         return true;
     }
 
-    // 회사 증축
+    // 회사 증축 실행
     public void UpgradeOffice(int targetLevel = -1)
     {
         int currentLevel = GameManager.Instance._currentOfficeLevel;
@@ -336,6 +347,7 @@ public class Company : MonoBehaviour
         // 대기 및 연출 제어를 위해 비동기 실행 흐름으로 호출
         GameManager.Instance.UpgradeOfficeAsync().Forget();
     }
+#endregion
 
     #region 세이브/로드
     public void ExportActiveProjectData(SaveData data)
@@ -413,11 +425,9 @@ public class Company : MonoBehaviour
                 stabilityScore  = p.stabilityScore,
                 charmScore      = p.charmScore,
                 grade           = p.grade.ToString(),
-                rating          = p.Rating,
                 retentionFactor = p.RetentionFactor,
                 users           = p.users,
                 dailySales      = p.dailySales,
-                goodsSales      = p.goodsSales,
                 dailyGold       = p.dailyGold,
                 dailyCost       = p.dailyCost,
                 weeklyGoldAccum = p.weeklyGoldAccum,
@@ -459,11 +469,9 @@ public class Company : MonoBehaviour
                     stabilityScore  = pData.stabilityScore,
                     charmScore      = pData.charmScore,
                     grade           = pData.grade[0],
-                    Rating          = pData.rating,
                     RetentionFactor = pData.retentionFactor,
                     users           = pData.users,
                     dailySales      = pData.dailySales,
-                    goodsSales      = pData.goodsSales,
                     dailyGold       = pData.dailyGold,
                     dailyCost       = pData.dailyCost,
                     weeklyGoldAccum = pData.weeklyGoldAccum,
