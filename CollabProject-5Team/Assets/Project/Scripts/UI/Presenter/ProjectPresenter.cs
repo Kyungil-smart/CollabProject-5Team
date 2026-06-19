@@ -375,6 +375,7 @@ namespace GameDevTycoon.UI.Ingame
             _view.SetProgressBar(project.ProgressDayBar / 100f);
 
             bool isInService = project.isFinished.Value;
+            Debug.LogWarning(isInService);
             _view.SetOperationGroupVisible(isInService);
             _view.SetServiceStopInteractable(isInService && !IsServiceOver(project));
             _view.SetUpdateButtonInteractable(isInService && !IsServiceOver(project));
@@ -386,17 +387,15 @@ namespace GameDevTycoon.UI.Ingame
         {
             _view.ShowCompletedDetail();
 
-            // [TODO: ProjectCompleted에 genre, artStyle, engine 필드 추가 후 연결]
             _view.SetCompletedProjectDetailInfo(
                 record.projectName,
                 ScaleToString(record.scale),
-                genre: "",
-                art: "",
-                engine: ""
+                genre: record.genre,
+                art: record.artStyle,
+                engine: record.engine
             );
 
-            // [TODO: ProjectCompleted에 progress 필드 추가 후 연결]
-            _view.SetCompletedProgressBar(0f);
+            _view.SetCompletedProgressBar(100f);
 
             bool isServiceEnded = record.isServiceOver;
             _view.SetCompletedOperationGroupVisible(isServiceEnded);

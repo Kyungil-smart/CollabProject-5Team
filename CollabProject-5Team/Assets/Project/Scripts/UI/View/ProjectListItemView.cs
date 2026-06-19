@@ -37,7 +37,7 @@ namespace GameDevTycoon.UI.Ingame
         public void SetInactive()
         {
             _itemFrame.color  = _inactiveColor;
-            _statusValue.text = "서비스종료";
+            _statusValue.text = "서비스 중";
         }
     }
 }

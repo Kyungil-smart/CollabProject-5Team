@@ -106,6 +106,9 @@ public class ProjectCompletedSaveData
     public int         stabilityScore;
     public int         charmScore;
     public string      grade; 
+    public string      genre;
+    public string      artStyle;
+    public string      engine;
 
     public float retentionFactor;
     public int   users;

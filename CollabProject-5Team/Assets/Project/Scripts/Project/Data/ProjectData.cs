@@ -20,6 +20,7 @@ public class ProjectCompleted
     public int stabilityScore;
     public int charmScore;
     public char grade; // 등급 (S, A, B, C)
+    public string genre; public string artStyle; public string engine;
 
     // 완료 데이터
     float _retentionFactor; // 유지력 계수 (0.0~1.0, 출시 후 감소)
