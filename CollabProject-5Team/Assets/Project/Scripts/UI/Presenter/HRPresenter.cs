@@ -39,6 +39,13 @@ namespace GameDevTycoon.UI.Ingame
             BindHire();
             BindFire();
             BindEducation();
+
+            DateTimeManager.OnWeekStarted += ResetOnMondayUI;
+        }
+
+        private void OnDestroy()
+        {
+            DateTimeManager.OnWeekStarted -= ResetOnMondayUI;
         }
 
         public void Show()
@@ -291,19 +298,22 @@ namespace GameDevTycoon.UI.Ingame
             foreach (Transform child in _view.ApplicantScrollContent)
                 Destroy(child.gameObject);
 
+            var applicants = _EmployeeManager.Instance.currentApplicants;
+            /*
             var raw = _EmployeeManager.Instance.employeeList.leftEmployees.Values
                 .Select(go => go.GetComponent<Employee>())
                 .Where(e => e != null);
+            */
 
             // 0:이름순 1:직군순 2:능력치순
-            var applicants = _view.ApplicantSortIndex switch
+            var SortedApplicants = _view.ApplicantSortIndex switch
             {
-                1 => raw.OrderBy(e => GetRoleOrder(e.so.role)).ThenBy(e => e.so.Name),
-                2 => raw.OrderByDescending(e => e.so.ability),
-                _ => raw.OrderBy(e => e.so.Name),
+                1 => applicants.OrderBy(e => GetRoleOrder(e.so.role)).ThenBy(e => e.so.Name),
+                2 => applicants.OrderByDescending(e => e.so.ability),
+                _ => applicants.OrderBy(e => e.so.Name),
             };
 
-            foreach (var applicant in applicants.ToList())
+            foreach (var applicant in SortedApplicants.ToList())
             {
                 var card = Instantiate(_applicantCardPrefab, _view.ApplicantScrollContent);
                 card.GetComponent<IBindable<Employee>>().Bind(applicant);
@@ -420,6 +430,16 @@ namespace GameDevTycoon.UI.Ingame
                 _alertView.ShowAlertPopup("보유 자금이 부족합니다.");
                 return;
             }
+
+            // RecruitRequest 리스트 생성
+            List<RecruitRequest> requests = _view.AllSliders
+                .Where(s => s.Count > 0) // 요청 인원이 0보다 큰 것만
+                .Select(s => new RecruitRequest(s.Role, s.Count))
+                .ToList();
+
+            // DateTimeManager에 저장
+            DateTimeManager.Instance.currentRecruitRequests = requests;
+
             Company.Instance.gold.Value -= cost;
             _hudPresenter.RefreshHUD();
             foreach (var slider in _view.AllSliders)
@@ -610,11 +630,25 @@ namespace GameDevTycoon.UI.Ingame
             // GameManager에 예약 등록
             GameManager.Instance.ReserveHire(applicant.so.id);
 
+            // UI리스트에서 채용된 직원 제거
+            _EmployeeManager.Instance.RemoveFromApplicants(applicant.so.id);
+
             // UI 갱신 및 피드백
             RefreshApplicantList();
             _view.SetApplicantButtonLabel(true);
             _view.ShowHireMain();
             _alertView.ShowAlertPopup($"{applicant.so.Name}님을 채용했습니다.\n월요일에 출근합니다!");
+        }
+
+    // 월요일이 지원 UI초기화
+    private void ResetOnMondayUI()
+        {
+            // 직원모집버튼 상태 초기화
+            _view.SetRecruitButtonInteractable(true);
+            _view.SetRecruitButtonLabel(false);
+
+            // 지원자 리스트 버튼 초기화
+            _view.SetApplicantButtonLabel(false);
         }
     }
 }

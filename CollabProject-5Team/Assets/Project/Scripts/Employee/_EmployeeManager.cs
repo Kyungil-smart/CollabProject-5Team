@@ -1,6 +1,7 @@
 using R3;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class _EmployeeManager : MonoBehaviour
@@ -15,6 +16,9 @@ public class _EmployeeManager : MonoBehaviour
 
     [Header("교육 과정")]
     public List<EmployeeTrainingCourse> trainingCourses = new();
+
+    [Header("이번 주 지원자 리스트")]
+    public List<Employee> currentApplicants = new();    // 현재 지원자
 
     public EmployeeList employeeList;
     public HaveEmployees haveEmployees;
@@ -72,6 +76,34 @@ public class _EmployeeManager : MonoBehaviour
         haveEmployees.RemoveEmployee(employee);
         employeeList.RestoreEmployee(employee.so.id);
         //Destroy(employee.gameObject);
+    }
+
+    // 추가: 월요일이 시작 될 때, 채용 요청에 맞춰 새로운 지원자 리스트 생성
+    public void GenerateWeeklyAppicants(List<RecruitRequest> requests)
+    {
+        // 저번 주 지원자 초기화
+        currentApplicants.Clear();
+
+        // 요청 리스트에 있는 직군 추출
+        var targetRoles = requests.Select(r => r.TargetRole).ToHashSet();
+
+        // 요청한 직군의 지원자를 리스트에 추가
+        var applicants = employeeList.leftEmployees.Values
+            .Select(go => go.GetComponent<Employee>())
+            .Where(e => targetRoles.Contains(e.so.role))
+            .ToList();
+
+        currentApplicants.AddRange(applicants);
+    }
+
+    // 추가: 고용되면 지원자 리스트에서 즉시 사라짐
+    public void RemoveFromApplicants(int employeeId)
+    {
+        var applicant = currentApplicants.FirstOrDefault(e => e.so.id == employeeId);
+        if (applicant != null)
+        {
+            currentApplicants.Remove(applicant);
+        }
     }
     #endregion
 

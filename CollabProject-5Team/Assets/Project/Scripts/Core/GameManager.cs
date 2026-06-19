@@ -24,6 +24,7 @@ public class GameManager : MonoBehaviour
     private List<Transform>          _sitPoints = new List<Transform>();       // 앉을 좌표 리스트
     private List<NPCController>     _activeNpcs = new List<NPCController>();   // 활성화된 NPC를 담아둘 리스트
     private List<int>           _hiredEmployees = new List<int>();             // 고용된 NPC
+    private bool _isUpgradeReserved = false;                                   // 맵 증축 저장용
 
     [Header("자동 주입")]
     public PlayerMove player;
@@ -107,6 +108,21 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    // 사무실 업그레이드 저장용 함수
+    public void ReserveOfficeUpgrade()
+    {
+        _isUpgradeReserved = true;
+    }
+
+    // 월요일 아침에 호출
+    public async UniTask TryProcessUpgradeAsync()
+    {
+        if (!_isUpgradeReserved) return;
+
+        await UpgradeOfficeAsync();
+        _isUpgradeReserved = false;    
+    }
+
     // 사무실 업그레이드 시 맵 교체 및 NPC재배치
     public async UniTask UpgradeOfficeAsync()
     {
@@ -185,10 +201,7 @@ public class GameManager : MonoBehaviour
                 npc.ChangeState(new NPCIdle());
             }
         }
-
-        
-
-        GotoWorkNPCs();
+        // GotoWorkNPCs();
     }
 
 
