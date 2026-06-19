@@ -23,7 +23,11 @@ public class DateTimeManager : MonoBehaviour
     public static event Action OnWorkCompleted;
     public static event Action OnNightLoading;
     public static event Action OnNight;// 밤
+    public static event Action OnWeekStarted; // 월요일 아침에만 호출할 이벤트
+
     public static Action OnReportEnd;
+
+    public List<RecruitRequest> currentRecruitRequests = new();
 
     private float playTime = 0f;
 
@@ -157,13 +161,16 @@ public class DateTimeManager : MonoBehaviour
             currentDay = DayOfWeek.Monday;
             currentTime = TimeOfDay.Day;
 
-            // 월요일 낮이 되면 퇴근했던 직원 다시 생성
-            GameManager.Instance.HiredNPCGoToWork().Forget();
+            //GameManager.Instance.HiredNPCGoToWork().Forget();
+            // 맵 업그레이드 적용
+            await GameManager.Instance.TryProcessUpgradeAsync();
 
+            // 월요일 낮이 되면 퇴근했던 직원 다시 생성
             await GameManager.Instance.HiredNPCGoToWork();
 
             ResetDayStatus();
             OnDay?.Invoke();// 낮
+            OnWeekStarted?.Invoke(); // 월요일 아침
         }
         // 월~목 낮에 퇴근하면 다음 날 낮으로
         else
@@ -202,6 +209,14 @@ public class DateTimeManager : MonoBehaviour
         if (Company.Instance.curProject != null)
             Company.Instance.curProject.ProgressNight();
 
+        // 채용 요청이 있다면 EmployeeManager에게 전달
+        if (currentRecruitRequests != null && currentRecruitRequests.Count > 0)
+        {
+            _EmployeeManager.Instance.GenerateWeeklyAppicants(currentRecruitRequests);
+
+            // 리스트 초기화
+            currentRecruitRequests.Clear();
+        }
         OnNight?.Invoke();
     }
 
