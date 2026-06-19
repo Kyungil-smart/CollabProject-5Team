@@ -75,6 +75,6 @@ public sealed class DebugUIPresenter : MonoBehaviour
         // ReportPresenter.OnNightStarted()는 private이므로
         // OnNight 이벤트를 발행해 정상 흐름과 동일하게 진입
         // 단, 금요일 밤 상태가 아니면 보고서 데이터(pendingReports)가 없어 빈 화면으로 열릴 수 있음
-        _reportPresenter?.OpenForDebug();
+        //_reportPresenter?.OpenForDebug();
     }
 }

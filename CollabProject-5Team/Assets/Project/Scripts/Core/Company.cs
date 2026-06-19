@@ -1,7 +1,6 @@
 using Cysharp.Threading.Tasks;
 using R3;
 using System.Collections.Generic;
-using UnityEditor.Localization.Plugins.XLIFF.V20;
 using UnityEngine;
 
 public class Company : MonoBehaviour
@@ -18,11 +17,13 @@ public class Company : MonoBehaviour
 
     public int ProjectSlots = 1;  // 기획 변경으로 1고정(추후 삭제)
 
-    public List<Project> projects = new(); // 현재 만들고 있는 프로젝트들
-    public ReactiveProperty<int> activeProjectCount = new(0); // 만들고 있는 프로젝트 수
-    public Project curProject; // 메인 프로젝트 (UI에 집중적으로 표시)
+    public List<Project> projects = new(); //기획변경으로 필요없는 리스트, 이전코드 호환용으로 일단 냅둠
+    public ReactiveProperty<int> activeProjectCount = new(0); // 현재 프로젝트 보유 여부 0: 없음, 1: 있음
+    public Project curProject; // 진행중인 프로젝트는 오직 1개만 존재
     public List<Employee> selectedProjectEmployees = new(); // 신규 프로젝트 UI에서 임시 선택된 직원들
     public List<ProjectCompleted> completedProjects = new(); // 완료된 프로젝트 목록
+    public bool hasPendingCompletedProject; // 런타임 전용: 완료 팝업 표시 대기 여부
+    public ProjectCompleted pendingCompletedProject; // 런타임 전용: 이번 밤에 팝업으로 표시할 완료 프로젝트
 
     [Header("사후 관리")]
     public int popularity;   // 회사 인기
@@ -170,6 +171,8 @@ public class Company : MonoBehaviour
         // 객체 정리
         _EmployeeManager.Instance.ReleaseProjectEmployees(project.GetAllEmployees());
         completedProjects.Add(record);
+        hasPendingCompletedProject = true;
+        pendingCompletedProject = record;
         projects.Remove(project);
 
         curProject = null;
@@ -457,6 +460,8 @@ public class Company : MonoBehaviour
         this.totalRevenue = data.company_TotalRevenue;
 
         completedProjects.Clear();
+        hasPendingCompletedProject = false;
+        pendingCompletedProject = null;
         if (data.completedProjectsData != null)
         {
             foreach (var pData in data.completedProjectsData)

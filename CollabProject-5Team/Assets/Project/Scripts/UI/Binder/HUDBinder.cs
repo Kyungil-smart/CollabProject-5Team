@@ -35,8 +35,7 @@ public class HUDBinder : MonoBehaviour, IBindable<DateTimeManager>
     public void SwitchToDay()
     {
         _view.SwitchToDay();
-        if (CanvasDayBottom != null)
-            CanvasDayBottom.SetActive(true);
+        CanvasDayBottom.SetActive(true);
     }
 
     public void SwitchToNight()
@@ -63,11 +62,8 @@ public class HUDBinder : MonoBehaviour, IBindable<DateTimeManager>
 
     async void ShowLoadingScreen()
     {
-        if (CanvasLoading != null)
-        {
-            CanvasLoading.SetActive(true);
-            await UniTask.Delay(565, cancellationToken: destroyCancellationToken); // 추후 로딩 전환 효과도 넣고...?
-            CanvasLoading.SetActive(false);
-        }
+        CanvasLoading.SetActive(true);
+        await UniTask.Delay(565, cancellationToken: destroyCancellationToken); // 추후 로딩 전환 효과도 넣고...?
+        CanvasLoading.SetActive(false);
     }
 }
