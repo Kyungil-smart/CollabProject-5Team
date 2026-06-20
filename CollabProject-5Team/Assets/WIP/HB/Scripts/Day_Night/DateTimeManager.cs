@@ -187,8 +187,8 @@ public class DateTimeManager : MonoBehaviour
     // 내부적으로 영업일을 진행시킴
     public void ProgressDay()
     {
-        foreach (var project in Company.Instance.projects)
-            project.ProgressDay();
+        if (Company.Instance.activeProjectCount.Value > 0)
+            Company.Instance.curProject.ProgressDay();
 
         // 완료 프로젝트 일일 수익 정산
         Company.Instance.TickDailyCompletedProjects();
@@ -271,7 +271,6 @@ public class DateTimeManager : MonoBehaviour
         data.currentTime     = this.currentTime;
         data.day             = this.day.Value;
         data.isWorkCompleted = this.isWorkCompleted;
-        data.talkedNpcsToday = new List<string>(this.talkedNpcsToday);
         data.playTime        = this.playTime;
     }
 
@@ -284,7 +283,7 @@ public class DateTimeManager : MonoBehaviour
         this.currentTime       = data.currentTime;
         this.day.Value         = data.day;
         this.isWorkCompleted   = data.isWorkCompleted;
-        this.talkedNpcsToday   = new HashSet<string>(data.talkedNpcsToday);
+        this.talkedNpcsToday.Clear();
         this.playTime          = data.playTime;
     }
 }

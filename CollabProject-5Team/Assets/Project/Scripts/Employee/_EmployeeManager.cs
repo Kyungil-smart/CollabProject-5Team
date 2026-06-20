@@ -224,7 +224,8 @@ public class _EmployeeManager : MonoBehaviour
                 preLoyalty = emp.MutableData.preLoyalty,
                 preFatigue = emp.MutableData.preFatigue,
 
-                workStatus = emp.WorkStatus
+                workStatus = emp.WorkStatus,
+                hasTalkedThisWeek = emp.hasTalkedThisWeek
             };
 
             if (emp.WorkStatus == EmployeeWorkStatus.InTraining)
@@ -268,6 +269,7 @@ public class _EmployeeManager : MonoBehaviour
                 preFatigue = empSave.preFatigue
             };
 
+            emp.hasTalkedThisWeek = empSave.hasTalkedThisWeek;
             RestoreEmployeeStatus(emp, empSave);
         }
     }

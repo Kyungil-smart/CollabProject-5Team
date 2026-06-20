@@ -1,3 +1,4 @@
+using System;
 using R3;
 using UnityEngine;
 
@@ -12,6 +13,10 @@ namespace GameDevTycoon.UI.Ingame
     {
         [SerializeField] private SaveView _view;
         [SerializeField] private AlertView _alertView;
+
+        private const int AutoSaveViewSlot = 1;
+        private const int Slot1ViewSlot = 2;
+        private const int Slot2ViewSlot = 3;
 
         // 0 = 없음, 1 = AutoSave, 2 = Slot1, 3 = Slot2
         private int _selectedSlot;
@@ -35,9 +40,7 @@ namespace GameDevTycoon.UI.Ingame
         public void Hide()
         {
             _selectedSlot = 0;
-            _view.SetAutoSlotSelected(false);
-            _view.SetSlot1Selected(false);
-            _view.SetSlot2Selected(false);
+            _view.SetSlotSelected(0);
             _view.SetSaveButtonInteractable(false);
             _view.SetLoadButtonInteractable(false);
             _view.Hide();
@@ -72,14 +75,23 @@ namespace GameDevTycoon.UI.Ingame
 
         private void RefreshSlots()
         {
-            // [TODO: SaveSystem 연결 후 실제 슬롯 데이터 바인딩]
-            _autoSlotData = null;
-            _slot1Data = null;
-            _slot2Data = null;
+            _autoSlotData = CreateSlotData(0, true);
+            _slot1Data = CreateSlotData(1, false);
+            _slot2Data = CreateSlotData(2, false);
 
             _view.BindAutoSlot(_autoSlotData);
             _view.BindSlot1(_slot1Data);
             _view.BindSlot2(_slot2Data);
+        }
+
+        private static SaveSlotData CreateSlotData(int saveSlotIndex, bool isAutoSlot)
+        {
+            SaveLoadSystem saveLoadSystem = SaveLoadSystem.Instance;
+            if (saveLoadSystem == null || !saveLoadSystem.HasSaveData(saveSlotIndex))
+                return null;
+
+            SaveData data = saveLoadSystem.GetSaveDataWithoutApply(saveSlotIndex);
+            return SaveSlotData.FromSaveData(saveSlotIndex, data, isAutoSlot);
         }
 
         private void OnSlotClicked(int slotIndex)
@@ -101,9 +113,7 @@ namespace GameDevTycoon.UI.Ingame
 
         private void ApplySlotSelection()
         {
-            _view.SetAutoSlotSelected(_selectedSlot == 1);
-            _view.SetSlot1Selected(_selectedSlot == 2);
-            _view.SetSlot2Selected(_selectedSlot == 3);
+            _view.SetSlotSelected(_selectedSlot);
         }
 
         private void ApplyButtonInteractable()
@@ -113,18 +123,18 @@ namespace GameDevTycoon.UI.Ingame
             // AutoSaveSlot : LoadButton만 활성
             // 저장된 슬롯 : 둘 다 활성
             // 빈 슬롯 : SaveButton만 활성
-            bool isAuto = _selectedSlot == 1;
+            bool isAuto = _selectedSlot == AutoSaveViewSlot;
             bool hasSave = data != null;
 
             _view.SetSaveButtonInteractable(!isAuto);
-            _view.SetLoadButtonInteractable(isAuto || hasSave);
+            _view.SetLoadButtonInteractable(hasSave);
         }
 
         private SaveSlotData GetSelectedSlotData() => _selectedSlot switch
         {
-            1 => _autoSlotData,
-            2 => _slot1Data,
-            3 => _slot2Data,
+            AutoSaveViewSlot => _autoSlotData,
+            Slot1ViewSlot => _slot1Data,
+            Slot2ViewSlot => _slot2Data,
             _ => null,
         };
 
@@ -132,20 +142,68 @@ namespace GameDevTycoon.UI.Ingame
         {
             if (_selectedSlot == 0) return;
 
-            _alertView.ShowConfirmPopup("저장하시겠습니까?", () =>
+            Confirm("저장하시겠습니까?", () =>
             {
-                // [TODO: SaveSystem 연결]
+                SaveLoadSystem saveLoadSystem = SaveLoadSystem.Instance;
+                if (saveLoadSystem == null)
+                {
+                    ShowAlert("저장 시스템을 찾을 수 없습니다.");
+                    return;
+                }
+
+                saveLoadSystem.SaveGame(_selectedSlot - 1);
+                RefreshSlots();
+                ApplySlotSelection();
+                ApplyButtonInteractable();
+                ShowAlert("저장되었습니다.");
             });
         }
 
         private void OnLoadClicked()
         {
             if (_selectedSlot == 0) return;
+            if (GetSelectedSlotData() == null) return;
 
-            _alertView.ShowConfirmPopup("불러오시겠습니까?", () =>
+            Confirm("불러오시겠습니까?", () =>
             {
-                // [TODO: SaveSystem 연결]
+                SaveLoadSystem saveLoadSystem = SaveLoadSystem.Instance;
+                if (saveLoadSystem == null)
+                {
+                    ShowAlert("저장 시스템을 찾을 수 없습니다.");
+                    return;
+                }
+
+                SaveData data = saveLoadSystem.LoadGame(_selectedSlot - 1);
+                if (data == null)
+                {
+                    ShowAlert("불러오기에 실패했습니다.");
+                    return;
+                }
+
+                Hide();
             });
+        }
+
+        private void Confirm(string message, Action onConfirm)
+        {
+            if (_alertView != null)
+            {
+                _alertView.ShowConfirmPopup(message, onConfirm);
+                return;
+            }
+
+            onConfirm?.Invoke();
+        }
+
+        private void ShowAlert(string message)
+        {
+            if (_alertView != null)
+            {
+                _alertView.ShowAlertPopup(message);
+                return;
+            }
+
+            Debug.Log(message);
         }
     }
 }

@@ -14,8 +14,6 @@ public class SaveData
     public TimeOfDay    currentTime;
     public int          day;
     public bool         isWorkCompleted;
-    public List<string> talkedNpcsToday;
-    public List<int>    talkedEmployeeIdsThisWeek;
     public float        playTime;
 
     // Employee 저장
@@ -61,6 +59,7 @@ public class EmployeeSaveData
     public int preFatigue;
 
     public EmployeeWorkStatus workStatus;
+    public bool hasTalkedThisWeek;
 
     public int    trainingRemainingWeeks;
     public int    trainingStartedWeek;
