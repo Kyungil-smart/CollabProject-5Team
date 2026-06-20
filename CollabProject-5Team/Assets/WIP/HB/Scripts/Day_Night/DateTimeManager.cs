@@ -32,6 +32,7 @@ public class DateTimeManager : MonoBehaviour
     private float playTime = 0f;
 
     public static Func<UniTask> OnDateChangedVisual;
+    public static Action OnDateUIChanged;
 
     #region 싱글톤 설정
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
@@ -140,14 +141,32 @@ public class DateTimeManager : MonoBehaviour
     [ContextMenu("퇴근 처리")]
     public async UniTask OnClickEndDayButton()
     {
-        if (OnDateChangedVisual != null) await OnDateChangedVisual.Invoke();
+        if (currentDay == DayOfWeek.Friday && currentTime == TimeOfDay.Day)
+        {
+            await ProcessDateLogic();
+            OnDateUIChanged?.Invoke();
+        }
+        else
+        {
+            if (OnDateChangedVisual != null)
+            {
+                await OnDateChangedVisual.Invoke();
+            }
+            else
+            {
+                await ProcessDateLogic();
+                OnDateUIChanged?.Invoke();
+            }
+        }
+    }
 
+    public async UniTask ProcessDateLogic()
+    {
         // 금요일 낮에 퇴근하면 금요일 밤으로 전환
         if (currentDay == DayOfWeek.Friday && currentTime == TimeOfDay.Day)
         {
             // 금요일 낮 업무 종료 시 NPC 퇴근
             GameManager.Instance.LeaveWorkNPCs();
-
             currentTime = TimeOfDay.Night;
 
             // 방치 패널티 적용
@@ -157,6 +176,7 @@ public class DateTimeManager : MonoBehaviour
             ResetWeekStatus();
             ProgressDay();
         }
+
         // 금요일 밤에 퇴근하면 다음 주 월요일 낮으로 전환
         else if (currentDay == DayOfWeek.Friday && currentTime == TimeOfDay.Night)
         {

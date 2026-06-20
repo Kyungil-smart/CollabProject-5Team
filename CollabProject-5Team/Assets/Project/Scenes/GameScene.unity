@@ -1441,8 +1441,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f150a4f9e071b4f4b9fde87b59246221, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  directionPanel: {fileID: 1398360320}
-  canvasGroup: {fileID: 1398360325}
+  visualMode: 1
+  duration: 0.5
+  _directionPanel: {fileID: 1398360320}
+  _canvasGroup: {fileID: 1398360325}
+  _clockFillImage: {fileID: 0}
 --- !u!1 &552704705
 GameObject:
   m_ObjectHideFlags: 0
@@ -2259,7 +2262,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1111863817}
   - component: {fileID: 1111863819}
-  - component: {fileID: 1111863818}
+  - component: {fileID: 1111863820}
   m_Layer: 5
   m_Name: BackGround
   m_TagString: Untagged
@@ -2287,7 +2290,15 @@ RectTransform:
   m_AnchoredPosition: {x: 28, y: 0}
   m_SizeDelta: {x: 1920, y: 1920}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &1111863818
+--- !u!222 &1111863819
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1111863816}
+  m_CullTransparentMesh: 1
+--- !u!114 &1111863820
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -2296,7 +2307,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1111863816}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1344c3c82d62a2a41a3576d8abb8e3ea, type: 3}
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
@@ -2307,21 +2318,16 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Texture: {fileID: 2800000, guid: f521afa1d063cb242a51fb992f4f6914, type: 3}
-  m_UVRect:
-    serializedVersion: 2
-    x: 0
-    y: 0
-    width: 1
-    height: 1
---- !u!222 &1111863819
-CanvasRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1111863816}
-  m_CullTransparentMesh: 1
+  m_Sprite: {fileID: 0}
+  m_Type: 0
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
 --- !u!114 &1204401006 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 8654902207363816660, guid: b82583b22905db24a86349a98bea2b01, type: 3}

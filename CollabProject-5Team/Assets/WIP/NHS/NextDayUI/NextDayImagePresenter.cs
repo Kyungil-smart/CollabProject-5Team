@@ -1,11 +1,24 @@
 using Cysharp.Threading.Tasks;
 using System;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class NextDayImagePresenter : MonoBehaviour
 {
-    [SerializeField] private GameObject directionPanel;  // "다음날" 이미지 등이 포함된 UI 패널
-    [SerializeField] private CanvasGroup canvasGroup;    // 페이드 인/아웃용 컴포넌트
+    public enum DirectionMode
+    {
+        FadeInOut,
+        ClockFill
+    }
+
+    [Header("연출 모드 선택")]
+    [SerializeField] private DirectionMode visualMode = DirectionMode.FadeInOut;
+    [SerializeField] private float duration = 0.5f; // 연출 속도
+
+    [Header("UI 컴포넌트")]
+    [SerializeField] private GameObject  _directionPanel;  
+    [SerializeField] private CanvasGroup _canvasGroup;
+    [SerializeField] private Image       _clockFillImage;
 
     private void OnEnable()
     {
@@ -22,30 +35,57 @@ public class NextDayImagePresenter : MonoBehaviour
 
     private void Start()
     {
-        if (canvasGroup != null)
-            canvasGroup.alpha = 0f;
+        Init();
+    }
 
-        if (directionPanel != null)
-            directionPanel.SetActive(false);
+    private void Init()
+    {
+        if (_canvasGroup != null)
+            _canvasGroup.alpha = (visualMode == DirectionMode.FadeInOut) ? 0f : 1f;
+
+        if (_directionPanel != null)
+            _directionPanel.SetActive(false);
+
+        if (_clockFillImage != null)
+            _clockFillImage.fillAmount = 0f;
     }
 
     private async UniTask PlayDateDirectionAsync()
     {
-        if (directionPanel == null || canvasGroup == null) return;
+        if (_directionPanel == null || _canvasGroup == null) return;
 
-        canvasGroup.alpha = 0f;
-        directionPanel.SetActive(true);
+        Init();
+        _directionPanel.SetActive(true);
 
-        float duration = 0.5f;
         float elapsed = 0f;
 
         while (elapsed < duration)
         {
             elapsed += Time.deltaTime;
-            canvasGroup.alpha = Mathf.Clamp01(elapsed / duration);
+            float progress = Mathf.Clamp01(elapsed / duration);
+
+            if (visualMode == DirectionMode.FadeInOut && _canvasGroup != null)
+            {
+                _canvasGroup.alpha = progress;
+            }
+            else if (visualMode == DirectionMode.ClockFill && _clockFillImage != null)
+            {
+                _clockFillImage.fillAmount = progress;
+            }
+
             await UniTask.Yield(PlayerLoopTiming.Update);
         }
-        canvasGroup.alpha = 1f;
+
+        if (visualMode == DirectionMode.FadeInOut && _canvasGroup != null) 
+            _canvasGroup.alpha = 1f;
+        if (visualMode == DirectionMode.ClockFill && _clockFillImage != null) 
+            _clockFillImage.fillAmount = 1f;
+
+        if (DateTimeManager.Instance != null)
+        {
+            await DateTimeManager.Instance.ProcessDateLogic();
+            DateTimeManager.OnDateUIChanged?.Invoke();
+        }
 
         await UniTask.Delay(TimeSpan.FromSeconds(1f));
 
@@ -53,11 +93,31 @@ public class NextDayImagePresenter : MonoBehaviour
         while (elapsed < duration)
         {
             elapsed += Time.deltaTime;
-            canvasGroup.alpha = Mathf.Clamp01(1f - (elapsed / duration));
+            float progress = Mathf.Clamp01(elapsed / duration);
+
+            if (visualMode == DirectionMode.FadeInOut && _canvasGroup != null)
+            {
+                _canvasGroup.alpha = 1f - progress;
+            }
+            else if (visualMode == DirectionMode.ClockFill && _clockFillImage != null)
+            {
+                Color color = _clockFillImage.color;
+                color.a = 1f - progress;
+                _clockFillImage.color = color;
+            }
+
             await UniTask.Yield(PlayerLoopTiming.Update);
         }
-        canvasGroup.alpha = 0f;
 
-        directionPanel.SetActive(false);
+        if (visualMode == DirectionMode.ClockFill && _clockFillImage != null)
+        {
+            Color color = _clockFillImage.color;
+            color.a = 1f;
+            _clockFillImage.color = color;
+            _clockFillImage.fillAmount = 0f;
+        }
+
+        if (_canvasGroup != null) _canvasGroup.alpha = 0f;
+        _directionPanel.SetActive(false);
     }
 }
