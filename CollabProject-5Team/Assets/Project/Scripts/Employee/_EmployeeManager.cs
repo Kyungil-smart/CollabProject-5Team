@@ -97,13 +97,9 @@ public class _EmployeeManager : MonoBehaviour
     }
 
     // 추가: 고용되면 지원자 리스트에서 즉시 사라짐
-    public void RemoveFromApplicants(int employeeId)
+    public void RemoveFromApplicants(Employee applicant)
     {
-        var applicant = currentApplicants.FirstOrDefault(e => e.so.id == employeeId);
-        if (applicant != null)
-        {
-            currentApplicants.Remove(applicant);
-        }
+        currentApplicants.Remove(applicant);
     }
     #endregion
 

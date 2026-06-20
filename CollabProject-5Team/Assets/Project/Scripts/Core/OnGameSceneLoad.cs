@@ -13,6 +13,6 @@ public class OnGameSceneLoad : MonoBehaviour
         // 다른 스크립트의 Start() 이후 실행되도록 보장
         await UniTask.Yield(PlayerLoopTiming.LastInitialization);
 
-        DateTimeManager.OnDay?.Invoke();
+        // 모든 메니저 초기화 후에 실행할 로직
     }
 }

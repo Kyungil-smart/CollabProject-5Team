@@ -208,7 +208,7 @@ public class DateTimeManager : MonoBehaviour
             Company.Instance.curProject.ProgressNight();
 
         // 채용 요청이 있다면 EmployeeManager에게 전달
-        if (currentRecruitRequests != null && currentRecruitRequests.Count > 0)
+        if (currentRecruitRequests.Count > 0)
         {
             _EmployeeManager.Instance.GenerateWeeklyAppicants(currentRecruitRequests);
 
