@@ -53,8 +53,7 @@ public class Company : MonoBehaviour
     // 자식 오브젝트의 Project를 curProject로 세팅하는 "테스트"코드
     public void InitProjects()
     {
-        projects.Clear();
-        projects.AddRange(GetComponentsInChildren<Project>());
+        projects.Add(GetComponentInChildren<Project>());
         curProject = projects.Count > 0 ? projects[0] : null;
         activeProjectCount.Value = curProject != null ? 1 : 0;
 
@@ -358,13 +357,9 @@ public class Company : MonoBehaviour
     #region 세이브/로드
     public void ExportActiveProjectData(SaveData data)
     {
-        if (data.activeProjectsData == null)
-            data.activeProjectsData = new CurrentProjectSaveData();
+        data.activeProjectsData.hasActiveProject = activeProjectCount.Value > 0;
+        if (!data.activeProjectsData.hasActiveProject) return;
 
-        data.activeProjectsData.hasActiveProject = curProject != null;
-        if (curProject == null) return;
-
-        data.activeProjectsData.project_Scale = curProject.Scale;
         curProject.ExportProjectData(data);
     }
 

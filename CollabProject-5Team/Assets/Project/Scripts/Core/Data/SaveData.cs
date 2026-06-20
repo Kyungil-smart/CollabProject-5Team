@@ -21,6 +21,9 @@ public class SaveData
     // Employee 저장
     public List<EmployeeSaveData> savedEmployees = new List<EmployeeSaveData>();
 
+    // QuestManager 저장
+    public Dictionary<Role, int> weeklyBonusPoints = new();
+
     // Company 저장
     [Header("Company Data")]
     public string company_Name;
@@ -33,7 +36,7 @@ public class SaveData
     public int    company_WeeklyProfit;
     public int    company_TotalRevenue;
 
-    // 완료된 프로젝트 목록 TODO - 프로젝트가 완료 될때 여기로 넣어주세요
+    // 완료된 프로젝트 목록
     public List<ProjectCompletedSaveData> completedProjectsData = new();
     // 현재 진행 중인 프로젝트 목록
     public CurrentProjectSaveData activeProjectsData = new();

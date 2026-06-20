@@ -1345,7 +1345,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &539605302
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1621,10 +1621,10 @@ Light:
   m_InnerSpotAngle: 21.80208
   m_CookieSize: 10
   m_Shadows:
-    m_Type: 2
+    m_Type: 1
     m_Resolution: -1
     m_CustomResolution: -1
-    m_Strength: 1
+    m_Strength: 0.766
     m_Bias: 0.05
     m_NormalBias: 0.4
     m_NearPlane: 0.2
@@ -1677,13 +1677,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 746541752}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.655371, y: -0.2567358, z: 0.032771423, w: 0.7095785}
+  m_LocalRotation: {x: 0.6766707, y: -0.3120854, z: -0.13076243, w: 0.6539271}
   m_LocalPosition: {x: -0.58000004, y: 3, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 50, y: -30, z: 0}
+  m_LocalEulerAnglesHint: {x: 53.453, y: -100.7, z: -85.18}
 --- !u!114 &746541755
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2385,18 +2385,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: Company
       objectReference: {fileID: 0}
-    - target: {fileID: 9005089600475653076, guid: 784d4d1f2c4795b4cbec56e163fc0a80, type: 3}
-      propertyPath: level
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 9005089600475653076, guid: 784d4d1f2c4795b4cbec56e163fc0a80, type: 3}
-      propertyPath: reputation
-      value: 100
-      objectReference: {fileID: 0}
-    - target: {fileID: 9005089600475653076, guid: 784d4d1f2c4795b4cbec56e163fc0a80, type: 3}
-      propertyPath: _upgradeData
-      value: 
-      objectReference: {fileID: 11400000, guid: fd281c602f383b644825ed037f5f96b6, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -4653,22 +4641,6 @@ PrefabInstance:
     - target: {fileID: 5387125315604040766, guid: bbabf44e2c25a9a4b993174e8d9bb61c, type: 3}
       propertyPath: m_Name
       value: GameManager
-      objectReference: {fileID: 0}
-    - target: {fileID: 7430753807283215856, guid: bbabf44e2c25a9a4b993174e8d9bb61c, type: 3}
-      propertyPath: _map
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 7430753807283215856, guid: bbabf44e2c25a9a4b993174e8d9bb61c, type: 3}
-      propertyPath: NpcSpawnPoint
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 7430753807283215856, guid: bbabf44e2c25a9a4b993174e8d9bb61c, type: 3}
-      propertyPath: _npcSpawnPoint
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 7430753807283215856, guid: bbabf44e2c25a9a4b993174e8d9bb61c, type: 3}
-      propertyPath: _playerSpawnPoint
-      value: 
       objectReference: {fileID: 0}
     - target: {fileID: 8789996326306878130, guid: bbabf44e2c25a9a4b993174e8d9bb61c, type: 3}
       propertyPath: m_LocalPosition.x

@@ -1,6 +1,5 @@
 using R3;
 using UnityEngine;
-using GameDevTycoon.UI;
 
 namespace GameDevTycoon.UI.Ingame
 {
@@ -8,7 +7,6 @@ namespace GameDevTycoon.UI.Ingame
     /// Canvas_Save Presenter.
     /// 슬롯 선택/해제 토글, 저장/불러오기 버튼 처리.
     /// 빈 슬롯 선택 시 SaveButton만 활성, 저장된 슬롯은 둘 다 활성, AutoSaveSlot은 LoadButton만 활성.
-    /// 실제 SaveSystem 연결은 [TODO]로 표기.
     /// </summary>
     public sealed class SavePresenter : MonoBehaviour
     {

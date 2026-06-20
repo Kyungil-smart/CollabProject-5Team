@@ -44,11 +44,6 @@ public class DateTimeManager : MonoBehaviour
     #endregion
     }
 
-    private void Start()
-    {
-        ResetDayStatus();
-    }
-
     void Update()
     {
         playTime += Time.deltaTime;
@@ -70,8 +65,7 @@ public class DateTimeManager : MonoBehaviour
         isWorkCompleted = false;
 
         // 상태만 Ready로 초기화 - 실제 시작은 WorkStart 버튼 클릭 시 HUDPresenter에서 호출
-        if (QuestManager.Instance != null)
-            QuestManager.Instance.dailyQuestState.Value = QuestState.Ready;
+        QuestManager.Instance.dailyQuestState.Value = QuestState.Ready;
     }
     /// <summary>
     /// 새로운 주가 시작될 때 리셋하는 함수

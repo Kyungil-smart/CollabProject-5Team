@@ -246,4 +246,21 @@ public class QuestManager : MonoBehaviour
     {
         _weeklyBonusPoints.Clear();
     }
+
+    #region 세이브/로드
+    public void ExportQuestData(SaveData data)
+    {
+        data.weeklyBonusPoints = new Dictionary<Role, int>(_weeklyBonusPoints);
+    }
+
+    public void ImportQuestData(SaveData data)
+    {
+        _weeklyBonusPoints.Clear();
+
+        foreach (var pair in data.weeklyBonusPoints)
+        {
+            _weeklyBonusPoints[pair.Key] = pair.Value;
+        }
+    }
+    #endregion
 }
