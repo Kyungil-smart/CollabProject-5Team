@@ -298,12 +298,7 @@ namespace GameDevTycoon.UI.Ingame
             foreach (Transform child in _view.ApplicantScrollContent)
                 Destroy(child.gameObject);
 
-            var applicants = _EmployeeManager.Instance.currentApplicants;
-            /*
-            var raw = _EmployeeManager.Instance.employeeList.leftEmployees.Values
-                .Select(go => go.GetComponent<Employee>())
-                .Where(e => e != null);
-            */
+            var applicants = _EmployeeManager.Instance.GetCurrentApplicantEmployees();
 
             // 0:이름순 1:직군순 2:능력치순
             var SortedApplicants = _view.ApplicantSortIndex switch
@@ -437,8 +432,7 @@ namespace GameDevTycoon.UI.Ingame
                 .Select(s => new RecruitRequest(s.Role, s.Count))
                 .ToList();
 
-            // DateTimeManager에 저장
-            DateTimeManager.Instance.currentRecruitRequests = requests;
+            _EmployeeManager.Instance.RegisterRecruitRequests(requests);
 
             Company.Instance.gold.Value -= cost;
             _hudPresenter.RefreshHUD();
@@ -476,7 +470,6 @@ namespace GameDevTycoon.UI.Ingame
             Company.Instance.gold.Value -= cost;
             _EmployeeManager.Instance.HireEmployee(applicant);
 
-            // UI리스트에서 채용된 직원 제거
             _EmployeeManager.Instance.RemoveFromApplicants(applicant);
             _hudPresenter.RefreshHUD();
 

@@ -27,8 +27,6 @@ public class DateTimeManager : MonoBehaviour
 
     public static Action OnReportEnd;
 
-    public List<RecruitRequest> currentRecruitRequests = new();
-
     private float playTime = 0f;
 
     public static Func<UniTask> OnDateChangedVisual;
@@ -207,14 +205,7 @@ public class DateTimeManager : MonoBehaviour
         if (Company.Instance.curProject != null)
             Company.Instance.curProject.ProgressNight();
 
-        // 채용 요청이 있다면 EmployeeManager에게 전달
-        if (currentRecruitRequests.Count > 0)
-        {
-            _EmployeeManager.Instance.GenerateWeeklyAppicants(currentRecruitRequests);
-
-            // 리스트 초기화
-            currentRecruitRequests.Clear();
-        }
+        _EmployeeManager.Instance.GenerateWeeklyApplicants();
         OnNight?.Invoke();
     }
 
