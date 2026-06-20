@@ -13,12 +13,15 @@ public class NextDayImagePresenter : MonoBehaviour
 
     [Header("연출 모드 선택")]
     [SerializeField] private DirectionMode visualMode = DirectionMode.FadeInOut;
-    [SerializeField] private float duration = 0.5f; // 연출 속도
+    [SerializeField] private float duration = 0.5f; 
 
-    [Header("UI 컴포넌트")]
-    [SerializeField] private GameObject  _directionPanel;  
-    [SerializeField] private CanvasGroup _canvasGroup;
-    [SerializeField] private Image       _clockFillImage;
+    [Header("[모드 1] 페이드인/아웃 컴포넌트")]
+    [SerializeField] private GameObject  _fadeGroupObj;  
+    [SerializeField] private CanvasGroup _fadeCanvasGroup;  
+
+    [Header("[모드 2] 시계 쿨타임 컴포넌트")]
+    [SerializeField] private GameObject _clockGroupObj; 
+    [SerializeField] private Image      _clockFillImage;     
 
     private void OnEnable()
     {
@@ -28,58 +31,56 @@ public class NextDayImagePresenter : MonoBehaviour
     private void OnDisable()
     {
         if (DateTimeManager.OnDateChangedVisual == PlayDateDirectionAsync)
-        {
             DateTimeManager.OnDateChangedVisual = null;
-        }
     }
 
     private void Start()
     {
-        Init();
+        HideAllGroups();
     }
 
-    private void Init()
+    private void HideAllGroups()
     {
-        if (_canvasGroup != null)
-            _canvasGroup.alpha = (visualMode == DirectionMode.FadeInOut) ? 0f : 1f;
+        if (_fadeGroupObj  != null)  _fadeGroupObj.SetActive(false);
+        if (_clockGroupObj != null) _clockGroupObj.SetActive(false);
 
-        if (_directionPanel != null)
-            _directionPanel.SetActive(false);
-
-        if (_clockFillImage != null)
-            _clockFillImage.fillAmount = 0f;
+        if (_fadeCanvasGroup    != null) _fadeCanvasGroup.alpha = 0f;
+        if (_clockFillImage != null) _clockFillImage.fillAmount = 0f;
     }
 
     private async UniTask PlayDateDirectionAsync()
     {
-        if (_directionPanel == null || _canvasGroup == null) return;
-
-        Init();
-        _directionPanel.SetActive(true);
+        HideAllGroups();
 
         float elapsed = 0f;
 
-        while (elapsed < duration)
+        if (visualMode == DirectionMode.FadeInOut)
         {
-            elapsed += Time.deltaTime;
-            float progress = Mathf.Clamp01(elapsed / duration);
+            if (_fadeGroupObj == null || _fadeCanvasGroup == null) return;
 
-            if (visualMode == DirectionMode.FadeInOut && _canvasGroup != null)
-            {
-                _canvasGroup.alpha = progress;
-            }
-            else if (visualMode == DirectionMode.ClockFill && _clockFillImage != null)
-            {
-                _clockFillImage.fillAmount = progress;
-            }
+            _fadeGroupObj.SetActive(true);
 
-            await UniTask.Yield(PlayerLoopTiming.Update);
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                _fadeCanvasGroup.alpha = Mathf.Clamp01(elapsed / duration);
+                await UniTask.Yield(PlayerLoopTiming.Update);
+            }
+            _fadeCanvasGroup.alpha = 1f;
         }
+        else if (visualMode == DirectionMode.ClockFill)
+        {
+            if (_clockGroupObj == null || _clockFillImage == null) return;
+            _clockGroupObj.SetActive(true);
 
-        if (visualMode == DirectionMode.FadeInOut && _canvasGroup != null) 
-            _canvasGroup.alpha = 1f;
-        if (visualMode == DirectionMode.ClockFill && _clockFillImage != null) 
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                _clockFillImage.fillAmount = Mathf.Clamp01(elapsed / duration);
+                await UniTask.Yield(PlayerLoopTiming.Update);
+            }
             _clockFillImage.fillAmount = 1f;
+        }
 
         if (DateTimeManager.Instance != null)
         {
@@ -90,34 +91,28 @@ public class NextDayImagePresenter : MonoBehaviour
         await UniTask.Delay(TimeSpan.FromSeconds(1f));
 
         elapsed = 0f;
-        while (elapsed < duration)
+
+        if (visualMode == DirectionMode.FadeInOut)
         {
-            elapsed += Time.deltaTime;
-            float progress = Mathf.Clamp01(elapsed / duration);
-
-            if (visualMode == DirectionMode.FadeInOut && _canvasGroup != null)
+            while (elapsed < duration)
             {
-                _canvasGroup.alpha = 1f - progress;
+                elapsed += Time.deltaTime;
+                _fadeCanvasGroup.alpha = Mathf.Clamp01(1f - (elapsed / duration));
+                await UniTask.Yield(PlayerLoopTiming.Update);
             }
-            else if (visualMode == DirectionMode.ClockFill && _clockFillImage != null)
-            {
-                Color color = _clockFillImage.color;
-                color.a = 1f - progress;
-                _clockFillImage.color = color;
-            }
-
-            await UniTask.Yield(PlayerLoopTiming.Update);
+            _fadeCanvasGroup.alpha = 0f;
         }
-
-        if (visualMode == DirectionMode.ClockFill && _clockFillImage != null)
+        else if (visualMode == DirectionMode.ClockFill)
         {
-            Color color = _clockFillImage.color;
-            color.a = 1f;
-            _clockFillImage.color = color;
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                _clockFillImage.fillAmount = Mathf.Clamp01(1f - (elapsed / duration));
+                await UniTask.Yield(PlayerLoopTiming.Update);
+            }
             _clockFillImage.fillAmount = 0f;
         }
 
-        if (_canvasGroup != null) _canvasGroup.alpha = 0f;
-        _directionPanel.SetActive(false);
+        HideAllGroups();
     }
 }
