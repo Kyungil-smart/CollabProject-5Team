@@ -62,12 +62,12 @@ namespace GameDevTycoon.UI.Ingame
         [SerializeField] private TMP_Dropdown    _applicantSortDropdown;
         [SerializeField] private Transform       _applicantScrollContent;
         [SerializeField] private Button          _applicantListBackButton;
-        [SerializeField] private Button          _finalHireButton;
+        //[SerializeField] private Button        _finalHireButton;
 
         [Header("Tab_Hire — Panel_ApplicantDetail")]
         [SerializeField] private GameObject _panelApplicantDetail;
         [SerializeField] private Transform  _applicantDetailContent;
-        [SerializeField] public Button     HireButton;
+        [SerializeField] public  Button      HireButton;
         [SerializeField] private Button     _cancelHireButton;
         [SerializeField] private Button     _applicantDetailBackButton;
 
@@ -121,7 +121,7 @@ namespace GameDevTycoon.UI.Ingame
         public Observable<Unit> OnRecruitConfirmClicked   => _recruitConfirmButton.OnClickAsObservable();
         public Observable<Unit> OnApplicantListBackClicked   => _applicantListBackButton.OnClickAsObservable();
         public Observable<int>  OnApplicantSortChanged    => _applicantSortDropdown.OnValueChangedAsObservable();
-        public Observable<Unit> OnFinalHireClicked        => _finalHireButton.OnClickAsObservable();
+        //public Observable<Unit> OnFinalHireClicked        => _finalHireButton.OnClickAsObservable();
         public Observable<Unit> OnHireClicked             => HireButton.OnClickAsObservable();
         public Observable<Unit> OnCancelHireClicked       => _cancelHireButton.OnClickAsObservable();
         public Observable<Unit> OnApplicantDetailBackClicked => _applicantDetailBackButton.OnClickAsObservable();
@@ -176,7 +176,7 @@ namespace GameDevTycoon.UI.Ingame
             _educationPanelDetail.SetActive(false);
             _panelEducationCourse.SetActive(false);
 
-            _finalHireButton.interactable     = false;
+            //_finalHireButton.interactable     = false;
             HireButton.interactable          = false;
             _cancelHireButton.interactable    = false;
             _educationButton.interactable     = false;
@@ -300,8 +300,8 @@ namespace GameDevTycoon.UI.Ingame
         public void SetRecruitConfirmInteractable(bool interactable)
             => _recruitConfirmButton.interactable = interactable;
 
-        public void SetFinalHireInteractable(bool interactable)
-            => _finalHireButton.interactable = interactable;
+        //public void SetFinalHireInteractable(bool interactable)
+        //    => _finalHireButton.interactable = interactable;
 
         public void SetHireButtonInteractable(bool interactable)
             => HireButton.interactable = interactable;

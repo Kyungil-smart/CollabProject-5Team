@@ -27,9 +27,9 @@ public sealed class DebugUIPresenter : MonoBehaviour
 
     private void Awake()
     {
-        _hrPresenter = FindObjectOfType<HRPresenter>(true);
-        _projectPresenter = FindObjectOfType<ProjectPresenter>(true);
-        _reportPresenter = FindObjectOfType<ReportPresenter>(true);
+        _hrPresenter = FindFirstObjectByType<HRPresenter>();
+        _projectPresenter = FindFirstObjectByType<ProjectPresenter>();
+        _reportPresenter = FindFirstObjectByType<ReportPresenter>();
     }
 
     private void Start()
@@ -39,7 +39,7 @@ public sealed class DebugUIPresenter : MonoBehaviour
             .AddTo(this);
 
         _nextDayButton.OnClickAsObservable()
-            .Subscribe(_ => DateTimeManager.Instance.OnClickEndDayButton())
+            .Subscribe(_ => DateTimeManager.Instance.OnClickEndDayButton().Forget())
             .AddTo(this);
 
         _openHRButton.OnClickAsObservable()

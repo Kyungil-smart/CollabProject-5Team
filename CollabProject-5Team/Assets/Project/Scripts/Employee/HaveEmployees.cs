@@ -11,8 +11,10 @@ public class HaveEmployees
     public void AddEmployee(Employee employee)
     {
         if (!haveEmployeeList.Contains(employee))
+        {
             haveEmployeeList.Add(employee);
-        SetStatus(employee, EmployeeWorkStatus.Standby);
+            SetStatus(employee, EmployeeWorkStatus.Standby);
+        }
         Debug.Log($"[인사] {employee.so.Name} 직원이 입사했습니다.");
     }
 

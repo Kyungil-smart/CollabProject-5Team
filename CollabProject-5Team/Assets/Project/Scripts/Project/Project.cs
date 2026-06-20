@@ -1,5 +1,4 @@
 using R3;
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -162,8 +161,6 @@ public class Project : MonoBehaviour
         ReportPolicy.GenerateReportForRole(this, plannings);
         ReportPolicy.GenerateReportForRole(this, programmer);
         ReportPolicy.GenerateReportForRole(this, arts);
-
-        Debug.Log($"[{userNamed.Value}] 보고서 생성 완료: {pendingReports.Count}건");
     }
 
     // UI에서 파트당 1개 선택 시 호출

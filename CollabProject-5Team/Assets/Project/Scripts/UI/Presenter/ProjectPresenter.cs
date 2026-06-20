@@ -375,7 +375,7 @@ namespace GameDevTycoon.UI.Ingame
             _view.SetProgressBar(project.ProgressDayBar / 100f);
 
             bool isInService = project.isFinished.Value;
-            Debug.LogWarning(isInService);
+            
             _view.SetOperationGroupVisible(isInService);
             _view.SetServiceStopInteractable(isInService && !IsServiceOver(project));
             _view.SetUpdateButtonInteractable(isInService && !IsServiceOver(project));

@@ -2,6 +2,8 @@ using System;
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using UnityEngine;
 
 public class SaveLoadSystem : MonoBehaviour
@@ -14,6 +16,11 @@ public class SaveLoadSystem : MonoBehaviour
     private static readonly byte[] iv = Encoding.UTF8.GetBytes("Dtt7oG3F424o5r91");
 
     public const int MaxSaveSlots = 3;
+
+    private static readonly JsonSerializerSettings jsonSettings = new()
+    {
+        Converters = { new StringEnumConverter() }
+    };
 
     private void Awake()
     {
@@ -29,19 +36,29 @@ public class SaveLoadSystem : MonoBehaviour
 
     public void SaveGame(int slot)
     {
+        if (slot < 0 || slot >= MaxSaveSlots) return;
+
         SaveData data = new SaveData();
 
-        _EmployeeManager.Instance.ExportEmployeeData(data);  // 직원 정보 저장
+        if (_EmployeeManager.Instance != null)
+            _EmployeeManager.Instance.ExportEmployeeData(data);  // 직원 정보 저장
 
-        Company.Instance.ExportCompanyData(data);        // 회사, 지난 프로젝트 정보 저장
-        Company.Instance.ExportActiveProjectData(data);  // 진행 중 프로젝트 정보 저장
+        if (Company.Instance != null)
+        {
+            Company.Instance.ExportCompanyData(data);        // 회사, 지난 프로젝트 정보 저장
+            Company.Instance.ExportActiveProjectData(data);  // 진행 중 프로젝트 정보 저장
+        }
 
-        DateTimeManager.Instance.ExportSaveData(data);       // 날짜 정보 저장
+        if (QuestManager.Instance != null)
+            QuestManager.Instance.ExportQuestData(data);     // 퀘스트 정보 저장
+
+        if (DateTimeManager.Instance != null)
+            DateTimeManager.Instance.ExportSaveData(data);   // 날짜 정보 저장
 
         data.realSaveTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm");
 
         string keyName = GetSaveKey(slot);
-        string jsonData = JsonUtility.ToJson(data, true);
+        string jsonData = SerializeSaveData(data);
 
         // JSON 문자열을 PlayerPrefs에 저장
         SaveEncryptedData(keyName, jsonData);
@@ -50,6 +67,8 @@ public class SaveLoadSystem : MonoBehaviour
 
     public SaveData LoadGame(int slot)
     {
+        if (slot < 0 || slot >= MaxSaveSlots) return null;
+
         string  keyName = GetSaveKey(slot);
         string jsonData = LoadEncryptedData(keyName);
 
@@ -57,24 +76,32 @@ public class SaveLoadSystem : MonoBehaviour
         {
             try
             {
-                SaveData data = JsonUtility.FromJson<SaveData>(jsonData);
+                SaveData data = DeserializeSaveData(jsonData);
+                if (data == null) return null;
 
-                _EmployeeManager.Instance.ImportEmployeeData(data);  // 직원 정보 로드
+                if (_EmployeeManager.Instance != null)
+                    _EmployeeManager.Instance.ImportEmployeeData(data);  // 직원 정보 로드
 
-                Company.Instance.ImportCompanyData(data);            // 회사, 지난 프로젝트 정보 로드
-                Company.Instance.ImportActiveProjectData(data);      // 진행 중 프로젝트 정보 로드
+                if (Company.Instance != null)
+                {
+                    Company.Instance.ImportCompanyData(data);            // 회사, 지난 프로젝트 정보 로드
+                    Company.Instance.ImportActiveProjectData(data);      // 진행 중 프로젝트 정보 로드
+                }
                 
-                DateTimeManager.Instance.ImportSaveData(data);       // 날짜 정보 로드
+                if (QuestManager.Instance != null)
+                    QuestManager.Instance.ImportQuestData(data);         // 퀘스트 정보 로드
+
+                if (DateTimeManager.Instance != null)
+                    DateTimeManager.Instance.ImportSaveData(data);       // 날짜 정보 로드
 
                 Debug.Log("불러오기 성공");
                 return data;
             }
             catch (Exception)
             {
-                Debug.LogError("저장된 데이터 없음.");
+                Debug.LogError("불러오기 실패");
                 return null;
             }
-
         }
 
         Debug.Log("저장된 데이터가 없음. 새 게임 시작");
@@ -84,6 +111,16 @@ public class SaveLoadSystem : MonoBehaviour
     private string GetSaveKey(int slot)
     {
         return $"SaveSlot_{slot}";
+    }
+
+    private static string SerializeSaveData(SaveData data)
+    {
+        return JsonConvert.SerializeObject(data, Formatting.Indented, jsonSettings);
+    }
+
+    private static SaveData DeserializeSaveData(string jsonData)
+    {
+        return JsonConvert.DeserializeObject<SaveData>(jsonData, jsonSettings);
     }
 
     public SaveData GetSaveDataWithoutApply(int slot)
@@ -97,7 +134,7 @@ public class SaveLoadSystem : MonoBehaviour
         {
             try
             {
-                return JsonUtility.FromJson<SaveData>(jsonData);
+                return DeserializeSaveData(jsonData);
             }
             catch { return null; }
         }
