@@ -54,7 +54,7 @@ public class Project : MonoBehaviour
     {
         > 90f => 'S',
         > 75f => 'A',
-        > 60f => 'B',
+        > 50f => 'B',
         _ => 'C',
     };
 

@@ -9,7 +9,7 @@ public class GameManager : MonoBehaviour
 
     [Header("맵 관리")]
     [SerializeField] private List<MapInfo> _offices;              // 사무실 맵 프리팹
-    public int _currentOfficeLevel = 0;
+    public int _currentOfficeIndex = 0;
 
     [Header("프리팹")]
     [SerializeField] private GameObject _playerPrefab;                  // 플레이어 프리팹
@@ -44,13 +44,13 @@ public class GameManager : MonoBehaviour
 
     private void GenerateOffice()
     {
-        if (_offices == null || _offices[_currentOfficeLevel] == null)
+        if (_offices == null || _offices[_currentOfficeIndex] == null)
         {
             Debug.LogError("GameManager: _officeMaps가 비어있습니다. 인덱스 : {_currentOfficeIndex}");
             return;
         }
 
-        MapInfo prefab = _offices[_currentOfficeLevel];
+        MapInfo prefab = _offices[_currentOfficeIndex];
         MapInfo firstMap = Instantiate(prefab, Vector3.zero, Quaternion.identity);
 
         if (firstMap.PlayerSpawn == null)
@@ -66,8 +66,6 @@ public class GameManager : MonoBehaviour
 
         _currentPlayerSpawnPoint = firstMap.PlayerSpawn;
         _currentNpcSpawnPoint = firstMap.NpcSpawn;
-
-        Debug.Log($"초기 맵 생성 완료: {_offices[0].name}");
     }
 
     // 처음 게임 시작 시 플레이어, NPC생성 및 배치
@@ -122,7 +120,7 @@ public class GameManager : MonoBehaviour
         }
 
         // 현재 맵의 인덱스가 맵의 개수와 같거나 크면 리턴
-        if (_currentOfficeLevel + 1 >= _offices.Count) return;
+        if (_currentOfficeIndex + 1 >= _offices.Count) return;
 
         LeaveWorkNPCs();
 
@@ -137,9 +135,9 @@ public class GameManager : MonoBehaviour
         }
 
         // 인덱스 증가시키고 새 맵 생성
-        _currentOfficeLevel++;
+        _currentOfficeIndex++;
 
-        MapInfo newOffice = Instantiate(_offices[_currentOfficeLevel], Vector3.zero, Quaternion.identity);
+        MapInfo newOffice = Instantiate(_offices[_currentOfficeIndex], Vector3.zero, Quaternion.identity);
         
         _currentMapTransform = newOffice.transform;
 

@@ -142,8 +142,6 @@ public class DateTimeManager : MonoBehaviour
 
             currentTime = TimeOfDay.Night;
 
-            // 방치 패널티 적용
-            Company.Instance.AfkPenaltyApply();
             OnNightLoading?.Invoke();// 밤
 
             ResetWeekStatus();

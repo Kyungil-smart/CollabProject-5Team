@@ -13,7 +13,7 @@ public class Company : MonoBehaviour
     [Header("회사 정보")]
     public string Name;
     public ReactiveProperty<int> gold = new(10000); // 보유 자금
-    public int level = 1;                           // 회사 레벨
+    public int level = 1;                           // 회사 레벨, 회사 증축 상황(소형=1 중형=2 대형=3) 과 같음
 
     public int ProjectSlots = 1;  // 기획 변경으로 1고정(추후 삭제)
 
@@ -196,8 +196,9 @@ public class Company : MonoBehaviour
             p.dailySales = PerkPolicy.CalcDailySales(p.scale, p.qualityScore, p.stabilityScore, p.charmScore, p.RetentionFactor, popularity);
             p.dailyGold = PerkPolicy.CalcDailyGold(p.scale, p.dailySales);
 
+            p.weeklySales += p.dailySales;                // 주간 판매량 누적
             p.weeklyGoldAccum += p.dailyGold;              // 주간 매출 누적
-            gold.Value += (p.dailyGold - p.dailyCost);      // 순수익 증가
+            gold.Value += p.dailyGold;                      // 순수익 증가
             p.RetentionFactor -= PerkPolicy.RETENTION_DECAY; // 유지력 감소
         }
     }
@@ -216,7 +217,6 @@ public class Company : MonoBehaviour
 
             // 히스토리에 이번 주 누적 매출 push
             p.QueueWeeklyGold(p.weeklyGoldAccum);
-            p.weeklyGoldAccum = 0;
 
             // 유저수 재계산 (이탈자 반영)
             p.users = PerkPolicy.CalcUsers(p.scale, p.qualityScore, p.prevWeekUsers);
@@ -224,9 +224,13 @@ public class Company : MonoBehaviour
             // 유지비 차감
             gold.Value -= p.dailyCost;
 
-            // 평판: 이번 주 매출 100G당 +1
-            reputation += PerkPolicy.CalcReputationGainFromSales(p.prevWeekGold);
+            // 평판: 이번 주 판매 100당 +1
+            reputation += PerkPolicy.CalcReputationGainFromSales(p.weeklySales);
+            // 누적매출 증가
+            totalRevenue += p.prevWeekGold;
 
+            p.weeklySales = 0;
+            p.weeklyGoldAccum = 0;
         }
 
         // 적자 패널티
@@ -253,34 +257,24 @@ public class Company : MonoBehaviour
     #region 직원 관리
     public void TickWeeklyEmployees()
     {
-        var employeeManager = _EmployeeManager.Instance;
-
-        foreach (var employee in employeeManager.haveEmployees.haveEmployeeList)
+        foreach (var e in _EmployeeManager.Instance.haveEmployees.haveEmployeeList)
         {
-            gold.Value -= employee.so.weekSalary;
-            if (employee.WorkStatus != EmployeeWorkStatus.InProject)
-                continue; // 프로젝트 중인 직원만 능력치 증가
-            employee.AddAbilityDelta(PerkPolicy.CalcWeeklyAbilityDelta(employee.MutableData.loyalty));
-        }
-    }
+            gold.Value -= e.so.weekSalary;
+            if (e.WorkStatus != EmployeeWorkStatus.InProject)
+                continue; // 프로젝트 중인 직원만 능력치 변화
+            e.AddAbilityDelta(PerkPolicy.CalcWeeklyAbilityDelta(e.MutableData.loyalty));
 
-    // 방치 패널티 적용
-    public void AfkPenaltyApply()
-    {
-        if (curProject != null)
-        {
-            foreach (Employee e in curProject.GetAllEmployees())
+            // 대화 안한 직원 패널티 적용
+            if (!e.hasTalkedThisWeek)
             {
-                if (!e.hasTalkedThisWeek)
-                {
-                    e.MutableData.loyalty -= 5;
-                    e.MutableData.desire -= 5;
-                    e.MutableData.fatigue += 5;
-                    Debug.Log($"[C] 대화 하지않은 직원: {e.name}");
-                }
+                e.MutableData.loyalty -= 5;
+                e.MutableData.desire -= 5;
+                e.MutableData.fatigue += 5;
+                Debug.Log($"[C] 대화 하지않은 직원: {e.name}");
             }
         }
     }
+
     // 대화한 직원 초기화
     public void ResetTalkedEmployees()
     {
@@ -295,40 +289,12 @@ public class Company : MonoBehaviour
     #endregion
 
     #region 회사 증축
-    // 회사 증축 가능 판단 
-    public bool CheckCanUpgrade(int targetLevel = -1)
+    // 회사 증축 내부 처리 => 실제 객체 생성은 게임매니저에서 처리
+    public void UpgradeOffice()
     {
-        int curLevel = GameManager.Instance._currentOfficeLevel;
-        if (targetLevel == -1) 
-            targetLevel = curLevel + 1;
-
-        var data = _upgradeData?.GetData(targetLevel);
-
-        if (data == null) 
-            return false;
-
-        if (reputation < data.RequiredReputation)
-            return false;
-
-        return true;
-    }
-
-    // 회사 증축 실행
-    public void UpgradeOffice(int targetLevel = -1)
-    {
-        int currentLevel = GameManager.Instance._currentOfficeLevel;
-
-        if (targetLevel == -1) targetLevel = currentLevel + 1;
-        var data = _upgradeData?.GetData(targetLevel);
+        level++;
+        var data = _upgradeData.GetData(level);
         if (data == null) return;
-
-        if (!CheckCanUpgrade()) return;
-
-        if (gold.Value < data.GoldCost)
-        {
-            Debug.LogWarning("골드가 부족합니다.");
-            return;
-        }
 
         // 재화 차감
         gold.Value -= data.GoldCost;
@@ -336,21 +302,13 @@ public class Company : MonoBehaviour
         // 스탯 추가 (현재 레벨업 대상 보상 스탯 반영)
         reputation += data.ReputationBonus;
 
-        // 직원 충성도 강화 (SO 오염 방지 -> MutableData에 반영)
-        var empList = _EmployeeManager.Instance?.haveEmployees?.haveEmployeeList;
-        if (empList != null)
+        // 직원 충성도 강화
+        foreach (var emp in _EmployeeManager.Instance.haveEmployees.haveEmployeeList)
         {
-            foreach (var emp in empList)
-            {
-                if (emp?.MutableData != null)
-                {
-                    emp.MutableData.loyalty += data.LoyaltyBonus;
-                }
-            }
+            emp.MutableData.loyalty += data.LoyaltyBonus;
         }
 
-        // 대기 및 연출 제어를 위해 비동기 실행 흐름으로 호출
-        GameManager.Instance.UpgradeOfficeAsync().Forget();
+        GameManager.Instance.isUpgradeReserved = true;
     }
 #endregion
 
@@ -434,6 +392,7 @@ public class Company : MonoBehaviour
                 dailySales      = p.dailySales,
                 dailyGold       = p.dailyGold,
                 dailyCost       = p.dailyCost,
+                weeklySales     = p.weeklySales,
                 weeklyGoldAccum = p.weeklyGoldAccum,
                 prevWeekUsers   = p.prevWeekUsers,
                 prevWeekGold    = p.prevWeekGold,
@@ -483,6 +442,7 @@ public class Company : MonoBehaviour
                     dailySales      = pData.dailySales,
                     dailyGold       = pData.dailyGold,
                     dailyCost       = pData.dailyCost,
+                    weeklySales     = pData.weeklySales,
                     weeklyGoldAccum = pData.weeklyGoldAccum,
                     prevWeekUsers   = pData.prevWeekUsers,
                     prevWeekGold    = pData.prevWeekGold,

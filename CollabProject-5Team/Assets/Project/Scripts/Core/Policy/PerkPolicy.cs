@@ -147,9 +147,9 @@ public static class PerkPolicy
         => Mathf.Max(0f, (score - SCORE_WEIGHT_BASELINE) / 100f);
 
     // - 매출 가중치 (gold) ─
-    const int SMALL_FACTOR  = 10;
-    const int MEDIUM_FACTOR = 15;
-    const int LARGE_FACTOR  = 20;
+    const int SMALL_FACTOR  = 1000;
+    const int MEDIUM_FACTOR = 1500;
+    const int LARGE_FACTOR  = 2000;
     static int SalesFactor(ProjectSize size) => size switch
     {
         ProjectSize.medium => MEDIUM_FACTOR,
