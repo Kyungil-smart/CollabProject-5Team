@@ -20,14 +20,14 @@ public static class PerkPolicy
     {
         return size switch
         {
-            ProjectSize.medium => grade switch
+            ProjectSize.Medium => grade switch
             {
                 'S' => 12,
                 'A' => 9,
                 'B' => 6,
                 _ => 2,
             },
-            ProjectSize.large => grade switch
+            ProjectSize.Large => grade switch
             {
                 'S' => 18,
                 'A' => 14,
@@ -48,14 +48,14 @@ public static class PerkPolicy
     {
         return size switch
         {
-            ProjectSize.medium => grade switch
+            ProjectSize.Medium => grade switch
             {
                 'S' => 6,
                 'A' => 3,
                 'B' => -1,
                 _ => -3,
             },
-            ProjectSize.large => grade switch
+            ProjectSize.Large => grade switch
             {
                 'S' => 10,
                 'A' => 6,
@@ -96,8 +96,8 @@ public static class PerkPolicy
     const int LARGE_USERS  = 2000;
     static int BaseUsers(ProjectSize size) => size switch
     {
-        ProjectSize.medium => MEDIUM_USERS,
-        ProjectSize.large  => LARGE_USERS,
+        ProjectSize.Medium => MEDIUM_USERS,
+        ProjectSize.Large  => LARGE_USERS,
         _                  => SMALL_USERS,
     };
 
@@ -112,17 +112,16 @@ public static class PerkPolicy
         return users;
     }
 
-    // - 판매량 ─
+    // - 기본 판매량 ─
     const int SMALL_BASE_SALES  = 100;
     const int MEDIUM_BASE_SALES = 500;
     const int LARGE_BASE_SALES  = 2500;
     static int BaseSales(ProjectSize size) => size switch
     {
-        ProjectSize.medium => MEDIUM_BASE_SALES,
-        ProjectSize.large  => LARGE_BASE_SALES,
-        _                  => SMALL_BASE_SALES,
+        ProjectSize.Small => SMALL_BASE_SALES,
+        ProjectSize.Medium => MEDIUM_BASE_SALES,
+        _  => LARGE_BASE_SALES
     };
-
 
     /// <summary>
     /// 일일 판매량 = 일일 판매 지수 * (완성도 가중치 + 안정성 가중치 + 매력도 가중치)
@@ -141,19 +140,19 @@ public static class PerkPolicy
     }
 
     // -점수 가중치 (처음값: 50)
-    const float SCORE_WEIGHT_BASELINE = 50f;
+    const float SCORE_WEIGHT_BASELINE = 25f;
 
     public static float CalcScoreWeight(float score)
         => Mathf.Max(0f, (score - SCORE_WEIGHT_BASELINE) / 100f);
 
     // - 매출 가중치 (gold) ─
-    const int SMALL_FACTOR  = 1000;
-    const int MEDIUM_FACTOR = 1500;
-    const int LARGE_FACTOR  = 2000;
+    const int SMALL_FACTOR  = 10;
+    const int MEDIUM_FACTOR = 15;
+    const int LARGE_FACTOR  = 20;
     static int SalesFactor(ProjectSize size) => size switch
     {
-        ProjectSize.medium => MEDIUM_FACTOR,
-        ProjectSize.large  => LARGE_FACTOR,
+        ProjectSize.Medium => MEDIUM_FACTOR,
+        ProjectSize.Large  => LARGE_FACTOR,
         _                  => SMALL_FACTOR,
     };
 
@@ -170,8 +169,8 @@ public static class PerkPolicy
     /// <summary>규모별 주간 유지비</summary>
     public static int CalcWeeklyCost(ProjectSize size) => size switch
     {
-        ProjectSize.medium => MEDIUM_COST,
-        ProjectSize.large  => LARGE_COST,
+        ProjectSize.Medium => MEDIUM_COST,
+        ProjectSize.Large  => LARGE_COST,
         _                  => SMALL_COST,
     };
     #endregion
@@ -185,16 +184,17 @@ public static class PerkPolicy
         'S' => 20,
         'A' => 10,
         'B' => 5,
-        _   => -20,
+        _   => 0,
     };
 
     // ─ 평판 ─
     // 평판 : 0부터 시작, 감소 가능
-    /// <summary>주간 판매량 100장 돌파 시마다 +1</summary>
+    /// <summary>주간 판매량 100장 미다 +1</summary>
     public static int CalcReputationGainFromSales(int weeklySales)
-        => weeklySales / 100;
+        => (weeklySales+50) / 100;
+            //반올림 용 50더하기
 
-    // 평판 감소 상수
+    // 평판 감소 상수 (미구현)
     public const int PENALTY_SPY_FAIL    = -10; // 스파이 행위 적발 실패 시
     public const int PENALTY_DEFICIT_HIT = -20; // 회사 자금 적자 시 즉시
     public const int PENALTY_DEFICIT_WEEK= -10; // 적자 유지 주차마다

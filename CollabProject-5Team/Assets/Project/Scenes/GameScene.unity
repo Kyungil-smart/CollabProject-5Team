@@ -939,7 +939,7 @@ GameObject:
   - component: {fileID: 377753526}
   - component: {fileID: 377753525}
   m_Layer: 5
-  m_Name: WorkCompleteButton
+  m_Name: ForceNightLoad
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1443,6 +1443,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   directionPanel: {fileID: 1398360320}
   canvasGroup: {fileID: 1398360325}
+  fadeDurationSeconds: 0.16
+  visibleDurationSeconds: 0.49
 --- !u!1 &552704705
 GameObject:
   m_ObjectHideFlags: 0
@@ -2185,7 +2187,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\uD1F4\uADFC"
+  m_text: "(\uC0AC\uAE30)\n\uBC24\uC73C\uB85C"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: af696ed8d78c01d4aa9e1f175aabd011, type: 2}
   m_sharedMaterial: {fileID: 2877712629505649075, guid: af696ed8d78c01d4aa9e1f175aabd011, type: 2}
@@ -2213,8 +2215,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 50
-  m_fontSizeBase: 50
+  m_fontSize: 45.67
+  m_fontSizeBase: 45.67
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -2592,7 +2594,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\uBCF4\uACE0\uC11C"
+  m_text: "\uD3C9\uD310+25"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: af696ed8d78c01d4aa9e1f175aabd011, type: 2}
   m_sharedMaterial: {fileID: 2877712629505649075, guid: af696ed8d78c01d4aa9e1f175aabd011, type: 2}
@@ -2620,8 +2622,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 50
-  m_fontSizeBase: 50
+  m_fontSize: 44.03
+  m_fontSizeBase: 44.03
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -3080,11 +3082,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 63ef824faf4efb74a8e730dd408abbcf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _workCompleteButton: {fileID: 377753525}
+  _forceNightLoad: {fileID: 377753525}
   _nextDayButton: {fileID: 107013496}
   _openHRButton: {fileID: 1688839839}
   _openProjectButton: {fileID: 2023906758}
-  _openReportButton: {fileID: 1963137584}
+  _addReputationButton: {fileID: 1963137584}
   _addGoldButton: {fileID: 291336345}
   _upgradeOfficeButton: {fileID: 965723992}
 --- !u!114 &1868167124
@@ -3373,7 +3375,7 @@ GameObject:
   - component: {fileID: 1963137585}
   - component: {fileID: 1963137584}
   m_Layer: 5
-  m_Name: OpenReportButton
+  m_Name: AddReputationButton
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

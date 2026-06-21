@@ -4,9 +4,9 @@ using UnityEngine;
 
 public enum ProjectSize
 {
-    small,
-    medium,
-    large,
+    Small,
+    Medium,
+    Large,
 }
 
 [Serializable]

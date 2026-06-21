@@ -61,16 +61,10 @@ public class DateTimeManager : MonoBehaviour
     private void ResetDayStatus()
     {
         isWorkCompleted = false;
+        talkedNpcsToday.Clear();
 
         // 상태만 Ready로 초기화 - 실제 시작은 WorkStart 버튼 클릭 시 HUDPresenter에서 호출
         QuestManager.Instance.dailyQuestState.Value = QuestState.Ready;
-    }
-    /// <summary>
-    /// 새로운 주가 시작될 때 리셋하는 함수
-    /// </summary>
-    private void ResetWeekStatus()
-    {
-        Company.Instance.ResetTalkedEmployees();
     }
 
     /// <summary>
@@ -144,8 +138,7 @@ public class DateTimeManager : MonoBehaviour
 
             OnNightLoading?.Invoke();// 밤
 
-            ResetWeekStatus();
-            ProgressDay();
+            Progress();
         }
         // 금요일 밤에 퇴근하면 다음 주 월요일 낮으로 전환
         else if (currentDay == DayOfWeek.Friday && currentTime == TimeOfDay.Night)
@@ -174,17 +167,17 @@ public class DateTimeManager : MonoBehaviour
             // 낮으로
             currentTime = TimeOfDay.Day;
 
-            ProgressDay();
+            Progress();
             ResetDayStatus();
             OnDay?.Invoke();
         }
     }
 
     // 내부적으로 영업일을 진행시킴
-    public void ProgressDay()
+    public void Progress()
     {
         if (Company.Instance.activeProjectCount.Value > 0)
-            Company.Instance.curProject.ProgressDay();
+            Company.Instance.curProject.Progress();
 
         // 완료 프로젝트 일일 수익 정산
         Company.Instance.TickDailyCompletedProjects();

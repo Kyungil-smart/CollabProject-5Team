@@ -129,11 +129,9 @@ public class Project : MonoBehaviour
     }
 
     // 날짜가 하루 진행될 때마다 호출되는 메서드
-    public void ProgressDay()
+    public void Progress()
     {
         if (isFinished.Value) return;
-
-        Debug.Log($"{userNamed}: [Day {day}] {DateTimeManager.GetDateString(day)}종료"); // 날짜 로그 표시중
         day++;
     }
 

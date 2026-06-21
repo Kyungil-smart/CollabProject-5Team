@@ -133,8 +133,8 @@ public class Company : MonoBehaviour
     {
         int index = scale switch
         {
-            ProjectSize.medium => 1,
-            ProjectSize.large => 2,
+            ProjectSize.Medium => 1,
+            ProjectSize.Large => 2,
             _ => 0,
         };
         return projectPrefab[index];
@@ -267,18 +267,7 @@ public class Company : MonoBehaviour
                 e.MutableData.fatigue += 5;
                 Debug.Log($"[C] 대화 하지않은 직원: {e.name}");
             }
-        }
-    }
-
-    // 대화한 직원 초기화
-    public void ResetTalkedEmployees()
-    {
-        if (curProject != null)
-        {
-            foreach (Employee e in curProject.GetAllEmployees())
-            {
-                e.hasTalkedThisWeek = false;
-            }
+            e.hasTalkedThisWeek = false;
         }
     }
     #endregion

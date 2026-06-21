@@ -208,15 +208,18 @@ public class GameManager : MonoBehaviour
     public async UniTask SpawnNPCsAsync(Employee emp)
     {
         // NPC 생성
-        GameObject npcObj = Instantiate(emp.gameObject, _currentNpcSpawnPoint.position, Quaternion.identity);
-        var spawnedEmp = npcObj.GetComponent<Employee>();
-        spawnedEmp.MutableData = emp.MutableData;
+        if (emp == null) return;
+
+        var spawnedEmp = emp;
+        spawnedEmp.transform.position = _currentNpcSpawnPoint.position;
+        spawnedEmp.transform.rotation = Quaternion.identity;
 
         // 데이터 주입            
         var controller = spawnedEmp.GetComponent<NPCController>();
         
         // 생성된 직원을 List에 담음
-        _activeEmployees.Add(spawnedEmp);
+        if (!_activeEmployees.Contains(spawnedEmp))
+            _activeEmployees.Add(spawnedEmp);
 
         // 비어있는 자리 할당
         controller.TargetDesk = GetEmptySitPoint();

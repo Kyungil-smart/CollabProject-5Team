@@ -56,11 +56,22 @@ public class _EmployeeManager : MonoBehaviour
     #region 고용/퇴사
     public Employee HireEmployee(int id)
     {
-        Employee employee = employeeList.leftEmployees[id].GetComponent<Employee>();
+        if (!employeeList.leftEmployees.TryGetValue(id, out GameObject prefab))
+        {
+            Debug.LogWarning($"[EmployeeManager] {id}번 직원 프리팹을 찾을 수 없습니다.");
+            return null;
+        }
+
+        Employee employee = Instantiate(prefab, transform).GetComponent<Employee>();
+        employee.gameObject.SetActive(false);
         return HireEmployee(employee);
     }
     public Employee HireEmployee(Employee employee) // Employee로 고용하는 경우 지원
     {
+        if (employee == null) return null;
+        if (!employee.gameObject.scene.IsValid())
+            return HireEmployee(employee.so.id);
+
         employee.Init();
         haveEmployees.AddEmployee(employee);
         employeeList.DeleteEmployee(employee.so.id);
@@ -267,12 +278,20 @@ public class _EmployeeManager : MonoBehaviour
     public void ImportEmployeeData(SaveData data)
     {
         activeTrainings.Clear();
+        foreach (Employee emp in haveEmployees.haveEmployeeList)
+        {
+            if (emp != null)
+                Destroy(emp.gameObject);
+        }
+
         haveEmployees.Clear();
         employeeList = new EmployeeList(allEmployeeObj);
 
         foreach (EmployeeSaveData empSave in data.savedEmployees)
         {
             Employee emp = HireEmployee(empSave.employeeId);
+            if (emp == null) continue;
+
             emp.MutableData = new EmployeeMutableData
             {
                 ability = empSave.ability,
