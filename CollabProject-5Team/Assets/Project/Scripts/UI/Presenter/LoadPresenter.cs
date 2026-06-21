@@ -134,6 +134,13 @@ namespace GameDevTycoon.UI.Title
 
             _alertView.ShowConfirmPopup("불러오시겠습니까?", () =>
             {
+                if (SaveLoadSystem.Instance == null ||
+                    !SaveLoadSystem.Instance.SetPendingLoad(_selectedSlot - 1))
+                {
+                    _alertView.ShowAlertPopup("불러오기에 실패했습니다.");
+                    return;
+                }
+
                 LoadGameSceneAsync().Forget();
             });
         }
@@ -141,10 +148,7 @@ namespace GameDevTycoon.UI.Title
         private async UniTaskVoid LoadGameSceneAsync()
         {
             Hide();
-            await SceneLoader.Instance.LoadAsync(
-                SceneName.Game,
-                this.GetCancellationTokenOnDestroy()
-            );
+            await SceneLoader.Instance.LoadAsync(SceneName.Game);
         }
     }
 }

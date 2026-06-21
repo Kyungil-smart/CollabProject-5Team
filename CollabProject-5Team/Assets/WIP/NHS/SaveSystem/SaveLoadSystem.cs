@@ -68,19 +68,7 @@ public class SaveLoadSystem : MonoBehaviour
         return true;
     }
 
-    public SaveData LoadGame(int slot)
-    {
-        SaveData data = ReadSaveData(slot);
-        if (data == null)
-        {
-            Debug.Log("저장된 데이터가 없음. 새 게임 시작");
-            return null;
-        }
-
-        return ApplySaveData(data) ? data : null;
-    }
-
-    public SaveData ReadSaveData(int slot)
+    public SaveData GetSaveDataWithoutApply(int slot)
     {
         if (!IsValidSlot(slot)) return null;
 
@@ -99,8 +87,7 @@ public class SaveLoadSystem : MonoBehaviour
             return null;
         }
     }
-
-    public bool ApplySaveData(SaveData data)
+    public bool LoadGame(SaveData data)
     {
         if (data == null) return false;
 
@@ -121,7 +108,6 @@ public class SaveLoadSystem : MonoBehaviour
             if (DateTimeManager.Instance != null)
                 DateTimeManager.Instance.ImportSaveData(data);       // 날짜 정보 로드
 
-            Debug.Log("불러오기 성공");
             return true;
         }
         catch (Exception)
@@ -148,7 +134,7 @@ public class SaveLoadSystem : MonoBehaviour
 
         slot = pendingLoadSlot.Value;
         pendingLoadSlot = null;
-        data = ReadSaveData(slot);
+        data = GetSaveDataWithoutApply(slot);
         return data != null;
     }
 
@@ -165,11 +151,6 @@ public class SaveLoadSystem : MonoBehaviour
     private static SaveData DeserializeSaveData(string jsonData)
     {
         return JsonConvert.DeserializeObject<SaveData>(jsonData, jsonSettings);
-    }
-
-    public SaveData GetSaveDataWithoutApply(int slot)
-    {
-        return ReadSaveData(slot);
     }
 
     public bool HasSaveData(int slot)

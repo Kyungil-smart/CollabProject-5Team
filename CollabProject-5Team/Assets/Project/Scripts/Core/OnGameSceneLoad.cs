@@ -21,7 +21,7 @@ public class OnGameSceneLoad : MonoBehaviour
     {
         if (SaveLoadSystem.Instance.TryConsumePendingLoad(out int _, out SaveData loadedData))
         {
-            SaveLoadSystem.Instance.ApplySaveData(loadedData);
+            SaveLoadSystem.Instance.LoadGame(loadedData);
         }
         await GameManager.Instance.InitializeForSaveSystem();
 

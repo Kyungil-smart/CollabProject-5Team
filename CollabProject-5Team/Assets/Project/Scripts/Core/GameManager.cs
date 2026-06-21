@@ -81,8 +81,6 @@ public class GameManager : MonoBehaviour
     {
         await UniTask.Yield();
 
-        Debug.Log($"InitializeGameAsync 진입 - PlayerSpawn: {_currentPlayerSpawnPoint}, NpcSpawn: {_currentNpcSpawnPoint}");
-
         if (_currentPlayerSpawnPoint == null)
         {
             Debug.LogError("스폰 포인트가 비어있습니다! Awake에서 할당이 안 되었나요?");
