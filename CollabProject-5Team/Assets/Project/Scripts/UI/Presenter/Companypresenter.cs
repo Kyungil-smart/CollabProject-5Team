@@ -133,7 +133,7 @@ namespace GameDevTycoon.UI.Ingame
                 popularity: company.popularity,
                 cohesion: "좋음",   // [TODO: 내부결속력 단계 문자열 연결]
                 gold: company.gold.Value,
-                totalRevenue: 0     // [TODO: 누적매출액 연결]
+                totalRevenue: company.totalRevenue
             );
         }
 
@@ -232,7 +232,7 @@ namespace GameDevTycoon.UI.Ingame
 
             // cardIndex와 레벨이 1:1 대응
             int targetLevel = _selectedCardIndex;
-            var data = Company.Instance._upgradeData?.GetData(targetLevel);
+            var data = Company.Instance._upgradeData.GetData(targetLevel);
 
             if (data == null) return;
 
@@ -242,20 +242,21 @@ namespace GameDevTycoon.UI.Ingame
                 return;
             }
 
-            if (!Company.Instance.CheckCanUpgrade(targetLevel))
+            if (Company.Instance.reputation < data.RequiredReputation)
             {
-                _alertView.ShowAlertPopup("증축 조건을 만족하지 않습니다.");
+                _alertView.ShowAlertPopup("평판이 부족하여 실행할 수 없습니다.");
                 return;
             }
 
             _alertView.ShowConfirmPopup("구매하시겠습니까?", onConfirm: () =>
             {
-                Company.Instance.UpgradeOffice(targetLevel);
+                Company.Instance.UpgradeOffice();
 
                 ResetExpansionSelection();
                 RefreshExpansionCards();
                 RefreshCompanyInfo();
                 _hudPresenter.RefreshHUD();
+                _alertView.ShowAlertPopup("회사 증축에 성공했습니다.");
             });
         }
 

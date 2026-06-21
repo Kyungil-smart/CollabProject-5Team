@@ -68,9 +68,9 @@ namespace GameDevTycoon.UI
 
         private static string GetProjectSizeLabel(ProjectSize size) => size switch
         {
-            ProjectSize.small => "소형",
-            ProjectSize.medium => "중형",
-            ProjectSize.large => "대형",
+            ProjectSize.Small => "소형",
+            ProjectSize.Medium => "중형",
+            ProjectSize.Large => "대형",
             _ => size.ToString(),
         };
 

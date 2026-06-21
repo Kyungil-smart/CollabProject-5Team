@@ -79,6 +79,7 @@ namespace GameDevTycoon.UI.Ingame
         {
             if (Company.Instance.activeProjectCount.Value < 1)
             {
+                SaveLoadSystem.Instance.SaveGame(0); // 밤 자동 저장
                 DateTimeManager.OnReportEnd?.Invoke();
                 return;
             }
@@ -218,6 +219,8 @@ namespace GameDevTycoon.UI.Ingame
         private void OnReportEndConfirmed()
         {
             _view.Hide();
+
+            SaveLoadSystem.Instance.SaveGame(0); // 밤 자동 저장
             DateTimeManager.OnReportEnd?.Invoke();
         }
 

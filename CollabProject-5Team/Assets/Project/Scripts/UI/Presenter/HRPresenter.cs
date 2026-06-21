@@ -452,7 +452,7 @@ namespace GameDevTycoon.UI.Ingame
                 return;
             }
 
-            if (_EmployeeManager.Instance.haveEmployees.haveEmployeeList.Contains(applicant))
+            if (_EmployeeManager.Instance.haveEmployees.haveEmployeeList.Exists(e => e.so.id == applicant.so.id))
             {
                 _alertView.ShowAlertPopup("이미 고용된 직원입니다.");
                 return;
@@ -468,8 +468,8 @@ namespace GameDevTycoon.UI.Ingame
 
             // 금액 차감
             Company.Instance.gold.Value -= cost;
-            _EmployeeManager.Instance.HireEmployee(applicant);
 
+            _EmployeeManager.Instance.HireEmployee(applicant);
             _EmployeeManager.Instance.RemoveFromApplicants(applicant);
             _hudPresenter.RefreshHUD();
 

@@ -84,15 +84,15 @@ namespace GameDevTycoon.UI.Ingame
         private void BindNewProject()
         {
             _view.OnScaleCardSmallClicked
-                .Subscribe(_ => OnScaleSelected(ProjectSize.small))
+                .Subscribe(_ => OnScaleSelected(ProjectSize.Small))
                 .AddTo(this);
 
             _view.OnScaleCardMediumClicked
-                .Subscribe(_ => OnScaleSelected(ProjectSize.medium))
+                .Subscribe(_ => OnScaleSelected(ProjectSize.Medium))
                 .AddTo(this);
 
             _view.OnScaleCardLargeClicked
-                .Subscribe(_ => OnScaleSelected(ProjectSize.large))
+                .Subscribe(_ => OnScaleSelected(ProjectSize.Large))
                 .AddTo(this);
 
             // 프로젝트 이름 입력 유효성 검사 — 한글 기준 1자 이상일 때 다음 버튼 활성화
@@ -570,22 +570,22 @@ namespace GameDevTycoon.UI.Ingame
 
         private static int GetRequiredCost(ProjectSize scale) => scale switch
         {
-            ProjectSize.medium => 10000,
-            ProjectSize.large => 100000,
+            ProjectSize.Medium => 10000,
+            ProjectSize.Large => 100000,
             _ => 1000,
         };
 
         private static int GetMaxEmployeePerPart(ProjectSize scale) => scale switch
         {
-            ProjectSize.medium => 2,
-            ProjectSize.large => 3,
+            ProjectSize.Medium => 2,
+            ProjectSize.Large => 3,
             _ => 1,
         };
 
         private static string ScaleToString(ProjectSize scale) => scale switch
         {
-            ProjectSize.medium => "중규모",
-            ProjectSize.large => "대규모",
+            ProjectSize.Medium => "중규모",
+            ProjectSize.Large => "대규모",
             _ => "소규모",
         };
 

@@ -36,10 +36,15 @@ namespace GameDevTycoon.Core
 
             IsLoading = true;
 
-            await SceneManager.LoadSceneAsync(sceneName.ToSceneString())
-                .ToUniTask(cancellationToken: cancellationToken);
-
-            IsLoading = false;
+            try
+            {
+                await SceneManager.LoadSceneAsync(sceneName.ToSceneString())
+                    .ToUniTask(cancellationToken: cancellationToken);
+            }
+            finally
+            {
+                IsLoading = false;
+            }
         }
 
         /// <summary>

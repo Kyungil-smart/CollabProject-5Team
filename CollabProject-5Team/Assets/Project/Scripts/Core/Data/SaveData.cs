@@ -117,6 +117,7 @@ public class ProjectCompletedSaveData
     public int   dailySales;
     public int   dailyGold;
     public int   dailyCost;
+    public int   weeklySales;
     public int   weeklyGoldAccum;
     public int   prevWeekUsers;
     public int   prevWeekGold;

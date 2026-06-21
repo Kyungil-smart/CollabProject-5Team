@@ -17,9 +17,6 @@ namespace GameDevTycoon.UI.Ingame
         [SerializeField] private SettingsPresenter _settingsPresenter;
         [SerializeField] private SavePresenter _savePresenter;
 
-        [Header("외부 연결")]
-        //[SerializeField] private ~Presenter _(IBottomNightUI)Presenter; 추후 IBottomNightUI가 추가로 존재하면 연결
-
         [Header("업무 시작 시 이동할 데스크탑 프리팹")]
         [SerializeField] private DeskInteract _desk;
 
@@ -37,11 +34,12 @@ namespace GameDevTycoon.UI.Ingame
         // 모든 Presenter의 Start() 완료 후 바인딩을 보장하기 위해 한 프레임 대기
         private async void Start()
         {
+            DateTimeManager.OnReportEnd += SwitchToNight;
+            DateTimeManager.OnDay += OnNewDay;
+
             await UniTask.Yield();
             BindButtons();
             BindQuestBanner();
-            DateTimeManager.OnReportEnd += SwitchToNight;
-            DateTimeManager.OnDay += OnNewDay;
         }
 
         private void OnDestroy()
@@ -55,6 +53,7 @@ namespace GameDevTycoon.UI.Ingame
             CloseAllBottomPopups();  // HR, Project, Company 닫기
             _settingsPresenter.Hide();  // 세팅도 같이 닫기
             _view.SwitchToNight();
+            RefreshHUD();
         }
 
         private void BindButtons()
@@ -144,7 +143,9 @@ namespace GameDevTycoon.UI.Ingame
 
         private void OnNewDay()
         {
+            _view.SwitchToDay();
             _view.SetWorkStartActive(true);
+            RefreshHUD();
         }
 
         private void OnWorkStartClicked()
@@ -180,7 +181,7 @@ namespace GameDevTycoon.UI.Ingame
             CloseAllBottomPopups();
             _view.SwitchToDay();
 
-            DateTimeManager.Instance.OnClickEndDayButton();
+            DateTimeManager.Instance.OnClickEndDayButton().Forget();
         }
 
         private void ToggleBottomPopup(IBottomNightUI targetPresenter)

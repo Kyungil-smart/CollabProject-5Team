@@ -9,7 +9,7 @@ public class GameManager : MonoBehaviour
 
     [Header("맵 관리")]
     [SerializeField] private List<MapInfo> _offices;              // 사무실 맵 프리팹
-    public int _currentOfficeLevel = 0;
+    public int _currentOfficeIndex = 0;
 
     [Header("프리팹")]
     [SerializeField] private GameObject _playerPrefab;                  // 플레이어 프리팹
@@ -36,21 +36,26 @@ public class GameManager : MonoBehaviour
     #endregion
     }
 
-    private void Start()
+
+    public async UniTask InitializeForSaveSystem()
     {
-        GenerateOffice();
-        InitializeGameAsync().Forget();
+        GenerateOffice(Company.Instance.level);
+        await InitializeGameAsync();
     }
 
-    private void GenerateOffice()
+    private void GenerateOffice(int companyLevel)
     {
-        if (_offices == null || _offices[_currentOfficeLevel] == null)
+        if (_offices == null || _offices.Count == 0)
         {
-            Debug.LogError("GameManager: _officeMaps가 비어있습니다. 인덱스 : {_currentOfficeIndex}");
+            Debug.LogError("GameManager: _offices가 비어있습니다.");
             return;
         }
 
-        MapInfo prefab = _offices[_currentOfficeLevel];
+        int maxLevel = _offices.Count;
+        int clampedLevel = Mathf.Clamp(companyLevel, 1, maxLevel);
+        _currentOfficeIndex = clampedLevel - 1;
+
+        MapInfo prefab = _offices[_currentOfficeIndex];
         MapInfo firstMap = Instantiate(prefab, Vector3.zero, Quaternion.identity);
 
         if (firstMap.PlayerSpawn == null)
@@ -67,15 +72,13 @@ public class GameManager : MonoBehaviour
         _currentPlayerSpawnPoint = firstMap.PlayerSpawn;
         _currentNpcSpawnPoint = firstMap.NpcSpawn;
 
-        Debug.Log($"초기 맵 생성 완료: {_offices[0].name}");
+        CameraManager.Instance.MapSettings(firstMap);
     }
 
     // 처음 게임 시작 시 플레이어, NPC생성 및 배치
     private async UniTask InitializeGameAsync()
     {
         await UniTask.Yield();
-
-        Debug.Log($"InitializeGameAsync 진입 - PlayerSpawn: {_currentPlayerSpawnPoint}, NpcSpawn: {_currentNpcSpawnPoint}");
 
         if (_currentPlayerSpawnPoint == null)
         {
@@ -122,7 +125,7 @@ public class GameManager : MonoBehaviour
         }
 
         // 현재 맵의 인덱스가 맵의 개수와 같거나 크면 리턴
-        if (_currentOfficeLevel + 1 >= _offices.Count) return;
+        if (_currentOfficeIndex + 1 >= _offices.Count) return;
 
         LeaveWorkNPCs();
 
@@ -137,9 +140,9 @@ public class GameManager : MonoBehaviour
         }
 
         // 인덱스 증가시키고 새 맵 생성
-        _currentOfficeLevel++;
+        _currentOfficeIndex++;
 
-        MapInfo newOffice = Instantiate(_offices[_currentOfficeLevel], Vector3.zero, Quaternion.identity);
+        MapInfo newOffice = Instantiate(_offices[_currentOfficeIndex], Vector3.zero, Quaternion.identity);
         
         _currentMapTransform = newOffice.transform;
 
@@ -205,15 +208,18 @@ public class GameManager : MonoBehaviour
     public async UniTask SpawnNPCsAsync(Employee emp)
     {
         // NPC 생성
-        GameObject npcObj = Instantiate(emp.gameObject, _currentNpcSpawnPoint.position, Quaternion.identity);
-        var spawnedEmp = npcObj.GetComponent<Employee>();
-        spawnedEmp.MutableData = emp.MutableData;
+        if (emp == null) return;
+
+        var spawnedEmp = emp;
+        spawnedEmp.transform.position = _currentNpcSpawnPoint.position;
+        spawnedEmp.transform.rotation = Quaternion.identity;
 
         // 데이터 주입            
         var controller = spawnedEmp.GetComponent<NPCController>();
         
         // 생성된 직원을 List에 담음
-        _activeEmployees.Add(spawnedEmp);
+        if (!_activeEmployees.Contains(spawnedEmp))
+            _activeEmployees.Add(spawnedEmp);
 
         // 비어있는 자리 할당
         controller.TargetDesk = GetEmptySitPoint();
@@ -293,7 +299,10 @@ public class GameManager : MonoBehaviour
 
     public bool CanHireMore()
     {
-        return _EmployeeManager.Instance.haveEmployees.haveEmployeeList.Count < _sitPoints.Count;
+        OfficeUpgradeData data = Company.Instance._upgradeData.GetData(Company.Instance.level);
+        int maxEmployee = data.MaxEmployee;
+
+        return _EmployeeManager.Instance.haveEmployees.haveEmployeeList.Count < maxEmployee;
     }
 
 
