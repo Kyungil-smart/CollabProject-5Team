@@ -244,7 +244,7 @@ namespace GameDevTycoon.UI.Ingame
 
             if (Company.Instance.reputation < data.RequiredReputation)
             {
-                _alertView.ShowAlertPopup("증축 조건을 만족하지 않습니다.");
+                _alertView.ShowAlertPopup("평판이 부족하여 실행할 수 없습니다.");
                 return;
             }
 

@@ -23,7 +23,8 @@ public class OnGameSceneLoad : MonoBehaviour
         {
             SaveLoadSystem.Instance.LoadGame(loadedData);
         }
-        await GameManager.Instance.InitializeForSaveSystem();
+
+        GameManager.Instance.InitializeForSaveSystem().Forget();
 
         switch (DateTimeManager.Instance.currentTime)
         {

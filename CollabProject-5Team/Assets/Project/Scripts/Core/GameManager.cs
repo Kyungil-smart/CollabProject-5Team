@@ -72,8 +72,7 @@ public class GameManager : MonoBehaviour
         _currentPlayerSpawnPoint = firstMap.PlayerSpawn;
         _currentNpcSpawnPoint = firstMap.NpcSpawn;
 
-        if (CameraManager.Instance != null)
-            CameraManager.Instance.MapSettings(firstMap);
+        CameraManager.Instance.MapSettings(firstMap);
     }
 
     // 처음 게임 시작 시 플레이어, NPC생성 및 배치
