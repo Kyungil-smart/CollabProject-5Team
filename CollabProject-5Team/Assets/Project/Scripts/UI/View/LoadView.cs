@@ -70,43 +70,45 @@ namespace GameDevTycoon.UI.Title
         public void Show() => _loadPopup.SetActive(true);
         public void Hide() => _loadPopup.SetActive(false);
 
+        public void BindSlot(int slotIndex, SaveSlotData data)
+        {
+            switch (slotIndex)
+            {
+                case 1:
+                    BindAutoSlot(data);
+                    break;
+                case 2:
+                    BindSlot1(data);
+                    break;
+                case 3:
+                    BindSlot2(data);
+                    break;
+            }
+        }
+
         public void BindAutoSlot(SaveSlotData data)
         {
-            bool hasSave = data != null;
-            _autoSavedGroup.SetActive(hasSave);
-            _autoEmptyGroup.SetActive(!hasSave);
-
-            if (!hasSave) return;
-            _autoCompanyNameLabel.text = data.companyName;
-            _autoDateTimeLabel.text = data.dateTime;
-            _autoGoldLabel.text = data.gold;
-            _autoEmployeeCountLabel.text = $"{data.employeeCount}명";
+            BindSlotData(data, _autoSavedGroup, _autoEmptyGroup,
+                _autoCompanyNameLabel, _autoDateTimeLabel, _autoGoldLabel, _autoEmployeeCountLabel);
         }
 
         public void BindSlot1(SaveSlotData data)
         {
-            bool hasSave = data != null;
-            _slot1SavedGroup.SetActive(hasSave);
-            _slot1EmptyGroup.SetActive(!hasSave);
-
-            if (!hasSave) return;
-            _slot1CompanyNameLabel.text = data.companyName;
-            _slot1DateTimeLabel.text = data.dateTime;
-            _slot1GoldLabel.text = data.gold;
-            _slot1EmployeeCountLabel.text = $"{data.employeeCount}명";
+            BindSlotData(data, _slot1SavedGroup, _slot1EmptyGroup,
+                _slot1CompanyNameLabel, _slot1DateTimeLabel, _slot1GoldLabel, _slot1EmployeeCountLabel);
         }
 
         public void BindSlot2(SaveSlotData data)
         {
-            bool hasSave = data != null;
-            _slot2SavedGroup.SetActive(hasSave);
-            _slot2EmptyGroup.SetActive(!hasSave);
+            BindSlotData(data, _slot2SavedGroup, _slot2EmptyGroup,
+                _slot2CompanyNameLabel, _slot2DateTimeLabel, _slot2GoldLabel, _slot2EmployeeCountLabel);
+        }
 
-            if (!hasSave) return;
-            _slot2CompanyNameLabel.text = data.companyName;
-            _slot2DateTimeLabel.text = data.dateTime;
-            _slot2GoldLabel.text = data.gold;
-            _slot2EmployeeCountLabel.text = $"{data.employeeCount}명";
+        public void SetSlotSelected(int slotIndex)
+        {
+            SetAutoSlotSelected(slotIndex == 1);
+            SetSlot1Selected(slotIndex == 2);
+            SetSlot2Selected(slotIndex == 3);
         }
 
         public void SetAutoSlotSelected(bool selected)
@@ -127,6 +129,27 @@ namespace GameDevTycoon.UI.Title
             var image = button.GetComponent<Image>();
             if (image != null)
                 image.sprite = sprite;
+        }
+
+        private static void BindSlotData(
+            SaveSlotData data,
+            GameObject savedGroup,
+            GameObject emptyGroup,
+            TextMeshProUGUI companyNameLabel,
+            TextMeshProUGUI dateTimeLabel,
+            TextMeshProUGUI goldLabel,
+            TextMeshProUGUI employeeCountLabel)
+        {
+            bool hasSave = data != null;
+            savedGroup.SetActive(hasSave);
+            emptyGroup.SetActive(!hasSave);
+
+            if (!hasSave) return;
+
+            companyNameLabel.text = string.IsNullOrWhiteSpace(data.title) ? data.companyName : data.title;
+            dateTimeLabel.text = data.dateTime;
+            goldLabel.text = data.gold;
+            employeeCountLabel.text = $"{data.employeeCount}명";
         }
     }
 }

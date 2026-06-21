@@ -14,5 +14,25 @@ public class OnGameSceneLoad : MonoBehaviour
         await UniTask.Yield(PlayerLoopTiming.LastInitialization);
 
         // 모든 메니저 초기화 후에 실행할 로직
+        await BootstrapGameSceneAsync();
+    }
+
+    private async UniTask BootstrapGameSceneAsync()
+    {
+        if (SaveLoadSystem.Instance.TryConsumePendingLoad(out int _, out SaveData loadedData))
+        {
+            SaveLoadSystem.Instance.ApplySaveData(loadedData);
+        }
+        await GameManager.Instance.InitializeForSaveSystem();
+
+        switch (DateTimeManager.Instance.currentTime)
+        {
+            case TimeOfDay.Night:
+                DateTimeManager.OnReportEnd?.Invoke();
+                break;
+            default:
+                DateTimeManager.OnDay?.Invoke();
+                break;
+        }
     }
 }

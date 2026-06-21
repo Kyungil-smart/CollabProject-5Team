@@ -17,6 +17,10 @@ namespace GameDevTycoon.UI.Title
         [SerializeField] private LoadView _view;
         [SerializeField] private AlertView _alertView;
 
+        private const int AutoSaveViewSlot = 1;
+        private const int Slot1ViewSlot = 2;
+        private const int Slot2ViewSlot = 3;
+
         // 0 = 없음, 1 = AutoSave, 2 = Slot1, 3 = Slot2
         private int _selectedSlot;
 
@@ -39,9 +43,7 @@ namespace GameDevTycoon.UI.Title
         public void Hide()
         {
             _selectedSlot = 0;
-            _view.SetAutoSlotSelected(false);
-            _view.SetSlot1Selected(false);
-            _view.SetSlot2Selected(false);
+            _view.SetSlotSelected(0);
             _view.SetLoadButtonInteractable(false);
             _view.Hide();
         }
@@ -71,14 +73,23 @@ namespace GameDevTycoon.UI.Title
 
         private void RefreshSlots()
         {
-            // [TODO: SaveSystem 연결 후 실제 슬롯 데이터 바인딩]
-            _autoSlotData = null;
-            _slot1Data = null;
-            _slot2Data = null;
+            _autoSlotData = CreateSlotData(0, true);
+            _slot1Data = CreateSlotData(1, false);
+            _slot2Data = CreateSlotData(2, false);
 
             _view.BindAutoSlot(_autoSlotData);
             _view.BindSlot1(_slot1Data);
             _view.BindSlot2(_slot2Data);
+        }
+
+        private static SaveSlotData CreateSlotData(int saveSlotIndex, bool isAutoSlot)
+        {
+            SaveLoadSystem saveLoadSystem = SaveLoadSystem.Instance;
+            if (saveLoadSystem == null || !saveLoadSystem.HasSaveData(saveSlotIndex))
+                return null;
+
+            SaveData data = saveLoadSystem.GetSaveDataWithoutApply(saveSlotIndex);
+            return SaveSlotData.FromSaveData(saveSlotIndex, data, isAutoSlot);
         }
 
         private void OnSlotClicked(int slotIndex)
@@ -98,33 +109,31 @@ namespace GameDevTycoon.UI.Title
 
         private void ApplySlotSelection()
         {
-            _view.SetAutoSlotSelected(_selectedSlot == 1);
-            _view.SetSlot1Selected(_selectedSlot == 2);
-            _view.SetSlot2Selected(_selectedSlot == 3);
+            _view.SetSlotSelected(_selectedSlot);
         }
 
         private void ApplyButtonInteractable()
         {
             var data = GetSelectedSlotData();
-            bool hasSave = data != null || _selectedSlot == 1;
+            bool hasSave = data != null;
             _view.SetLoadButtonInteractable(hasSave);
         }
 
         private SaveSlotData GetSelectedSlotData() => _selectedSlot switch
         {
-            1 => _autoSlotData,
-            2 => _slot1Data,
-            3 => _slot2Data,
+            AutoSaveViewSlot => _autoSlotData,
+            Slot1ViewSlot => _slot1Data,
+            Slot2ViewSlot => _slot2Data,
             _ => null,
         };
 
         private void OnLoadClicked()
         {
             if (_selectedSlot == 0) return;
+            if (GetSelectedSlotData() == null) return;
 
             _alertView.ShowConfirmPopup("불러오시겠습니까?", () =>
             {
-                // [TODO: SaveSystem 연결 후 실제 로드 처리 및 씬 전환]
                 LoadGameSceneAsync().Forget();
             });
         }

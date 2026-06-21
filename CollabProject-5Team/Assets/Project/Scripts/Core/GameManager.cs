@@ -36,19 +36,24 @@ public class GameManager : MonoBehaviour
     #endregion
     }
 
-    private void Start()
+
+    public async UniTask InitializeForSaveSystem()
     {
-        GenerateOffice();
-        InitializeGameAsync().Forget();
+        GenerateOffice(Company.Instance.level);
+        await InitializeGameAsync();
     }
 
-    private void GenerateOffice()
+    private void GenerateOffice(int companyLevel)
     {
-        if (_offices == null || _offices[_currentOfficeIndex] == null)
+        if (_offices == null || _offices.Count == 0)
         {
-            Debug.LogError("GameManager: _officeMaps가 비어있습니다. 인덱스 : {_currentOfficeIndex}");
+            Debug.LogError("GameManager: _offices가 비어있습니다.");
             return;
         }
+
+        int maxLevel = _offices.Count;
+        int clampedLevel = Mathf.Clamp(companyLevel, 1, maxLevel);
+        _currentOfficeIndex = clampedLevel - 1;
 
         MapInfo prefab = _offices[_currentOfficeIndex];
         MapInfo firstMap = Instantiate(prefab, Vector3.zero, Quaternion.identity);
@@ -66,6 +71,9 @@ public class GameManager : MonoBehaviour
 
         _currentPlayerSpawnPoint = firstMap.PlayerSpawn;
         _currentNpcSpawnPoint = firstMap.NpcSpawn;
+
+        if (CameraManager.Instance != null)
+            CameraManager.Instance.MapSettings(firstMap);
     }
 
     // 처음 게임 시작 시 플레이어, NPC생성 및 배치

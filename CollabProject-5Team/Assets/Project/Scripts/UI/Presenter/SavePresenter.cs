@@ -1,4 +1,6 @@
 using System;
+using Cysharp.Threading.Tasks;
+using GameDevTycoon.Core;
 using R3;
 using UnityEngine;
 
@@ -141,17 +143,12 @@ namespace GameDevTycoon.UI.Ingame
         private void OnSaveClicked()
         {
             if (_selectedSlot == 0) return;
+            if (_selectedSlot == AutoSaveViewSlot) return;
 
             Confirm("저장하시겠습니까?", () =>
             {
-                SaveLoadSystem saveLoadSystem = SaveLoadSystem.Instance;
-                if (saveLoadSystem == null)
-                {
-                    ShowAlert("저장 시스템을 찾을 수 없습니다.");
-                    return;
-                }
+                SaveLoadSystem.Instance.SaveGame(_selectedSlot - 1);
 
-                saveLoadSystem.SaveGame(_selectedSlot - 1);
                 RefreshSlots();
                 ApplySlotSelection();
                 ApplyButtonInteractable();
@@ -166,22 +163,19 @@ namespace GameDevTycoon.UI.Ingame
 
             Confirm("불러오시겠습니까?", () =>
             {
-                SaveLoadSystem saveLoadSystem = SaveLoadSystem.Instance;
-                if (saveLoadSystem == null)
-                {
-                    ShowAlert("저장 시스템을 찾을 수 없습니다.");
-                    return;
-                }
-
-                SaveData data = saveLoadSystem.LoadGame(_selectedSlot - 1);
-                if (data == null)
+                if (!SaveLoadSystem.Instance.SetPendingLoad(_selectedSlot - 1))
                 {
                     ShowAlert("불러오기에 실패했습니다.");
                     return;
                 }
 
-                Hide();
+                ReloadGameSceneAsync().Forget();
             });
+        }
+        private async UniTaskVoid ReloadGameSceneAsync()
+        {
+            Hide();
+            await SceneLoader.Instance.LoadAsync(SceneName.Game);
         }
 
         private void Confirm(string message, Action onConfirm)

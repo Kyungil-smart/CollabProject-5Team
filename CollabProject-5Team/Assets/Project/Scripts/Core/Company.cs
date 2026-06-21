@@ -46,24 +46,19 @@ public class Company : MonoBehaviour
     }
 
     #region 테스트 코드
-    private void Start()
-    {
-        InitProjects(); // 테스트 코드
-    }
     // 자식 오브젝트의 Project를 curProject로 세팅하는 "테스트"코드
-    public void InitProjects()
-    {
-        projects.AddRange(GetComponentsInChildren<Project>());
-        curProject = projects.Count > 0 ? projects[0] : null;
-        activeProjectCount.Value = curProject != null ? 1 : 0;
+    //public void InitProjects()
+    //{
+    //    projects.AddRange(GetComponentsInChildren<Project>());
+    //    curProject = projects.Count > 0 ? projects[0] : null;
+    //    activeProjectCount.Value = curProject != null ? 1 : 0;
 
-        if (curProject == null) return;
-        // _EmployeeManager HaveEmployees들을 curProject에 고용
-        foreach (var employee in _EmployeeManager.Instance.haveEmployees.haveEmployeeList)
-        {
-            curProject.HireEmployee(employee);
-        }
-    }
+    //    if (curProject == null) return;
+    //    foreach (var employee in _EmployeeManager.Instance.haveEmployees.haveEmployeeList)
+    //    {
+    //        curProject.HireEmployee(employee);
+    //    }
+    //}
     #endregion
 
     #region 프로젝트 시작 관리
@@ -358,7 +353,7 @@ public class Company : MonoBehaviour
 
     public void ExportCompanyData(SaveData data)
     {
-        data.company_Name  = this.name;
+        data.company_Name  = this.Name;
         data.company_Gold  = this.gold.Value;
         data.company_Level = this.level;
 
@@ -407,7 +402,7 @@ public class Company : MonoBehaviour
 
     public void ImportCompanyData(SaveData data)
     {
-        this.name       = data.company_Name;
+        this.Name       = data.company_Name;
         this.gold.Value = data.company_Gold;
         this.level      = data.company_Level;
 
