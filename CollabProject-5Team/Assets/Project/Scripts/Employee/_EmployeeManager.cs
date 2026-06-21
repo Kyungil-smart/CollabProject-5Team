@@ -68,7 +68,6 @@ public class _EmployeeManager : MonoBehaviour
     }
     public Employee HireEmployee(Employee employee) // Employee로 고용하는 경우 지원
     {
-        if (employee == null) return null;
         if (!employee.gameObject.scene.IsValid())
             return HireEmployee(employee.so.id);
 
@@ -80,7 +79,7 @@ public class _EmployeeManager : MonoBehaviour
 
     public void FireEmployee(Employee employee)
     {
-        if (Company.Instance.curProject != null && Company.Instance.curProject.GetAllEmployees().Contains(employee))
+        if (Company.Instance.activeProjectCount.Value > 0 && Company.Instance.curProject.GetAllEmployees().Contains(employee))
             Company.Instance.curProject.RemoveEmployee(employee);
 
         RemoveTraining(employee);

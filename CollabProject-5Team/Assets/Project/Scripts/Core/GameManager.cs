@@ -299,7 +299,10 @@ public class GameManager : MonoBehaviour
 
     public bool CanHireMore()
     {
-        return _EmployeeManager.Instance.haveEmployees.haveEmployeeList.Count < _sitPoints.Count;
+        OfficeUpgradeData data = Company.Instance._upgradeData.GetData(Company.Instance.level);
+        int maxEmployee = data.MaxEmployee;
+
+        return _EmployeeManager.Instance.haveEmployees.haveEmployeeList.Count < maxEmployee;
     }
 
 

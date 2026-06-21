@@ -468,14 +468,8 @@ namespace GameDevTycoon.UI.Ingame
 
             // 금액 차감
             Company.Instance.gold.Value -= cost;
-            Employee hiredEmployee = _EmployeeManager.Instance.HireEmployee(applicant);
-            if (hiredEmployee == null)
-            {
-                Company.Instance.gold.Value += cost;
-                _alertView.ShowAlertPopup("직원 채용에 실패했습니다.");
-                return;
-            }
 
+            _EmployeeManager.Instance.HireEmployee(applicant);
             _EmployeeManager.Instance.RemoveFromApplicants(applicant);
             _hudPresenter.RefreshHUD();
 
