@@ -31,7 +31,7 @@ public class QuestManager : MonoBehaviour
     public ReactiveProperty<int> dailyQuestProgress = new(0);
 
     // 직군별 일일 퀘스트 클리어 누적 포인트 (금요일 밤 보고서 점수에 합산)
-    private readonly Dictionary<Role, int> _weeklyBonusPoints = new();
+    public Dictionary<Role, int> _weeklyBonusPoints = new();
 
     #region 싱글톤 설정
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]

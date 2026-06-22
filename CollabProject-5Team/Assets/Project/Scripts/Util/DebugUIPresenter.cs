@@ -1,8 +1,6 @@
 using R3;
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.Serialization; // 이름 변경 시 기존 참조 유지
-using GameDevTycoon.UI.Ingame;
 using Cysharp.Threading.Tasks;
 
 /// <summary>
@@ -13,26 +11,17 @@ using Cysharp.Threading.Tasks;
 public sealed class DebugUIPresenter : MonoBehaviour
 {
     [Header("버튼")]
-    [FormerlySerializedAs("_workCompleteButton")] [SerializeField] Button _forceNightLoad;
-    [SerializeField] private Button _nextDayButton;
-    [SerializeField] private Button _openHRButton;
-    [SerializeField] private Button _openProjectButton;
-    [FormerlySerializedAs("_openReportButton")] [SerializeField] Button _addReputationButton;
-    [SerializeField] private Button _addGoldButton;
-    [SerializeField] private Button _upgradeOfficeButton;
-
-    private HRPresenter _hrPresenter;
-    private ProjectPresenter _projectPresenter;
-
-    private void Awake()
-    {
-        _hrPresenter = FindFirstObjectByType<HRPresenter>();
-        _projectPresenter = FindFirstObjectByType<ProjectPresenter>();
-    }
+    [SerializeField] Button _forceNightLoadButton;
+    [SerializeField] Button _nextDayButton;
+    [SerializeField] Button _bonusQuestScoreButton;
+    [SerializeField] Button _forceTalkedEmployeesButton;
+    [SerializeField] Button _addReputationButton;
+    [SerializeField] Button _addGoldButton;
+    [SerializeField] Button _upgradeOfficeButton;
 
     private void Start()
     {
-        _forceNightLoad.OnClickAsObservable()
+        _forceNightLoadButton.OnClickAsObservable()
             .Subscribe(_ =>
             {
                 DateTimeManager DTM = DateTimeManager.Instance;
@@ -60,12 +49,29 @@ public sealed class DebugUIPresenter : MonoBehaviour
             .Subscribe(_ => DateTimeManager.Instance.OnClickEndDayButton().Forget())
             .AddTo(this);
 
-        _openHRButton.OnClickAsObservable()
-            .Subscribe(_ => _hrPresenter?.Show())
+        _bonusQuestScoreButton.OnClickAsObservable()
+            .Subscribe(_ =>
+            {
+                if (Company.Instance.activeProjectCount.Value > 0)
+                {
+                    Role role = (Role)Random.Range(0, 3);
+
+                    QuestManager.Instance._weeklyBonusPoints.TryGetValue(role, out int currentPoint);
+                    QuestManager.Instance._weeklyBonusPoints[role] = currentPoint + 1;
+
+                    Debug.Log($"[Debug] 퀘스트 완료 점수 +1: {role} ({currentPoint} -> {currentPoint + 1})");
+                }
+            })
             .AddTo(this);
 
-        _openProjectButton.OnClickAsObservable()
-            .Subscribe(_ => _projectPresenter?.Show())
+        _forceTalkedEmployeesButton.OnClickAsObservable()
+            .Subscribe(_ =>
+            {
+                foreach (Employee employee in _EmployeeManager.Instance.haveEmployees.haveEmployeeList)
+                {
+                    employee.hasTalkedThisWeek = true;
+                }
+            })
             .AddTo(this);
 
         _addReputationButton.OnClickAsObservable()
