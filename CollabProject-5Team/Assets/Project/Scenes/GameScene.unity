@@ -1442,8 +1442,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f150a4f9e071b4f4b9fde87b59246221, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  directionPanel: {fileID: 1398360320}
-  canvasGroup: {fileID: 1398360325}
+  visualMode: 0
+  duration: 0.5
+  _fadeGroupObj: {fileID: 0}
+  _fadeCanvasGroup: {fileID: 0}
+  _clockGroupObj: {fileID: 0}
+  _clockFillImage: {fileID: 0}
   fadeDurationSeconds: 0.16
   visibleDurationSeconds: 0.49
 --- !u!1 &552704705
@@ -1826,23 +1830,6 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 0}
---- !u!1 &862303956 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 5387125315604040766, guid: bbabf44e2c25a9a4b993174e8d9bb61c, type: 3}
-  m_PrefabInstance: {fileID: 7455261935982990088}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &862303959
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 862303956}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 83c677214f8159046be970ff8f0beac5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &878024203
 GameObject:
   m_ObjectHideFlags: 0
@@ -4971,10 +4958,7 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 5387125315604040766, guid: bbabf44e2c25a9a4b993174e8d9bb61c, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 862303959}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: bbabf44e2c25a9a4b993174e8d9bb61c, type: 3}
 --- !u!1001 &7904083483452275291
 PrefabInstance:

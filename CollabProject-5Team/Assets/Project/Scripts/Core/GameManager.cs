@@ -39,6 +39,9 @@ public class GameManager : MonoBehaviour
 
     public async UniTask InitializeForSaveSystem()
     {
+        System.Diagnostics.StackTrace stackTrace = new System.Diagnostics.StackTrace();
+    Debug.Log($"<color=yellow>InitializeForSaveSystem 호출됨!</color>\n{stackTrace.ToString()}");
+    
         GenerateOffice(Company.Instance.level);
         await InitializeGameAsync();
     }

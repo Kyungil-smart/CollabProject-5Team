@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8789996326306878130}
   - component: {fileID: 7430753807283215856}
+  - component: {fileID: 5856507076719203546}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -45,10 +46,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _offices:
-  - {fileID: 3412594768635729660, guid: f56f4e72de213b5428cbaa99a8c204a2, type: 3}
-  - {fileID: 343173223686361948, guid: 07d9a3ca77f7c82438be552febd338b3, type: 3}
+  - {fileID: 9109286258864431053, guid: 70b1d030b8f67904c8810cc1abd2d89d, type: 3}
+  - {fileID: 7728006202661685397, guid: e0e1c7ce76145794681bbe514c815399, type: 3}
   - {fileID: 9142957662764276371, guid: 6b4a20c77eed23c4eacb01e2b709782c, type: 3}
-  _currentOfficeLevel: 0
+  _currentOfficeIndex: 0
   _playerPrefab: {fileID: 212431793065971841, guid: 533a75bd69eba964a804df4e7eebe5ea, type: 3}
   _allNpcPrefabs:
   - {fileID: 8477643386457636440, guid: 33338467b33e5a348b2b82d2e2d3064d, type: 3}
@@ -61,4 +62,17 @@ MonoBehaviour:
   - {fileID: 7285972052203900814, guid: 73031969da22d7941bef328568b7e3d2, type: 3}
   - {fileID: 6901403761132674612, guid: 117bc8c789fcf8f48a446a7cdfc2cd39, type: 3}
   - {fileID: 5616669764911222607, guid: 00d403240995f2b46b25462243695d4a, type: 3}
+  isUpgradeReserved: 0
   player: {fileID: 0}
+--- !u!114 &5856507076719203546
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5387125315604040766}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 83c677214f8159046be970ff8f0beac5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
