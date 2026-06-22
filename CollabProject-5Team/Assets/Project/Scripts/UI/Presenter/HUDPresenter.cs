@@ -16,6 +16,7 @@ namespace GameDevTycoon.UI.Ingame
         [SerializeField] private AlertView _alertView;
         [SerializeField] private SettingsPresenter _settingsPresenter;
         [SerializeField] private SavePresenter _savePresenter;
+        [SerializeField] private QuestPresenter _questPresenter;
 
         [Header("업무 시작 시 이동할 데스크탑 프리팹")]
         [SerializeField] private DeskInteract _desk;
@@ -59,6 +60,10 @@ namespace GameDevTycoon.UI.Ingame
         private void BindButtons()
         {
             var dtm = DateTimeManager.Instance;
+
+            _view.OnQuestIconClicked
+                .Subscribe(_ => OnQuestIconClicked())
+                .AddTo(this);
 
             _view.OnWorkStartClicked
                 .Subscribe(_ => OnWorkStartClicked())
@@ -146,6 +151,18 @@ namespace GameDevTycoon.UI.Ingame
             _view.SwitchToDay();
             _view.SetWorkStartActive(true);
             RefreshHUD();
+        }
+
+        private void OnQuestIconClicked()
+        {
+            if (_questPresenter.IsDetailVisible)
+            {
+                _questPresenter.HideDetail();
+            }
+            else
+            {
+                _questPresenter.ShowDetailAsync().Forget();
+            }
         }
 
         private void OnWorkStartClicked()
