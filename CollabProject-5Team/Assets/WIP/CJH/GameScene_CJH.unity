@@ -1443,11 +1443,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   visualMode: 0
-  duration: 0.5
   _fadeGroupObj: {fileID: 0}
   _fadeCanvasGroup: {fileID: 0}
   _clockGroupObj: {fileID: 0}
   _clockFillImage: {fileID: 0}
+  _nightGroupObj: {fileID: 0}
+  _nightFillImage: {fileID: 0}
   fadeDurationSeconds: 0.16
   visibleDurationSeconds: 0.49
 --- !u!1 &552704705
@@ -3194,10 +3195,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 63ef824faf4efb74a8e730dd408abbcf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _forceNightLoad: {fileID: 377753525}
+  _forceNightLoadButton: {fileID: 377753525}
   _nextDayButton: {fileID: 107013496}
-  _openHRButton: {fileID: 1688839839}
-  _openProjectButton: {fileID: 2023906758}
+  _bonusQuestScoreButton: {fileID: 0}
+  _forceTalkedEmployeesButton: {fileID: 0}
   _addReputationButton: {fileID: 1963137584}
   _addGoldButton: {fileID: 291336345}
   _upgradeOfficeButton: {fileID: 965723992}
@@ -3378,17 +3379,9 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 3266044766019789314, guid: 2377f3ab642622244ba42b8bf8443f1b, type: 3}
-      propertyPath: m_IsActive
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 4142855715494317952, guid: 2377f3ab642622244ba42b8bf8443f1b, type: 3}
       propertyPath: m_Name
       value: Canvas_Save
-      objectReference: {fileID: 0}
-    - target: {fileID: 4142855715494317952, guid: 2377f3ab642622244ba42b8bf8443f1b, type: 3}
-      propertyPath: m_IsActive
-      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6606674863280602556, guid: 2377f3ab642622244ba42b8bf8443f1b, type: 3}
       propertyPath: _alertView
@@ -3958,30 +3951,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 856572212635719043, guid: d50dd60ba5d683e4d980e6a3c7b748b8, type: 3}
-      propertyPath: m_MovementType
-      value: 2
-      objectReference: {fileID: 0}
     - target: {fileID: 1355916534683937121, guid: d50dd60ba5d683e4d980e6a3c7b748b8, type: 3}
       propertyPath: _hudPresenter
       value: 
       objectReference: {fileID: 1352439378}
-    - target: {fileID: 1355916534683937121, guid: d50dd60ba5d683e4d980e6a3c7b748b8, type: 3}
-      propertyPath: _employeeStatusMiniItemPrefab
-      value: 
-      objectReference: {fileID: 854178130726100159, guid: 51859d24cbb2a7d41aa48c8788cbedd9, type: 3}
-    - target: {fileID: 3009261250991459817, guid: d50dd60ba5d683e4d980e6a3c7b748b8, type: 3}
-      propertyPath: m_MovementType
-      value: 2
-      objectReference: {fileID: 0}
-    - target: {fileID: 3034534227304002774, guid: d50dd60ba5d683e4d980e6a3c7b748b8, type: 3}
-      propertyPath: m_MovementType
-      value: 2
-      objectReference: {fileID: 0}
-    - target: {fileID: 3686727160011258825, guid: d50dd60ba5d683e4d980e6a3c7b748b8, type: 3}
-      propertyPath: m_Padding.m_Top
-      value: 75
-      objectReference: {fileID: 0}
     - target: {fileID: 5581357483420592077, guid: d50dd60ba5d683e4d980e6a3c7b748b8, type: 3}
       propertyPath: m_Pivot.x
       value: 0
@@ -4065,10 +4038,6 @@ PrefabInstance:
     - target: {fileID: 6157074068168309022, guid: d50dd60ba5d683e4d980e6a3c7b748b8, type: 3}
       propertyPath: m_Name
       value: Canvas_Report
-      objectReference: {fileID: 0}
-    - target: {fileID: 6993658204506152751, guid: d50dd60ba5d683e4d980e6a3c7b748b8, type: 3}
-      propertyPath: m_MovementType
-      value: 2
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -4732,41 +4701,9 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 3944275898107648289, guid: b82583b22905db24a86349a98bea2b01, type: 3}
-      propertyPath: m_RaycastTarget
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4503841063506157792, guid: b82583b22905db24a86349a98bea2b01, type: 3}
-      propertyPath: m_RaycastTarget
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5544962621378147034, guid: b82583b22905db24a86349a98bea2b01, type: 3}
-      propertyPath: m_IsActive
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5606945819024343139, guid: b82583b22905db24a86349a98bea2b01, type: 3}
-      propertyPath: m_SortingOrder
-      value: 30
-      objectReference: {fileID: 0}
-    - target: {fileID: 5737544142998475544, guid: b82583b22905db24a86349a98bea2b01, type: 3}
-      propertyPath: m_RaycastTarget
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5962197814407462936, guid: b82583b22905db24a86349a98bea2b01, type: 3}
-      propertyPath: m_RaycastTarget
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 6060728141849977706, guid: b82583b22905db24a86349a98bea2b01, type: 3}
       propertyPath: m_Name
       value: Canvas_Alert
-      objectReference: {fileID: 0}
-    - target: {fileID: 8683228469449318200, guid: b82583b22905db24a86349a98bea2b01, type: 3}
-      propertyPath: m_IsActive
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 9005257695980470096, guid: b82583b22905db24a86349a98bea2b01, type: 3}
-      propertyPath: m_RaycastTarget
-      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -5087,40 +5024,15 @@ PrefabInstance:
       propertyPath: _alertView
       value: 
       objectReference: {fileID: 1204401006}
-    - target: {fileID: 1289156741064901272, guid: e41d67e75d3a4d74887e02a74341ded9, type: 3}
-      propertyPath: m_IsActive
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2187968964200157461, guid: e41d67e75d3a4d74887e02a74341ded9, type: 3}
-      propertyPath: m_IsActive
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 4077862372101270907, guid: e41d67e75d3a4d74887e02a74341ded9, type: 3}
-      propertyPath: _alertView
-      value: 
-      objectReference: {fileID: 1204401006}
     - target: {fileID: 6477594736803272556, guid: e41d67e75d3a4d74887e02a74341ded9, type: 3}
       propertyPath: m_Name
       value: Canvas_Settings
-      objectReference: {fileID: 0}
-    - target: {fileID: 7323979248505079690, guid: e41d67e75d3a4d74887e02a74341ded9, type: 3}
-      propertyPath: _settingsPanel
-      value: 
-      objectReference: {fileID: 7904083483452275292}
-    - target: {fileID: 7469698755795812749, guid: e41d67e75d3a4d74887e02a74341ded9, type: 3}
-      propertyPath: m_IsActive
-      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: e41d67e75d3a4d74887e02a74341ded9, type: 3}
---- !u!1 &7904083483452275292 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 1289156741064901272, guid: e41d67e75d3a4d74887e02a74341ded9, type: 3}
-  m_PrefabInstance: {fileID: 7904083483452275291}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

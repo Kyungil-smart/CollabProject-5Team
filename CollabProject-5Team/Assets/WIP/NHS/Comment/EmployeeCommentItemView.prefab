@@ -477,6 +477,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1299536280530106643}
   - component: {fileID: 3079657841864567439}
+  - component: {fileID: 1897619086305395896}
   m_Layer: 5
   m_Name: EmployeeCommentItemView
   m_TagString: Untagged
@@ -499,10 +500,10 @@ RectTransform:
   - {fileID: 6750828151362652904}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 150}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &3079657841864567439
 MonoBehaviour:
@@ -523,6 +524,26 @@ MonoBehaviour:
   _FluctuatingText: {fileID: 8020687195260512345}
   _commentText: {fileID: 3067530834070334892}
   tagView: {fileID: 1902395943754951850}
+--- !u!114 &1897619086305395896
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5795527634663094337}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 306cc8c2b49d7114eaa3623786fc2126, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_IgnoreLayout: 0
+  m_MinWidth: -1
+  m_MinHeight: -1
+  m_PreferredWidth: -1
+  m_PreferredHeight: 50
+  m_FlexibleWidth: -1
+  m_FlexibleHeight: -1
+  m_LayoutPriority: 1
 --- !u!1 &5935701208592965894
 GameObject:
   m_ObjectHideFlags: 0
@@ -831,8 +852,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 99.22611, y: 37.3}
-  m_SizeDelta: {x: 233.6522, y: 50}
+  m_AnchoredPosition: {x: 138.11, y: 37.3}
+  m_SizeDelta: {x: 311.43, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &6803884812835893344
 CanvasRenderer:
