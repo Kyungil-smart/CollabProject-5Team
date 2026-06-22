@@ -125,6 +125,12 @@ namespace GameDevTycoon.UI.Ingame
             _view.OnRecruitClicked
                 .Subscribe(_ =>
                 {
+                    foreach (var slider in _view.AllSliders)
+                    {
+                        slider.ResetSelection();
+                    }
+                    RefreshRecruitCost();
+
                     _view.ShowRecruit();
                     InitRecruitSliders();
                 })
@@ -253,6 +259,10 @@ namespace GameDevTycoon.UI.Ingame
                 slider.OnCountChanged
                     .Subscribe(_ => RefreshRecruitCost())
                     .AddTo(_sliderDisposables);
+
+                slider.OnSelectedChanged += RefreshRecruitCost;
+
+                _sliderDisposables.Add(Disposable.Create(()=> slider.OnSelectedChanged -= RefreshRecruitCost));
             }
 
             RefreshRecruitCost();
