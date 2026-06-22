@@ -1,4 +1,4 @@
-using Cysharp.Threading.Tasks;
+using GameDevTycoon.UI.Ingame;
 using R3;
 using System.Collections.Generic;
 using UnityEngine;
@@ -32,6 +32,10 @@ public class Company : MonoBehaviour
     public int dailyProfit;  // 데일리 캐시 (완료 프로젝트 합산)
     public int weeklyProfit; // 데일리캐시를 일주일동안 누적한 값 (UI 히스토리용)
     public int totalRevenue;  // 총 누적 매출 (게임 전체 히스토리용)
+
+    [Header("달 기준 경영현황")]
+    public ManagementStatusData curManagementStatus = new();
+    public ManagementStatusData prevManagementStatus = new();
 
     [Header("회사 업그레이드 데이터")]
     [SerializeField] public UpgradeData _upgradeData;
