@@ -30,6 +30,7 @@ public class DateTimeManager : MonoBehaviour
     private float playTime = 0f;
 
     public static Func<UniTask> OnDateChangedVisual;
+    public static Func<UniTask> OnTimeChangedVisual;
     public static Action OnDateUIChanged;
 
     #region 싱글톤 설정
@@ -129,8 +130,15 @@ public class DateTimeManager : MonoBehaviour
     {
         if (currentDay == DayOfWeek.Friday && currentTime == TimeOfDay.Day)
         {
-            await ProcessDateLogic();
-            OnDateUIChanged?.Invoke();
+            if (OnTimeChangedVisual != null)
+            {
+                await OnTimeChangedVisual.Invoke();
+            }
+            else
+            {
+                await ProcessDateLogic();
+                OnDateUIChanged?.Invoke();
+            }
         }
         else
         {
