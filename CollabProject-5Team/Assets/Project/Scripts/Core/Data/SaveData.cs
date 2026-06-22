@@ -33,6 +33,8 @@ public class SaveData
     public int    company_DailyProfit;
     public int    company_WeeklyProfit;
     public int    company_TotalRevenue;
+    public ManagementStatusData company_CurManagementStatus = new();
+    public ManagementStatusData company_PrevManagementStatus = new();
 
     // 완료된 프로젝트 목록
     public List<ProjectCompletedSaveData> completedProjectsData = new();
@@ -71,7 +73,7 @@ public class EmployeeSaveData
     public EmployeeMutableData trainingStartData;
 }
 
-[System.Serializable]
+[Serializable]
 public class CurrentProjectSaveData
 {
     // so 대신에 프로젝트 존재 여부와 규모를 확인
@@ -124,4 +126,56 @@ public class ProjectCompletedSaveData
 
     public List<int> weeklyGoldHistoryList;
     public bool isServiceOver;
+}
+
+[Serializable]
+public sealed class ManagementStatusData
+{
+    public int totalIncome;
+    public int gameSales;
+    public int otherIncome;
+    public int totalExpense;
+    public int laborCost;
+    public int devCost;
+    public int operatingCost;
+    public int marketingCost;
+    public int otherExpense;
+    public int operatingProfit;
+
+    public void Recalculate()
+    {
+        totalIncome = gameSales + otherIncome;
+        totalExpense = laborCost + devCost + operatingCost + marketingCost + otherExpense;
+        operatingProfit = totalIncome - totalExpense;
+    }
+
+    public void Clear()
+    {
+        totalIncome = 0;
+        gameSales = 0;
+        otherIncome = 0;
+        totalExpense = 0;
+        laborCost = 0;
+        devCost = 0;
+        operatingCost = 0;
+        marketingCost = 0;
+        otherExpense = 0;
+        operatingProfit = 0;
+    }
+
+    public ManagementStatusData Clone()
+    {
+        var clone = new ManagementStatusData
+        {
+            gameSales = gameSales,
+            otherIncome = otherIncome,
+            laborCost = laborCost,
+            devCost = devCost,
+            operatingCost = operatingCost,
+            marketingCost = marketingCost,
+            otherExpense = otherExpense
+        };
+        clone.Recalculate();
+        return clone;
+    }
 }

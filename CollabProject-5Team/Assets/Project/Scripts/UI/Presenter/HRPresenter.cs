@@ -406,8 +406,6 @@ namespace GameDevTycoon.UI.Ingame
             var detail = Instantiate(_applicantDetailPrefab, _view.ApplicantDetailContent);
             detail.GetComponent<IBindable<EmployeeImmutableData>>().Bind(applicant.so);
 
-            Debug.Log($"[상세보기] {applicant.so.Name} 데이터 바인딩 완료");
-
             //  HRView에 Hire Button
             _view.HireButton.onClick.RemoveAllListeners();
             _view.HireButton.onClick.AddListener(() =>
@@ -435,6 +433,9 @@ namespace GameDevTycoon.UI.Ingame
             _EmployeeManager.Instance.RegisterRecruitRequests(requests);
 
             Company.Instance.gold.Value -= cost;
+            Company.Instance.curManagementStatus.otherExpense += cost;
+            Company.Instance.curManagementStatus.Recalculate();
+
             _hudPresenter.RefreshHUD();
             foreach (var slider in _view.AllSliders)
                 slider.ResetSelection();
@@ -468,6 +469,8 @@ namespace GameDevTycoon.UI.Ingame
 
             // 금액 차감
             Company.Instance.gold.Value -= cost;
+            Company.Instance.curManagementStatus.laborCost += cost;
+            Company.Instance.curManagementStatus.Recalculate();
 
             _EmployeeManager.Instance.HireEmployee(applicant);
             _EmployeeManager.Instance.RemoveFromApplicants(applicant);
@@ -509,6 +512,9 @@ namespace GameDevTycoon.UI.Ingame
                 onConfirm: () =>
                 {
                     Company.Instance.gold.Value -= severancePay;
+                    Company.Instance.curManagementStatus.laborCost += severancePay;
+                    Company.Instance.curManagementStatus.Recalculate();
+
                     _EmployeeManager.Instance.FireEmployee(employee);
                     GameManager.Instance.RemoveNpcFromScene(employee);
                     _hudPresenter.RefreshHUD();

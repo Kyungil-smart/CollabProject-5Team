@@ -104,6 +104,9 @@ public class QuestObject : MonoBehaviour, IInteractable
         // 상호작용 상태 해제 - 안 하면 플레이어가 다시 움직이지 못함
         GameManager.Instance.player.CloseInteractionUI();
 
+        // 다중 오브젝트 퀘스트면 이 오브젝트와 같은 순서의 결과물을 즉시 활성화 (전체 완료 대기 없이 바로 전환)
+        QuestManager.Instance.ActivatePairedResult(gameObject.name);
+
         DailyQuest quest = QuestManager.Instance.curDailyQuest;
         ControlType effectiveType = QuestManager.Instance.EffectiveControlType;
         int effectiveTarget = QuestManager.Instance.EffectiveTargetCount;

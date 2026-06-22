@@ -163,6 +163,9 @@ public class _EmployeeManager : MonoBehaviour
             throw new InvalidOperationException($"{course.courseName} 교육 비용이 부족합니다. 필요 비용: {course.cost}G");
 
         Company.Instance.gold.Value -= course.cost;
+        Company.Instance.curManagementStatus.otherExpense += course.cost;
+        Company.Instance.curManagementStatus.Recalculate();
+
         haveEmployees.SetStatus(employee, EmployeeWorkStatus.InTraining);
         activeTrainings.Add(new EmployeeTrainingProgress(employee, course, DateTimeManager.Instance.currentWeek.Value));
 

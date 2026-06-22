@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using R3;
+using Cysharp.Threading.Tasks;
 
 public class QuestManager : MonoBehaviour
 {
@@ -15,7 +16,31 @@ public class QuestManager : MonoBehaviour
 
     public RectTransform QuestCanvas => questCanvas;
 
-    public void SetQuestObjectsRoot(Transform root) => questObjectsRoot = root;
+    public void SetQuestObjectsRoot(Transform root)
+    {
+        questObjectsRoot = root;
+        LogDuplicateQuestObjectNames();
+    }
+
+    // 같은 이름의 QuestObject가 2개 이상 있으면 경고. FindQuestObject는 이름으로 첫 번째 매치만 찾기 때문에
+    // 중복된 이름이 있으면 의도치 않은 오브젝트가 토글되거나, 다른 하나가 영원히 방치될 수 있음
+    private void LogDuplicateQuestObjectNames()
+    {
+        if (questObjectsRoot == null) return;
+
+        var nameCount = new Dictionary<string, int>();
+        foreach (QuestObject qo in questObjectsRoot.GetComponentsInChildren<QuestObject>(true))
+        {
+            nameCount.TryGetValue(qo.gameObject.name, out int count);
+            nameCount[qo.gameObject.name] = count + 1;
+        }
+
+        foreach (var pair in nameCount)
+        {
+            if (pair.Value > 1)
+                Debug.LogWarning($"[QM] 중복된 QuestObject 이름: '{pair.Key}' ({pair.Value}개) - questObjectsRoot 하위에서 이름 충돌");
+        }
+    }
 
     // 직전에 나온 퀘스트 기억 (다음 뽑기에서 제외 + 결과물 정리용)
     private QuestSO _lastPicked;
@@ -31,7 +56,7 @@ public class QuestManager : MonoBehaviour
     public ReactiveProperty<int> dailyQuestProgress = new(0);
 
     // 직군별 일일 퀘스트 클리어 누적 포인트 (금요일 밤 보고서 점수에 합산)
-    private readonly Dictionary<Role, int> _weeklyBonusPoints = new();
+    public Dictionary<Role, int> _weeklyBonusPoints = new();
 
     #region 싱글톤 설정
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
@@ -75,6 +100,21 @@ public class QuestManager : MonoBehaviour
         }
     }
 
+    // 새 하루 시작 전 상태 초기화. 디버그 스킵 등으로 퀘스트가 미완료 상태로 남아있으면
+    // OnDailyQuestChanged(End)를 안 거치고 넘어가므로 여기서 직접 활성 오브젝트를 정리해야 함
+    public void ResetForNewDay()
+    {
+        if (dailyQuestState.Value == QuestState.Playing && curDailyQuest != null)
+        {
+            if (_questPhase == 2)
+                SetObjectsActive(curDailyQuest.so.resultObjects, false);
+            else
+                SetObjectsActive(curDailyQuest.so.activeObjects, false);
+        }
+
+        dailyQuestState.Value = QuestState.Ready;
+    }
+
     // 일일 퀘스트 시작! (출근 시 호출)
     public void StartDailyQuest()
     {
@@ -89,6 +129,16 @@ public class QuestManager : MonoBehaviour
             Debug.LogWarning("[QM] dailyQuests가 비어있습니다.");
             return;
         }
+
+        StartDailyQuestAsync().Forget();
+    }
+
+    // GameManager가 맵 생성 후 SetQuestObjectsRoot를 호출하기 전에 StartDailyQuest가 불릴 수 있어서
+    // (게임 시작 직후 바로 업무 시작을 누르는 경우) questObjectsRoot가 준비될 때까지 대기 후 진행
+    private async UniTask StartDailyQuestAsync()
+    {
+        while (questObjectsRoot == null)
+            await UniTask.Yield();
 
         // 전날 결과물 정리 (resultObjects)
         if (_lastPicked != null)
@@ -109,6 +159,9 @@ public class QuestManager : MonoBehaviour
         curDailyQuest.Init(picked);
         dailyQuestProgress.Value = 0;
 
+        // activeObjects를 켜기 전에 먼저 꺼서 겹쳐 보이는 것을 방지
+        SetObjectsActive(picked.resultObjects, false);
+
         // 오늘의 활성 오브젝트 켜기
         SetObjectsActive(picked.activeObjects, true);
 
@@ -117,6 +170,28 @@ public class QuestManager : MonoBehaviour
 
         // 상태를 변경하면 Subscribe된 로직이 실행
         dailyQuestState.Value = QuestState.Playing;
+    }
+
+    // (전체 퀘스트가 끝나야 한꺼번에 바뀌는 게 아니라, 하나씩 완료할 때마다 바로바로 바뀌도록)
+    public void ActivatePairedResult(string completedObjectName)
+    {
+        if (curDailyQuest == null || _questPhase == 2) return;
+
+        string[] actives = curDailyQuest.so.activeObjects.Split(',');
+        string[] results = curDailyQuest.so.resultObjects.Split(',');
+
+        for (int i = 0; i < actives.Length; i++)
+        {
+            if (actives[i].Trim() != completedObjectName) continue;
+
+            if (i < results.Length)
+            {
+                string resultName = results[i].Trim();
+                if (resultName != "" && resultName != "None")
+                    SetObjectsActive(resultName, true);
+            }
+            return;
+        }
     }
 
     // 미니게임 입력에 따른 진행도 갱신 (Tap/Hold/Swipe 컨트롤러에서 호출)
