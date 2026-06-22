@@ -164,7 +164,9 @@ public class _EmployeeManager : MonoBehaviour
 
         Company.Instance.gold.Value -= course.cost;
         Company.Instance.curManagementStatus.otherExpense += course.cost;
+        Company.Instance.cumulativeManagementStatus.otherExpense += course.cost;
         Company.Instance.curManagementStatus.Recalculate();
+        Company.Instance.cumulativeManagementStatus.Recalculate();
 
         haveEmployees.SetStatus(employee, EmployeeWorkStatus.InTraining);
         activeTrainings.Add(new EmployeeTrainingProgress(employee, course, DateTimeManager.Instance.currentWeek.Value));

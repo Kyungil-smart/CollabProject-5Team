@@ -19,6 +19,8 @@ namespace GameDevTycoon.UI.Ingame
         [Header("프리팹")]
         [SerializeField] private RankingItemView _rankingItemPrefab;
 
+        private ManagementFilter _currentFilter = ManagementFilter.Monthly;
+
         // 현재 선택된 카드 인덱스 (1~3), 미선택 시 -1
         private int _selectedCardIndex = -1;
 
@@ -80,13 +82,12 @@ namespace GameDevTycoon.UI.Ingame
 
         private void BindManagementStatus()
         {
-            _view.SetManagementFilterMonthlyOnly();
-
             // OnValueChangedAsObservable 즉시 발화 특성으로 인한 NullReference 방지
             _view.OnFilterChanged
                 .Skip(1)
-                .Subscribe(_ =>
+                .Subscribe(index =>
                 {
+                    _currentFilter = index > 0 ? ManagementFilter.Cumulative : ManagementFilter.Monthly;
                     RefreshManagementStatus();
                 })
                 .AddTo(this);
@@ -156,19 +157,28 @@ namespace GameDevTycoon.UI.Ingame
         private void RefreshManagementStatus()
         {
             string periodText = BuildPeriodLabel();
-            _view.SetManagementStatusColumns(ManagementFilter.Monthly, periodText);
+            _view.SetManagementStatusColumns(_currentFilter, periodText);
 
             if (Company.Instance.curManagementStatus == null)
                 Company.Instance.curManagementStatus = new ManagementStatusData();
             if (Company.Instance.prevManagementStatus == null)
                 Company.Instance.prevManagementStatus = new ManagementStatusData();
+            if (Company.Instance.cumulativeManagementStatus == null)
+                Company.Instance.cumulativeManagementStatus = new ManagementStatusData();
 
             Company.Instance.curManagementStatus.Recalculate();
             Company.Instance.prevManagementStatus.Recalculate();
+            Company.Instance.cumulativeManagementStatus.Recalculate();
+
+            ManagementStatusData current = _currentFilter == ManagementFilter.Cumulative
+                ? Company.Instance.cumulativeManagementStatus
+                : Company.Instance.curManagementStatus;
+
+            ManagementStatusData previous = _currentFilter == ManagementFilter.Cumulative ? null : Company.Instance.prevManagementStatus;
 
             _view.SetManagementStatusValues(
-                Company.Instance.curManagementStatus,
-                Company.Instance.prevManagementStatus);
+                current,
+                previous);
         }
 
         private void RefreshExpansionCards()

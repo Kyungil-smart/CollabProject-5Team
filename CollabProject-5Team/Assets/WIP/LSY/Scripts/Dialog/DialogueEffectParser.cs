@@ -47,11 +47,18 @@ namespace Dialogue
                     {
                         Company.Instance.gold.Value += value;
                         if (value >= 0)
+                        {
                             Company.Instance.curManagementStatus.otherIncome += value;
+                            Company.Instance.cumulativeManagementStatus.otherIncome += value;
+                        }
                         else
+                        {
                             Company.Instance.curManagementStatus.otherExpense += -value;
+                            Company.Instance.cumulativeManagementStatus.otherExpense += -value;
+                        }
 
                         Company.Instance.curManagementStatus.Recalculate();
+                        Company.Instance.cumulativeManagementStatus.Recalculate();
                     }
                     break;
                 default:

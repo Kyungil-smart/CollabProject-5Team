@@ -35,6 +35,7 @@ public class SaveData
     public int    company_TotalRevenue;
     public ManagementStatusData company_CurManagementStatus = new();
     public ManagementStatusData company_PrevManagementStatus = new();
+    public ManagementStatusData company_CumulativeManagementStatus = new();
 
     // 완료된 프로젝트 목록
     public List<ProjectCompletedSaveData> completedProjectsData = new();
