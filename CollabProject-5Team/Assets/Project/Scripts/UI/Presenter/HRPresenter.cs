@@ -406,8 +406,6 @@ namespace GameDevTycoon.UI.Ingame
             var detail = Instantiate(_applicantDetailPrefab, _view.ApplicantDetailContent);
             detail.GetComponent<IBindable<EmployeeImmutableData>>().Bind(applicant.so);
 
-            Debug.Log($"[상세보기] {applicant.so.Name} 데이터 바인딩 완료");
-
             //  HRView에 Hire Button
             _view.HireButton.onClick.RemoveAllListeners();
             _view.HireButton.onClick.AddListener(() =>
