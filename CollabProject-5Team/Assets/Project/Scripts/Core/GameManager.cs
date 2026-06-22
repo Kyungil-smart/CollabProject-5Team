@@ -120,14 +120,16 @@ public class GameManager : MonoBehaviour
         foreach (var employee in _activeEmployees)
         {
             var npc = employee.GetComponent<NPCController>();
+            var agent = npc. GetComponent<NavMeshAgent>();
+
+            if (agent != null) agent.enabled = false;
+
             npc.TargetDesk = null;
             npc.ChangeState(new NPCIdle());
         }
 
         // 현재 맵의 인덱스가 맵의 개수와 같거나 크면 리턴
         if (_currentOfficeIndex + 1 >= _offices.Count) return;
-
-        LeaveWorkNPCs();
 
         await UniTask.Yield();
 
@@ -182,6 +184,9 @@ public class GameManager : MonoBehaviour
             var npc = employee.GetComponent<NPCController>();
             npc.transform.position = _currentNpcSpawnPoint.position;
             npc.transform.rotation = Quaternion.identity;
+
+            var agent = npc.GetComponent<NavMeshAgent>();
+            if (agent != null) agent.enabled = true;
 
             npc.ChangeState(new NPCIdle());
         }
