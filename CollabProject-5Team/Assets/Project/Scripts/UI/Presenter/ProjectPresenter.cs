@@ -512,8 +512,13 @@ namespace GameDevTycoon.UI.Ingame
 
         private void OnStaffInfoClicked(Employee employee)
         {
+            foreach (Transform child in _view.StaffDetailContent)
+                Destroy(child.gameObject);
+
+            var go = Instantiate(_staffDetailPrefab, _view.StaffDetailContent);
+            go.GetComponent<EmployeeDetailView>().Bind(employee);
+
             _view.ShowStaffDetailPopup();
-            // [TODO: StaffDetailContent에 직원 상세 정보 바인딩]
         }
 
         private void OnServiceStopClicked()
