@@ -19,8 +19,6 @@ namespace GameDevTycoon.UI.Ingame
         [Header("프리팹")]
         [SerializeField] private RankingItemView _rankingItemPrefab;
 
-        private ManagementFilter _currentFilter = ManagementFilter.Monthly;
-
         // 현재 선택된 카드 인덱스 (1~3), 미선택 시 -1
         private int _selectedCardIndex = -1;
 
@@ -82,17 +80,13 @@ namespace GameDevTycoon.UI.Ingame
 
         private void BindManagementStatus()
         {
+            _view.SetManagementFilterMonthlyOnly();
+
             // OnValueChangedAsObservable 즉시 발화 특성으로 인한 NullReference 방지
             _view.OnFilterChanged
                 .Skip(1)
-                .Subscribe(index =>
+                .Subscribe(_ =>
                 {
-                    _currentFilter = index switch
-                    {
-                        1 => ManagementFilter.Annual,
-                        2 => ManagementFilter.Cumulative,
-                        _ => ManagementFilter.Monthly,
-                    };
                     RefreshManagementStatus();
                 })
                 .AddTo(this);
@@ -161,16 +155,20 @@ namespace GameDevTycoon.UI.Ingame
 
         private void RefreshManagementStatus()
         {
-            // [TODO: 경영 기록 Manager 연결 후 실제 기간별 수치 바인딩]
             string periodText = BuildPeriodLabel();
-            _view.SetManagementStatusColumns(_currentFilter, periodText);
+            _view.SetManagementStatusColumns(ManagementFilter.Monthly, periodText);
 
-            var current = new ManagementStatusData();
-            ManagementStatusData previous = _currentFilter == ManagementFilter.Cumulative
-                ? null
-                : new ManagementStatusData();
+            if (Company.Instance.curManagementStatus == null)
+                Company.Instance.curManagementStatus = new ManagementStatusData();
+            if (Company.Instance.prevManagementStatus == null)
+                Company.Instance.prevManagementStatus = new ManagementStatusData();
 
-            _view.SetManagementStatusValues(current, previous);
+            Company.Instance.curManagementStatus.Recalculate();
+            Company.Instance.prevManagementStatus.Recalculate();
+
+            _view.SetManagementStatusValues(
+                Company.Instance.curManagementStatus,
+                Company.Instance.prevManagementStatus);
         }
 
         private void RefreshExpansionCards()
@@ -276,9 +274,12 @@ namespace GameDevTycoon.UI.Ingame
 
         private static string BuildPeriodLabel()
         {
-            // [TODO: DateTimeManager 날짜 계산 API 확정 후 실제 기간 문자열 연결]
-            int week = DateTimeManager.Instance.currentWeek.Value;
-            return $"{week}주차 기준";
+            int week = Mathf.Max(1, DateTimeManager.Instance.currentWeek.Value);
+            int zeroBasedWeek = week - 1;
+            int year = zeroBasedWeek / 48 + 1;
+            int month = zeroBasedWeek % 48 / 4 + 1;
+            int weekOfMonth = zeroBasedWeek % 4 + 1;
+            return $"{year:D2}년 {month:D2}월 {weekOfMonth}주차 기준";
         }
 
         private static int GetEmployeeCount()
