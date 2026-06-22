@@ -57,9 +57,9 @@ public sealed class DebugUIPresenter : MonoBehaviour
                     Role role = (Role)Random.Range(0, 3);
 
                     QuestManager.Instance._weeklyBonusPoints.TryGetValue(role, out int currentPoint);
-                    QuestManager.Instance._weeklyBonusPoints[role] = currentPoint + 1;
+                    QuestManager.Instance._weeklyBonusPoints[role] = currentPoint + 5;
 
-                    Debug.Log($"[Debug] 퀘스트 완료 점수 +1: {role} ({currentPoint} -> {currentPoint + 1})");
+                    Debug.Log($"[Debug] 퀘스트 완료 점수 +5: {role} ({currentPoint} -> {currentPoint + 1})");
                 }
             })
             .AddTo(this);
