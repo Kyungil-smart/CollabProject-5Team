@@ -18,7 +18,7 @@ public class _EmployeeManager : MonoBehaviour
     public List<EmployeeTrainingCourse> trainingCourses = new();
 
     [Header("이번 주 지원자 리스트")]
-    public List<Employee> currentApplicants = new();    // 현재 지원자
+    public List<RecruitRequest> currentApplicants = new();    // 현재 모집 요청 및 지원자
 
     public EmployeeList employeeList;
     public HaveEmployees haveEmployees;
@@ -56,11 +56,21 @@ public class _EmployeeManager : MonoBehaviour
     #region 고용/퇴사
     public Employee HireEmployee(int id)
     {
-        Employee employee = employeeList.leftEmployees[id].GetComponent<Employee>();
+        if (!employeeList.leftEmployees.TryGetValue(id, out GameObject prefab))
+        {
+            Debug.LogWarning($"[EmployeeManager] {id}번 직원 프리팹을 찾을 수 없습니다.");
+            return null;
+        }
+
+        Employee employee = Instantiate(prefab, transform).GetComponent<Employee>();
+        employee.gameObject.SetActive(false);
         return HireEmployee(employee);
     }
     public Employee HireEmployee(Employee employee) // Employee로 고용하는 경우 지원
     {
+        if (!employee.gameObject.scene.IsValid())
+            return HireEmployee(employee.so.id);
+
         employee.Init();
         haveEmployees.AddEmployee(employee);
         employeeList.DeleteEmployee(employee.so.id);
@@ -69,7 +79,7 @@ public class _EmployeeManager : MonoBehaviour
 
     public void FireEmployee(Employee employee)
     {
-        if (Company.Instance.curProject != null && Company.Instance.curProject.GetAllEmployees().Contains(employee))
+        if (Company.Instance.activeProjectCount.Value > 0 && Company.Instance.curProject.GetAllEmployees().Contains(employee))
             Company.Instance.curProject.RemoveEmployee(employee);
 
         RemoveTraining(employee);
@@ -78,31 +88,49 @@ public class _EmployeeManager : MonoBehaviour
         //Destroy(employee.gameObject);
     }
 
-    // 추가: 월요일이 시작 될 때, 채용 요청에 맞춰 새로운 지원자 리스트 생성
-    public void GenerateWeeklyAppicants(List<RecruitRequest> requests)
+    // 직원 채용 요청 등록
+    public void RegisterRecruitRequests(List<RecruitRequest> requests)
     {
-        // 저번 주 지원자 초기화
         currentApplicants.Clear();
-
-        // 요청 리스트에 있는 직군 추출
-        var targetRoles = requests.Select(r => r.TargetRole).ToHashSet();
-
-        // 요청한 직군의 지원자를 리스트에 추가
-        var applicants = employeeList.leftEmployees.Values
-            .Select(go => go.GetComponent<Employee>())
-            .Where(e => targetRoles.Contains(e.so.role))
-            .ToList();
-
-        currentApplicants.AddRange(applicants);
+        currentApplicants.AddRange(requests);
     }
 
-    // 추가: 고용되면 지원자 리스트에서 즉시 사라짐
-    public void RemoveFromApplicants(int employeeId)
+    // 현재 지원자 리스트를 반환
+    public List<Employee> GetCurrentApplicantEmployees()
     {
-        var applicant = currentApplicants.FirstOrDefault(e => e.so.id == employeeId);
-        if (applicant != null)
+        return currentApplicants
+            .SelectMany(request => request.Applicants)
+            .ToList();
+    }
+
+    // 금요일 밤에 채용 요청 수만큼 지원자를 확정한다.
+    public void GenerateWeeklyApplicants()
+    {
+        foreach (RecruitRequest request in currentApplicants)
         {
-            currentApplicants.Remove(applicant);
+            request.Applicants.Clear();
+
+            var applicants = employeeList.leftEmployees.Values
+                .Select(go => go.GetComponent<Employee>())
+                .Where(e => e.so.role == request.TargetRole)
+                .OrderBy(_ => UnityEngine.Random.value)
+                .Take(request.Count)
+                .ToList();
+
+            request.Applicants.AddRange(applicants);
+        }
+    }
+
+    public void ClearCurrentApplicants()
+    {
+        currentApplicants.Clear();
+    }
+
+    public void RemoveFromApplicants(Employee applicant)
+    {
+        foreach (RecruitRequest request in currentApplicants)
+        {
+            request.Applicants.Remove(applicant);
         }
     }
     #endregion
@@ -112,6 +140,7 @@ public class _EmployeeManager : MonoBehaviour
     {
         haveEmployees.SetStatus(employee, EmployeeWorkStatus.InProject);
     }
+
     public void ReleaseProjectEmployees(IEnumerable<Employee> employees)
     {
         foreach (var employee in employees)
@@ -124,6 +153,7 @@ public class _EmployeeManager : MonoBehaviour
     {
         StartTraining(employee, trainingCourses[courseIndex]);
     }
+
     public void StartTraining(Employee employee, EmployeeTrainingCourse course)
     {
         if (employee.WorkStatus != EmployeeWorkStatus.Standby)
@@ -224,7 +254,8 @@ public class _EmployeeManager : MonoBehaviour
                 preLoyalty = emp.MutableData.preLoyalty,
                 preFatigue = emp.MutableData.preFatigue,
 
-                workStatus = emp.WorkStatus
+                workStatus = emp.WorkStatus,
+                hasTalkedThisWeek = emp.hasTalkedThisWeek
             };
 
             if (emp.WorkStatus == EmployeeWorkStatus.InTraining)
@@ -246,12 +277,20 @@ public class _EmployeeManager : MonoBehaviour
     public void ImportEmployeeData(SaveData data)
     {
         activeTrainings.Clear();
+        foreach (Employee emp in haveEmployees.haveEmployeeList)
+        {
+            if (emp != null)
+                Destroy(emp.gameObject);
+        }
+
         haveEmployees.Clear();
         employeeList = new EmployeeList(allEmployeeObj);
 
         foreach (EmployeeSaveData empSave in data.savedEmployees)
         {
             Employee emp = HireEmployee(empSave.employeeId);
+            if (emp == null) continue;
+
             emp.MutableData = new EmployeeMutableData
             {
                 ability = empSave.ability,
@@ -268,6 +307,7 @@ public class _EmployeeManager : MonoBehaviour
                 preFatigue = empSave.preFatigue
             };
 
+            emp.hasTalkedThisWeek = empSave.hasTalkedThisWeek;
             RestoreEmployeeStatus(emp, empSave);
         }
     }

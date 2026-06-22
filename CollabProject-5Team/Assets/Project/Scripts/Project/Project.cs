@@ -1,5 +1,4 @@
 using R3;
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -55,7 +54,7 @@ public class Project : MonoBehaviour
     {
         > 90f => 'S',
         > 75f => 'A',
-        > 60f => 'B',
+        > 50f => 'B',
         _ => 'C',
     };
 
@@ -130,11 +129,9 @@ public class Project : MonoBehaviour
     }
 
     // 날짜가 하루 진행될 때마다 호출되는 메서드
-    public void ProgressDay()
+    public void Progress()
     {
         if (isFinished.Value) return;
-
-        Debug.Log($"{userNamed}: [Day {day}] {DateTimeManager.GetDateString(day)}종료"); // 날짜 로그 표시중
         day++;
     }
 
@@ -162,8 +159,6 @@ public class Project : MonoBehaviour
         ReportPolicy.GenerateReportForRole(this, plannings);
         ReportPolicy.GenerateReportForRole(this, programmer);
         ReportPolicy.GenerateReportForRole(this, arts);
-
-        Debug.Log($"[{userNamed.Value}] 보고서 생성 완료: {pendingReports.Count}건");
     }
 
     // UI에서 파트당 1개 선택 시 호출

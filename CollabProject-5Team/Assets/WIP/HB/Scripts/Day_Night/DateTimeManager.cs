@@ -27,8 +27,6 @@ public class DateTimeManager : MonoBehaviour
 
     public static Action OnReportEnd;
 
-    public List<RecruitRequest> currentRecruitRequests = new();
-
     private float playTime = 0f;
 
     public static Func<UniTask> OnDateChangedVisual;
@@ -43,11 +41,6 @@ public class DateTimeManager : MonoBehaviour
         if (Instance != null && Instance != this) { Destroy(gameObject); return; }
         Instance = this;
     #endregion
-    }
-
-    private void Start()
-    {
-        ResetDayStatus();
     }
 
     void Update()
@@ -69,17 +62,10 @@ public class DateTimeManager : MonoBehaviour
     private void ResetDayStatus()
     {
         isWorkCompleted = false;
+        talkedNpcsToday.Clear();
 
         // 상태만 Ready로 초기화 - 실제 시작은 WorkStart 버튼 클릭 시 HUDPresenter에서 호출
-        if (QuestManager.Instance != null)
-            QuestManager.Instance.dailyQuestState.Value = QuestState.Ready;
-    }
-    /// <summary>
-    /// 새로운 주가 시작될 때 리셋하는 함수
-    /// </summary>
-    private void ResetWeekStatus()
-    {
-        Company.Instance.ResetTalkedEmployees();
+        QuestManager.Instance.dailyQuestState.Value = QuestState.Ready;
     }
 
     /// <summary>
@@ -169,12 +155,9 @@ public class DateTimeManager : MonoBehaviour
             GameManager.Instance.LeaveWorkNPCs();
             currentTime = TimeOfDay.Night;
 
-            // 방치 패널티 적용
-            Company.Instance.AfkPenaltyApply();
             OnNightLoading?.Invoke();// 밤
 
-            ResetWeekStatus();
-            ProgressDay();
+            Progress();
         }
 
         // 금요일 밤에 퇴근하면 다음 주 월요일 낮으로 전환
@@ -204,17 +187,17 @@ public class DateTimeManager : MonoBehaviour
             // 낮으로
             currentTime = TimeOfDay.Day;
 
-            ProgressDay();
+            Progress();
             ResetDayStatus();
             OnDay?.Invoke();
         }
     }
 
     // 내부적으로 영업일을 진행시킴
-    public void ProgressDay()
+    public void Progress()
     {
-        foreach (var project in Company.Instance.projects)
-            project.ProgressDay();
+        if (Company.Instance.activeProjectCount.Value > 0)
+            Company.Instance.curProject.Progress();
 
         // 완료 프로젝트 일일 수익 정산
         Company.Instance.TickDailyCompletedProjects();
@@ -233,14 +216,7 @@ public class DateTimeManager : MonoBehaviour
         if (Company.Instance.curProject != null)
             Company.Instance.curProject.ProgressNight();
 
-        // 채용 요청이 있다면 EmployeeManager에게 전달
-        if (currentRecruitRequests != null && currentRecruitRequests.Count > 0)
-        {
-            _EmployeeManager.Instance.GenerateWeeklyAppicants(currentRecruitRequests);
-
-            // 리스트 초기화
-            currentRecruitRequests.Clear();
-        }
+        _EmployeeManager.Instance.GenerateWeeklyApplicants();
         OnNight?.Invoke();
     }
 
@@ -297,7 +273,6 @@ public class DateTimeManager : MonoBehaviour
         data.currentTime     = this.currentTime;
         data.day             = this.day.Value;
         data.isWorkCompleted = this.isWorkCompleted;
-        data.talkedNpcsToday = new List<string>(this.talkedNpcsToday);
         data.playTime        = this.playTime;
     }
 
@@ -310,7 +285,7 @@ public class DateTimeManager : MonoBehaviour
         this.currentTime       = data.currentTime;
         this.day.Value         = data.day;
         this.isWorkCompleted   = data.isWorkCompleted;
-        this.talkedNpcsToday   = new HashSet<string>(data.talkedNpcsToday);
+        this.talkedNpcsToday.Clear();
         this.playTime          = data.playTime;
     }
 }

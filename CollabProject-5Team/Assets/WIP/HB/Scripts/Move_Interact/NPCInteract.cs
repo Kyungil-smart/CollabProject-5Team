@@ -18,7 +18,6 @@ public class NPCInteract : MonoBehaviour, IInteractable
     private void Awake()
     {
         emp = GetComponent<Employee>();
-        emp.Init();
 
         anim = GetComponent<Animator>();
     }

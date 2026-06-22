@@ -50,8 +50,6 @@ public class HUDBinder : MonoBehaviour, IBindable<DateTimeManager>
 
         DateTimeManager.OnDay += SwitchToDay;
         DateTimeManager.OnNightLoading += SwitchToNight;
-
-        SwitchToDay(); // 씬 시작 시 낮 상태로 초기화 (OnGameSceneLoad?)
     }
 
     private void OnDestroy()

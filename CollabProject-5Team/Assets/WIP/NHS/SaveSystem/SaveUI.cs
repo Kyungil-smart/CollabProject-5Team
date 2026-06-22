@@ -1,5 +1,3 @@
-using System.Linq;
-using System.Threading.Tasks;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -24,9 +22,10 @@ public class SaveUI : MonoBehaviour
     {
         for (int i = 0; i < slotUIs.Length; i++)
         {
-            slotUIs[i].saveButton.onClick.AddListener(() =>
+            int slotNumber = i;
+            slotUIs[slotNumber].saveButton.onClick.AddListener(() =>
             {
-                SaveLoadSystem.Instance.SaveGame(i);
+                SaveLoadSystem.Instance.SaveGame(slotNumber);
                 RefreshSaveSlots();
             });
         }

@@ -24,6 +24,7 @@ namespace GameDevTycoon.UI.Ingame
             DateTimeManager.OnDay += Show;
             DateTimeManager.OnWorkCompleted += OnWorkCompleted;
             DateTimeManager.OnNightLoading += Hide;
+            DateTimeManager.OnReportEnd += Hide;
         }
 
         private void OnDestroy()
@@ -31,6 +32,7 @@ namespace GameDevTycoon.UI.Ingame
             DateTimeManager.OnDay -= Show;
             DateTimeManager.OnWorkCompleted -= OnWorkCompleted;
             DateTimeManager.OnNightLoading -= Hide;
+            DateTimeManager.OnReportEnd -= Hide;
         }
 
         private void BindData()

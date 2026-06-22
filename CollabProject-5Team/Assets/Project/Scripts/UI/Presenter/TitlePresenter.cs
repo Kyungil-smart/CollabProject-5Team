@@ -24,7 +24,7 @@ namespace GameDevTycoon.UI.Title
         private void BindButtons()
         {
             _view.OnStartClicked
-                .Subscribe(_ => LoadGameSceneAsync().Forget())
+                .Subscribe(_ => LoadNewGameSceneAsync().Forget())
                 .AddTo(this);
 
             _view.OnLoadClicked
@@ -40,13 +40,14 @@ namespace GameDevTycoon.UI.Title
                 .AddTo(this);
         }
 
-        private async UniTaskVoid LoadGameSceneAsync()
+        private async UniTaskVoid LoadNewGameSceneAsync()
         {
             // [TODO: 회사 이름 설정 팝업 → 페이드아웃 → 씬 전환 순서로 교체]
-            await SceneLoader.Instance.LoadAsync(
-                SceneName.Game,
-                this.GetCancellationTokenOnDestroy()
-            );
+
+            // 새 게임은 보내진 로드 슬롯 없음
+            SaveLoadSystem.Instance.pendingLoadSlot = null;
+
+            await SceneLoader.Instance.LoadAsync(SceneName.Game);
         }
     }
 }

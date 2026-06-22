@@ -23,6 +23,10 @@ public class NextDayImagePresenter : MonoBehaviour
     [SerializeField] private GameObject _clockGroupObj; 
     [SerializeField] private Image      _clockFillImage;     
 
+    [Header("시간 조절")]
+    [SerializeField, Min(0f)] float fadeDurationSeconds = 0.5f;
+    [SerializeField, Min(0f)] float visibleDurationSeconds = 1f;
+
     private void OnEnable()
     {
         DateTimeManager.OnDateChangedVisual = PlayDateDirectionAsync;
@@ -52,6 +56,7 @@ public class NextDayImagePresenter : MonoBehaviour
     {
         HideAllGroups();
 
+        float duration = Mathf.Max(0f, fadeDurationSeconds);
         float elapsed = 0f;
 
         if (visualMode == DirectionMode.FadeInOut)
@@ -88,7 +93,7 @@ public class NextDayImagePresenter : MonoBehaviour
             DateTimeManager.OnDateUIChanged?.Invoke();
         }
 
-        await UniTask.Delay(TimeSpan.FromSeconds(1f));
+        await UniTask.Delay(TimeSpan.FromSeconds(Mathf.Max(0f, visibleDurationSeconds)));
 
         elapsed = 0f;
 

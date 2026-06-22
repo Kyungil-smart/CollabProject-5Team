@@ -45,9 +45,4 @@ public class UpgradeData : ScriptableObject
     {
         return _datas.Find(x => x.Level == level);
     }
-
-    public OfficeUpgradeData GetNextData(int currentLevel)
-    {
-        return GetData(currentLevel + 1);
-    }
 }
