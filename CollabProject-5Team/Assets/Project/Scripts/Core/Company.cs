@@ -1,4 +1,3 @@
-using GameDevTycoon.UI.Ingame;
 using R3;
 using System.Collections.Generic;
 using UnityEngine;
@@ -91,6 +90,9 @@ public class Company : MonoBehaviour
     public void StartNewProject(Project project)
     {
         gold.Value -= project.RequiredCost;
+        curManagementStatus.devCost += project.RequiredCost;
+        curManagementStatus.Recalculate();
+
         QuestManager.Instance.ResetWeeklyBonus();
 
         if (!projects.Contains(project))
@@ -198,6 +200,8 @@ public class Company : MonoBehaviour
             p.weeklySales += p.dailySales;                // 주간 판매량 누적
             p.weeklyGoldAccum += p.dailyGold;              // 주간 매출 누적
             gold.Value += p.dailyGold;                      // 순수익 증가
+            curManagementStatus.gameSales += p.dailyGold;
+            curManagementStatus.Recalculate();
             p.RetentionFactor -= PerkPolicy.RETENTION_DECAY; // 유지력 감소
         }
     }
@@ -222,6 +226,8 @@ public class Company : MonoBehaviour
 
             // 유지비 차감
             gold.Value -= p.dailyCost;
+            curManagementStatus.operatingCost += p.dailyCost;
+            curManagementStatus.Recalculate();
 
             // 평판: 이번 주 판매 100당 +1
             reputation += PerkPolicy.CalcReputationGainFromSales(p.weeklySales);
@@ -259,6 +265,9 @@ public class Company : MonoBehaviour
         foreach (var e in _EmployeeManager.Instance.haveEmployees.haveEmployeeList)
         {
             gold.Value -= e.so.weekSalary;
+            curManagementStatus.laborCost += e.so.weekSalary;
+            curManagementStatus.Recalculate();
+
             if (e.WorkStatus != EmployeeWorkStatus.InProject)
                 continue; // 프로젝트 중인 직원만 능력치 변화
             e.AddAbilityDelta(PerkPolicy.CalcWeeklyAbilityDelta(e.MutableData.loyalty));
@@ -286,6 +295,8 @@ public class Company : MonoBehaviour
 
         // 재화 차감
         gold.Value -= data.GoldCost;
+        curManagementStatus.otherExpense += data.GoldCost;
+        curManagementStatus.Recalculate();
 
         // 스탯 추가 (현재 레벨업 대상 보상 스탯 반영)
         reputation += data.ReputationBonus;
@@ -298,7 +309,27 @@ public class Company : MonoBehaviour
 
         GameManager.Instance.isUpgradeReserved = true;
     }
-#endregion
+
+    public void TickWeeklyOfficeCost()
+    {
+        var data = _upgradeData.GetData(level);
+        if (data == null) return;
+
+        gold.Value -= data.maintainCost;
+        curManagementStatus.operatingCost += data.maintainCost;
+        curManagementStatus.Recalculate();
+    }
+
+    public void CloseManagementMonth()
+    {
+        if (curManagementStatus == null)
+            curManagementStatus = new ManagementStatusData();
+
+        curManagementStatus.Recalculate();
+        prevManagementStatus = curManagementStatus.Clone();
+        curManagementStatus.Clear();
+    }
+    #endregion
 
     #region 세이브/로드
     public void ExportActiveProjectData(SaveData data)
@@ -358,6 +389,16 @@ public class Company : MonoBehaviour
         data.company_WeeklyProfit = this.weeklyProfit;
         data.company_TotalRevenue = this.totalRevenue;
 
+        if (curManagementStatus == null)
+            curManagementStatus = new ManagementStatusData();
+        if (prevManagementStatus == null)
+            prevManagementStatus = new ManagementStatusData();
+
+        curManagementStatus.Recalculate();
+        prevManagementStatus.Recalculate();
+        data.company_CurManagementStatus = this.curManagementStatus.Clone();
+        data.company_PrevManagementStatus = this.prevManagementStatus.Clone();
+
         data.completedProjectsData.Clear();
 
         foreach (var p in completedProjects)
@@ -406,6 +447,14 @@ public class Company : MonoBehaviour
         this.dailyProfit  = data.company_DailyProfit;
         this.weeklyProfit = data.company_WeeklyProfit;
         this.totalRevenue = data.company_TotalRevenue;
+
+        this.curManagementStatus = data.company_CurManagementStatus != null
+            ? data.company_CurManagementStatus.Clone()
+            : new ManagementStatusData();
+
+        this.prevManagementStatus = data.company_PrevManagementStatus != null
+            ? data.company_PrevManagementStatus.Clone()
+            : new ManagementStatusData();
 
         completedProjects.Clear();
         hasPendingCompletedProject = false;

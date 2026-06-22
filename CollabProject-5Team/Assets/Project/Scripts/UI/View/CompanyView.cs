@@ -181,6 +181,12 @@ namespace GameDevTycoon.UI.Ingame
             _previousColumnHeader.text = filter == ManagementFilter.Monthly ? "지난 달" : "지난 해";
         }
 
+        public void SetManagementFilterMonthlyOnly()
+        {
+            _filterDropdown.SetValueWithoutNotify(0);
+            _filterDropdown.interactable = false;
+        }
+
         public void SetManagementStatusValues(ManagementStatusData current, ManagementStatusData previous)
         {
             SetIncomeRow(_totalIncomeCurrentLabel, _totalIncomePreviousLabel, current.totalIncome, previous?.totalIncome, isBold: true);
@@ -315,17 +321,4 @@ namespace GameDevTycoon.UI.Ingame
         Cumulative
     }
 
-    public sealed class ManagementStatusData
-    {
-        public int totalIncome;
-        public int gameSales;
-        public int otherIncome;
-        public int totalExpense;
-        public int laborCost;
-        public int devCost;
-        public int operatingCost;
-        public int marketingCost;
-        public int otherExpense;
-        public int operatingProfit;
-    }
 }
