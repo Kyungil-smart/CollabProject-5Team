@@ -184,7 +184,6 @@ public class Company : MonoBehaviour
             cumulativeManagementStatus.gameSales += p.dailyGold;
             curManagementStatus.Recalculate();
             cumulativeManagementStatus.Recalculate();
-            p.RetentionFactor -= PerkPolicy.RETENTION_DECAY; // 유지력 감소
         }
     }
 
@@ -196,14 +195,20 @@ public class Company : MonoBehaviour
         {
             if (p.isServiceOver) continue;
 
-            // 이번 주 수치를 지난 주로 백업
+            int previousWeekGold = 0;
+            foreach (int weekGold in p.weeklyGoldHistory)
+            {
+                previousWeekGold = weekGold;
+            }
+
+            // UI 비교용 지난 주 수치 보관
             p.prevWeekUsers = p.users;
-            p.prevWeekGold = p.weeklyGoldAccum;
+            p.prevWeekGold = previousWeekGold;
 
             // 히스토리에 이번 주 누적 매출 push
             p.QueueWeeklyGold(p.weeklyGoldAccum);
 
-            // 유저수 재계산 (이탈자 반영)
+            // 이번 주 유저수 확정 (이탈자 반영)
             p.users = PerkPolicy.CalcUsers(p.scale, p.qualityScore, p.prevWeekUsers);
 
             // 유지비 차감
@@ -216,10 +221,11 @@ public class Company : MonoBehaviour
             // 평판: 이번 주 판매 100당 +1
             reputation += PerkPolicy.CalcReputationGainFromSales(p.weeklySales);
             // 누적매출 증가
-            totalRevenue += p.prevWeekGold;
+            totalRevenue += p.weeklyGoldAccum;
 
             p.weeklySales = 0;
             p.weeklyGoldAccum = 0;
+            p.RetentionFactor -= PerkPolicy.RETENTION_DECAY; // 유지력 주간 감소
         }
 
         // 적자 패널티

@@ -14,6 +14,7 @@ namespace GameDevTycoon.UI.Ingame
     public sealed class ProjectView : MonoBehaviour
     {
         private const string RevenueGraphLinePrefix = "RevenueLine_";
+        private const int RevenueGraphSlotCount = 4;
 
         [Header("Popup")]
         [SerializeField] private GameObject _projectPopup;
@@ -324,9 +325,50 @@ namespace GameDevTycoon.UI.Ingame
 
         public void SetStatusValue(string status) => _statusValue.text = status;
         public void SetUserCountValue(string value, bool isUp) => SetColoredValue(_userCountValue, value, isUp);
+        public void SetUserCountValue(string value, bool isUp, bool highlight)
+        {
+            if (highlight)
+            {
+                SetColoredValue(_userCountValue, value, isUp);
+                return;
+            }
+
+            SetPlainValue(_userCountValue, value);
+        }
+
         public void SetSalesValue(string value, bool isUp) => SetColoredValue(_salesValue, value, isUp);
+        public void SetSalesValue(string value, bool isUp, bool highlight)
+        {
+            if (highlight)
+            {
+                SetColoredValue(_salesValue, value, isUp);
+                return;
+            }
+
+            SetPlainValue(_salesValue, value);
+        }
+
         public void SetMaintenanceValue(string value) => _maintenanceValue.text = value;
         public void SetProfitValue(string value, bool isUp) => SetColoredValue(_profitValue, value, isUp);
+        public void SetProfitValue(string value, bool isUp, bool highlight)
+        {
+            if (highlight)
+            {
+                SetColoredValue(_profitValue, value, isUp);
+                return;
+            }
+
+            SetPlainValue(_profitValue, value);
+        }
+
+        public void SetOperationPendingValues()
+        {
+            SetPlainValue(_userCountValue, "집계 전");
+            SetPlainValue(_salesValue, "집계 전");
+            _maintenanceValue.text = "집계 전";
+            SetPlainValue(_profitValue, "집계 전");
+            DrawRevenueGraph(_revenueGraph, null);
+        }
 
         public void SetRevenueGraphValues(IReadOnlyList<int> values)
         {
@@ -413,6 +455,15 @@ namespace GameDevTycoon.UI.Ingame
         public void SetCompletedMaintenanceValue(string value) => _completedMaintenanceValue.text = value;
         public void SetCompletedProfitValue(string value) => _completedProfitValue.text = value;
 
+        public void SetCompletedOperationPendingValues()
+        {
+            _completedUserCountValue.text = "집계 전";
+            _completedSalesValue.text = "집계 전";
+            _completedMaintenanceValue.text = "집계 전";
+            _completedProfitValue.text = "집계 전";
+            DrawRevenueGraph(_completedRevenueGraph, null);
+        }
+
         public void SetCompletedRevenueGraphValues(IReadOnlyList<int> values)
         {
             DrawRevenueGraph(_completedRevenueGraph, values);
@@ -426,6 +477,12 @@ namespace GameDevTycoon.UI.Ingame
         {
             label.text = value;
             label.color = isUp ? Color.red : Color.blue;
+        }
+
+        private void SetPlainValue(TextMeshProUGUI label, string value)
+        {
+            label.text = value;
+            label.color = Color.black;
         }
 
         private void DrawRevenueGraph(GameObject graphRoot, IReadOnlyList<int> values)
@@ -450,10 +507,11 @@ namespace GameDevTycoon.UI.Ingame
                 size = graphContent.sizeDelta;
             if (size.x <= 0f || size.y <= 0f) return;
 
-            Vector2 previous = GetGraphPoint(values[0], 0, values.Count, maxValue, size);
+            int startSlot = Mathf.Max(0, RevenueGraphSlotCount - values.Count);
+            Vector2 previous = GetGraphPoint(values[0], startSlot, maxValue, size);
             for (int i = 1; i < values.Count; i++)
             {
-                Vector2 current = GetGraphPoint(values[i], i, values.Count, maxValue, size);
+                Vector2 current = GetGraphPoint(values[i], startSlot + i, maxValue, size);
                 CreateRevenueGraphLine(graphContent, previous, current, i);
                 previous = current;
             }
@@ -478,9 +536,9 @@ namespace GameDevTycoon.UI.Ingame
             }
         }
 
-        private Vector2 GetGraphPoint(int value, int index, int count, int maxValue, Vector2 size)
+        private Vector2 GetGraphPoint(int value, int slotIndex, int maxValue, Vector2 size)
         {
-            float x = count <= 1 ? 0f : Mathf.Lerp(-size.x * 0.5f, size.x * 0.5f, index / (float)(count - 1));
+            float x = Mathf.Lerp(-size.x * 0.5f, size.x * 0.5f, slotIndex / (float)(RevenueGraphSlotCount - 1));
             float y = Mathf.Lerp(-size.y * 0.5f, size.y * 0.5f, Mathf.Clamp01(value / (float)maxValue));
             return new Vector2(x, y);
         }

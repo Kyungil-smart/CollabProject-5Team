@@ -30,14 +30,14 @@ public class ProjectCompleted
         set => _retentionFactor = Mathf.Clamp01(value);
     }
 
-    public int users;       // 현재 유저 수
-    public int dailySales;  // 일일 판매량
-    public int dailyGold;   // 일일 매출
+    public int users;       // 마지막 주간 정산 기준 유저 수
+    public int dailySales;  // 현재 주차 일일 판매량
+    public int dailyGold;   // 현재 주차 일일 매출
     public int dailyCost;   // 유지비
     public int weeklySales;  // 주간 판매량
     public int weeklyGoldAccum;// 주간 누적 매출 (하루씩 쌓다가 금요일 밤에 히스토리로 이동)
 
-    // 지난 주 비교 데이터 (UI 증감 표시용)
+    // 이전 주간 정산 데이터 (UI 증감 표시용)
     public int prevWeekUsers;
     public int prevWeekGold;
 

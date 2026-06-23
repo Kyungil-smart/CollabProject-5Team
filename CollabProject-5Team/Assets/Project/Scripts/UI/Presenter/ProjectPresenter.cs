@@ -581,20 +581,38 @@ namespace GameDevTycoon.UI.Ingame
 
         private void SetServiceOperationValues(ProjectCompleted record)
         {
+            int settledWeekCount = record.weeklyGoldHistory?.Count ?? 0;
+            if (settledWeekCount == 0)
+            {
+                _view.SetOperationPendingValues();
+                return;
+            }
+
             int revenue = GetCurrentRevenue(record);
             int revenueDelta = revenue - record.prevWeekGold;
             int userDelta = record.users - record.prevWeekUsers;
             int profit = revenue - record.dailyCost;
+            int previousProfit = record.prevWeekGold - record.dailyCost;
+            int profitDelta = profit - previousProfit;
+            bool hasUserDelta = record.prevWeekUsers > 0;
+            bool hasRevenueDelta = record.prevWeekGold > 0 && settledWeekCount > 1;
 
-            _view.SetUserCountValue(FormatValueWithDelta(record.users, userDelta, "명"), userDelta >= 0);
-            _view.SetSalesValue(FormatValueWithDelta(revenue, revenueDelta, "G"), revenueDelta >= 0);
+            _view.SetUserCountValue(FormatValueWithDelta(record.users, userDelta, "명", hasUserDelta), userDelta >= 0, hasUserDelta);
+            _view.SetSalesValue(FormatValueWithDelta(revenue, revenueDelta, "G", hasRevenueDelta), revenueDelta >= 0, hasRevenueDelta);
             _view.SetMaintenanceValue($"{record.dailyCost:N0}G");
-            _view.SetProfitValue(FormatValueWithDelta(profit, revenueDelta, "G"), profit >= 0);
+            _view.SetProfitValue(FormatValueWithDelta(profit, profitDelta, "G", hasRevenueDelta), profitDelta >= 0, hasRevenueDelta);
             _view.SetRevenueGraphValues(GetRevenueGraphValues(record));
         }
 
         private void SetCompletedOperationValues(ProjectCompleted record)
         {
+            int settledWeekCount = record.weeklyGoldHistory?.Count ?? 0;
+            if (settledWeekCount == 0)
+            {
+                _view.SetCompletedOperationPendingValues();
+                return;
+            }
+
             int revenue = GetCurrentRevenue(record);
             int profit = revenue - record.dailyCost;
 
@@ -607,13 +625,16 @@ namespace GameDevTycoon.UI.Ingame
 
         private static int GetCurrentRevenue(ProjectCompleted record)
         {
-            if (record.weeklyGoldAccum > 0)
-                return record.weeklyGoldAccum;
+            if (record.weeklyGoldHistory == null || record.weeklyGoldHistory.Count == 0)
+                return 0;
 
-            if (record.dailyGold > 0)
-                return record.dailyGold;
+            int latestRevenue = 0;
+            foreach (int weekGold in record.weeklyGoldHistory)
+            {
+                latestRevenue = weekGold;
+            }
 
-            return record.prevWeekGold;
+            return latestRevenue;
         }
 
         private static List<int> GetRevenueGraphValues(ProjectCompleted record)
@@ -623,21 +644,17 @@ namespace GameDevTycoon.UI.Ingame
             if (record.weeklyGoldHistory != null)
                 values.AddRange(record.weeklyGoldHistory);
 
-            int currentRevenue = GetCurrentRevenue(record);
-            if (currentRevenue > 0 || values.Count == 0)
-                values.Add(currentRevenue);
-
-            if (values.Count == 1 && record.prevWeekGold > 0)
-                values.Insert(0, record.prevWeekGold);
-
             while (values.Count > 4)
                 values.RemoveAt(0);
 
             return values;
         }
 
-        private static string FormatValueWithDelta(int value, int delta, string suffix)
+        private static string FormatValueWithDelta(int value, int delta, string suffix, bool showDelta)
         {
+            if (!showDelta)
+                return $"{value:N0}{suffix}";
+
             string arrow = delta >= 0 ? "▲" : "▼";
             return $"{value:N0}{suffix} ({Mathf.Abs(delta):N0}{arrow})";
         }
