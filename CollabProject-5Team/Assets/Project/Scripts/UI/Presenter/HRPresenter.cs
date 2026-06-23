@@ -51,8 +51,8 @@ namespace GameDevTycoon.UI.Ingame
         public void Show()
         {
             _view.Show();
-            _view.ShowTab(HRTab.EmployeeManage);
             RefreshEmployeeManageList();
+            _view.ShowTab(HRTab.EmployeeManage);
         }
 
         public void Hide() => _view.Hide();
@@ -487,7 +487,7 @@ namespace GameDevTycoon.UI.Ingame
             Company.Instance.cumulativeManagementStatus.Recalculate();
 
             _EmployeeManager.Instance.HireEmployee(applicant);
-            _EmployeeManager.Instance.RemoveFromApplicants(applicant);
+            _EmployeeManager.Instance.currentApplicants.Remove(applicant);
             _hudPresenter.RefreshHUD();
 
             _selectedApplicant = null;
