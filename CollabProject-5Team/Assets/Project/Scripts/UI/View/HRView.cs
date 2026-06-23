@@ -62,12 +62,12 @@ namespace GameDevTycoon.UI.Ingame
         [SerializeField] private TMP_Dropdown    _applicantSortDropdown;
         [SerializeField] private Transform       _applicantScrollContent;
         [SerializeField] private Button          _applicantListBackButton;
-        [SerializeField] private Button          _finalHireButton;
+        //[SerializeField] private Button        _finalHireButton;
 
         [Header("Tab_Hire — Panel_ApplicantDetail")]
         [SerializeField] private GameObject _panelApplicantDetail;
         [SerializeField] private Transform  _applicantDetailContent;
-        [SerializeField] private Button     _hireButton;
+        [SerializeField] public  Button      HireButton;
         [SerializeField] private Button     _cancelHireButton;
         [SerializeField] private Button     _applicantDetailBackButton;
 
@@ -96,6 +96,12 @@ namespace GameDevTycoon.UI.Ingame
         [SerializeField] private Button          _educationCourseConfirmButton;
         [SerializeField] private Button          _educationCourseBackButton;
 
+        [Header("Tab_Education — CourseCards")]
+        [SerializeField] private ToggleGroup _courseToggleGroup;
+        [SerializeField] private Toggle _courseToggle0;
+        [SerializeField] private Toggle _courseToggle1;
+        [SerializeField] private Toggle _courseToggle2;
+
         // Tab 이벤트
         public Observable<Unit> OnEmployeeManageTabClicked => _employeeManageTabButton.OnClickAsObservable();
         public Observable<Unit> OnHireTabClicked           => _hireTabButton.OnClickAsObservable();
@@ -115,8 +121,8 @@ namespace GameDevTycoon.UI.Ingame
         public Observable<Unit> OnRecruitConfirmClicked   => _recruitConfirmButton.OnClickAsObservable();
         public Observable<Unit> OnApplicantListBackClicked   => _applicantListBackButton.OnClickAsObservable();
         public Observable<int>  OnApplicantSortChanged    => _applicantSortDropdown.OnValueChangedAsObservable();
-        public Observable<Unit> OnFinalHireClicked        => _finalHireButton.OnClickAsObservable();
-        public Observable<Unit> OnHireClicked             => _hireButton.OnClickAsObservable();
+        //public Observable<Unit> OnFinalHireClicked        => _finalHireButton.OnClickAsObservable();
+        public Observable<Unit> OnHireClicked             => HireButton.OnClickAsObservable();
         public Observable<Unit> OnCancelHireClicked       => _cancelHireButton.OnClickAsObservable();
         public Observable<Unit> OnApplicantDetailBackClicked => _applicantDetailBackButton.OnClickAsObservable();
 
@@ -132,6 +138,13 @@ namespace GameDevTycoon.UI.Ingame
         public Observable<Unit> OnEducationCourseConfirmClicked => _educationCourseConfirmButton.OnClickAsObservable();
         public Observable<Unit> OnEducationCourseBackClicked  => _educationCourseBackButton.OnClickAsObservable();
 
+        // 코스 선택 시 인덱스(0~2) 발행
+        public Observable<int> OnCourseSelected => Observable.Merge(
+            _courseToggle0.OnValueChangedAsObservable().Where(v => v).Select(_ => 0),
+            _courseToggle1.OnValueChangedAsObservable().Where(v => v).Select(_ => 1),
+            _courseToggle2.OnValueChangedAsObservable().Where(v => v).Select(_ => 2)
+        );
+
         // Content Transform (Presenter에서 프리팹 Instantiate 위치로 사용)
         public Transform EmployeeGridContent       => _employeeGridContent;
         public Transform EmployeeManageDetailContent => _employeeManageDetailContent;
@@ -141,6 +154,10 @@ namespace GameDevTycoon.UI.Ingame
         public Transform FireDetailContent         => _fireDetailContent;
         public Transform EducationListContent      => _educationListContent;
         public Transform EducationDetailContent    => _educationDetailContent;
+        public int EmployeeManageSortIndex => _employeeManageSortDropdown.value;
+        public int ApplicantSortIndex => _applicantSortDropdown.value;
+        public int FireSortIndex => _fireSortDropdown.value;
+        public int EducationSortIndex => _educationSortDropdown.value;
 
         private void Awake()
         {
@@ -159,8 +176,8 @@ namespace GameDevTycoon.UI.Ingame
             _educationPanelDetail.SetActive(false);
             _panelEducationCourse.SetActive(false);
 
-            _finalHireButton.interactable     = false;
-            _hireButton.interactable          = false;
+            //_finalHireButton.interactable     = false;
+            HireButton.interactable          = false;
             _cancelHireButton.interactable    = false;
             _educationButton.interactable     = false;
             _educationCourseConfirmButton.interactable = false;
@@ -258,6 +275,8 @@ namespace GameDevTycoon.UI.Ingame
 
         public void ShowEducationCourse()
         {
+            // 코스 패널 진입 시 이전 선택 초기화
+            _courseToggleGroup.SetAllTogglesOff();
             _panelEducationCourse.SetActive(true);
         }
 
@@ -281,11 +300,11 @@ namespace GameDevTycoon.UI.Ingame
         public void SetRecruitConfirmInteractable(bool interactable)
             => _recruitConfirmButton.interactable = interactable;
 
-        public void SetFinalHireInteractable(bool interactable)
-            => _finalHireButton.interactable = interactable;
+        //public void SetFinalHireInteractable(bool interactable)
+        //    => _finalHireButton.interactable = interactable;
 
         public void SetHireButtonInteractable(bool interactable)
-            => _hireButton.interactable = interactable;
+            => HireButton.interactable = interactable;
 
         public void SetCancelHireButtonInteractable(bool interactable)
             => _cancelHireButton.interactable = interactable;

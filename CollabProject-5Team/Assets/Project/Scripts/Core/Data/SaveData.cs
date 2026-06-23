@@ -14,12 +14,13 @@ public class SaveData
     public TimeOfDay    currentTime;
     public int          day;
     public bool         isWorkCompleted;
-    public List<string> talkedNpcsToday;
-    public List<int>    talkedEmployeeIdsThisWeek;
     public float        playTime;
 
     // Employee 저장
     public List<EmployeeSaveData> savedEmployees = new List<EmployeeSaveData>();
+
+    // QuestManager 저장
+    public Dictionary<Role, int> weeklyBonusPoints = new();
 
     // Company 저장
     [Header("Company Data")]
@@ -28,11 +29,15 @@ public class SaveData
     public int    company_Level;
     public int    company_Popularity;
     public int    company_Reputation;
-    public int    company_DailyCost;
+    public int    company_WeeklyCost;
     public int    company_DailyProfit;
-    public int    company_weeklyProfit;
+    public int    company_WeeklyProfit;
+    public int    company_TotalRevenue;
+    public ManagementStatusData company_CurManagementStatus = new();
+    public ManagementStatusData company_PrevManagementStatus = new();
+    public ManagementStatusData company_CumulativeManagementStatus = new();
 
-    // 완료된 프로젝트 목록 TODO - 프로젝트가 완료 될때 여기로 넣어주세요
+    // 완료된 프로젝트 목록
     public List<ProjectCompletedSaveData> completedProjectsData = new();
     // 현재 진행 중인 프로젝트 목록
     public CurrentProjectSaveData activeProjectsData = new();
@@ -55,23 +60,34 @@ public class EmployeeSaveData
     public int preDesire;
     public int preLoyalty;
     public int preFatigue;
+
+    public EmployeeWorkStatus workStatus;
+    public bool hasTalkedThisWeek;
+
+    public int    trainingRemainingWeeks;
+    public int    trainingStartedWeek;
+    public string trainingCourseName;
+    public int    trainingCost;
+    public int    trainingMinAbilityDelta;
+    public int    trainingMaxAbilityDelta;
+    public float  trainingFailureRate;
+    public EmployeeMutableData trainingStartData;
 }
 
-[System.Serializable]
+[Serializable]
 public class CurrentProjectSaveData
 {
-    [Header("초기값 데이터")]
-    public int         project_Id;
-    public string      project_Name;   
-    public string      project_Desc;
+    // so 대신에 프로젝트 존재 여부와 규모를 확인
+    public bool hasActiveProject;
     public ProjectSize project_Scale;
-    public int         project_RequiredCost;
-    public int         project_MaxEmployeePerpart;            
-    public int         project_DurationDays;
 
     [Header(" 런타임 데이터 ")]
-    public int project_day;
+    public int    project_day;
     public string project_userNamed;
+    public int    project_NightCount;
+    public string project_Genre;
+    public string project_ArtStyle;
+    public string project_Engine;
 
     // 투입된 직원
     public List<int> project_PlanningEmployeeIds;
@@ -89,25 +105,78 @@ public class CurrentProjectSaveData
 [Serializable]
 public class ProjectCompletedSaveData
 {
-    public int         projectID;
     public string      projectName;
     public ProjectSize scale;
     public int         qualityScore;
     public int         stabilityScore;
     public int         charmScore;
     public string      grade; 
+    public string      genre;
+    public string      artStyle;
+    public string      engine;
 
-    public float rating;
     public float retentionFactor;
     public int   users;
     public int   dailySales;
-    public int   goodsSales;
     public int   dailyGold;
     public int   dailyCost;
+    public int   weeklySales;
     public int   weeklyGoldAccum;
     public int   prevWeekUsers;
     public int   prevWeekGold;
 
     public List<int> weeklyGoldHistoryList;
     public bool isServiceOver;
+}
+
+[Serializable]
+public sealed class ManagementStatusData
+{
+    public int totalIncome;
+    public int gameSales;
+    public int otherIncome;
+    public int totalExpense;
+    public int laborCost;
+    public int devCost;
+    public int operatingCost;
+    public int marketingCost;
+    public int otherExpense;
+    public int operatingProfit;
+
+    public void Recalculate()
+    {
+        totalIncome = gameSales + otherIncome;
+        totalExpense = laborCost + devCost + operatingCost + marketingCost + otherExpense;
+        operatingProfit = totalIncome - totalExpense;
+    }
+
+    public void Clear()
+    {
+        totalIncome = 0;
+        gameSales = 0;
+        otherIncome = 0;
+        totalExpense = 0;
+        laborCost = 0;
+        devCost = 0;
+        operatingCost = 0;
+        marketingCost = 0;
+        otherExpense = 0;
+        operatingProfit = 0;
+    }
+
+    public ManagementStatusData Clone()
+    {
+        var clone = new ManagementStatusData
+        {
+            gameSales = gameSales,
+            otherIncome = otherIncome,
+            laborCost = laborCost,
+            devCost = devCost,
+            operatingCost = operatingCost,
+            marketingCost = marketingCost,
+            otherExpense = otherExpense
+        };
+        clone.Recalculate();
+        return clone;
+    }
 }

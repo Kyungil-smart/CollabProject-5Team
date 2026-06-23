@@ -264,4 +264,10 @@ public class PlayerMove : MonoBehaviour
             _anim.SetTrigger("IsWorkDone");
         }
     }
+
+    public void ResetMovementState()
+    {
+        _isMovingToPosition = false;
+        _agent.ResetPath();
+    }
 }

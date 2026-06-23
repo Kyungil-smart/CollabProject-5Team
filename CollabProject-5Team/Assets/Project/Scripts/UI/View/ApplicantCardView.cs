@@ -8,7 +8,7 @@ namespace GameDevTycoon.UI.Ingame
     /// 지원자 카드 프리팹 바인딩.
     /// Panel_ApplicantList.ApplicantScroll에 동적 생성.
     /// </summary>
-    public sealed class ApplicantCardView : MonoBehaviour, IBindable<EmployeeImmutableData>
+    public sealed class ApplicantCardView : MonoBehaviour, IBindable<Employee>
     {
         [SerializeField] private Image           _profileIcon;
         [SerializeField] private TextMeshProUGUI _nameValue;
@@ -17,11 +17,11 @@ namespace GameDevTycoon.UI.Ingame
         [SerializeField] private GameObject      _nextWeekOverlay;
         [SerializeField] private TextMeshProUGUI _overlayLabel;
 
-        public void Bind(EmployeeImmutableData so)
+        public void Bind(Employee e)
         {
-            _profileIcon.sprite = so.iconNormal;
-            _nameValue.text     = so.Name;
-            _deptValue.text     = RoleToString(so.role);
+            _profileIcon.sprite = e.so.iconNormal;
+            _nameValue.text     = e.so.Name;
+            _deptValue.text     = RoleToString(e.so.role);
 
             _hireStamp.SetActive(false);
             _nextWeekOverlay.SetActive(false);

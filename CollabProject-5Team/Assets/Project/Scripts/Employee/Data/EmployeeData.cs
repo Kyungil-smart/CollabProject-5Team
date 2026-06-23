@@ -1,6 +1,13 @@
 using System;
 using UnityEngine;
 
+public enum EmployeeWorkStatus
+{
+    Standby,
+    InProject,
+    InTraining
+}
+
 public enum Role
 {
     PROGRAMMER, PLANNER, ARTIST, MARKETING, QA
@@ -76,27 +83,8 @@ public struct EmployeeMutableData // 가변 데이터
     [SerializeField] int _ability;
     public int ability
     {
-        get
-        {   // 충성도에 따른 능력치 보정
-            float rate = _loyalty >= 81 ? 1.3f :
-                         _loyalty >= 61 ? 1.15f :
-                         _loyalty >= 41 ? 1.0f :
-                         _loyalty >= 21 ? 0.85f : 0.7f; 
-            return Mathf.Clamp((int)(_ability * rate), 0, 100);
-        }
-        set
-        {
-            // 성장 패널티: ability가 높을수록 상슥폭이 줄어듦
-            int delta = value - _ability;
-            if (delta > 0) // 증가일 때만 패널티 적용
-            {
-                float rate = _ability <= 40 ? 1.0f :
-                             _ability <= 60 ? 0.8f :
-                             _ability <= 80 ? 0.6f : 0.4f;
-                delta = (int)(delta * rate);
-            }
-            _ability = Mathf.Clamp(_ability + delta, 0, 100);
-        }
+        get => _ability;
+        set => _ability = Mathf.Clamp(value, 0, 100);
     }
 
     public int property1; // 매 주차 보고서 승인 후 갱신되는 세부 능력치

@@ -8,9 +8,9 @@ namespace GameDevTycoon.UI.Ingame
     /// <summary>
     /// Canvas_Popup.CompanyPopup 담당 View.
     /// 탭 전환, 패널 전환, 버튼 이벤트 발행.
-    /// 프리팹 동적 생성 및 데이터 바인딩은 Presenter에서 담당.
+    /// 데이터 바인딩은 Presenter에서 담당.
     /// </summary>
-    public sealed class CompanyView : MonoBehaviour, IBottomNightUI
+    public sealed class CompanyView : MonoBehaviour
     {
         [Header("Popup")]
         [SerializeField] private GameObject _companyPopup;
@@ -78,8 +78,22 @@ namespace GameDevTycoon.UI.Ingame
 
         [Header("Tab_Expansion")]
         [SerializeField] private GameObject _tabExpansion;
-        [SerializeField] private Transform _expansionListContent;
         [SerializeField] private Button _expansionConfirmButton;
+
+        // 고정 카드 버튼 (Lv1~3)
+        [SerializeField] private Button _expansionCardLv1;
+        [SerializeField] private Button _expansionCardLv2;
+        [SerializeField] private Button _expansionCardLv3;
+
+        // Lv2/3만 LockOverlay 존재
+        [SerializeField] private GameObject _lockOverlayLv2;
+        [SerializeField] private GameObject _lockOverlayLv3;
+
+        [Header("증축 카드 스프라이트")]
+        [SerializeField] private Sprite _spriteCurrentOrOwned;
+        [SerializeField] private Sprite _spriteUnlocked;
+        [SerializeField] private Sprite _spriteSelected;
+        [SerializeField] private Sprite _spriteLocked;
 
         // Tab 이벤트
         public Observable<Unit> OnCompanyInfoTabClicked => _companyInfoTabButton.OnClickAsObservable();
@@ -92,16 +106,16 @@ namespace GameDevTycoon.UI.Ingame
 
         // Tab_Expansion 이벤트
         public Observable<Unit> OnExpansionConfirmClicked => _expansionConfirmButton.OnClickAsObservable();
+        public Observable<int> OnExpansionCardLv1Clicked => _expansionCardLv1.OnClickAsObservable().Select(_ => 1);
+        public Observable<int> OnExpansionCardLv2Clicked => _expansionCardLv2.OnClickAsObservable().Select(_ => 2);
+        public Observable<int> OnExpansionCardLv3Clicked => _expansionCardLv3.OnClickAsObservable().Select(_ => 3);
 
-        // Content Transform
         public Transform RankingListContent => _rankingListContent;
-        public Transform ExpansionListContent => _expansionListContent;
 
         public bool IsVisible => _companyPopup.activeSelf;
 
         private void Awake()
         {
-            _companyPopup.SetActive(false);
             _expansionConfirmButton.interactable = false;
         }
 
@@ -151,7 +165,7 @@ namespace GameDevTycoon.UI.Ingame
         public void SetRankingUpdateNote(string note) => _rankingUpdateNoteLabel.text = note;
 
         /// <summary>
-        /// 누적 모드에서는 PreviousLabel 전체 비활성. 월간/연간은 이번/지난 비교 표시.
+        /// 누적 모드에서는 PreviousLabel 전체 비활성. 월간은 이번/지난 비교 표시.
         /// </summary>
         public void SetManagementStatusColumns(ManagementFilter filter, string periodText)
         {
@@ -162,9 +176,9 @@ namespace GameDevTycoon.UI.Ingame
             foreach (var label in _previousLabels)
                 label.gameObject.SetActive(!isCumulative);
 
-            _currentColumnHeader.text = isCumulative ? "누적" : (filter == ManagementFilter.Monthly ? "이번 달" : "이번 해");
+            _currentColumnHeader.text = isCumulative ? "누적" : "이번 달";
             _previousColumnHeader.gameObject.SetActive(!isCumulative);
-            _previousColumnHeader.text = filter == ManagementFilter.Monthly ? "지난 달" : "지난 해";
+            _previousColumnHeader.text = "지난 달";
         }
 
         public void SetManagementStatusValues(ManagementStatusData current, ManagementStatusData previous)
@@ -185,6 +199,48 @@ namespace GameDevTycoon.UI.Ingame
         public void SetExpansionConfirmInteractable(bool interactable)
         {
             _expansionConfirmButton.interactable = interactable;
+        }
+
+        /// <summary>
+        /// 카드 스프라이트 교체 및 interactable 설정.
+        /// cardIndex: 1~3
+        /// </summary>
+        public void SetExpansionCardState(int cardIndex, ExpansionCardState state)
+        {
+            var button = cardIndex switch
+            {
+                1 => _expansionCardLv1,
+                2 => _expansionCardLv2,
+                3 => _expansionCardLv3,
+                _ => null,
+            };
+
+            if (button == null) return;
+
+            button.image.sprite = state switch
+            {
+                ExpansionCardState.Current => _spriteCurrentOrOwned,
+                ExpansionCardState.Owned => _spriteCurrentOrOwned,
+                ExpansionCardState.Unlocked => _spriteUnlocked,
+                ExpansionCardState.Selected => _spriteSelected,
+                ExpansionCardState.Locked => _spriteLocked,
+                _ => _spriteLocked,
+            };
+
+            button.interactable = state == ExpansionCardState.Unlocked || state == ExpansionCardState.Selected;
+        }
+
+        public void SetLockOverlayActive(int cardIndex, bool active)
+        {
+            var overlay = cardIndex switch
+            {
+                2 => _lockOverlayLv2,
+                3 => _lockOverlayLv3,
+                _ => null,
+            };
+
+            if (overlay != null)
+                overlay.SetActive(active);
         }
 
         // 수입 행: 검정색, 없으면 "-"
@@ -255,21 +311,7 @@ namespace GameDevTycoon.UI.Ingame
     public enum ManagementFilter
     {
         Monthly,
-        Annual,
         Cumulative
     }
 
-    public sealed class ManagementStatusData
-    {
-        public int totalIncome;
-        public int gameSales;
-        public int otherIncome;
-        public int totalExpense;
-        public int laborCost;
-        public int devCost;
-        public int operatingCost;
-        public int marketingCost;
-        public int otherExpense;
-        public int operatingProfit;
-    }
 }

@@ -26,12 +26,10 @@ public static class ReportPolicy
     }
 
     // 직원 배열을 기반으로 보고서 초안 생성 → project.pendingReports에 추가
-    public static void GenerateReportForRole(Project project, Employee[] employees)
+    public static void GenerateReportForRole(Project project, IEnumerable<Employee> employees)
     {
         foreach (Employee e in employees)
         {
-            if (e == null) continue;
-
             float score = CalcScore(e.so, e.MutableData.desire);
             int grade   = CalcGrade(score);
             int isStartRepo = Company.Instance.curProject.day <= 5 ? 1 : 0;
@@ -39,7 +37,7 @@ public static class ReportPolicy
             ReportSO picked = ReportManager.Instance.GetReportsByTrait(e, grade, isStartRepo);
             if (picked == null) { Debug.LogWarning($"[ReportPolicy] {e.so.Name} 에 맞는 보고서 SO 없음"); continue; }
             Report report = new Report { so = picked, owner = e };
-            Debug.Log($"생성된 보고서:{report.so.title}\n직원:{report.owner}\n특성:{report.trait}");
+            
             project.pendingReports.Add(report);
         }
     }
@@ -53,11 +51,12 @@ public static class ReportPolicy
         EmployeeMutableData d = e.MutableData;
         TraitStat[] stats = GetRoleStats(e.so.role);
 
+        int ability = CalcLoyaltyAdjustedAbility(d.ability, d.loyalty);
         var scores = new Dictionary<TraitStat, float>
         {
-            [stats[0]] = d.ability,
-            [stats[1]] = d.ability,
-            [stats[2]] = d.ability,
+            [stats[0]] = ability,
+            [stats[1]] = ability,
+            [stats[2]] = ability,
         };
 
         // 등급별 특성 delta (대표/보조/리스크)
@@ -76,6 +75,16 @@ public static class ReportPolicy
             result[i] = Mathf.Clamp(scores[stats[i]], 0f, 100f);
 
         return result;
+    }
+
+    public static int CalcLoyaltyAdjustedAbility(int ability, int loyalty)
+    {
+        float rate = loyalty >= 81 ? 1.3f :
+                     loyalty >= 61 ? 1.15f :
+                     loyalty >= 41 ? 1.0f :
+                     loyalty >= 21 ? 0.85f : 0.7f;
+
+        return Mathf.Clamp((int)(ability * rate), 0, 100);
     }
 
     // 특성이 영향을 주는 stat에 delta 적용

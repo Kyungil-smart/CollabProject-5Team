@@ -1,7 +1,7 @@
 using R3;
 using UnityEngine;
 using UnityEngine.UI;
-using GameDevTycoon.UI.Ingame;
+using Cysharp.Threading.Tasks;
 
 /// <summary>
 /// 테스트 전용 디버그 패널 Presenter.
@@ -11,64 +11,79 @@ using GameDevTycoon.UI.Ingame;
 public sealed class DebugUIPresenter : MonoBehaviour
 {
     [Header("버튼")]
-    [SerializeField] private Button _workCompleteButton;
-    [SerializeField] private Button _nextDayButton;
-    [SerializeField] private Button _openHRButton;
-    [SerializeField] private Button _openProjectButton;
-    [SerializeField] private Button _openReportButton;
-    [SerializeField] private Button _addGoldButton;
-
-    // ReportPresenter.OnNightStarted()는 private이므로 이벤트를 통해 우회
-    private HRPresenter _hrPresenter;
-    private ProjectPresenter _projectPresenter;
-    private ReportPresenter _reportPresenter;
-
-    private void Awake()
-    {
-        _hrPresenter = FindObjectOfType<HRPresenter>(true);
-        _projectPresenter = FindObjectOfType<ProjectPresenter>(true);
-        _reportPresenter = FindObjectOfType<ReportPresenter>(true);
-    }
+    [SerializeField] Button _forceNightLoadButton;
+    [SerializeField] Button _nextDayButton;
+    [SerializeField] Button _bonusQuestScoreButton;
+    [SerializeField] Button _forceTalkedEmployeesButton;
+    [SerializeField] Button _addReputationButton;
+    [SerializeField] Button _addGoldButton;
+    [SerializeField] Button _upgradeOfficeButton;
 
     private void Start()
     {
-        _workCompleteButton.OnClickAsObservable()
-            .Subscribe(_ => OnWorkCompleteClicked())
+        _forceNightLoadButton.OnClickAsObservable()
+            .Subscribe(_ =>
+            {
+                DateTimeManager DTM = DateTimeManager.Instance;
+
+                int currentWeek = DTM.currentWeek.Value;
+                DTM.currentWeek.Value = currentWeek;
+                DTM.currentDay = DayOfWeek.Friday;
+                DTM.currentTime = TimeOfDay.Day;
+                DTM.day.Value = (currentWeek - 1) * 5 + 4;
+
+                if (Company.Instance.activeProjectCount.Value > 0)
+                {
+                    Project curProject = Company.Instance.curProject;
+                    int targetProjectDay = (curProject.day / 5) * 5 + 4;
+                    if (curProject.DurationDays > 0 && targetProjectDay >= curProject.DurationDays)
+                        targetProjectDay = Mathf.Max(curProject.day, curProject.DurationDays - 1);
+                    curProject.day = Mathf.Max(curProject.day, targetProjectDay);
+                }
+
+                DTM.OnClickEndDayButton().Forget(); // 바로 밤으로 사기치기
+            })
             .AddTo(this);
 
         _nextDayButton.OnClickAsObservable()
-            .Subscribe(_ => DateTimeManager.Instance.OnClickEndDayButton())
+            .Subscribe(_ => DateTimeManager.Instance.OnClickEndDayButton().Forget())
             .AddTo(this);
 
-        _openHRButton.OnClickAsObservable()
-            .Subscribe(_ => _hrPresenter?.Show())
+        _bonusQuestScoreButton.OnClickAsObservable()
+            .Subscribe(_ =>
+            {
+                if (Company.Instance.activeProjectCount.Value > 0)
+                {
+                    Role role = (Role)Random.Range(0, 3);
+
+                    QuestManager.Instance._weeklyBonusPoints.TryGetValue(role, out int currentPoint);
+                    QuestManager.Instance._weeklyBonusPoints[role] = currentPoint + 5;
+
+                    Debug.Log($"[Debug] 퀘스트 완료 점수 +5: {role} ({currentPoint} -> {currentPoint + 1})");
+                }
+            })
             .AddTo(this);
 
-        _openProjectButton.OnClickAsObservable()
-            .Subscribe(_ => _projectPresenter?.Show())
+        _forceTalkedEmployeesButton.OnClickAsObservable()
+            .Subscribe(_ =>
+            {
+                foreach (Employee employee in _EmployeeManager.Instance.haveEmployees.haveEmployeeList)
+                {
+                    employee.hasTalkedThisWeek = true;
+                }
+            })
             .AddTo(this);
 
-        _openReportButton.OnClickAsObservable()
-            .Subscribe(_ => TriggerReportOpen())
+        _addReputationButton.OnClickAsObservable()
+            .Subscribe(_ => Company.Instance.reputation += 25)
             .AddTo(this);
 
         _addGoldButton.OnClickAsObservable()
             .Subscribe(_ => Company.Instance.gold.Value += 10000)
             .AddTo(this);
-    }
-
-    private void OnWorkCompleteClicked()
-    {
-        // 퀘스트 완료 조건 없이 isWorkCompleted 플래그만 강제 세팅
-        // DateTimeManager.CompleteDayWork()는 플레이어 애니메이션·OnWorkCompleted 이벤트를 같이 호출하므로 플래그만 직접 세팅
-        DateTimeManager.Instance.isWorkCompleted = true;
-    }
-
-    private void TriggerReportOpen()
-    {
-        // ReportPresenter.OnNightStarted()는 private이므로
-        // OnNight 이벤트를 발행해 정상 흐름과 동일하게 진입
-        // 단, 금요일 밤 상태가 아니면 보고서 데이터(pendingReports)가 없어 빈 화면으로 열릴 수 있음
-        _reportPresenter?.OpenForDebug();
+        
+        _upgradeOfficeButton.OnClickAsObservable()
+            .Subscribe(_ => GameManager.Instance.UpgradeOfficeAsync().Forget())
+            .AddTo(this);
     }
 }

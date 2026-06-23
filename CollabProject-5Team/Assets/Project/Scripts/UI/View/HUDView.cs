@@ -66,6 +66,11 @@ namespace GameDevTycoon.UI.Ingame
             _moneyLabel.text = $"{money:N0}G";
         }
 
+        public void SetWorkStartActive(bool active)
+        {
+            _workStartButton.gameObject.SetActive(active);
+        }
+
         public void SetNightQuitInteractable(int activeProjectCount)
         {
             _nightQuitButton.interactable = activeProjectCount > 0;

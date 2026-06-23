@@ -20,10 +20,8 @@ namespace GameDevTycoon.UI.Ingame
         [SerializeField] Button[] _nextButtons;
 
         [Header("프리팹")]
-        [SerializeField] private EmployeeStatusMiniItemView _employeeStatusMiniItemPrefab;
+        [SerializeField] private GameObject _employeeStatusMiniItemPrefab;
         [SerializeField] private ReportCardView _reportCardViewPrefab;
-
-        private UIObjectPool<EmployeeStatusMiniItemView> _employeeStatusMiniItemPool;
 
         // 직군 진행 순서
         static readonly Role[] RoleOrder = { Role.PLANNER, Role.ARTIST, Role.PROGRAMMER };
@@ -33,19 +31,8 @@ namespace GameDevTycoon.UI.Ingame
         private List<ReportCardView> _currentCards = new();
         private Report _viewingReport;
 
-        private void OnEnable()
-        {
-            DateTimeManager.OnNight += OnNightStarted;
-        }
-
-        private void OnDisable()
-        {
-            DateTimeManager.OnNight -= OnNightStarted;
-        }
-
         private void Start()
         {
-            _employeeStatusMiniItemPool = new UIObjectPool<EmployeeStatusMiniItemView>(_employeeStatusMiniItemPrefab, _view.SlidePreviewContent, initialSize: 6);
             BindButtons();
         }
 
@@ -85,21 +72,23 @@ namespace GameDevTycoon.UI.Ingame
             }
         }
 
-        private void OnNightStarted()
+        /// <summary>
+        /// 금요일 밤 보고서 시퀀스 시작. ProjectCompletedPopupPresenter에서 호출.
+        /// </summary>
+        public void StartNightSequence()
         {
             if (Company.Instance.activeProjectCount.Value < 1)
             {
+                SaveLoadSystem.Instance.SaveGame(0); // 밤 자동 저장
                 DateTimeManager.OnReportEnd?.Invoke();
                 return;
             }
+            _view.Show();
+
             RefreshCoverInfo();
             RefreshEmployeeStatusSlide();
-
-            _view.Show();
         }
 
-        // [DEBUG] DebugUIPresenter에서 보고서 강제 진입용. 빌드 전 제거.
-        public void OpenForDebug() => OnNightStarted();
 
         private void RefreshCoverInfo()
         {
@@ -115,7 +104,8 @@ namespace GameDevTycoon.UI.Ingame
 
         private void RefreshEmployeeStatusSlide()
         {
-            _employeeStatusMiniItemPool.ReleaseAll(_view.SlidePreviewContent);
+            foreach (Transform child in _view.SlidePreviewContent)
+                Destroy(child.gameObject);
 
             // 직군순(기획→아트→개발) + 이름순 정렬
             var employees = _EmployeeManager.Instance.haveEmployees.haveEmployeeList
@@ -125,8 +115,8 @@ namespace GameDevTycoon.UI.Ingame
 
             foreach (var employee in employees)
             {
-                var item = _employeeStatusMiniItemPool.Get(_view.SlidePreviewContent);
-                item.Bind(employee);
+                var item = Instantiate(_employeeStatusMiniItemPrefab, _view.SlidePreviewContent);
+                item.GetComponent<IBindable<Employee>>().Bind(employee);
             }
 
             // 슬라이드 코멘트 — 직원 상태 요약
@@ -229,6 +219,8 @@ namespace GameDevTycoon.UI.Ingame
         private void OnReportEndConfirmed()
         {
             _view.Hide();
+
+            SaveLoadSystem.Instance.SaveGame(0); // 밤 자동 저장
             DateTimeManager.OnReportEnd?.Invoke();
         }
 

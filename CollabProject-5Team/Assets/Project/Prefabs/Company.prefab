@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 3898941983752276327}
   - component: {fileID: 9150022311802163885}
   m_Layer: 0
-  m_Name: Project
+  m_Name: Small
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -46,12 +46,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   so: {fileID: 11400000, guid: 1aa1266399c7eef4a9569f054f7ff5aa, type: 2}
   day: 0
-  plannings:
-  - {fileID: 0}
-  arts:
-  - {fileID: 0}
-  programmer:
-  - {fileID: 0}
+  plannings: []
+  arts: []
+  programmer: []
   qualityScore: 0
   stabilityScore: 0
   charmScore: 0
@@ -60,7 +57,6 @@ MonoBehaviour:
   genre: 
   artStyle: 
   engine: 
-  isReportDraftsReady: 0
 --- !u!1 &4138684017259482569
 GameObject:
   m_ObjectHideFlags: 0
@@ -92,6 +88,8 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 3898941983752276327}
+  - {fileID: 3532238685471455732}
+  - {fileID: 3425680310474025301}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &9005089600475653076
@@ -106,16 +104,155 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c9ebe61dd5e5f7b488148e7578ec8462, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  smallProjectPrefab: {fileID: 1094110865752810451, guid: 7e147e0a764e55d4abb3ea0ab429c5f3, type: 3}
-  Name: NyanNyanComp
-  gold: 10000
-  level: 1
+  projectPrefab:
+  - {fileID: 1094110865752810451, guid: 7e147e0a764e55d4abb3ea0ab429c5f3, type: 3}
+  - {fileID: 1094110865752810451, guid: cf7a22b0c8f9bf141bddf22f509eacbb, type: 3}
+  - {fileID: 1094110865752810451, guid: 4fccea6bef9845f4b951e975faf923cc, type: 3}
+  Name: "\uC6C5\uB0E5\uAC8C\uC784\uC988"
+  level: 0
+  ProjectSlots: 1
   projects: []
   curProject: {fileID: 0}
   selectedProjectEmployees: []
   completedProjects: []
+  hasPendingCompletedProject: 0
+  pendingCompletedProject:
+    projectID: 0
+    projectName: 
+    scale: 0
+    qualityScore: 0
+    stabilityScore: 0
+    charmScore: 0
+    grade: 0
+    genre: 
+    artStyle: 
+    engine: 
+    users: 0
+    dailySales: 0
+    dailyGold: 0
+    dailyCost: 0
+    weeklyGoldAccum: 0
+    prevWeekUsers: 0
+    prevWeekGold: 0
+    isServiceOver: 0
   popularity: 0
-  reputation: 0
-  dailyCost: 0
+  reputation: 100
+  weeklyCost: 0
   dailyProfit: 0
   weeklyProfit: 0
+  totalRevenue: 0
+  _upgradeData: {fileID: 11400000, guid: fd281c602f383b644825ed037f5f96b6, type: 2}
+--- !u!1 &6374573859267886917
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3425680310474025301}
+  - component: {fileID: 4829189423659513859}
+  m_Layer: 0
+  m_Name: Large
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!4 &3425680310474025301
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6374573859267886917}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 720, y: 1480, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 4122444248155649962}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &4829189423659513859
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6374573859267886917}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 55cf75e3c2643ca41a7e8c1afae4cc9b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  so: {fileID: 11400000, guid: aef43cf15d251d647a9f601a100ae618, type: 2}
+  day: 0
+  plannings: []
+  arts: []
+  programmer: []
+  qualityScore: 0
+  stabilityScore: 0
+  charmScore: 0
+  pendingReports: []
+  nightCount: 0
+  genre: 
+  artStyle: 
+  engine: 
+--- !u!1 &9165215188719281499
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3532238685471455732}
+  - component: {fileID: 6465852557597716149}
+  m_Layer: 0
+  m_Name: Nomal
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!4 &3532238685471455732
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9165215188719281499}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 720, y: 1480, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 4122444248155649962}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &6465852557597716149
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9165215188719281499}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 55cf75e3c2643ca41a7e8c1afae4cc9b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  so: {fileID: 11400000, guid: 6f4e02b4f2983ec41b6e07d7567e89bc, type: 2}
+  day: 0
+  plannings: []
+  arts: []
+  programmer: []
+  qualityScore: 0
+  stabilityScore: 0
+  charmScore: 0
+  pendingReports: []
+  nightCount: 0
+  genre: 
+  artStyle: 
+  engine: 

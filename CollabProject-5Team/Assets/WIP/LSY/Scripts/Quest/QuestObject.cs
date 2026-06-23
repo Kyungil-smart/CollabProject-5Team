@@ -7,6 +7,7 @@ public class QuestObject : MonoBehaviour, IInteractable
     [SerializeField] private GameObject starIconPrefab;   // 별 아이콘 프리팹 (TAP/HOLD/SWIPE 입력 처리)
     [SerializeField] private Collider targetCollider;     // 상호작용 거리 체크용 콜라이더
     [SerializeField] private Vector3 iconWorldOffset = new Vector3(0f, 1f, 0f); // 아이콘이 뜰 위치 (오브젝트 기준 오프셋)
+    [SerializeField] private float interactionRange = 1f;
 
     // 커피머신처럼 씬에 항상 존재하는 오브젝트인 경우 체크.
     // true면 QuestManager가 이 오브젝트를 켜고 끌 때 GameObject 전체가 아닌 이 컴포넌트(enabled)만 토글한다.
@@ -16,14 +17,35 @@ public class QuestObject : MonoBehaviour, IInteractable
     private QuestIcon _bulbInstance;
     private QuestInteract _starInstance;
 
-    private void OnEnable()
+    private void OnEnable() { ShowBulb(); }
+    private void OnDisable() { ClearIcons(); }
+
+    private void Update()
     {
+        if (_bulbInstance == null && _starInstance == null) return;
+
+        Collider col = targetCollider != null ? targetCollider : GetComponent<Collider>();
+        if (col == null || GameManager.Instance.player == null) return;
+
+        Vector3 closestPoint = col.ClosestPoint(GameManager.Instance.player.transform.position);
+        float distance = Vector3.Distance(GameManager.Instance.player.transform.position, closestPoint);
+
+        if (_bulbInstance != null && distance <= interactionRange)
+            OnInteract();
+        else if (_starInstance != null && distance > interactionRange + 0.5f)
+            ShowBulb();
+    }
+
+    public void Activate()
+    {
+        enabled = true;
         ShowBulb();
     }
 
-    private void OnDisable()
+    public void Deactivate()
     {
         ClearIcons();
+        enabled = false;
     }
 
     private void ShowBulb()
@@ -82,10 +104,15 @@ public class QuestObject : MonoBehaviour, IInteractable
         // 상호작용 상태 해제 - 안 하면 플레이어가 다시 움직이지 못함
         GameManager.Instance.player.CloseInteractionUI();
 
-        DailyQuest quest = QuestManager.Instance.curDailyQuest;
+        // 다중 오브젝트 퀘스트면 이 오브젝트와 같은 순서의 결과물을 즉시 활성화 (전체 완료 대기 없이 바로 전환)
+        QuestManager.Instance.ActivatePairedResult(gameObject.name);
 
-        // 활성 오브젝트가 여러 개인 TAP: 오브젝트 1개당 1진행도 / 그 외(단일 오브젝트 연타, HOLD, SWIPE): 한 번에 퀘스트 전체 완료
-        int amount = (quest.so.controlType == ControlType.TAP && quest.so.ActiveObjectCount > 1) ? 1 : quest.TargetCount;
+        DailyQuest quest = QuestManager.Instance.curDailyQuest;
+        ControlType effectiveType = QuestManager.Instance.EffectiveControlType;
+        int effectiveTarget = QuestManager.Instance.EffectiveTargetCount;
+
+        // 활성 오브젝트가 여러 개인 TAP: 오브젝트 1개당 1진행도 / 그 외: 한 번에 퀘스트 전체 완료
+        int amount = (effectiveType == ControlType.TAP && quest.so.ActiveObjectCount > 1) ? 1 : effectiveTarget;
         QuestManager.Instance.UpdateProgress(amount);
     }
 

@@ -1,6 +1,4 @@
-using Dialogue;
 using UnityEngine;
-using UnityEngine.EventSystems;
 
 // 직원 게임오브젝트에 부착 방식
 public class Employee : MonoBehaviour
@@ -12,6 +10,8 @@ public class Employee : MonoBehaviour
 
     [Header("플래그")]
     public bool hasTalkedThisWeek;
+
+    public EmployeeWorkStatus WorkStatus;
 
     public void Init()
     {
@@ -42,7 +42,18 @@ public class Employee : MonoBehaviour
 
     public void AddAbilityDelta(int delta)
     {
-        MutableData.ability += delta;
+        int ability = MutableData.ability;
+        int adjustedDelta = delta;
+
+        if (delta > 0)
+        {
+            float growthRate = ability <= 40 ? 1.0f :
+                               ability <= 60 ? 0.8f :
+                               ability <= 80 ? 0.6f : 0.4f;
+            adjustedDelta = Mathf.CeilToInt(delta * growthRate);//올림
+        }
+
+        MutableData.ability = ability + adjustedDelta;
         MutableData.property1 = MutableData.ability;
         MutableData.property2 = MutableData.ability;
         MutableData.property3 = MutableData.ability;

@@ -16,9 +16,7 @@ namespace GameDevTycoon.UI.Ingame
         [SerializeField] private AlertView _alertView;
         [SerializeField] private SettingsPresenter _settingsPresenter;
         [SerializeField] private SavePresenter _savePresenter;
-
-        [Header("외부 연결")]
-        //[SerializeField] private ~Presenter _(IBottomNightUI)Presenter; 추후 IBottomNightUI가 추가로 존재하면 연결
+        [SerializeField] private QuestPresenter _questPresenter;
 
         [Header("업무 시작 시 이동할 데스크탑 프리팹")]
         [SerializeField] private DeskInteract _desk;
@@ -34,15 +32,21 @@ namespace GameDevTycoon.UI.Ingame
             _companyPresenter = FindObjectOfType<CompanyPresenter>(true);
         }
 
-        private void Start()
+        // 모든 Presenter의 Start() 완료 후 바인딩을 보장하기 위해 한 프레임 대기
+        private async void Start()
         {
-            BindButtons();
             DateTimeManager.OnReportEnd += SwitchToNight;
+            DateTimeManager.OnDay += OnNewDay;
+
+            await UniTask.Yield();
+            BindButtons();
+            BindQuestBanner();
         }
 
         private void OnDestroy()
         {
             DateTimeManager.OnReportEnd -= SwitchToNight;
+            DateTimeManager.OnDay -= OnNewDay;
         }
 
         public void SwitchToNight()
@@ -50,11 +54,16 @@ namespace GameDevTycoon.UI.Ingame
             CloseAllBottomPopups();  // HR, Project, Company 닫기
             _settingsPresenter.Hide();  // 세팅도 같이 닫기
             _view.SwitchToNight();
+            RefreshHUD();
         }
 
         private void BindButtons()
         {
             var dtm = DateTimeManager.Instance;
+
+            _view.OnQuestIconClicked
+                .Subscribe(_ => OnQuestIconClicked())
+                .AddTo(this);
 
             _view.OnWorkStartClicked
                 .Subscribe(_ => OnWorkStartClicked())
@@ -89,29 +98,84 @@ namespace GameDevTycoon.UI.Ingame
                 .AddTo(this);
         }
 
+        private void BindQuestBanner()
+        {
+            QuestManager.Instance.dailyQuestState
+                .Subscribe(OnDailyQuestStateChanged)
+                .AddTo(this);
+
+            QuestManager.Instance.dailyQuestProgress
+                .Subscribe(progress =>
+                {
+                    DailyQuest quest = QuestManager.Instance.curDailyQuest;
+                    if (quest == null) return;
+
+                    _view.SetQuestBannerProgress(progress, quest.TargetCount);
+                })
+                .AddTo(this);
+        }
+
+        private void OnDailyQuestStateChanged(QuestState state)
+        {
+            DailyQuest quest = QuestManager.Instance.curDailyQuest;
+            if (quest == null) return;
+
+            switch (state)
+            {
+                case QuestState.Playing:
+                    _view.ShowQuestBanner(quest.so.Name, quest.curCount, quest.TargetCount);
+                    break;
+
+                case QuestState.End:
+                    _view.SetQuestBannerCompleted();
+                    break;
+
+                case QuestState.Ready:
+                    _view.HideQuestBanner();
+                    break;
+            }
+        }
+
         /// <summary>
         /// DateTimeManager year/month 확정 후 시간 표시 형식 연결.
         /// </summary>
         public void RefreshHUD()
         {
             // [TODO: DateTimeManager year/month 데이터 확정 후 시간 표시 형식 연결]
-            // 현재 형식: 00년 00월 0주 월요일
             var dtm = DateTimeManager.Instance;
             _view.SetTimeLabel($"{dtm.currentWeek.Value}주 {dtm.GetDayName()}");
         }
 
+        private void OnNewDay()
+        {
+            _view.SwitchToDay();
+            _view.SetWorkStartActive(true);
+            RefreshHUD();
+        }
+
+        private void OnQuestIconClicked()
+        {
+            if (_questPresenter.IsDetailVisible)
+            {
+                _questPresenter.HideDetail();
+            }
+            else
+            {
+                _questPresenter.ShowDetailAsync().Forget();
+            }
+        }
+
         private void OnWorkStartClicked()
         {
-            // 참조한 플레이어 책상의 데스크탑으로 이동하도록 수정함
+            _view.SetWorkStartActive(false);
+            QuestManager.Instance.StartDailyQuest();
+
             if (_desk != null)
             {
                 _desk.OnClickWorkButton();
             }
 
-            // DateTimeManager.Instance.CompleteDayWork();
-            // WorkStartBubble은 업무 시작 후 비활성화 — View에서 직접 처리하거나 Presenter에서 호출
             // [TODO: WorkStartBubble 비활성화 메서드 HUDView에 추가 후 연결]
-            // ★~퀘스트 구현 전에 임시로 그냥 임무 완료되게 처리중~☆
         }
 
         private void OnHRClicked()
@@ -134,7 +198,7 @@ namespace GameDevTycoon.UI.Ingame
             CloseAllBottomPopups();
             _view.SwitchToDay();
 
-            DateTimeManager.Instance.OnClickEndDayButton();
+            DateTimeManager.Instance.OnClickEndDayButton().Forget();
         }
 
         private void ToggleBottomPopup(IBottomNightUI targetPresenter)
@@ -162,19 +226,14 @@ namespace GameDevTycoon.UI.Ingame
             var yielded = new HashSet<IBottomNightUI>();
 
             if (yielded.Add(_hrPresenter))
-            {
                 yield return _hrPresenter;
-            }
 
             if (yielded.Add(_projectPresenter))
-            {
                 yield return _projectPresenter;
-            }
 
             if (yielded.Add(_companyPresenter))
-            {
                 yield return _companyPresenter;
-            }
+
             //추후 IBottomNightUI가 추가로 존재하면 여기에 추가
         }
     }

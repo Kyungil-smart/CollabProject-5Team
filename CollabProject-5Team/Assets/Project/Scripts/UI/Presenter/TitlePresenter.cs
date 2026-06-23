@@ -8,51 +8,46 @@ namespace GameDevTycoon.UI.Title
 {
     /// <summary>
     /// 타이틀 씬 Presenter.
-    /// 시작/설정 버튼 처리, 세이브 슬롯 바인딩, 씬 전환 담당.
-    /// 세이브 시스템 미구현으로 슬롯 1개 고정, 클릭 시 바로 게임씬 전환.
+    /// 시작/불러오기/설정/종료 버튼 처리, 씬 전환 담당.
     /// </summary>
     public sealed class TitlePresenter : MonoBehaviour
     {
         [SerializeField] private TitleView         _view;
         [SerializeField] private SettingsPresenter _settingsPresenter;
-
-        [Header("LoadSlotView 프리팹")]
-        [SerializeField] private LoadSlotView _slotPrefab;
+        [SerializeField] private LoadPresenter _loadPresenter;
 
         private void Start()
         {
             BindButtons();
-            SpawnSlot();
         }
 
         private void BindButtons()
         {
             _view.OnStartClicked
-                .Subscribe(_ => _view.ShowLoadPanel())
+                .Subscribe(_ => LoadNewGameSceneAsync().Forget())
+                .AddTo(this);
+
+            _view.OnLoadClicked
+                .Subscribe(_ => _loadPresenter.Show())
                 .AddTo(this);
 
             _view.OnSettingsClicked
                 .Subscribe(_ => _settingsPresenter.Show())
                 .AddTo(this);
+
+            _view.OnQuitClicked
+                .Subscribe(_ => Application.Quit())
+                .AddTo(this);
         }
 
-        private void SpawnSlot()
+        private async UniTaskVoid LoadNewGameSceneAsync()
         {
-            var slot = Instantiate(_slotPrefab, _view.SlotContent);
-            slot.PlayEntrance(0f);
+            // [TODO: 회사 이름 설정 팝업 → 페이드아웃 → 씬 전환 순서로 교체]
 
-            // [TODO: SaveSystem 연결 후 실제 데이터 바인딩 및 다중 슬롯으로 교체]
-            slot.Bind(new SaveSlotData { SlotName = "새 게임" });
-            slot.OnSelected += _ => LoadGameSceneAsync().Forget();
-        }
+            // 새 게임은 보내진 로드 슬롯 없음
+            SaveLoadSystem.Instance.pendingLoadSlot = null;
 
-        private async UniTaskVoid LoadGameSceneAsync()
-        {
-            _view.HideLoadPanel();
-            await SceneLoader.Instance.LoadAsync(
-                SceneName.Game,
-                this.GetCancellationTokenOnDestroy()
-            );
+            await SceneLoader.Instance.LoadAsync(SceneName.Game);
         }
     }
 }

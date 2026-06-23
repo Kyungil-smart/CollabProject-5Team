@@ -1,12 +1,11 @@
 using UnityEngine;
 using System.Collections.Generic;
-using UnityEditor.Rendering;
 
 public class PersonalOpinionList : MonoBehaviour
 {
     public List<Employee> _personalOpinionEmployee = new List<Employee>();
 
-    private PersonalOpinion _personalOpinion;
+    private PersonalOpinion _personalOpinion = new();
 
     [SerializeField] private GameObject _personalOpinionUI;
     [SerializeField] private GameObject _endPageUI;

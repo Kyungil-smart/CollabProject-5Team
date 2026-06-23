@@ -1,5 +1,4 @@
 using R3;
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -8,9 +7,7 @@ public class Project : MonoBehaviour
 {
     [Header(" 초기값 데이터 ")]
     public ProjectSO so;
-    public int Id => so.id;
     public string Name => so.Name;
-    public string Desc => so.desc;
     public ProjectSize Scale => so.scale;
     public int RequiredCost => so.requiredCost;
     public int MaxEmployeePerPart => so.maxEmployeePerPart;
@@ -18,18 +15,18 @@ public class Project : MonoBehaviour
 
     [Header(" 런타임 데이터 ")]
     public int day;      // 현재 진행 일수 (영업일 기준)
-    public ReactiveProperty<string> userNamed = new("a"); // 유저가 붙인 프로젝트 이름
+    public ReactiveProperty<string> userNamed = new(""); // 유저가 붙인 프로젝트 이름
 
     // 투입된 직원
-    public Employee[] plannings;
-    public Employee[] arts;
-    public Employee[] programmer;
+    public List<Employee> plannings = new();
+    public List<Employee> arts = new();
+    public List<Employee> programmer = new();
     public List<Employee> GetAllEmployees()
     {
         var result = new List<Employee>();
-        foreach (var arr in new[] { plannings, programmer, arts })
-            foreach (var e in arr)
-                if (e != null) result.Add(e);
+        result.AddRange(plannings);
+        result.AddRange(programmer);
+        result.AddRange(arts);
         return result;
     }
 
@@ -45,11 +42,6 @@ public class Project : MonoBehaviour
     public float charmScore;      // 매력도 점수 (아트)
     public float ProgressDayBar => Mathf.Clamp01((float)day / DurationDays) * 100f;
 
-    // 이벤트 발생으로 인한 수치 변화
-    //public float weeklyPlanningWeight;
-    //public float weeklyDevelopWeight;
-    //public float weeklyArtWeight;
-
     // 보고서 승인 대기 목록 (Friday Night 생성, 역할별 다수)
     public List<Report> pendingReports = new();
     // 플레이어가 역할당 1개씩 선택한 보고서
@@ -62,84 +54,69 @@ public class Project : MonoBehaviour
     {
         > 90f => 'S',
         > 75f => 'A',
-        > 60f => 'B',
+        > 50f => 'B',
         _ => 'C',
     };
 
     [Header("UI 표시용 데이터")]
     public string genre; public string artStyle; public string engine;
 
-    // 보고서 생성완료시 true
-    public bool isReportDraftsReady;
 
     bool _isRuntimeInitialized;
     public void InitializeRuntime(string projectName)
     {
-        EnsureInitialized();
-        userNamed.Value = projectName;
-        day = 0;
-        nightCount = 0;
-        qualityScore = 0f;
-        stabilityScore = 0f;
-        charmScore = 0f;
-        CurScore = 0f;
-        isFinished.Value = false;
-        pendingReports.Clear();
-        selectedReports.Clear();
-        isReportDraftsReady = false;
-    }
-    private void EnsureInitialized()
-    {
         if (_isRuntimeInitialized) return;
-
-        userNamed.Value = Name;
-        plannings = new Employee[MaxEmployeePerPart];
-        programmer = new Employee[MaxEmployeePerPart];
-        arts = new Employee[MaxEmployeePerPart];
         _isRuntimeInitialized = true;
+
+        userNamed.Value     = projectName;
+        plannings           = new();
+        programmer          = new();
+        arts                = new();
+        day                 = 0;
+        nightCount          = 0;
+        qualityScore        = 0f;
+        stabilityScore      = 0f;
+        charmScore          = 0f;
+        CurScore            = 0f;
+        isFinished.Value    = false;
+
+        pendingReports. Clear();
+        selectedReports.Clear();
     }
 
     public bool HireEmployee(Employee e)
     {
-        if (e == null)
-        {
-            Debug.Log("[Project] 고용할 직원이 null 입니다");
-            return false;
-        }
-
-        Employee[] targetArray = null;
+        List<Employee> targetList = null;
         switch (e.so.role)
         {
             case Role.PLANNER:
-                targetArray = plannings;
+                targetList = plannings;
                 break;
             case Role.PROGRAMMER:
-                targetArray = programmer;
+                targetList = programmer;
                 break;
             case Role.ARTIST:
-                targetArray = arts;
+                targetList = arts;
                 break;
             default:
                 Debug.LogWarning($"[{userNamed.Value}] {e.so.Name}의 파트({e.so.role})고용은 구현되지 않았습니다.");
                 return false;
         }
 
-        int emptyIndex = Array.FindIndex(targetArray, m => m == null);
-        if (emptyIndex < 0)
-        {
-            Debug.LogWarning($"[{userNamed.Value}] {e.so.role} 파트 투입 슬롯이 가득 찼습니다.");
-            return false;
-        }
+        if (targetList.Contains(e))
+            return true;
 
-        targetArray[emptyIndex] = e;
+        _EmployeeManager.Instance.MarkProjectEmployee(e);
+
+        targetList.Add(e);
         Debug.Log($"[{userNamed.Value}] {e.so.Name} 직원이 {e.so.role} 파트로 투입되었습니다.");
         return true;
     }
 
-    // 프로젝트에서 직원을 제거하고 해고 처리
-    public bool FireEmployee(Employee e)
+    // 프로젝트에서 직원을 제거
+    public void RemoveEmployee(Employee e)
     {
-        Employee[] targetArray = e.so.role switch
+        List<Employee> targetList = e.so.role switch
         {
             Role.PLANNER => plannings,
             Role.PROGRAMMER => programmer,
@@ -147,47 +124,29 @@ public class Project : MonoBehaviour
             _ => null,
         };
 
-        if (targetArray == null)
-        {
-            Debug.LogWarning($"[{userNamed.Value}] {e.so.Name}의 파트({e.so.role})해고는 구현되지 않았습니다.");
-            return false;
-        }
-
-        int index = Array.IndexOf(targetArray, e);
-        if (index < 0)
-        {
-            Debug.LogWarning($"[{userNamed.Value}] {e.so.Name}은 이 프로젝트에 투입되어 있지 않습니다.");
-            return false;
-        }
-
-        targetArray[index] = null;
+        targetList.Remove(e);
         Debug.Log($"[{userNamed.Value}] {e.so.Name} 직원이 {e.so.role} 파트에서 제거되었습니다.");
-
-        _EmployeeManager.Instance.FireEmployee(e);
-        return true;
     }
 
     // 날짜가 하루 진행될 때마다 호출되는 메서드
-    public void ProgressDay()
+    public void Progress()
     {
         if (isFinished.Value) return;
-
-        Debug.Log($"{userNamed}: [Day {day}] {DateTimeManager.GetDateString(day)}종료"); // 날짜 로그 표시중
         day++;
     }
 
     // 금요일 밤(평일 5일 경과 후) 주 1회 호출되는 메서드
     public void ProgressNight()
     {
-        Debug.Log($"{userNamed}: 밤 이벤트 발생!");
         // 주간 정산
         foreach (var e in GetAllEmployees())
         {
-           e.SaveCurrentData();
+            e.SaveCurrentData();
         }
 
-        // 보고서 산출
-        GenerateReportDrafts();
+        // 마지막 목표날이 아니라면 보고서 산출
+        if (day < DurationDays) GenerateReportDrafts();
+        else Finish();
     }
 
     #region 보고서 부분
@@ -200,9 +159,6 @@ public class Project : MonoBehaviour
         ReportPolicy.GenerateReportForRole(this, plannings);
         ReportPolicy.GenerateReportForRole(this, programmer);
         ReportPolicy.GenerateReportForRole(this, arts);
-
-        isReportDraftsReady = true;
-        Debug.Log($"[{userNamed.Value}] 보고서 생성 완료: {pendingReports.Count}건");
     }
 
     // UI에서 파트당 1개 선택 시 호출
@@ -231,13 +187,16 @@ public class Project : MonoBehaviour
 
             switch (report.role)
             {
-                case Role.PLANNER: qualThisNight = roleAvg;
+                case Role.PLANNER:
+                    qualThisNight = roleAvg;
                     if (nightCount == 1) genre = report.so.uiCategory;
                     break;
-                case Role.ARTIST: charmThisNight = roleAvg;
+                case Role.ARTIST:
+                    charmThisNight = roleAvg;
                     if (nightCount == 1) artStyle = report.so.uiCategory;
                     break;
-                case Role.PROGRAMMER: stabThisNight = roleAvg;
+                case Role.PROGRAMMER:
+                    stabThisNight = roleAvg;
                     if (nightCount == 1) engine = report.so.uiCategory;
                     break;
             }
@@ -264,9 +223,9 @@ public class Project : MonoBehaviour
         charmScore = (charmScore * (nightCount - 1) + charmThisNight) / nightCount;
         CurScore = (qualityScore + stabilityScore + charmScore) / 3f;
 #if UNITY_EDITOR
-        Debug.Log($"[{userNamed.Value}] {nightCount}주차 점수 | " +
+        Debug.Log($"<color=green>[{userNamed.Value}] {nightCount}주차 점수 | " +
                   $"완성도={qualThisNight:F1} 안정성={stabThisNight:F1} 매력도={charmThisNight:F1}\n" +
-                  $"  누적 평균 → 완성도={qualityScore:F1} 안정성={stabilityScore:F1} 매력도={charmScore:F1} | curScore={CurScore:F1}");
+                  $"  누적 평균 → 완성도={qualityScore:F1} 안정성={stabilityScore:F1} 매력도={charmScore:F1} | curScore={CurScore:F1}</color>");
 #endif
         foreach (var report in pendingReports)
         {
@@ -276,99 +235,97 @@ public class Project : MonoBehaviour
 
         pendingReports.Clear();
         selectedReports.Clear();
-        isReportDraftsReady = false;
-
-        if (day >= DurationDays)
-            Finish();
     }
     #endregion
 
     // 프로젝트 종료
     public void Finish()
     {
+        // 평일 일일 퀘스트 클리어 누적 포인트를 소급 적용
+        qualityScore = qualityScore + QuestManager.Instance.GetWeeklyBonus(Role.PLANNER);
+        stabilityScore = stabilityScore + QuestManager.Instance.GetWeeklyBonus(Role.PROGRAMMER);
+        charmScore = charmScore + QuestManager.Instance.GetWeeklyBonus(Role.ARTIST);
+        CurScore = (qualityScore + stabilityScore + charmScore) / 3f;
+
         isFinished.Value = true;
+        Company.Instance.CompleteProject(this);
 #if UNITY_EDITOR
         Debug.Log($"[{userNamed.Value}] 프로젝트 완료! ({nightCount}주차) | 등급={Grade}\n" +
                   $"  최종 → 완성도={qualityScore:F1} 안정성={stabilityScore:F1} 매력도={charmScore:F1} | 평균={CurScore:F1}");
 #endif
-        Company.Instance.CompleteProject(this);
     }
+
+    #region 세이브/로드
     public void ExportProjectData(SaveData data)
     {
-        data.activeProjectsData.project_Id                 = Id;
-        data.activeProjectsData.project_Name               = name;
-        data.activeProjectsData.project_Desc               = Desc;
-        data.activeProjectsData.project_Scale              = Scale;
-        data.activeProjectsData.project_RequiredCost       = RequiredCost;
-        data.activeProjectsData.project_MaxEmployeePerpart = MaxEmployeePerPart;
-        data.activeProjectsData.project_DurationDays       = DurationDays;
+        // so 대신에 프로젝트 존재 여부와 규모를 확인
+        data.activeProjectsData.project_Scale = Scale;
 
-        data.activeProjectsData.project_day = day;
-        data.activeProjectsData.project_userNamed = userNamed.Value;
+        data.activeProjectsData.project_day        = day;
+        data.activeProjectsData.project_userNamed  = userNamed.Value;
+        data.activeProjectsData.project_NightCount = nightCount;
+        data.activeProjectsData.project_Genre      = genre;
+        data.activeProjectsData.project_ArtStyle   = artStyle;
+        data.activeProjectsData.project_Engine     = engine;
 
-        data.activeProjectsData.project_PlanningEmployeeIds   = ConvertEmpArrayToIdList(plannings);
-        data.activeProjectsData.project_ProgrammerEmployeeIds = ConvertEmpArrayToIdList(programmer);
-        data.activeProjectsData.project_ArtistEmployeeIds     = ConvertEmpArrayToIdList(arts);
+        data.activeProjectsData.project_PlanningEmployeeIds   = ConvertEmployeeListToIdList(plannings);
+        data.activeProjectsData.project_ProgrammerEmployeeIds = ConvertEmployeeListToIdList(programmer);
+        data.activeProjectsData.project_ArtistEmployeeIds     = ConvertEmployeeListToIdList(arts);
 
         data.activeProjectsData.project_QualityScore   = qualityScore;
         data.activeProjectsData.project_StabilityScore = stabilityScore;
         data.activeProjectsData.project_CharmScore     = charmScore;
         data.activeProjectsData.project_CurScore       = CurScore;
     }
-
     public void ImportProjectData(SaveData data)
     {
-        this.so.id                 = data.activeProjectsData.project_Id;
-        this.so.name               = data.activeProjectsData.project_Name;
-        this.so.desc               = data.activeProjectsData.project_Desc;
-        this.so.scale              = data.activeProjectsData.project_Scale;
-        this.so.requiredCost       = data.activeProjectsData.project_RequiredCost;
-        this.so.maxEmployeePerPart = data.activeProjectsData.project_MaxEmployeePerpart;
-        this.so.durationDays       = data.activeProjectsData.project_DurationDays;
-
-        this.day = data.activeProjectsData.project_day;
-
-        EnsureInitialized();
+        // so 대신에 프로젝트 존재 여부와 규모를 확인
+        this.day             = data.activeProjectsData.project_day;
         this.userNamed.Value = data.activeProjectsData.project_userNamed;
+        this.nightCount      = data.activeProjectsData.project_NightCount;
+        this.genre           = data.activeProjectsData.project_Genre;
+        this.artStyle        = data.activeProjectsData.project_ArtStyle;
+        this.engine          = data.activeProjectsData.project_Engine;
 
-        this.qualityScore = data.activeProjectsData.project_QualityScore;
-        this.charmScore   = data.activeProjectsData.project_CharmScore;
-        this.CurScore     = data.activeProjectsData.project_CurScore;
+        this.qualityScore   = data.activeProjectsData.project_QualityScore;
+        this.stabilityScore = data.activeProjectsData.project_StabilityScore;
+        this.charmScore     = data.activeProjectsData.project_CharmScore;
+        this.CurScore       = data.activeProjectsData.project_CurScore;
 
-        RestoreEmployeeArray(data.activeProjectsData.project_PlanningEmployeeIds   ,  plannings);
-        RestoreEmployeeArray(data.activeProjectsData.project_ProgrammerEmployeeIds , programmer);
-        RestoreEmployeeArray(data.activeProjectsData.project_ArtistEmployeeIds     ,       arts);
+        this.isFinished.Value = false;
+        this.pendingReports. Clear();
+        this.selectedReports.Clear();
+
+        RestoreEmployeeList(data.activeProjectsData.project_PlanningEmployeeIds,   plannings);
+        RestoreEmployeeList(data.activeProjectsData.project_ProgrammerEmployeeIds, programmer);
+        RestoreEmployeeList(data.activeProjectsData.project_ArtistEmployeeIds,     arts);
     }
-
-    private List<int> ConvertEmpArrayToIdList(Employee[] arr)
+    private List<int> ConvertEmployeeListToIdList(List<Employee> employees)
     {
         var list = new List<int>();
-        if (arr == null) return list;
 
-        foreach (var emp in arr)
+        foreach (var emp in employees)
         {
-            list.Add(emp != null && emp.so != null ? emp.so.id : -1);
+            list.Add(emp.so.id);
         }
         return list;
     }
-
-    private void RestoreEmployeeArray(List<int> ids, Employee[] targetArr)
+    private void RestoreEmployeeList(List<int> ids, List<Employee> targetList)
     {
-        if (ids == null || targetArr == null || _EmployeeManager.Instance == null) return;
+        targetList.Clear();
 
         var hiredList = _EmployeeManager.Instance.haveEmployees.haveEmployeeList;
 
-        for (int i = 0; i < targetArr.Length && i < ids.Count; i++)
+        foreach (int empId in ids)
         {
-            int empId = ids[i];
-            if (empId == -1)
-            {
-                targetArr[i] = null;
-            }
-            else
-            {
-                targetArr[i] = hiredList.Find(e => e.so.id == empId);
-            }
+            if (empId == -1) continue;
+
+            Employee employee = hiredList.Find(e => e.so.id == empId);
+            if (employee == null) continue;
+
+            targetList.Add(employee);
+            _EmployeeManager.Instance.MarkProjectEmployee(employee);
         }
     }
+    #endregion
 }

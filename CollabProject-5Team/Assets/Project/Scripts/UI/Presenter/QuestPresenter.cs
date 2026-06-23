@@ -32,7 +32,7 @@ namespace GameDevTycoon.UI.Ingame
         private void Start()
         {
             BindButtons();
-            //LoadPrefabAsync().Forget();
+            LoadPrefabAsync().Forget();
             BindQuestManager();
         }
 

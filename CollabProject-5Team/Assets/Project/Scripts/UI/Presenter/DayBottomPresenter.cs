@@ -1,6 +1,7 @@
 using R3;
 using UnityEngine;
 using GameDevTycoon.UI;
+using Cysharp.Threading.Tasks;
 
 namespace GameDevTycoon.UI.Ingame
 {
@@ -23,6 +24,7 @@ namespace GameDevTycoon.UI.Ingame
             DateTimeManager.OnDay += Show;
             DateTimeManager.OnWorkCompleted += OnWorkCompleted;
             DateTimeManager.OnNightLoading += Hide;
+            DateTimeManager.OnReportEnd += Hide;
         }
 
         private void OnDestroy()
@@ -30,13 +32,13 @@ namespace GameDevTycoon.UI.Ingame
             DateTimeManager.OnDay -= Show;
             DateTimeManager.OnWorkCompleted -= OnWorkCompleted;
             DateTimeManager.OnNightLoading -= Hide;
+            DateTimeManager.OnReportEnd -= Hide;
         }
 
         private void BindData()
         {
             // 낮 진입 시 퇴근 버튼 비활성 — 업무 완료 후 활성화는 OnWorkCompleted()로 처리
             _view.SetDayQuitInteractable(false);
-            RefreshProgressItems();
         }
 
         private void BindButtons()
@@ -48,8 +50,8 @@ namespace GameDevTycoon.UI.Ingame
             _view.OnDayQuitClicked
                 .Subscribe(_ =>
                 {
-                    DateTimeManager.Instance.OnClickEndDayButton();
-                    // _view.SetDayQuitInteractable(false); 임시로 버그 안고침
+                    DateTimeManager.Instance.OnClickEndDayButton().Forget();
+                    _view.SetDayQuitInteractable(false);
                 }).AddTo(this);
         }
 
@@ -58,20 +60,13 @@ namespace GameDevTycoon.UI.Ingame
         /// </summary>
         public void RefreshProgressItems()
         {
-            var projects = Company.Instance.projects;
+            var company = Company.Instance;
+            bool hasProjects = company.activeProjectCount.Value > 0;
 
-            _view.SetProjectInfoVisible(projects.Count > 0);
-            if (projects.Count == 0) return;
+            _view.SetProjectInfoVisible(hasProjects);
+            if (!hasProjects) return;
 
-            // 진척도 높은 순 정렬 (동률 시 day 적은 순 — 먼저 시작한 프로젝트)
-            projects.Sort((a, b) =>
-            {
-                int cmp = b.ProgressDayBar.CompareTo(a.ProgressDayBar);
-                return cmp != 0 ? cmp : a.day.CompareTo(b.day);
-            });
-
-            var top = projects[0];
-            _view.SetProjectProgress(top.userNamed.Value, top.ProgressDayBar / 100f);
+            _view.SetProjectProgress(company.curProject.userNamed.Value, company.curProject.ProgressDayBar);
         }
 
         /// <summary>
@@ -85,6 +80,7 @@ namespace GameDevTycoon.UI.Ingame
         public void Show()
         {
             gameObject.SetActive(true);
+            _view.SetDayQuitInteractable(false);
             RefreshProgressItems();
         }
 

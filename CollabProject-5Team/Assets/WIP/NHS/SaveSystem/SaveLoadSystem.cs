@@ -2,6 +2,8 @@ using System;
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using UnityEngine;
 
 public class SaveLoadSystem : MonoBehaviour
@@ -15,6 +17,13 @@ public class SaveLoadSystem : MonoBehaviour
 
     public const int MaxSaveSlots = 3;
 
+    public int? pendingLoadSlot;
+
+    private static readonly JsonSerializerSettings jsonSettings = new()
+    {
+        Converters = { new StringEnumConverter() }
+    };
+
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -27,71 +36,106 @@ public class SaveLoadSystem : MonoBehaviour
         DontDestroyOnLoad(gameObject);
     }
 
-    public void SaveGame(int slot)
+    public bool SaveGame(int slot)
     {
-        if (slot < 0 || slot >= MaxSaveSlots) return;
+        if (!IsValidSlot(slot)) return false;
 
         SaveData data = new SaveData();
 
-        if(DateTimeManager.Instance != null)
-        {
+        if (_EmployeeManager.Instance != null)
             _EmployeeManager.Instance.ExportEmployeeData(data);  // 직원 정보 저장
 
-            Company.Instance.ExportCompanyData(data);            // 회사, 지난 프로젝트 정보 저장
-
-            Company.Instance.curProject.ExportProjectData(data); // 프로젝트 정보 저장
-
-            DateTimeManager.Instance.ExportSaveData(data);       // 날짜 정보 저장
+        if (Company.Instance != null)
+        {
+            Company.Instance.ExportCompanyData(data);        // 회사, 지난 프로젝트 정보 저장
+            Company.Instance.ExportActiveProjectData(data);  // 진행 중 프로젝트 정보 저장
         }
+
+        if (QuestManager.Instance != null)
+            QuestManager.Instance.ExportQuestData(data);     // 퀘스트 정보 저장
+
+        if (DateTimeManager.Instance != null)
+            DateTimeManager.Instance.ExportSaveData(data);   // 날짜 정보 저장
 
         data.realSaveTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm");
 
         string keyName = GetSaveKey(slot);
-        string jsonData = JsonUtility.ToJson(data, true);
+        string jsonData = SerializeSaveData(data);
 
         // JSON 문자열을 PlayerPrefs에 저장
         SaveEncryptedData(keyName, jsonData);
         Debug.Log("저장 완료");
+        return true;
     }
 
-    public SaveData LoadGame(int slot)
+    public SaveData GetSaveDataWithoutApply(int slot)
     {
-        if (slot < 0 || slot >= MaxSaveSlots) return null;
+        if (!IsValidSlot(slot)) return null;
 
-        string  keyName = GetSaveKey(slot);
+        string keyName = GetSaveKey(slot);
         string jsonData = LoadEncryptedData(keyName);
 
-        if (!string.IsNullOrEmpty(jsonData))
+        if (string.IsNullOrEmpty(jsonData)) return null;
+
+        try
         {
-            try
-            {
-                SaveData data = JsonUtility.FromJson<SaveData>(jsonData);
-
-                if (_EmployeeManager.Instance != null)
-                    _EmployeeManager.Instance.ImportEmployeeData(data);  // 직원 정보 로드
-
-                if (Company.Instance != null)
-                    Company.Instance.ImportCompanyData(data);            // 회사, 지난 프로젝트 정보 로드
-
-                if (Company.Instance != null && Company.Instance.curProject != null) 
-                    Company.Instance.curProject.ImportProjectData(data); // 프로젝트 정보 로드
-
-                if(DateTimeManager.Instance != null) 
-                    DateTimeManager.Instance.ImportSaveData(data);       // 날짜 정보 로드
-
-                Debug.Log("불러오기 성공");
-                return data;
-            }
-            catch (Exception e)
-            {
-                Debug.LogError("저장된 데이터 없음.");
-                return null;
-            }
-
+            return DeserializeSaveData(jsonData);
         }
+        catch (Exception)
+        {
+            Debug.LogError("불러오기 실패");
+            return null;
+        }
+    }
+    public bool LoadGame(SaveData data)
+    {
+        if (data == null) return false;
 
-        Debug.Log("저장된 데이터가 없음. 새 게임 시작");
-        return null;
+        try
+        {
+            if (_EmployeeManager.Instance != null)
+                _EmployeeManager.Instance.ImportEmployeeData(data);  // 직원 정보 로드
+
+            if (Company.Instance != null)
+            {
+                Company.Instance.ImportCompanyData(data);            // 회사, 지난 프로젝트 정보 로드
+                Company.Instance.ImportActiveProjectData(data);      // 진행 중 프로젝트 정보 로드
+            }
+
+            if (QuestManager.Instance != null)
+                QuestManager.Instance.ImportQuestData(data);         // 퀘스트 정보 로드
+
+            if (DateTimeManager.Instance != null)
+                DateTimeManager.Instance.ImportSaveData(data);       // 날짜 정보 로드
+
+            return true;
+        }
+        catch (Exception)
+        {
+            Debug.LogError("불러오기 실패");
+            return false;
+        }
+    }
+
+    public bool SetPendingLoad(int slot)
+    {
+        if (!HasSaveData(slot)) return false;
+
+        pendingLoadSlot = slot;
+        return true;
+    }
+
+    public bool TryConsumePendingLoad(out int slot, out SaveData data)
+    {
+        slot = -1;
+        data = null;
+
+        if (!pendingLoadSlot.HasValue) return false;
+
+        slot = pendingLoadSlot.Value;
+        pendingLoadSlot = null;
+        data = GetSaveDataWithoutApply(slot);
+        return data != null;
     }
 
     private string GetSaveKey(int slot)
@@ -99,30 +143,27 @@ public class SaveLoadSystem : MonoBehaviour
         return $"SaveSlot_{slot}";
     }
 
-    public SaveData GetSaveDataWithoutApply(int slot)
+    private static string SerializeSaveData(SaveData data)
     {
-        if (slot < 0 || slot >= MaxSaveSlots) return null;
+        return JsonConvert.SerializeObject(data, Formatting.Indented, jsonSettings);
+    }
 
-        string keyName = GetSaveKey(slot);
-        string jsonData = LoadEncryptedData(keyName);
-
-        if (!string.IsNullOrEmpty(jsonData))
-        {
-            try
-            {
-                return JsonUtility.FromJson<SaveData>(jsonData);
-            }
-            catch { return null; }
-        }
-        return null;
+    private static SaveData DeserializeSaveData(string jsonData)
+    {
+        return JsonConvert.DeserializeObject<SaveData>(jsonData, jsonSettings);
     }
 
     public bool HasSaveData(int slot)
     {
-        if (slot < 0 || slot >= MaxSaveSlots) return false;
+        if (!IsValidSlot(slot)) return false;
 
         string keyName = GetSaveKey(slot);
         return !string.IsNullOrEmpty(PlayerPrefs.GetString(keyName));
+    }
+
+    private static bool IsValidSlot(int slot)
+    {
+        return slot >= 0 && slot < MaxSaveSlots;
     }
 
     public static void SaveEncryptedData(string keyName, string data)
@@ -163,7 +204,7 @@ public class SaveLoadSystem : MonoBehaviour
 
             return reader.ReadToEnd();
         }
-        catch (Exception e)
+        catch (Exception)
         {
             Debug.Log("복호화 실패");
             return null;

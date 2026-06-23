@@ -44,8 +44,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 48bafd42d9e4afd4ea0efd99f10cddf0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _officeMaps:
-  - {fileID: 7681940568328679146, guid: 8a84adbd877956942856225f27e0458b, type: 3}
+  _offices:
+  - {fileID: 9109286258864431053, guid: 70b1d030b8f67904c8810cc1abd2d89d, type: 3}
+  - {fileID: 7728006202661685397, guid: e0e1c7ce76145794681bbe514c815399, type: 3}
+  - {fileID: 9142957662764276371, guid: 6b4a20c77eed23c4eacb01e2b709782c, type: 3}
+  _currentOfficeIndex: 0
   _playerPrefab: {fileID: 212431793065971841, guid: 533a75bd69eba964a804df4e7eebe5ea, type: 3}
   _allNpcPrefabs:
   - {fileID: 8477643386457636440, guid: 33338467b33e5a348b2b82d2e2d3064d, type: 3}
@@ -58,7 +61,5 @@ MonoBehaviour:
   - {fileID: 7285972052203900814, guid: 73031969da22d7941bef328568b7e3d2, type: 3}
   - {fileID: 6901403761132674612, guid: 117bc8c789fcf8f48a446a7cdfc2cd39, type: 3}
   - {fileID: 5616669764911222607, guid: 00d403240995f2b46b25462243695d4a, type: 3}
-  _playerSpawnPoint: {fileID: 0}
-  NpcSpawnPoint: {fileID: 0}
-  _map: {fileID: 0}
+  isUpgradeReserved: 0
   player: {fileID: 0}
