@@ -225,7 +225,7 @@ public class DateTimeManager : MonoBehaviour
         Company.Instance.TickWeeklyOfficeCost();
         Company.Instance.TickWeeklyCompletedProjects();
 
-        if (Company.Instance.curProject != null)
+        if (Company.Instance.activeProjectCount.Value > 0)
             Company.Instance.curProject.ProgressNight();
 
         _EmployeeManager.Instance.GenerateWeeklyApplicants();

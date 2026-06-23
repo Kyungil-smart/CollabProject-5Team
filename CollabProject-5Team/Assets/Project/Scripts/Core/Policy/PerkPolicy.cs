@@ -80,10 +80,14 @@ public static class PerkPolicy
     public static void InitCompletedStats(ProjectCompleted data, int companyPopularity)
     {
         data.RetentionFactor = 1f;
-        data.users           = CalcUsers(data.scale, data.qualityScore, prevUsers: 0);
-        data.dailySales      = CalcDailySales(data.scale, data.qualityScore, data.stabilityScore, data.charmScore, data.RetentionFactor, companyPopularity);
-        data.dailyGold       = CalcDailyGold(data.scale, data.dailySales);
+        data.users           = 0;
+        data.dailySales      = 0;
+        data.dailyGold       = 0;
         data.dailyCost       = CalcWeeklyCost(data.scale);
+        data.weeklySales     = 0;
+        data.weeklyGoldAccum = 0;
+        data.prevWeekUsers   = 0;
+        data.prevWeekGold    = 0;
     }
 
     // ─ 유지력 계수 ─

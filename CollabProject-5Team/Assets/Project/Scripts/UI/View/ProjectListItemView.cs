@@ -9,7 +9,7 @@ namespace GameDevTycoon.UI.Ingame
     /// Tab_InProgress.InProgressList Content에 동적 생성.
     /// 상태별 배경색은 Inspector에서 지정.
     /// </summary>
-    public sealed class ProjectListItemView : MonoBehaviour, IBindable<Project>
+    public sealed class ProjectListItemView : MonoBehaviour, IBindable<Project>, IBindable<ProjectCompleted>
     {
         [SerializeField] private Image           _itemFrame;
         [SerializeField] private TextMeshProUGUI _projectNumLabel;
@@ -24,20 +24,28 @@ namespace GameDevTycoon.UI.Ingame
         {
             _projectNameLabel.text = project.userNamed.Value;
 
-            bool isFinished = project.isFinished.Value;
-            _statusValue.text  = isFinished ? "서비스" : "제작 중";
-            _itemFrame.color   = isFinished ? _activeColor : _activeColor;
+            _statusValue.text = "제작 중";
+            _itemFrame.color = _activeColor;
+        }
+
+        public void Bind(ProjectCompleted record)
+        {
+            _projectNameLabel.text = record.projectName;
+
+            if (record.isServiceOver)
+            {
+                _statusValue.text = "서비스 종료";
+                _itemFrame.color = _inactiveColor;
+                return;
+            }
+
+            _statusValue.text = "서비스 중";
+            _itemFrame.color = _activeColor;
         }
 
         public void SetNumber(int number)
         {
             _projectNumLabel.text = number.ToString();
-        }
-
-        public void SetInactive()
-        {
-            _itemFrame.color  = _inactiveColor;
-            _statusValue.text = "서비스 중";
         }
     }
 }
