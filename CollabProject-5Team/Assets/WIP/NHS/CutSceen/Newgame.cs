@@ -3,6 +3,7 @@ using System.Text.RegularExpressions;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using DG.Tweening;
 
 public class Newgame : MonoBehaviour
 {
@@ -26,6 +27,14 @@ public class Newgame : MonoBehaviour
     [SerializeField] private TMP_InputField _playerNameInputField; 
     [SerializeField] private Button         _playerNameAcceptButton;
 
+    [Header("경고 팝업")]
+    [SerializeField] private GameObject _warningPanel;
+    [SerializeField] private Button     _warningCheckButton;
+
+    [Header("스킵")]
+    [SerializeField] private Button _skipButton;
+    private bool _isFinishedSetPlayerName = false;
+
     [Header("컷씬")]
     [SerializeField] private CutScenePanelUI    _cutSceneUI;
     [SerializeField] private List<CutSceneData> _cutSceneList;
@@ -34,11 +43,17 @@ public class Newgame : MonoBehaviour
     private string _playerName  = "주인공";
     private int    _currentIdx  = 0;
 
+    // DoTween 제어용 변수
+    private float  _typingSpeed = 0.05f;
+    private Tween  _typingTween;
+    private string _currentFullDialogue = ""; 
+
     private void Start()
     {
            _companyAcceptButton.onClick.AddListener(OnCompanyConfirmed);
          _cutSceneUI.nextButton.onClick.AddListener(OnNextDialogueClicked);
         _playerNameAcceptButton.onClick.AddListener(OnPlayerNameConfirmed);
+                    _skipButton.onClick.AddListener(OnCanSkip);
 
            _setCompanyPanel.SetActive(true);
           _cutSceneUI.panel.SetActive(false);
@@ -57,7 +72,12 @@ public class Newgame : MonoBehaviour
 
         if (currentData != null)
         {
-            string msg = currentData.dialogue
+            if (_typingTween != null && _typingTween.IsActive())
+            {
+                _typingTween.Kill();
+            }
+
+            _currentFullDialogue = currentData.dialogue
                 .Replace("[Company]", _companyName)
                 .Replace("[Player]", _playerName);
 
@@ -66,27 +86,49 @@ public class Newgame : MonoBehaviour
                 .Replace("[Player]", _playerName);
 
             _cutSceneUI.characterName.text = name;
-            _cutSceneUI.dialogue.text = msg;
             _cutSceneUI.image.sprite = currentData.cutSceenImage;
 
             if (currentData.id == 1000040)
             {
+                _cutSceneUI.dialogue.text = "";
                 OpenPlayerNamePanel();
                 return;
             }
-        }
-    }
 
-    private void OpenPlayerNamePanel()
-    {
-          _cutSceneUI.panel.SetActive(false);
-        _setPlayerNamePanel.SetActive(true);
+            // 시작 전 텍스트 비우기
+            _cutSceneUI.dialogue.text = "";
+
+            // 전체 연출 시간 계산
+            float duration = _currentFullDialogue.Length * _typingSpeed;
+
+            _typingTween = DOTween.To
+                (
+                    () => _cutSceneUI.dialogue.text,
+                    x => _cutSceneUI.dialogue.text = x,
+                    _currentFullDialogue,
+                    duration
+                ).SetEase(Ease.Linear)
+                .OnComplete(() => _typingTween = null);
+        }
     }
 
     private void OnNextDialogueClicked()
     {
+        if (_typingTween != null && _typingTween.IsActive() && _typingTween.IsPlaying())
+        {
+            _typingTween.Complete(); 
+            _typingTween = null;     
+            return;
+        }
+
         _currentIdx++;
         ShowCutScene();
+    }
+
+    private void OpenPlayerNamePanel()
+    {
+        _cutSceneUI.panel.SetActive(false);
+        _setPlayerNamePanel.SetActive(true);
     }
 
     private void OnCompanyConfirmed()
@@ -95,7 +137,7 @@ public class Newgame : MonoBehaviour
 
         if (!CheckValidName(input))
         {
-            _companyInputField.text = ""; // 비워버림
+            _companyInputField.text = ""; 
             return;
         }
 
@@ -104,7 +146,6 @@ public class Newgame : MonoBehaviour
 
         _setCompanyPanel.SetActive(false);
 
-        // 컷신 패널을 켜고 첫 컷신 시작
         _cutSceneUI.panel.SetActive(true);
         ShowCutScene();
     }
@@ -115,39 +156,65 @@ public class Newgame : MonoBehaviour
 
         if (!CheckValidName(input))
         {
-            _companyInputField.text = ""; // 비워버림
+            _playerNameInputField.text = "";
             return;
         }
 
         _playerName = input;
         Company.Instance.playerName = _playerName;
 
-        _setPlayerNamePanel.SetActive(false);
+        _isFinishedSetPlayerName = true;
 
+        _setPlayerNamePanel.SetActive(false);
         _cutSceneUI.panel.SetActive(true);
 
         _currentIdx++;
         ShowCutScene();
     }
 
+    private void OnCanSkip()
+    {
+        if (_typingTween != null && _typingTween.IsActive())
+        {
+            _typingTween.Kill();
+            _typingTween = null;
+        }
+
+        if (!_isFinishedSetPlayerName)
+        {
+            int targetIdx = _cutSceneList.FindIndex(data => data != null && data.id == 1000040);
+
+            if (targetIdx != -1)
+            {
+                _currentIdx = targetIdx;
+                ShowCutScene();
+            }
+            else
+            {
+                _setCompanyPanel.SetActive(false);
+                OpenPlayerNamePanel();
+            }
+        }
+        else
+        {
+            EndCutSceen();
+        }
+    }
+
     private bool CheckValidName(string nameToCheck)
     {
-        // 1. 빈칸 검사
         if (string.IsNullOrWhiteSpace(nameToCheck))
         {
             Debug.LogWarning("이름이 비어있습니다.");
             return false;
         }
 
-        // 2. 글자 수 제한 (예: 2자 이상 8자 이하)
         if (nameToCheck.Length < 2 || nameToCheck.Length > 8)
         {
             Debug.LogWarning("이름은 2자 이상, 8자 이하로 설정해야 합니다.");
             return false;
         }
 
-        // 3. ㅇㄹㅇㄹㅇㄹ, ㅋㅋㅋ, ㄱㄱㄱ 같은 단순 자음/모음 나열 차단 (정규식)
-        // 한글 완성형(가~힣)이나 영어(a-z, A-Z), 숫자(0-9)만 허용하고, 자음/모음만 단독으로 있는 건 튕겨냅니다.
         string pattern = @"^[가-힣a-zA-Z0-9]+$";
         if (!Regex.IsMatch(nameToCheck, pattern))
         {
@@ -155,31 +222,27 @@ public class Newgame : MonoBehaviour
             return false;
         }
 
-        // 4. 메모장(BadWords)에 적어둔 욕설(시발, fuck 등) 검사
         TextAsset badWordsFile = Resources.Load<TextAsset>("BadWords");
         if (badWordsFile != null)
         {
-            // 메모장 내용을 줄바꿈 단위로 쪼개서 배열로 만듦
             string[] badWords = badWordsFile.text.Split(new[] { "\r\n", "\r", "\n" }, System.StringSplitOptions.RemoveEmptyEntries);
 
             foreach (string word in badWords)
             {
-                // 유저가 입력한 이름에 욕설 단어가 '포함'되어 있는지 대소문자 구분 없이 검사
                 if (nameToCheck.ToLower().Contains(word.Trim().ToLower()))
                 {
                     Debug.LogWarning($"금지어가 포함되어 있습니다: {word}");
-                    return false; // 하나라도 걸리면 즉시 컷!
+                    return false; 
                 }
             }
         }
 
-        return true; // 모든 난관을 통과하면 비로소 참(True) 반환!
+        return true; 
     }
 
     private void EndCutSceen()
     {
         _cutSceneUI.panel.SetActive(false);
         Debug.Log($"인트로 완료! 회사명: {_companyName}, 플레이어명: {_playerName}");
-        // [TODO] 다음 씬 전환 로직 기입 (예: SceneManager.LoadScene)
     }
 }
