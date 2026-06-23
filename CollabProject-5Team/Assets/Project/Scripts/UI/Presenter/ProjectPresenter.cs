@@ -209,7 +209,7 @@ namespace GameDevTycoon.UI.Ingame
 
         private void RefreshNewProject()
         {
-            bool hasActiveProject = Company.Instance.curProject != null;
+            bool hasActiveProject = Company.Instance.activeProjectCount.Value > 0;
             _view.SetActiveProjectWarningVisible(hasActiveProject);
 
             if (!hasActiveProject)
@@ -533,28 +533,22 @@ namespace GameDevTycoon.UI.Ingame
         }
 
         /// <summary>
-        /// 제작 중(최대 1개) + 서비스 중 프로젝트를 합쳐 반환.
+        /// 제작 중 프로젝트를 반환. 현재 진행 프로젝트는 최대 1개만 존재.
         /// </summary>
         private List<Project> GetInProgressProjects()
         {
             var result = new List<Project>();
 
-            if (Company.Instance.curProject != null)
+            if (Company.Instance.activeProjectCount.Value > 0)
                 result.Add(Company.Instance.curProject);
 
-            var serviceProjects = Company.Instance.projects
-                .Where(p => p != Company.Instance.curProject && p.isFinished.Value)
-                .ToList();
-
-            result.AddRange(serviceProjects);
             return result;
         }
 
         private bool IsEmployeeInProject(Employee employee)
         {
-            foreach (var project in Company.Instance.projects)
-                if (project.GetAllEmployees().Contains(employee)) return true;
-            return false;
+            if (Company.Instance.activeProjectCount.Value <= 0) return false;
+            return Company.Instance.curProject.GetAllEmployees().Contains(employee);
         }
 
         private bool IsServiceOver(Project project)

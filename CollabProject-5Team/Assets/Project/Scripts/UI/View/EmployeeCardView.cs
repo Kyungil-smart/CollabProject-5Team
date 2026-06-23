@@ -55,9 +55,8 @@ namespace GameDevTycoon.UI.Ingame
 
         private static bool IsDeployed(Employee employee)
         {
-            foreach (var project in Company.Instance.projects)
-                if (project.GetAllEmployees().Contains(employee)) return true;
-            return false;
+            if (Company.Instance.activeProjectCount.Value <= 0) return false;
+            return Company.Instance.curProject.GetAllEmployees().Contains(employee);
         }
 
     }

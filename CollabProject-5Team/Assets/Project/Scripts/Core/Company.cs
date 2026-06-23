@@ -14,9 +14,6 @@ public class Company : MonoBehaviour
     public ReactiveProperty<int> gold = new(10000); // 보유 자금
     public int level = 1;                           // 회사 레벨, 회사 증축 상황(소형=1 중형=2 대형=3) 과 같음
 
-    public int ProjectSlots = 1;  // 기획 변경으로 1고정(추후 삭제)
-
-    public List<Project> projects = new(); //기획변경으로 필요없는 리스트, 이전코드 호환용으로 일단 냅둠
     public ReactiveProperty<int> activeProjectCount = new(0); // 현재 프로젝트 보유 여부 0: 없음, 1: 있음
     public Project curProject; // 진행중인 프로젝트는 오직 1개만 존재
     public List<Employee> selectedProjectEmployees = new(); // 신규 프로젝트 UI에서 임시 선택된 직원들
@@ -48,22 +45,6 @@ public class Company : MonoBehaviour
         Instance = this;
     #endregion
     }
-
-    #region 테스트 코드
-    // 자식 오브젝트의 Project를 curProject로 세팅하는 "테스트"코드
-    //public void InitProjects()
-    //{
-    //    projects.AddRange(GetComponentsInChildren<Project>());
-    //    curProject = projects.Count > 0 ? projects[0] : null;
-    //    activeProjectCount.Value = curProject != null ? 1 : 0;
-
-    //    if (curProject == null) return;
-    //    foreach (var employee in _EmployeeManager.Instance.haveEmployees.haveEmployeeList)
-    //    {
-    //        curProject.HireEmployee(employee);
-    //    }
-    //}
-    #endregion
 
     #region 프로젝트 시작 관리
     public Project CreateProject(ProjectSize scale, string projectName)
@@ -97,9 +78,6 @@ public class Company : MonoBehaviour
         cumulativeManagementStatus.Recalculate();
 
         QuestManager.Instance.ResetWeeklyBonus();
-
-        if (!projects.Contains(project))
-            projects.Add(project);
 
         curProject = project;
         activeProjectCount.Value = 1;
@@ -179,8 +157,7 @@ public class Company : MonoBehaviour
         completedProjects.Add(record);
         hasPendingCompletedProject = true;
         pendingCompletedProject = record;
-        projects.Remove(project);
-
+        Destroy(project.gameObject);
         curProject = null;
 
         activeProjectCount.Value = 0;
@@ -364,7 +341,6 @@ public class Company : MonoBehaviour
 
         Project project = InstantiateProject(projectData.project_Scale, projectData.project_userNamed);
 
-        projects.Add(project);
         curProject = project;
         activeProjectCount.Value = 1;
 
@@ -373,16 +349,9 @@ public class Company : MonoBehaviour
 
     private void ClearActiveProjectForLoad()
     {
-        if (curProject != null && !projects.Contains(curProject))
+        if (activeProjectCount.Value > 0)
             Destroy(curProject.gameObject);
 
-        foreach (var project in projects)
-        {
-            if (project != null)
-                Destroy(project.gameObject);
-        }
-
-        projects.Clear();
         curProject = null;
         activeProjectCount.Value = 0;
         selectedProjectEmployees.Clear();
