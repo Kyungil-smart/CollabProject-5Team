@@ -99,7 +99,7 @@ namespace GameDevTycoon.UI.Ingame
             string dateRange = $"{DateTimeManager.GetMonthWeekString((week - 1) * 5)}";
 
 
-            _view.SetCoverInfo(dateRange, Company.Instance.Name);
+            _view.SetCoverInfo(dateRange, Company.Instance.CompanyName);
         }
 
         private void RefreshEmployeeStatusSlide()

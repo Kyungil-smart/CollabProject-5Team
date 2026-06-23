@@ -1,7 +1,8 @@
+using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using System.Collections.Generic;
 
 public class Newgame : MonoBehaviour
 {
@@ -91,10 +92,15 @@ public class Newgame : MonoBehaviour
     private void OnCompanyConfirmed()
     {
         string input = _companyInputField.text.Trim();
-        if (string.IsNullOrWhiteSpace(input)) return;
+
+        if (!CheckValidName(input))
+        {
+            _companyInputField.text = ""; // 비워버림
+            return;
+        }
 
         _companyName = input;
-        Company.Instance.Name = _companyName;
+        Company.Instance.CompanyName = _companyName;
 
         _setCompanyPanel.SetActive(false);
 
@@ -106,7 +112,12 @@ public class Newgame : MonoBehaviour
     private void OnPlayerNameConfirmed()
     {
         string input = _playerNameInputField.text.Trim();
-        if (string.IsNullOrWhiteSpace(input)) return;
+
+        if (!CheckValidName(input))
+        {
+            _companyInputField.text = ""; // 비워버림
+            return;
+        }
 
         _playerName = input;
         Company.Instance.playerName = _playerName;
@@ -117,6 +128,52 @@ public class Newgame : MonoBehaviour
 
         _currentIdx++;
         ShowCutScene();
+    }
+
+    private bool CheckValidName(string nameToCheck)
+    {
+        // 1. 빈칸 검사
+        if (string.IsNullOrWhiteSpace(nameToCheck))
+        {
+            Debug.LogWarning("이름이 비어있습니다.");
+            return false;
+        }
+
+        // 2. 글자 수 제한 (예: 2자 이상 8자 이하)
+        if (nameToCheck.Length < 2 || nameToCheck.Length > 8)
+        {
+            Debug.LogWarning("이름은 2자 이상, 8자 이하로 설정해야 합니다.");
+            return false;
+        }
+
+        // 3. ㅇㄹㅇㄹㅇㄹ, ㅋㅋㅋ, ㄱㄱㄱ 같은 단순 자음/모음 나열 차단 (정규식)
+        // 한글 완성형(가~힣)이나 영어(a-z, A-Z), 숫자(0-9)만 허용하고, 자음/모음만 단독으로 있는 건 튕겨냅니다.
+        string pattern = @"^[가-힣a-zA-Z0-9]+$";
+        if (!Regex.IsMatch(nameToCheck, pattern))
+        {
+            Debug.LogWarning("올바르지 않은 문자가 포함되어 있거나, 자음/모음만 입력되었습니다. (예: ㅇㄹㅇㄹ)");
+            return false;
+        }
+
+        // 4. 메모장(BadWords)에 적어둔 욕설(시발, fuck 등) 검사
+        TextAsset badWordsFile = Resources.Load<TextAsset>("BadWords");
+        if (badWordsFile != null)
+        {
+            // 메모장 내용을 줄바꿈 단위로 쪼개서 배열로 만듦
+            string[] badWords = badWordsFile.text.Split(new[] { "\r\n", "\r", "\n" }, System.StringSplitOptions.RemoveEmptyEntries);
+
+            foreach (string word in badWords)
+            {
+                // 유저가 입력한 이름에 욕설 단어가 '포함'되어 있는지 대소문자 구분 없이 검사
+                if (nameToCheck.ToLower().Contains(word.Trim().ToLower()))
+                {
+                    Debug.LogWarning($"금지어가 포함되어 있습니다: {word}");
+                    return false; // 하나라도 걸리면 즉시 컷!
+                }
+            }
+        }
+
+        return true; // 모든 난관을 통과하면 비로소 참(True) 반환!
     }
 
     private void EndCutSceen()
