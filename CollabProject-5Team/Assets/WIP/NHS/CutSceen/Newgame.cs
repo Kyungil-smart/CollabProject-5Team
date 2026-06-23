@@ -58,6 +58,7 @@ public class Newgame : MonoBehaviour
            _setCompanyPanel.SetActive(true);
           _cutSceneUI.panel.SetActive(false);
         _setPlayerNamePanel.SetActive(false);
+              _warningPanel.SetActive(false);
     }
 
     private void ShowCutScene()
@@ -205,12 +206,14 @@ public class Newgame : MonoBehaviour
     {
         if (string.IsNullOrWhiteSpace(nameToCheck))
         {
+            _warningPanel.SetActive(true);
             Debug.LogWarning("이름이 비어있습니다.");
             return false;
         }
 
         if (nameToCheck.Length < 2 || nameToCheck.Length > 8)
         {
+            _warningPanel.SetActive(true);
             Debug.LogWarning("이름은 2자 이상, 8자 이하로 설정해야 합니다.");
             return false;
         }
@@ -218,6 +221,7 @@ public class Newgame : MonoBehaviour
         string pattern = @"^[가-힣a-zA-Z0-9]+$";
         if (!Regex.IsMatch(nameToCheck, pattern))
         {
+            _warningPanel.SetActive(true);
             Debug.LogWarning("올바르지 않은 문자가 포함되어 있거나, 자음/모음만 입력되었습니다. (예: ㅇㄹㅇㄹ)");
             return false;
         }
@@ -225,12 +229,13 @@ public class Newgame : MonoBehaviour
         TextAsset badWordsFile = Resources.Load<TextAsset>("BadWords");
         if (badWordsFile != null)
         {
-            string[] badWords = badWordsFile.text.Split(new[] { "\r\n", "\r", "\n" }, System.StringSplitOptions.RemoveEmptyEntries);
+            string[] badWords = badWordsFile.text.Split(new[] { "\n" }, System.StringSplitOptions.RemoveEmptyEntries);
 
             foreach (string word in badWords)
             {
                 if (nameToCheck.ToLower().Contains(word.Trim().ToLower()))
                 {
+                    _warningPanel.SetActive(true);
                     Debug.LogWarning($"금지어가 포함되어 있습니다: {word}");
                     return false; 
                 }
