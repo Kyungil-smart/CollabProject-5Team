@@ -18,7 +18,9 @@ public class _EmployeeManager : MonoBehaviour
     public List<EmployeeTrainingCourse> trainingCourses = new();
 
     [Header("이번 주 지원자 리스트")]
-    public List<RecruitRequest> currentApplicants = new();    // 현재 모집 요청 및 지원자
+    public List<Employee> currentApplicants = new();    // 현재 모집 요청 및 지원자
+
+    public List<RecruitRequest> activeRecruiRequests = new();
 
     public EmployeeList employeeList;
     public HaveEmployees haveEmployees;
@@ -91,22 +93,24 @@ public class _EmployeeManager : MonoBehaviour
     // 직원 채용 요청 등록
     public void RegisterRecruitRequests(List<RecruitRequest> requests)
     {
-        currentApplicants.Clear();
-        currentApplicants.AddRange(requests);
+        activeRecruiRequests.Clear();
+        activeRecruiRequests.AddRange(requests);
     }
 
     // 현재 지원자 리스트를 반환
     public List<Employee> GetCurrentApplicantEmployees()
     {
-        return currentApplicants
-            .SelectMany(request => request.Applicants)
-            .ToList();
+        return currentApplicants;
+            //.SelectMany(request => request.Applicants)
+            //.ToList();
     }
 
     // 금요일 밤에 채용 요청 수만큼 지원자를 확정한다.
     public void GenerateWeeklyApplicants()
     {
-        foreach (RecruitRequest request in currentApplicants)
+        currentApplicants.Clear();
+
+        foreach (RecruitRequest request in activeRecruiRequests)
         {
             request.Applicants.Clear();
 
@@ -117,8 +121,14 @@ public class _EmployeeManager : MonoBehaviour
                 .Take(request.Count)
                 .ToList();
 
-            request.Applicants.AddRange(applicants);
+            currentApplicants.AddRange(applicants);
         }
+    }
+
+    public void ClearAllRecruitData()
+    {
+        currentApplicants.Clear();
+        activeRecruiRequests.Clear();
     }
 
     public void ClearCurrentApplicants()
@@ -126,13 +136,6 @@ public class _EmployeeManager : MonoBehaviour
         currentApplicants.Clear();
     }
 
-    public void RemoveFromApplicants(Employee applicant)
-    {
-        foreach (RecruitRequest request in currentApplicants)
-        {
-            request.Applicants.Remove(applicant);
-        }
-    }
     #endregion
 
     #region 상태 관리
