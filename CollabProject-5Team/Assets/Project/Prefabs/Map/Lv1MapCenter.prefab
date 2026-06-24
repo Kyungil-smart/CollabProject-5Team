@@ -322,7 +322,7 @@ GameObject:
   - component: {fileID: 2795740818291343705}
   - component: {fileID: 6696874062448952383}
   - component: {fileID: 2917973254869417832}
-  - component: {fileID: 4909861218644352388}
+  - component: {fileID: 5256862548818826493}
   m_Layer: 0
   m_Name: Classroom_Chair_1 Variant_4
   m_TagString: Untagged
@@ -399,7 +399,7 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!114 &4909861218644352388
+--- !u!114 &5256862548818826493
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -408,11 +408,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 575799907882058186}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 55e3e3915c6c9f44ca765f00ee4c5ee3, type: 3}
+  m_Script: {fileID: 11500000, guid: d4badca14b6b9a642b820c3b1b6376db, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  sitPoint: {fileID: 8476614698037325925}
-  isSeated: 0
+  SitPoint: {fileID: 8476614698037325925}
+  PointType: 0
+  IsOccupied: 0
+  Owner: {fileID: 0}
 --- !u!1 &612950123731980716
 GameObject:
   m_ObjectHideFlags: 0
@@ -424,7 +426,7 @@ GameObject:
   - component: {fileID: 7896178475469592939}
   - component: {fileID: 6656441316172630733}
   - component: {fileID: 6703682106128851344}
-  - component: {fileID: 4736780602247279684}
+  - component: {fileID: 1169713671053135700}
   m_Layer: 0
   m_Name: Classroom_Chair_1 Variant_1
   m_TagString: Untagged
@@ -501,7 +503,7 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!114 &4736780602247279684
+--- !u!114 &1169713671053135700
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -510,11 +512,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 612950123731980716}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 55e3e3915c6c9f44ca765f00ee4c5ee3, type: 3}
+  m_Script: {fileID: 11500000, guid: d4badca14b6b9a642b820c3b1b6376db, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  sitPoint: {fileID: 5432392180563524635}
-  isSeated: 0
+  SitPoint: {fileID: 5432392180563524635}
+  PointType: 0
+  IsOccupied: 0
+  Owner: {fileID: 0}
 --- !u!1 &654843518825963032
 GameObject:
   m_ObjectHideFlags: 0
@@ -1388,7 +1392,7 @@ GameObject:
   - component: {fileID: 4509447021200261714}
   - component: {fileID: 8078296434922459132}
   - component: {fileID: 713431648279448177}
-  - component: {fileID: 8177582505278660170}
+  - component: {fileID: 8597410186105719844}
   m_Layer: 0
   m_Name: Classroom_Chair_1 Variant_3
   m_TagString: Untagged
@@ -1465,7 +1469,7 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!114 &8177582505278660170
+--- !u!114 &8597410186105719844
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1474,11 +1478,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 1883142954652733262}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 55e3e3915c6c9f44ca765f00ee4c5ee3, type: 3}
+  m_Script: {fileID: 11500000, guid: d4badca14b6b9a642b820c3b1b6376db, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  sitPoint: {fileID: 8471017656596459096}
-  isSeated: 0
+  SitPoint: {fileID: 8471017656596459096}
+  PointType: 0
+  IsOccupied: 0
+  Owner: {fileID: 0}
 --- !u!1 &1940589706694670496
 GameObject:
   m_ObjectHideFlags: 0
@@ -1490,6 +1496,7 @@ GameObject:
   - component: {fileID: 8844406650236860865}
   - component: {fileID: 8367222380920339447}
   - component: {fileID: 2051877988501321751}
+  - component: {fileID: 2313180479771193348}
   m_Layer: 0
   m_Name: Hotel_Armchair_1 Variant (1)
   m_TagString: Untagged
@@ -1509,7 +1516,8 @@ Transform:
   m_LocalPosition: {x: 5.5129995, y: -0.98099947, z: 3.9640002}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 2959265658976809454}
   m_Father: {fileID: 5116194994172124998}
   m_LocalEulerAnglesHint: {x: 0, y: 180, z: 0}
 --- !u!33 &8367222380920339447
@@ -1565,6 +1573,22 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!114 &2313180479771193348
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1940589706694670496}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d4badca14b6b9a642b820c3b1b6376db, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  SitPoint: {fileID: 2959265658976809454}
+  PointType: 1
+  IsOccupied: 0
+  Owner: {fileID: 0}
 --- !u!1 &2004769883105916665
 GameObject:
   m_ObjectHideFlags: 0
@@ -2223,6 +2247,7 @@ GameObject:
   - component: {fileID: 902777586391532106}
   - component: {fileID: 4202816126487390666}
   - component: {fileID: 6150429353972572442}
+  - component: {fileID: 1944851226660054097}
   m_Layer: 0
   m_Name: Hotel_Armchair_1 Variant
   m_TagString: Untagged
@@ -2242,7 +2267,8 @@ Transform:
   m_LocalPosition: {x: 5.3944044, y: -0.98099947, z: 0.5540001}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 7736592249110616363}
   m_Father: {fileID: 5116194994172124998}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &4202816126487390666
@@ -2298,6 +2324,22 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!114 &1944851226660054097
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2649053777969900285}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d4badca14b6b9a642b820c3b1b6376db, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  SitPoint: {fileID: 7736592249110616363}
+  PointType: 1
+  IsOccupied: 0
+  Owner: {fileID: 0}
 --- !u!1 &2667605542925850489
 GameObject:
   m_ObjectHideFlags: 0
@@ -4777,6 +4819,37 @@ Transform:
   - {fileID: 4374500119084693093}
   m_Father: {fileID: 5422482994801270534}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &6265885989607893672
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7736592249110616363}
+  m_Layer: 0
+  m_Name: SitPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7736592249110616363
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6265885989607893672}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0.5, z: 0.303}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 902777586391532106}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &6279415610099220171
 GameObject:
   m_ObjectHideFlags: 0
@@ -6147,6 +6220,37 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!1 &9158648483640358577
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2959265658976809454}
+  m_Layer: 0
+  m_Name: SitPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2959265658976809454
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9158648483640358577}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0.5, z: 0.335}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 8844406650236860865}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &1049960484633464421
 PrefabInstance:
   m_ObjectHideFlags: 0
