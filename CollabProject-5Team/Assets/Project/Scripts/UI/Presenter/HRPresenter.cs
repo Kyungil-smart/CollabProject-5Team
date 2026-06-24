@@ -51,8 +51,8 @@ namespace GameDevTycoon.UI.Ingame
         public void Show()
         {
             _view.Show();
-            RefreshEmployeeManageList();
             _view.ShowTab(HRTab.EmployeeManage);
+            RefreshEmployeeManageList();
         }
 
         public void Hide() => _view.Hide();
@@ -125,12 +125,6 @@ namespace GameDevTycoon.UI.Ingame
             _view.OnRecruitClicked
                 .Subscribe(_ =>
                 {
-                    foreach (var slider in _view.AllSliders)
-                    {
-                        slider.ResetSelection();
-                    }
-                    RefreshRecruitCost();
-
                     _view.ShowRecruit();
                     InitRecruitSliders();
                 })
@@ -259,10 +253,6 @@ namespace GameDevTycoon.UI.Ingame
                 slider.OnCountChanged
                     .Subscribe(_ => RefreshRecruitCost())
                     .AddTo(_sliderDisposables);
-
-                slider.OnSelectedChanged += RefreshRecruitCost;
-
-                _sliderDisposables.Add(Disposable.Create(()=> slider.OnSelectedChanged -= RefreshRecruitCost));
             }
 
             RefreshRecruitCost();
@@ -443,11 +433,6 @@ namespace GameDevTycoon.UI.Ingame
             _EmployeeManager.Instance.RegisterRecruitRequests(requests);
 
             Company.Instance.gold.Value -= cost;
-            Company.Instance.curManagementStatus.otherExpense += cost;
-            Company.Instance.cumulativeManagementStatus.otherExpense += cost;
-            Company.Instance.curManagementStatus.Recalculate();
-            Company.Instance.cumulativeManagementStatus.Recalculate();
-
             _hudPresenter.RefreshHUD();
             foreach (var slider in _view.AllSliders)
                 slider.ResetSelection();
@@ -481,13 +466,9 @@ namespace GameDevTycoon.UI.Ingame
 
             // 금액 차감
             Company.Instance.gold.Value -= cost;
-            Company.Instance.curManagementStatus.laborCost += cost;
-            Company.Instance.cumulativeManagementStatus.laborCost += cost;
-            Company.Instance.curManagementStatus.Recalculate();
-            Company.Instance.cumulativeManagementStatus.Recalculate();
 
             _EmployeeManager.Instance.HireEmployee(applicant);
-            _EmployeeManager.Instance.currentApplicants.Remove(applicant);
+            _EmployeeManager.Instance.RemoveFromApplicants(applicant);
             _hudPresenter.RefreshHUD();
 
             _selectedApplicant = null;
@@ -526,11 +507,6 @@ namespace GameDevTycoon.UI.Ingame
                 onConfirm: () =>
                 {
                     Company.Instance.gold.Value -= severancePay;
-                    Company.Instance.curManagementStatus.laborCost += severancePay;
-                    Company.Instance.cumulativeManagementStatus.laborCost += severancePay;
-                    Company.Instance.curManagementStatus.Recalculate();
-                    Company.Instance.cumulativeManagementStatus.Recalculate();
-
                     _EmployeeManager.Instance.FireEmployee(employee);
                     GameManager.Instance.RemoveNpcFromScene(employee);
                     _hudPresenter.RefreshHUD();

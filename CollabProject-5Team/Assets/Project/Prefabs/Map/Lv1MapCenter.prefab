@@ -1,5 +1,36 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!1 &27791036137344509
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5561673597355395063}
+  m_Layer: 0
+  m_Name: SitPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5561673597355395063
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 27791036137344509}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0.5, z: 0.207}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 902777586391532106}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &125180925158464871
 GameObject:
   m_ObjectHideFlags: 0
@@ -806,6 +837,37 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!1 &561812894032619849
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5659473177293808101}
+  m_Layer: 0
+  m_Name: Point
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5659473177293808101
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 561812894032619849}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 1, z: 0, w: 0}
+  m_LocalPosition: {x: 0, y: -0.876, z: 1.146}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 8995294555986917090}
+  m_LocalEulerAnglesHint: {x: 0, y: 180, z: 0}
 --- !u!1 &575799907882058186
 GameObject:
   m_ObjectHideFlags: 0
@@ -818,6 +880,7 @@ GameObject:
   - component: {fileID: 6696874062448952383}
   - component: {fileID: 2917973254869417832}
   - component: {fileID: 4909861218644352388}
+  - component: {fileID: 1328598995038789497}
   m_Layer: 0
   m_Name: Classroom_Chair_1 Variant_4
   m_TagString: Untagged
@@ -906,8 +969,24 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 55e3e3915c6c9f44ca765f00ee4c5ee3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  sitPoint: {fileID: 8476614698037325925}
+  sitPoint: {fileID: 0}
   isSeated: 0
+--- !u!114 &1328598995038789497
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 575799907882058186}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d4badca14b6b9a642b820c3b1b6376db, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  SitPoint: {fileID: 8476614698037325925}
+  PointType: 0
+  IsOccupied: 0
+  Owner: {fileID: 0}
 --- !u!1 &612950123731980716
 GameObject:
   m_ObjectHideFlags: 0
@@ -919,7 +998,7 @@ GameObject:
   - component: {fileID: 7896178475469592939}
   - component: {fileID: 6656441316172630733}
   - component: {fileID: 6703682106128851344}
-  - component: {fileID: 4736780602247279684}
+  - component: {fileID: 4846732369522380890}
   m_Layer: 0
   m_Name: Classroom_Chair_1 Variant_1
   m_TagString: Untagged
@@ -996,7 +1075,7 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!114 &4736780602247279684
+--- !u!114 &4846732369522380890
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1005,11 +1084,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 612950123731980716}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 55e3e3915c6c9f44ca765f00ee4c5ee3, type: 3}
+  m_Script: {fileID: 11500000, guid: d4badca14b6b9a642b820c3b1b6376db, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  sitPoint: {fileID: 5432392180563524635}
-  isSeated: 0
+  SitPoint: {fileID: 5432392180563524635}
+  PointType: 0
+  IsOccupied: 0
+  Owner: {fileID: 0}
 --- !u!1 &619205696954151897
 GameObject:
   m_ObjectHideFlags: 0
@@ -1096,7 +1177,6 @@ MonoBehaviour:
   MinSize: 5
   MaxSize: 13
   DefaultSize: 13
-  CameraVerticalOffset: 2
 --- !u!1 &879477099399777997
 GameObject:
   m_ObjectHideFlags: 0
@@ -3208,7 +3288,7 @@ GameObject:
   - component: {fileID: 4509447021200261714}
   - component: {fileID: 8078296434922459132}
   - component: {fileID: 713431648279448177}
-  - component: {fileID: 8177582505278660170}
+  - component: {fileID: 5602331718581647487}
   m_Layer: 0
   m_Name: Classroom_Chair_1 Variant_3
   m_TagString: Untagged
@@ -3285,7 +3365,7 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!114 &8177582505278660170
+--- !u!114 &5602331718581647487
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -3294,11 +3374,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 1883142954652733262}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 55e3e3915c6c9f44ca765f00ee4c5ee3, type: 3}
+  m_Script: {fileID: 11500000, guid: d4badca14b6b9a642b820c3b1b6376db, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  sitPoint: {fileID: 8471017656596459096}
-  isSeated: 0
+  SitPoint: {fileID: 8471017656596459096}
+  PointType: 0
+  IsOccupied: 0
+  Owner: {fileID: 0}
 --- !u!1 &1940526616081457247
 GameObject:
   m_ObjectHideFlags: 0
@@ -3342,6 +3424,7 @@ GameObject:
   - component: {fileID: 8844406650236860865}
   - component: {fileID: 8367222380920339447}
   - component: {fileID: 2051877988501321751}
+  - component: {fileID: 3472240322372281138}
   m_Layer: 0
   m_Name: Hotel_Armchair_1 Variant (1)
   m_TagString: Untagged
@@ -3361,7 +3444,8 @@ Transform:
   m_LocalPosition: {x: 5.5129995, y: -0.98099947, z: 3.9640002}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 3047686599152207037}
   m_Father: {fileID: 5116194994172124998}
   m_LocalEulerAnglesHint: {x: 0, y: 180, z: 0}
 --- !u!33 &8367222380920339447
@@ -3417,6 +3501,22 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!114 &3472240322372281138
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1940589706694670496}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d4badca14b6b9a642b820c3b1b6376db, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  SitPoint: {fileID: 3047686599152207037}
+  PointType: 1
+  IsOccupied: 0
+  Owner: {fileID: 0}
 --- !u!1 &2004769883105916665
 GameObject:
   m_ObjectHideFlags: 0
@@ -4688,6 +4788,7 @@ GameObject:
   - component: {fileID: 902777586391532106}
   - component: {fileID: 4202816126487390666}
   - component: {fileID: 6150429353972572442}
+  - component: {fileID: 7882025217572781700}
   m_Layer: 0
   m_Name: Hotel_Armchair_1 Variant
   m_TagString: Untagged
@@ -4707,7 +4808,8 @@ Transform:
   m_LocalPosition: {x: 5.3944044, y: -0.98099947, z: 0.5540001}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 5561673597355395063}
   m_Father: {fileID: 5116194994172124998}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &4202816126487390666
@@ -4763,6 +4865,22 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!114 &7882025217572781700
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2649053777969900285}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d4badca14b6b9a642b820c3b1b6376db, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  SitPoint: {fileID: 5561673597355395063}
+  PointType: 1
+  IsOccupied: 0
+  Owner: {fileID: 0}
 --- !u!1 &2667605542925850489
 GameObject:
   m_ObjectHideFlags: 0
@@ -5076,6 +5194,37 @@ Transform:
   - {fileID: 8515192651210241264}
   m_Father: {fileID: 3911202110109739642}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &2753492793863098390
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8919689655130747079}
+  m_Layer: 0
+  m_Name: Point
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8919689655130747079
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2753492793863098390}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 1, z: 0, w: 0}
+  m_LocalPosition: {x: 0.034, y: -0.943, z: 0.701}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 8616033474379207624}
+  m_LocalEulerAnglesHint: {x: 0, y: 180, z: 0}
 --- !u!1 &2788178426581508571
 GameObject:
   m_ObjectHideFlags: 0
@@ -5376,6 +5525,7 @@ GameObject:
   - component: {fileID: 6038938765859708850}
   - component: {fileID: 7169012776482777365}
   - component: {fileID: 4278970174206813858}
+  - component: {fileID: 6473711302592128419}
   m_Layer: 0
   m_Name: Cafe_Coffee_Machine_1
   m_TagString: Untagged
@@ -5395,7 +5545,8 @@ Transform:
   m_LocalPosition: {x: 0.336, y: -0.103, z: -3.42}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 5659473177293808101}
   m_Father: {fileID: 8846763044710874488}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &8730703850277679731
@@ -5490,6 +5641,22 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1.5, y: 1.5, z: 1.5}
   m_Center: {x: 0, y: 0.03, z: 0.5}
+--- !u!114 &6473711302592128419
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2949960153165314195}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d4badca14b6b9a642b820c3b1b6376db, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  SitPoint: {fileID: 5659473177293808101}
+  PointType: 3
+  IsOccupied: 0
+  Owner: {fileID: 0}
 --- !u!1 &2961835662784193649
 GameObject:
   m_ObjectHideFlags: 0
@@ -6875,6 +7042,37 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!1 &3934856007334446116
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3047686599152207037}
+  m_Layer: 0
+  m_Name: SitPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3047686599152207037
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3934856007334446116}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0.5, z: 0.334}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 8844406650236860865}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &3973420560213045962
 GameObject:
   m_ObjectHideFlags: 0
@@ -9883,6 +10081,7 @@ GameObject:
   - component: {fileID: 8616033474379207624}
   - component: {fileID: 3621224235203448361}
   - component: {fileID: 1893659314083135631}
+  - component: {fileID: 3586852744874189335}
   m_Layer: 0
   m_Name: printer
   m_TagString: Untagged
@@ -9902,7 +10101,8 @@ Transform:
   m_LocalPosition: {x: 0.0760746, y: 0.4214604, z: -0.4494151}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 8919689655130747079}
   m_Father: {fileID: 2607475537166606098}
   m_LocalEulerAnglesHint: {x: 0, y: 87.207, z: 0}
 --- !u!33 &3621224235203448361
@@ -9958,6 +10158,22 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!114 &3586852744874189335
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5547700929033850398}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d4badca14b6b9a642b820c3b1b6376db, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  SitPoint: {fileID: 8919689655130747079}
+  PointType: 2
+  IsOccupied: 0
+  Owner: {fileID: 0}
 --- !u!1 &5557431999518889744
 GameObject:
   m_ObjectHideFlags: 0

@@ -18,9 +18,7 @@ public class _EmployeeManager : MonoBehaviour
     public List<EmployeeTrainingCourse> trainingCourses = new();
 
     [Header("이번 주 지원자 리스트")]
-    public List<Employee> currentApplicants = new();    // 현재 모집 요청 및 지원자
-
-    public List<RecruitRequest> activeRecruiRequests = new();
+    public List<RecruitRequest> currentApplicants = new();    // 현재 모집 요청 및 지원자
 
     public EmployeeList employeeList;
     public HaveEmployees haveEmployees;
@@ -93,24 +91,22 @@ public class _EmployeeManager : MonoBehaviour
     // 직원 채용 요청 등록
     public void RegisterRecruitRequests(List<RecruitRequest> requests)
     {
-        activeRecruiRequests.Clear();
-        activeRecruiRequests.AddRange(requests);
+        currentApplicants.Clear();
+        currentApplicants.AddRange(requests);
     }
 
     // 현재 지원자 리스트를 반환
     public List<Employee> GetCurrentApplicantEmployees()
     {
-        return currentApplicants;
-            //.SelectMany(request => request.Applicants)
-            //.ToList();
+        return currentApplicants
+            .SelectMany(request => request.Applicants)
+            .ToList();
     }
 
     // 금요일 밤에 채용 요청 수만큼 지원자를 확정한다.
     public void GenerateWeeklyApplicants()
     {
-        currentApplicants.Clear();
-
-        foreach (RecruitRequest request in activeRecruiRequests)
+        foreach (RecruitRequest request in currentApplicants)
         {
             request.Applicants.Clear();
 
@@ -121,14 +117,8 @@ public class _EmployeeManager : MonoBehaviour
                 .Take(request.Count)
                 .ToList();
 
-            currentApplicants.AddRange(applicants);
+            request.Applicants.AddRange(applicants);
         }
-    }
-
-    public void ClearAllRecruitData()
-    {
-        currentApplicants.Clear();
-        activeRecruiRequests.Clear();
     }
 
     public void ClearCurrentApplicants()
@@ -136,6 +126,13 @@ public class _EmployeeManager : MonoBehaviour
         currentApplicants.Clear();
     }
 
+    public void RemoveFromApplicants(Employee applicant)
+    {
+        foreach (RecruitRequest request in currentApplicants)
+        {
+            request.Applicants.Remove(applicant);
+        }
+    }
     #endregion
 
     #region 상태 관리
@@ -166,11 +163,6 @@ public class _EmployeeManager : MonoBehaviour
             throw new InvalidOperationException($"{course.courseName} 교육 비용이 부족합니다. 필요 비용: {course.cost}G");
 
         Company.Instance.gold.Value -= course.cost;
-        Company.Instance.curManagementStatus.otherExpense += course.cost;
-        Company.Instance.cumulativeManagementStatus.otherExpense += course.cost;
-        Company.Instance.curManagementStatus.Recalculate();
-        Company.Instance.cumulativeManagementStatus.Recalculate();
-
         haveEmployees.SetStatus(employee, EmployeeWorkStatus.InTraining);
         activeTrainings.Add(new EmployeeTrainingProgress(employee, course, DateTimeManager.Instance.currentWeek.Value));
 

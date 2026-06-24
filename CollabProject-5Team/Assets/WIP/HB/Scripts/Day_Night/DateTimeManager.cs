@@ -171,9 +171,6 @@ public class DateTimeManager : MonoBehaviour
         // 금요일 밤에 퇴근하면 다음 주 월요일 낮으로 전환
         else if (currentDay == DayOfWeek.Friday && currentTime == TimeOfDay.Night)
         {
-            if (currentWeek.Value % 4 == 0)
-                Company.Instance.CloseManagementMonth();
-
             // 1주차씩 상승
             currentWeek.Value++;
             currentDay = DayOfWeek.Monday;
@@ -222,7 +219,6 @@ public class DateTimeManager : MonoBehaviour
         // 완료 프로젝트 주간 정산
         _EmployeeManager.Instance.TickWeeklyTraining();
         Company.Instance.TickWeeklyEmployees();
-        Company.Instance.TickWeeklyOfficeCost();
         Company.Instance.TickWeeklyCompletedProjects();
 
         if (Company.Instance.curProject != null)

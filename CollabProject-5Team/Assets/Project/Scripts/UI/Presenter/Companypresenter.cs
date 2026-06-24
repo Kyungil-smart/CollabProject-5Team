@@ -87,7 +87,12 @@ namespace GameDevTycoon.UI.Ingame
                 .Skip(1)
                 .Subscribe(index =>
                 {
-                    _currentFilter = index > 0 ? ManagementFilter.Cumulative : ManagementFilter.Monthly;
+                    _currentFilter = index switch
+                    {
+                        1 => ManagementFilter.Annual,
+                        2 => ManagementFilter.Cumulative,
+                        _ => ManagementFilter.Monthly,
+                    };
                     RefreshManagementStatus();
                 })
                 .AddTo(this);
@@ -119,7 +124,7 @@ namespace GameDevTycoon.UI.Ingame
 
             _view.SetCompanyInfoLogo(null);
             _view.SetCompanyInfoLabels(
-                companyName: company.Name,
+                companyName: company.CompanyName,
                 officeLevel: company.level,
                 ranking: 0,
                 employeeCount: GetEmployeeCount(),
@@ -141,7 +146,7 @@ namespace GameDevTycoon.UI.Ingame
             var playerData = new RankingItemData
             {
                 rank = 1,
-                companyName = Company.Instance.Name,
+                companyName = Company.Instance.CompanyName,
                 reputation = Company.Instance.reputation,
                 popularity = 0,
                 totalRevenue = 0,
@@ -156,29 +161,16 @@ namespace GameDevTycoon.UI.Ingame
 
         private void RefreshManagementStatus()
         {
+            // [TODO: 경영 기록 Manager 연결 후 실제 기간별 수치 바인딩]
             string periodText = BuildPeriodLabel();
             _view.SetManagementStatusColumns(_currentFilter, periodText);
 
-            if (Company.Instance.curManagementStatus == null)
-                Company.Instance.curManagementStatus = new ManagementStatusData();
-            if (Company.Instance.prevManagementStatus == null)
-                Company.Instance.prevManagementStatus = new ManagementStatusData();
-            if (Company.Instance.cumulativeManagementStatus == null)
-                Company.Instance.cumulativeManagementStatus = new ManagementStatusData();
+            var current = new ManagementStatusData();
+            ManagementStatusData previous = _currentFilter == ManagementFilter.Cumulative
+                ? null
+                : new ManagementStatusData();
 
-            Company.Instance.curManagementStatus.Recalculate();
-            Company.Instance.prevManagementStatus.Recalculate();
-            Company.Instance.cumulativeManagementStatus.Recalculate();
-
-            ManagementStatusData current = _currentFilter == ManagementFilter.Cumulative
-                ? Company.Instance.cumulativeManagementStatus
-                : Company.Instance.curManagementStatus;
-
-            ManagementStatusData previous = _currentFilter == ManagementFilter.Cumulative ? null : Company.Instance.prevManagementStatus;
-
-            _view.SetManagementStatusValues(
-                current,
-                previous);
+            _view.SetManagementStatusValues(current, previous);
         }
 
         private void RefreshExpansionCards()
@@ -284,12 +276,9 @@ namespace GameDevTycoon.UI.Ingame
 
         private static string BuildPeriodLabel()
         {
-            int week = Mathf.Max(1, DateTimeManager.Instance.currentWeek.Value);
-            int zeroBasedWeek = week - 1;
-            int year = zeroBasedWeek / 48 + 1;
-            int month = zeroBasedWeek % 48 / 4 + 1;
-            int weekOfMonth = zeroBasedWeek % 4 + 1;
-            return $"{year:D2}년 {month:D2}월 {weekOfMonth}주차 기준";
+            // [TODO: DateTimeManager 날짜 계산 API 확정 후 실제 기간 문자열 연결]
+            int week = DateTimeManager.Instance.currentWeek.Value;
+            return $"{week}주차 기준";
         }
 
         private static int GetEmployeeCount()

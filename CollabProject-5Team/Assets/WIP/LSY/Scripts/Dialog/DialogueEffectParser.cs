@@ -44,22 +44,9 @@ namespace Dialogue
                 case "loyalty": delta.loyaltyDelta += value; break;
                 case "gold":
                     if (Company.Instance != null)
-                    {
                         Company.Instance.gold.Value += value;
-                        if (value >= 0)
-                        {
-                            Company.Instance.curManagementStatus.otherIncome += value;
-                            Company.Instance.cumulativeManagementStatus.otherIncome += value;
-                        }
-                        else
-                        {
-                            Company.Instance.curManagementStatus.otherExpense += -value;
-                            Company.Instance.cumulativeManagementStatus.otherExpense += -value;
-                        }
-
-                        Company.Instance.curManagementStatus.Recalculate();
-                        Company.Instance.cumulativeManagementStatus.Recalculate();
-                    }
+                    else
+                        Debug.LogWarning("[DialogueEffectParser] Company.Instance가 null — gold 효과 미적용");
                     break;
                 default:
                     Debug.LogWarning($"[DialogueEffectParser] 알 수 없는 스탯: {statName}");

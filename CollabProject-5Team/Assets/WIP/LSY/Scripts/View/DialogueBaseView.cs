@@ -1,7 +1,6 @@
 using DG.Tweening;
 using TMPro;
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace Dialogue
@@ -9,7 +8,7 @@ namespace Dialogue
     /// <summary>
     /// 대화 View 기반 클래스 - 타이핑 효과 + 다음 버튼 공통 처리
     /// </summary>
-    public abstract class DialogueBaseView : MonoBehaviour, IPointerClickHandler
+    public abstract class DialogueBaseView : MonoBehaviour
     {
         [SerializeField] protected TextMeshProUGUI _dialogueText;
 
@@ -47,12 +46,6 @@ namespace Dialogue
                 OnNextAction.Invoke();
             else
                 DialogueManager.Instance.AdvanceDialogue();
-        }
-
-        public void OnPointerClick(PointerEventData eventData)
-        {
-            if (_nextButton != null && !_nextButton.gameObject.activeSelf) return;
-            OnNextClicked();
         }
 
         protected void StartTyping(string text)
