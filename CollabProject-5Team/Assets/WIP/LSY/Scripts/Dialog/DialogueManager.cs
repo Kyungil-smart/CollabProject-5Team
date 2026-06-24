@@ -43,6 +43,20 @@ namespace Dialogue
                 .Subscribe(_ => HideAll())
                 .AddTo(this);
 
+            Tutorial.TutorialManager.OnTutorialHighlightStateChanged
+                .Subscribe(isGuided =>
+                {
+                    // 가이드가 켜지면 우하단 일반 패스 버튼을 숨기고, 가이드가 끝나면 다시 켜줍니다.
+                    SetNextButtonActive(!isGuided);
+
+                    // 유저가 하이라이트된 버튼을 눌러 가이드가 끝난 경우(false가 들어옴), 대화창도 알아서 다음으로 전진합니다.
+                    if (!isGuided && _isDialogueRunning)
+                    {
+                        AdvanceDialogue();
+                    }
+                })
+                .AddTo(this);
+
             HideAll();
         }
 
@@ -228,16 +242,26 @@ namespace Dialogue
                 });
             }
 
-            if (payload.isChoice)
+            _currentView.OnTypingComplete = () =>
             {
-                _isChoiceMode = true;
-                _currentView.OnTypingComplete = () =>
+                // 글자 출력이 끝나면 무조건 노드 ID를 세상에 알립니다.
+                DialogueEvents.OnNodeTypingCompleted.OnNext(_currentNodeId);
+
+                // 선택지 모드 분기 처리
+                if (payload.isChoice)
                 {
+                    _isChoiceMode = true;
                     _currentView.SetNextButtonVisible(false);
                     ShowChoice(_choiceItem01, payload.choice01, 0);
                     ShowChoice(_choiceItem02, payload.choice02, 1);
-                };
-            }
+                }
+            };
+        }
+
+        public void SetNextButtonActive(bool active)
+        {
+            if (_currentView != null)
+                _currentView.SetNextButtonVisible(active);
         }
 
         void ShowChoice(ChoiceItemView item, string text, int index)

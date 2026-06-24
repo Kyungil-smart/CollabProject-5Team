@@ -15,5 +15,8 @@ namespace Dialogue
 
         public static readonly Subject<int> OnDialogueEnded = new();
         public static void NotifyDialogueEnded(int employeeId) => OnDialogueEnded.OnNext(employeeId);
+
+        // Tutorial r3이용을 위함
+        public static readonly Subject<int> OnNodeTypingCompleted = new();
     }
 }
