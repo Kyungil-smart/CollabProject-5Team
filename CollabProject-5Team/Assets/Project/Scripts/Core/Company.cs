@@ -1,4 +1,3 @@
-using Cysharp.Threading.Tasks;
 using R3;
 using System.Collections.Generic;
 using UnityEngine;
@@ -16,9 +15,6 @@ public class Company : MonoBehaviour
     public ReactiveProperty<int> gold = new(10000); // 보유 자금
     public int level = 1;                           // 회사 레벨, 회사 증축 상황(소형=1 중형=2 대형=3) 과 같음
 
-    public int ProjectSlots = 1;  // 기획 변경으로 1고정(추후 삭제)
-
-    public List<Project> projects = new(); //기획변경으로 필요없는 리스트, 이전코드 호환용으로 일단 냅둠
     public ReactiveProperty<int> activeProjectCount = new(0); // 현재 프로젝트 보유 여부 0: 없음, 1: 있음
     public Project curProject; // 진행중인 프로젝트는 오직 1개만 존재
     public List<Employee> selectedProjectEmployees = new(); // 신규 프로젝트 UI에서 임시 선택된 직원들
@@ -34,8 +30,13 @@ public class Company : MonoBehaviour
     public int weeklyProfit; // 데일리캐시를 일주일동안 누적한 값 (UI 히스토리용)
     public int totalRevenue;  // 총 누적 매출 (게임 전체 히스토리용)
 
+    [Header("달 기준 경영현황")]
+    public ManagementStatusData curManagementStatus = new();
+    public ManagementStatusData prevManagementStatus = new();
+    public ManagementStatusData cumulativeManagementStatus = new();
+
     [Header("회사 업그레이드 데이터")]
-    [SerializeField] public UpgradeData _upgradeData;
+    public UpgradeData _upgradeData;
 
     #region DontDestroyOnLoad 없는 Instance
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
@@ -45,22 +46,6 @@ public class Company : MonoBehaviour
         Instance = this;
     #endregion
     }
-
-    #region 테스트 코드
-    // 자식 오브젝트의 Project를 curProject로 세팅하는 "테스트"코드
-    //public void InitProjects()
-    //{
-    //    projects.AddRange(GetComponentsInChildren<Project>());
-    //    curProject = projects.Count > 0 ? projects[0] : null;
-    //    activeProjectCount.Value = curProject != null ? 1 : 0;
-
-    //    if (curProject == null) return;
-    //    foreach (var employee in _EmployeeManager.Instance.haveEmployees.haveEmployeeList)
-    //    {
-    //        curProject.HireEmployee(employee);
-    //    }
-    //}
-    #endregion
 
     #region 프로젝트 시작 관리
     public Project CreateProject(ProjectSize scale, string projectName)
@@ -88,10 +73,12 @@ public class Company : MonoBehaviour
     public void StartNewProject(Project project)
     {
         gold.Value -= project.RequiredCost;
-        QuestManager.Instance.ResetWeeklyBonus();
+        curManagementStatus.devCost += project.RequiredCost;
+        cumulativeManagementStatus.devCost += project.RequiredCost;
+        curManagementStatus.Recalculate();
+        cumulativeManagementStatus.Recalculate();
 
-        if (!projects.Contains(project))
-            projects.Add(project);
+        QuestManager.Instance.ResetWeeklyBonus();
 
         curProject = project;
         activeProjectCount.Value = 1;
@@ -166,13 +153,18 @@ public class Company : MonoBehaviour
         popularity += PerkPolicy.CalcPopularityDelta(project.Grade);
         ApplyCompletionEmployeeRewards(project);
 
+        // 직원 프로젝트 이력에 이번 프로젝트 이름 추가
+        foreach (var employee in project.GetAllEmployees())
+        {
+            employee.completedProjectNames.Add(record.projectName);
+        }
+
         // 객체 정리
         _EmployeeManager.Instance.ReleaseProjectEmployees(project.GetAllEmployees());
         completedProjects.Add(record);
         hasPendingCompletedProject = true;
         pendingCompletedProject = record;
-        projects.Remove(project);
-
+        Destroy(project.gameObject);
         curProject = null;
 
         activeProjectCount.Value = 0;
@@ -195,7 +187,10 @@ public class Company : MonoBehaviour
             p.weeklySales += p.dailySales;                // 주간 판매량 누적
             p.weeklyGoldAccum += p.dailyGold;              // 주간 매출 누적
             gold.Value += p.dailyGold;                      // 순수익 증가
-            p.RetentionFactor -= PerkPolicy.RETENTION_DECAY; // 유지력 감소
+            curManagementStatus.gameSales += p.dailyGold;
+            cumulativeManagementStatus.gameSales += p.dailyGold;
+            curManagementStatus.Recalculate();
+            cumulativeManagementStatus.Recalculate();
         }
     }
 
@@ -207,26 +202,37 @@ public class Company : MonoBehaviour
         {
             if (p.isServiceOver) continue;
 
-            // 이번 주 수치를 지난 주로 백업
+            int previousWeekGold = 0;
+            foreach (int weekGold in p.weeklyGoldHistory)
+            {
+                previousWeekGold = weekGold;
+            }
+
+            // UI 비교용 지난 주 수치 보관
             p.prevWeekUsers = p.users;
-            p.prevWeekGold = p.weeklyGoldAccum;
+            p.prevWeekGold = previousWeekGold;
 
             // 히스토리에 이번 주 누적 매출 push
             p.QueueWeeklyGold(p.weeklyGoldAccum);
 
-            // 유저수 재계산 (이탈자 반영)
+            // 이번 주 유저수 확정 (이탈자 반영)
             p.users = PerkPolicy.CalcUsers(p.scale, p.qualityScore, p.prevWeekUsers);
 
             // 유지비 차감
             gold.Value -= p.dailyCost;
+            curManagementStatus.operatingCost += p.dailyCost;
+            cumulativeManagementStatus.operatingCost += p.dailyCost;
+            curManagementStatus.Recalculate();
+            cumulativeManagementStatus.Recalculate();
 
             // 평판: 이번 주 판매 100당 +1
             reputation += PerkPolicy.CalcReputationGainFromSales(p.weeklySales);
             // 누적매출 증가
-            totalRevenue += p.prevWeekGold;
+            totalRevenue += p.weeklyGoldAccum;
 
             p.weeklySales = 0;
             p.weeklyGoldAccum = 0;
+            p.RetentionFactor -= PerkPolicy.RETENTION_DECAY; // 유지력 주간 감소
         }
 
         // 적자 패널티
@@ -256,6 +262,11 @@ public class Company : MonoBehaviour
         foreach (var e in _EmployeeManager.Instance.haveEmployees.haveEmployeeList)
         {
             gold.Value -= e.so.weekSalary;
+            curManagementStatus.laborCost += e.so.weekSalary;
+            cumulativeManagementStatus.laborCost += e.so.weekSalary;
+            curManagementStatus.Recalculate();
+            cumulativeManagementStatus.Recalculate();
+
             if (e.WorkStatus != EmployeeWorkStatus.InProject)
                 continue; // 프로젝트 중인 직원만 능력치 변화
             e.AddAbilityDelta(PerkPolicy.CalcWeeklyAbilityDelta(e.MutableData.loyalty));
@@ -283,6 +294,10 @@ public class Company : MonoBehaviour
 
         // 재화 차감
         gold.Value -= data.GoldCost;
+        curManagementStatus.otherExpense += data.GoldCost;
+        cumulativeManagementStatus.otherExpense += data.GoldCost;
+        curManagementStatus.Recalculate();
+        cumulativeManagementStatus.Recalculate();
 
         // 스탯 추가 (현재 레벨업 대상 보상 스탯 반영)
         reputation += data.ReputationBonus;
@@ -295,7 +310,29 @@ public class Company : MonoBehaviour
 
         GameManager.Instance.isUpgradeReserved = true;
     }
-#endregion
+
+    public void TickWeeklyOfficeCost()
+    {
+        var data = _upgradeData.GetData(level);
+        if (data == null) return;
+
+        gold.Value -= data.maintainCost;
+        curManagementStatus.operatingCost += data.maintainCost;
+        cumulativeManagementStatus.operatingCost += data.maintainCost;
+        curManagementStatus.Recalculate();
+        cumulativeManagementStatus.Recalculate();
+    }
+
+    public void CloseManagementMonth()
+    {
+        if (curManagementStatus == null)
+            curManagementStatus = new ManagementStatusData();
+
+        curManagementStatus.Recalculate();
+        prevManagementStatus = curManagementStatus.Clone();
+        curManagementStatus.Clear();
+    }
+    #endregion
 
     #region 세이브/로드
     public void ExportActiveProjectData(SaveData data)
@@ -317,7 +354,6 @@ public class Company : MonoBehaviour
 
         Project project = InstantiateProject(projectData.project_Scale, projectData.project_userNamed);
 
-        projects.Add(project);
         curProject = project;
         activeProjectCount.Value = 1;
 
@@ -326,16 +362,9 @@ public class Company : MonoBehaviour
 
     private void ClearActiveProjectForLoad()
     {
-        if (curProject != null && !projects.Contains(curProject))
+        if (activeProjectCount.Value > 0)
             Destroy(curProject.gameObject);
 
-        foreach (var project in projects)
-        {
-            if (project != null)
-                Destroy(project.gameObject);
-        }
-
-        projects.Clear();
         curProject = null;
         activeProjectCount.Value = 0;
         selectedProjectEmployees.Clear();
@@ -356,12 +385,24 @@ public class Company : MonoBehaviour
         data.company_WeeklyProfit = this.weeklyProfit;
         data.company_TotalRevenue = this.totalRevenue;
 
+        if (curManagementStatus == null)
+            curManagementStatus = new ManagementStatusData();
+        if (prevManagementStatus == null)
+            prevManagementStatus = new ManagementStatusData();
+        if (cumulativeManagementStatus == null)
+            cumulativeManagementStatus = new ManagementStatusData();
+
+        curManagementStatus.Recalculate();
+        prevManagementStatus.Recalculate();
+        cumulativeManagementStatus.Recalculate();
+        data.company_CurManagementStatus = this.curManagementStatus.Clone();
+        data.company_PrevManagementStatus = this.prevManagementStatus.Clone();
+        data.company_CumulativeManagementStatus = this.cumulativeManagementStatus.Clone();
+
         data.completedProjectsData.Clear();
 
         foreach (var p in completedProjects)
         {
-            if (p == null) continue;
-
             var pData = new ProjectCompletedSaveData
             {
                 projectName     = p.projectName,
@@ -405,6 +446,18 @@ public class Company : MonoBehaviour
         this.dailyProfit  = data.company_DailyProfit;
         this.weeklyProfit = data.company_WeeklyProfit;
         this.totalRevenue = data.company_TotalRevenue;
+
+        this.curManagementStatus = data.company_CurManagementStatus != null
+            ? data.company_CurManagementStatus.Clone()
+            : new ManagementStatusData();
+
+        this.prevManagementStatus = data.company_PrevManagementStatus != null
+            ? data.company_PrevManagementStatus.Clone()
+            : new ManagementStatusData();
+
+        this.cumulativeManagementStatus = data.company_CumulativeManagementStatus != null
+            ? data.company_CumulativeManagementStatus.Clone()
+            : new ManagementStatusData();
 
         completedProjects.Clear();
         hasPendingCompletedProject = false;

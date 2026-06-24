@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 // 직원 게임오브젝트에 부착 방식
@@ -10,6 +11,9 @@ public class Employee : MonoBehaviour
 
     [Header("플래그")]
     public bool hasTalkedThisWeek;
+
+    [Header("프로젝트 이력")]
+    public List<string> completedProjectNames = new();
 
     public EmployeeWorkStatus WorkStatus;
 
@@ -29,6 +33,8 @@ public class Employee : MonoBehaviour
             preLoyalty = so.loyalty,
             preFatigue = so.fatigue
         };
+
+        completedProjectNames = new List<string>();
     }
 
     // 주 능력치 변경 시 property도 같이 초기화

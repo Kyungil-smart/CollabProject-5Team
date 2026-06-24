@@ -565,7 +565,7 @@ namespace GameDevTycoon.UI.Ingame
         /// </summary>
         private bool IsEmployeeBusy(Employee employee)
         {
-            if (Company.Instance.curProject != null)
+            if (Company.Instance.activeProjectCount.Value > 0)
                 if (Company.Instance.curProject.GetAllEmployees().Contains(employee)) return true;
             return false;
         }

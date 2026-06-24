@@ -27,6 +27,7 @@ namespace GameDevTycoon.UI.Ingame
 
         private ProjectSize _selectedScale;
         private Project _currentDetailProject;
+        private ProjectCompleted _currentServiceRecord;
         private UpdatePart? _selectedUpdatePart;
 
         public bool IsVisible => _view.IsVisible;
@@ -209,7 +210,7 @@ namespace GameDevTycoon.UI.Ingame
 
         private void RefreshNewProject()
         {
-            bool hasActiveProject = Company.Instance.curProject != null;
+            bool hasActiveProject = Company.Instance.activeProjectCount.Value > 0;
             _view.SetActiveProjectWarningVisible(hasActiveProject);
 
             if (!hasActiveProject)
@@ -293,35 +294,39 @@ namespace GameDevTycoon.UI.Ingame
             foreach (Transform child in _view.InProgressListContent)
                 Destroy(child.gameObject);
 
-            // 제작 중 프로젝트 최대 1개 + 서비스 중 프로젝트 복수 혼재
-            var allProjects = GetInProgressProjects();
-            _view.SetInProgressEmptyVisible(allProjects.Count == 0);
+            var rows = GetInProgressRows();
+            _view.SetInProgressEmptyVisible(rows.Count == 0);
 
             // 0:진행순 1:이름순 2:매출순
             var sorted = _view.InProgressSortIndex switch
             {
-                1 => allProjects.OrderBy(p => p.userNamed.Value).ToList(),
-                2 => allProjects.OrderByDescending(p =>
-                {
-                    var record = Company.Instance.completedProjects
-                        .FirstOrDefault(r => r.projectName == p.userNamed.Value);
-                    return record?.dailyGold ?? 0;
-                }).ToList(),
-                _ => allProjects,
+                1 => rows.OrderBy(row => row.Name).ToList(),
+                2 => rows.OrderByDescending(row => row.Revenue).ToList(),
+                _ => rows,
             };
 
             for (int i = 0; i < sorted.Count; i++)
             {
-                var project = sorted[i];
+                var row = sorted[i];
                 var item = Instantiate(_projectListItemPrefab, _view.InProgressListContent);
                 var itemView = item.GetComponent<ProjectListItemView>();
 
-                itemView.Bind(project);
                 itemView.SetNumber(i + 1);
 
-                var captured = project;
+                if (row.Project != null)
+                {
+                    itemView.Bind(row.Project);
+                    var captured = row.Project;
+                    item.GetComponentInChildren<UnityEngine.UI.Button>()?.onClick.AddListener(() =>
+                        ShowProjectDetail(captured)
+                    );
+                    continue;
+                }
+
+                itemView.Bind(row.Record);
+                var capturedRecord = row.Record;
                 item.GetComponentInChildren<UnityEngine.UI.Button>()?.onClick.AddListener(() =>
-                    ShowProjectDetail(captured)
+                    ShowServiceProjectDetail(capturedRecord)
                 );
             }
         }
@@ -331,7 +336,9 @@ namespace GameDevTycoon.UI.Ingame
             foreach (Transform child in _view.CompletedListContent)
                 Destroy(child.gameObject);
 
-            var completed = Company.Instance.completedProjects;
+            var completed = Company.Instance.completedProjects?
+                .Where(record => record.isServiceOver)
+                .ToList();
             _view.SetCompletedEmptyVisible(completed == null || completed.Count == 0);
 
             if (completed == null) return;
@@ -340,7 +347,7 @@ namespace GameDevTycoon.UI.Ingame
             var sorted = _view.CompletedSortIndex switch
             {
                 1 => completed.OrderBy(r => r.projectName).ToList(),
-                2 => completed.OrderByDescending(r => r.dailyGold).ToList(),
+                2 => completed.OrderByDescending(GetCurrentRevenue).ToList(),
                 _ => completed.ToList(),
             };
 
@@ -350,8 +357,7 @@ namespace GameDevTycoon.UI.Ingame
                 var item = Instantiate(_projectListItemPrefab, _view.CompletedListContent);
                 var itemView = item.GetComponent<ProjectListItemView>();
 
-                // 서비스 종료 / 개발 중단 모두 비활성 표시
-                itemView.SetInactive();
+                itemView.Bind(record);
                 itemView.SetNumber(i + 1);
 
                 var captured = record;
@@ -364,6 +370,7 @@ namespace GameDevTycoon.UI.Ingame
         private void ShowProjectDetail(Project project)
         {
             _currentDetailProject = project;
+            _currentServiceRecord = null;
             _view.ShowProjectDetail();
             _view.SetProjectDetailInfo(
                 project.userNamed.Value,
@@ -374,13 +381,29 @@ namespace GameDevTycoon.UI.Ingame
             );
             _view.SetProgressBar(project.ProgressDayBar / 100f);
 
-            bool isInService = project.isFinished.Value;
-            
-            _view.SetOperationGroupVisible(isInService);
-            _view.SetServiceStopInteractable(isInService && !IsServiceOver(project));
-            _view.SetUpdateButtonInteractable(isInService && !IsServiceOver(project));
+            _view.SetOperationGroupVisible(false);
+            _view.SetServiceStopInteractable(false);
+            _view.SetUpdateButtonInteractable(false);
+        }
 
-            // [TODO: 운영 수치 데이터 연동 후 SetUserCountValue 등 호출]
+        private void ShowServiceProjectDetail(ProjectCompleted record)
+        {
+            _currentDetailProject = null;
+            _currentServiceRecord = record;
+            _view.ShowProjectDetail();
+            _view.SetProjectDetailInfo(
+                record.projectName,
+                ScaleToString(record.scale),
+                record.genre,
+                record.artStyle,
+                record.engine
+            );
+            _view.SetProgressBar(1f);
+            _view.SetOperationGroupVisible(true);
+            _view.SetStatusValue("서비스 중");
+            SetServiceOperationValues(record);
+            _view.SetServiceStopInteractable(!record.isServiceOver);
+            _view.SetUpdateButtonInteractable(false);
         }
 
         private void ShowCompletedDetail(ProjectCompleted record)
@@ -395,12 +418,11 @@ namespace GameDevTycoon.UI.Ingame
                 engine: record.engine
             );
 
-            _view.SetCompletedProgressBar(100f);
+            _view.SetCompletedProgressBar(1f);
 
-            bool isServiceEnded = record.isServiceOver;
-            _view.SetCompletedOperationGroupVisible(isServiceEnded);
-
-            // [TODO: 최종 운영 수치 데이터 연동 후 SetCompletedUserCountValue 등 호출]
+            _view.SetCompletedOperationGroupVisible(true);
+            _view.SetCompletedStatusValue("서비스 종료");
+            SetCompletedOperationValues(record);
         }
 
         private void OnUpdateClicked()
@@ -518,45 +540,118 @@ namespace GameDevTycoon.UI.Ingame
 
         private void OnServiceStopClicked()
         {
+            if (_currentServiceRecord == null) return;
+
             _alertView.ShowConfirmPopup("게임 서비스를 종료하겠습니까?", onConfirm: () =>
             {
-                // [TODO: ProjectCompleted.isServiceOver = true 처리]
+                _currentServiceRecord.isServiceOver = true;
                 _currentDetailProject = null;
+                _currentServiceRecord = null;
                 _view.ShowInProgressList();
                 RefreshInProgressList();
             });
         }
 
-        /// <summary>
-        /// 제작 중(최대 1개) + 서비스 중 프로젝트를 합쳐 반환.
-        /// </summary>
-        private List<Project> GetInProgressProjects()
+        private List<ProjectListRow> GetInProgressRows()
         {
-            var result = new List<Project>();
+            var result = new List<ProjectListRow>();
 
-            if (Company.Instance.curProject != null)
-                result.Add(Company.Instance.curProject);
+            if (Company.Instance.activeProjectCount.Value > 0)
+                result.Add(new ProjectListRow(Company.Instance.curProject));
 
-            var serviceProjects = Company.Instance.projects
-                .Where(p => p != Company.Instance.curProject && p.isFinished.Value)
-                .ToList();
+            foreach (ProjectCompleted record in Company.Instance.completedProjects)
+            {
+                if (!record.isServiceOver)
+                    result.Add(new ProjectListRow(record));
+            }
 
-            result.AddRange(serviceProjects);
             return result;
         }
 
         private bool IsEmployeeInProject(Employee employee)
         {
-            foreach (var project in Company.Instance.projects)
-                if (project.GetAllEmployees().Contains(employee)) return true;
-            return false;
+            if (Company.Instance.activeProjectCount.Value <= 0) return false;
+            return Company.Instance.curProject.GetAllEmployees().Contains(employee);
         }
 
-        private bool IsServiceOver(Project project)
+        private void SetServiceOperationValues(ProjectCompleted record)
         {
-            var completed = Company.Instance.completedProjects
-                .FirstOrDefault(p => p.projectName == project.userNamed.Value);
-            return completed?.isServiceOver ?? false;
+            int settledWeekCount = record.weeklyGoldHistory?.Count ?? 0;
+            if (settledWeekCount == 0)
+            {
+                _view.SetOperationPendingValues();
+                return;
+            }
+
+            int revenue = GetCurrentRevenue(record);
+            int revenueDelta = revenue - record.prevWeekGold;
+            int userDelta = record.users - record.prevWeekUsers;
+            int profit = revenue - record.dailyCost;
+            int previousProfit = record.prevWeekGold - record.dailyCost;
+            int profitDelta = profit - previousProfit;
+            bool hasUserDelta = record.prevWeekUsers > 0;
+            bool hasRevenueDelta = record.prevWeekGold > 0 && settledWeekCount > 1;
+
+            _view.SetUserCountValue(FormatValueWithDelta(record.users, userDelta, "명", hasUserDelta), userDelta >= 0, hasUserDelta);
+            _view.SetSalesValue(FormatValueWithDelta(revenue, revenueDelta, "G", hasRevenueDelta), revenueDelta >= 0, hasRevenueDelta);
+            _view.SetMaintenanceValue($"{record.dailyCost:N0}G");
+            _view.SetProfitValue(FormatValueWithDelta(profit, profitDelta, "G", hasRevenueDelta), profitDelta >= 0, hasRevenueDelta);
+            _view.SetRevenueGraphValues(GetRevenueGraphValues(record));
+        }
+
+        private void SetCompletedOperationValues(ProjectCompleted record)
+        {
+            int settledWeekCount = record.weeklyGoldHistory?.Count ?? 0;
+            if (settledWeekCount == 0)
+            {
+                _view.SetCompletedOperationPendingValues();
+                return;
+            }
+
+            int revenue = GetCurrentRevenue(record);
+            int profit = revenue - record.dailyCost;
+
+            _view.SetCompletedUserCountValue($"{record.users:N0}명");
+            _view.SetCompletedSalesValue($"{revenue:N0}G");
+            _view.SetCompletedMaintenanceValue($"{record.dailyCost:N0}G");
+            _view.SetCompletedProfitValue($"{profit:N0}G");
+            _view.SetCompletedRevenueGraphValues(GetRevenueGraphValues(record));
+        }
+
+        private static int GetCurrentRevenue(ProjectCompleted record)
+        {
+            if (record.weeklyGoldHistory == null || record.weeklyGoldHistory.Count == 0)
+                return 0;
+
+            int latestRevenue = 0;
+            foreach (int weekGold in record.weeklyGoldHistory)
+            {
+                latestRevenue = weekGold;
+            }
+
+            return latestRevenue;
+        }
+
+        private static List<int> GetRevenueGraphValues(ProjectCompleted record)
+        {
+            var values = new List<int>();
+
+            if (record.weeklyGoldHistory != null)
+                values.AddRange(record.weeklyGoldHistory);
+
+            while (values.Count > 4)
+                values.RemoveAt(0);
+
+            return values;
+        }
+
+        private static string FormatValueWithDelta(int value, int delta, string suffix, bool showDelta)
+        {
+            if (!showDelta)
+                return $"{value:N0}{suffix}";
+
+            string arrow = delta >= 0 ? "▲" : "▼";
+            return $"{value:N0}{suffix} ({Mathf.Abs(delta):N0}{arrow})";
         }
 
         private int CountAssigned(Role role)
@@ -604,6 +699,28 @@ namespace GameDevTycoon.UI.Ingame
             foreach (var entry in _staffCardPrefabs)
                 if (entry.role == role) return entry.prefab;
             return null;
+        }
+
+        private sealed class ProjectListRow
+        {
+            public readonly Project Project;
+            public readonly ProjectCompleted Record;
+            public readonly string Name;
+            public readonly int Revenue;
+
+            public ProjectListRow(Project project)
+            {
+                Project = project;
+                Name = project.userNamed.Value;
+                Revenue = 0;
+            }
+
+            public ProjectListRow(ProjectCompleted record)
+            {
+                Record = record;
+                Name = record.projectName;
+                Revenue = GetCurrentRevenue(record);
+            }
         }
     }
 

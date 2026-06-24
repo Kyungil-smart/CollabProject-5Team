@@ -182,11 +182,13 @@ namespace GameDevTycoon.UI.Ingame
             }
 
             int currentLevel = Company.Instance.level;
+            int currentReputation = Company.Instance.reputation;
 
             for (int cardIndex = 1; cardIndex <= 3; cardIndex++)
             {
                 // cardIndex 1~3은 레벨 1~3에 대응
-                var state = GetExpansionCardState(cardIndex, currentLevel);
+                var data = Company.Instance._upgradeData.GetData(cardIndex);
+                var state = GetExpansionCardState(cardIndex, currentLevel, currentReputation, data);
                 _cardStates[cardIndex] = state;
 
                 _view.SetExpansionCardState(cardIndex, state);
@@ -266,11 +268,18 @@ namespace GameDevTycoon.UI.Ingame
             _view.SetExpansionConfirmInteractable(false);
         }
 
-        private static ExpansionCardState GetExpansionCardState(int cardIndex, int currentLevel)
+        private static ExpansionCardState GetExpansionCardState(
+            int cardIndex, int currentLevel, int currentReputation, OfficeUpgradeData data)
         {
             if (cardIndex < currentLevel) return ExpansionCardState.Owned;
             if (cardIndex == currentLevel) return ExpansionCardState.Current;
-            if (cardIndex == currentLevel + 1) return ExpansionCardState.Unlocked;
+            if (cardIndex == currentLevel + 1)
+            {
+                if (data != null && currentReputation < data.RequiredReputation)
+                    return ExpansionCardState.Locked;
+
+                return ExpansionCardState.Unlocked;
+            }
             return ExpansionCardState.Locked;
         }
 
