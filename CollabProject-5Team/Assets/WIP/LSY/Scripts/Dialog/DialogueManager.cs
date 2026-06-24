@@ -120,7 +120,6 @@ namespace Dialogue
         {
             Sprite portrait = emp?.so.iconNormal;
 
-            _playerView.gameObject.SetActive(false);
             _currentView = _employeeView;
             _employeeView.OnTypingComplete = null;
             _employeeView.OnNextAction     = () => HideAll();
@@ -208,13 +207,11 @@ namespace Dialogue
 
             if (payload.isUser)
             {
-                _employeeView.gameObject.SetActive(false);
                 _currentView = _playerView;
                 _playerView.Bind(payload.desc, payload.text);
             }
             else
             {
-                _playerView.gameObject.SetActive(false);
                 _currentView = _employeeView;
 
                 Employee emp = _EmployeeManager.Instance.haveEmployees.haveEmployeeList

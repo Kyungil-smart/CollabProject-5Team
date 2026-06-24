@@ -75,18 +75,19 @@ namespace GameDevTycoon.UI.Ingame
             _loyaltyBar.value = mutable.loyalty;
             _loyaltyValue.text = mutable.loyalty.ToString();
 
-            RefreshProjectHistory();
+            RefreshProjectHistory(employee);
         }
 
-        private void RefreshProjectHistory()
+        private void RefreshProjectHistory(Employee employee)
         {
             ClearAnchor(_projectHistoryAnchor);
 
-            foreach (var completed in Company.Instance.completedProjects)
+            if (employee.completedProjectNames == null) return;
+
+            foreach (var projectName in employee.completedProjectNames)
             {
-                // [TODO: 직원별 참여 프로젝트 기록 데이터 구조 확정 후 필터링]
                 var tag = Instantiate(_projectHistoryTagPrefab, _projectHistoryAnchor);
-                tag.Bind(completed.projectName);
+                tag.Bind(projectName);
             }
         }
 
