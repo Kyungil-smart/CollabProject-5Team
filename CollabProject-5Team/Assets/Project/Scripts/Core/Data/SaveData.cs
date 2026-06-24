@@ -64,6 +64,7 @@ public class EmployeeSaveData
 
     public EmployeeWorkStatus workStatus;
     public bool hasTalkedThisWeek;
+    public List<string> completedProjectNames = new();
 
     public int    trainingRemainingWeeks;
     public int    trainingStartedWeek;

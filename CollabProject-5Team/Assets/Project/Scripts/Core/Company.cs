@@ -153,6 +153,12 @@ public class Company : MonoBehaviour
         popularity += PerkPolicy.CalcPopularityDelta(project.Grade);
         ApplyCompletionEmployeeRewards(project);
 
+        // 직원 프로젝트 이력에 이번 프로젝트 이름 추가
+        foreach (var employee in project.GetAllEmployees())
+        {
+            employee.completedProjectNames.Add(record.projectName);
+        }
+
         // 객체 정리
         _EmployeeManager.Instance.ReleaseProjectEmployees(project.GetAllEmployees());
         completedProjects.Add(record);
