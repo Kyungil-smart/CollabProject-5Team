@@ -43,6 +43,18 @@ namespace Dialogue
                 .Subscribe(_ => HideAll())
                 .AddTo(this);
 
+            Tutorial.TutorialManager.OnTutorialHighlightStateChanged
+                .Subscribe(isGuided =>
+                {
+                    SetNextButtonActive(!isGuided);
+
+                    if (!isGuided && _isDialogueRunning)
+                    {
+                        AdvanceDialogue();
+                    }
+                })
+                .AddTo(this);
+
             HideAll();
         }
 
@@ -225,16 +237,24 @@ namespace Dialogue
                 });
             }
 
-            if (payload.isChoice)
+            _currentView.OnTypingComplete = () =>
             {
-                _isChoiceMode = true;
-                _currentView.OnTypingComplete = () =>
+                DialogueEvents.OnNodeTypingCompleted.OnNext(_currentNodeId);
+
+                if (payload.isChoice)
                 {
-                    _currentView.OnNextAction = () => { };
+                    _isChoiceMode = true;
+                    _currentView.SetNextButtonVisible(false);
                     ShowChoice(_choiceItem01, payload.choice01, 0);
                     ShowChoice(_choiceItem02, payload.choice02, 1);
-                };
-            }
+                }
+            };
+        }
+
+        public void SetNextButtonActive(bool active)
+        {
+            if (_currentView != null)
+                _currentView.SetNextButtonVisible(active);
         }
 
         void ShowChoice(ChoiceItemView item, string text, int index)
