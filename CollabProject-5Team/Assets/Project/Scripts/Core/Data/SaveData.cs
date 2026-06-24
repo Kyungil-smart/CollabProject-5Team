@@ -24,7 +24,8 @@ public class SaveData
 
     // Company 저장
     [Header("Company Data")]
-    public string company_Name;
+    public string company_PlayerName;
+    public string company_CompanyName;
     public int    company_Gold;
     public int    company_Level;
     public int    company_Popularity;

@@ -10,7 +10,8 @@ public class Company : MonoBehaviour
     public GameObject[] projectPrefab; // 소형, 중형, 대형 순서 (Project 컴포넌트 포함)
 
     [Header("회사 정보")]
-    public string Name;
+    public string playerName;
+    public string CompanyName;
     public ReactiveProperty<int> gold = new(10000); // 보유 자금
     public int level = 1;                           // 회사 레벨, 회사 증축 상황(소형=1 중형=2 대형=3) 과 같음
 
@@ -365,9 +366,10 @@ public class Company : MonoBehaviour
 
     public void ExportCompanyData(SaveData data)
     {
-        data.company_Name  = this.Name;
-        data.company_Gold  = this.gold.Value;
-        data.company_Level = this.level;
+        data.company_PlayerName  = this.playerName;
+        data.company_CompanyName = this.CompanyName;
+        data.company_Gold        = this.gold.Value;
+        data.company_Level       = this.level;
 
         data.company_Popularity = this.popularity;
         data.company_Reputation = this.reputation;
@@ -426,9 +428,10 @@ public class Company : MonoBehaviour
 
     public void ImportCompanyData(SaveData data)
     {
-        this.Name       = data.company_Name;
-        this.gold.Value = data.company_Gold;
-        this.level      = data.company_Level;
+        this.CompanyName = data.company_CompanyName;
+        this.playerName  = data.company_PlayerName;
+        this.gold.Value  = data.company_Gold;
+        this.level       = data.company_Level;
 
         this.popularity = data.company_Popularity;
         this.reputation = data.company_Reputation;

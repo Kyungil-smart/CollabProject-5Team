@@ -119,7 +119,7 @@ namespace GameDevTycoon.UI.Ingame
 
             _view.SetCompanyInfoLogo(null);
             _view.SetCompanyInfoLabels(
-                companyName: company.Name,
+                companyName: company.CompanyName,
                 officeLevel: company.level,
                 ranking: 0,
                 employeeCount: GetEmployeeCount(),
@@ -141,7 +141,7 @@ namespace GameDevTycoon.UI.Ingame
             var playerData = new RankingItemData
             {
                 rank = 1,
-                companyName = Company.Instance.Name,
+                companyName = Company.Instance.CompanyName,
                 reputation = Company.Instance.reputation,
                 popularity = 0,
                 totalRevenue = 0,
