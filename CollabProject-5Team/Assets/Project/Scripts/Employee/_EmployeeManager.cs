@@ -25,7 +25,10 @@ public class _EmployeeManager : MonoBehaviour
     public EmployeeList employeeList;
     public HaveEmployees haveEmployees;
     public List<EmployeeTrainingProgress> activeTrainings = new();
+    public List<Employee> leavePendingEmployees = new();
     public const int TrainingDurationWeeks = 4;
+    const float DailyLeaveChance = 0.25f;
+    public static event Action<string> OnEmployeeLeft;
 
     #region DontDestroyOnLoad 없는 Instance
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
@@ -149,6 +152,37 @@ public class _EmployeeManager : MonoBehaviour
         foreach (var employee in employees)
             haveEmployees.SetStatus(employee, EmployeeWorkStatus.Standby);
     }
+
+    public void RegisterLeavePendingEmployees()
+    {
+        foreach (Employee employee in haveEmployees.haveEmployeeList)
+        {
+            if (leavePendingEmployees.Contains(employee))
+                continue;
+
+            EmployeeMutableData data = employee.MutableData;
+            if (data.fatigue >= 100 || data.desire <= 0 || data.loyalty <= 0)
+                leavePendingEmployees.Add(employee);
+        }
+    }
+
+    public void TryProcessDailyLeave()
+    {
+        for (int i = 0; i < leavePendingEmployees.Count; i++)
+        {
+            Employee employee = leavePendingEmployees[i];
+            if (UnityEngine.Random.value >= DailyLeaveChance)
+                continue;
+
+            string employeeName = employee.so.Name;
+            leavePendingEmployees.RemoveAt(i);
+            FireEmployee(employee);
+            GameManager.Instance.RemoveNpcFromScene(employee);
+
+            OnEmployeeLeft?.Invoke(employeeName);
+            return;
+        }
+    }
     #endregion
 
     #region 교육시스템
@@ -241,6 +275,10 @@ public class _EmployeeManager : MonoBehaviour
     public void ExportEmployeeData(SaveData data)
     {
         data.savedEmployees.Clear();
+        if (data.leavePendingEmployeeIds == null)
+            data.leavePendingEmployeeIds = new List<int>();
+        else
+            data.leavePendingEmployeeIds.Clear();
 
         foreach (Employee emp in haveEmployees.haveEmployeeList)
         {
@@ -283,11 +321,18 @@ public class _EmployeeManager : MonoBehaviour
 
             data.savedEmployees.Add(empSave);
         }
+
+        foreach (Employee employee in leavePendingEmployees)
+        {
+            if (employee != null && haveEmployees.haveEmployeeList.Contains(employee))
+                data.leavePendingEmployeeIds.Add(employee.so.id);
+        }
     }
 
     public void ImportEmployeeData(SaveData data)
     {
         activeTrainings.Clear();
+        leavePendingEmployees.Clear();
         foreach (Employee emp in haveEmployees.haveEmployeeList)
         {
             if (emp != null)
@@ -323,6 +368,15 @@ public class _EmployeeManager : MonoBehaviour
                 ? new List<string>(empSave.completedProjectNames)
                 : new List<string>();
             RestoreEmployeeStatus(emp, empSave);
+        }
+
+        if (data.leavePendingEmployeeIds != null)
+        {
+            foreach (int employeeId in data.leavePendingEmployeeIds)
+            {
+                Employee emp = haveEmployees.haveEmployeeList.Find(e => e.so.id == employeeId);
+                if (emp != null) leavePendingEmployees.Add(emp);
+            }
         }
     }
 
