@@ -263,7 +263,10 @@ public class _EmployeeManager : MonoBehaviour
                 preFatigue = emp.MutableData.preFatigue,
 
                 workStatus = emp.WorkStatus,
-                hasTalkedThisWeek = emp.hasTalkedThisWeek
+                hasTalkedThisWeek = emp.hasTalkedThisWeek,
+                completedProjectNames = emp.completedProjectNames != null
+                    ? new List<string>(emp.completedProjectNames)
+                    : new List<string>()
             };
 
             if (emp.WorkStatus == EmployeeWorkStatus.InTraining)
@@ -316,6 +319,9 @@ public class _EmployeeManager : MonoBehaviour
             };
 
             emp.hasTalkedThisWeek = empSave.hasTalkedThisWeek;
+            emp.completedProjectNames = empSave.completedProjectNames != null
+                ? new List<string>(empSave.completedProjectNames)
+                : new List<string>();
             RestoreEmployeeStatus(emp, empSave);
         }
     }
