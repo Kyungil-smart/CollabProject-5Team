@@ -14,10 +14,10 @@ public class OnGameSceneLoad : MonoBehaviour
         await UniTask.Yield(PlayerLoopTiming.LastInitialization);
 
         // 모든 메니저 초기화 후에 실행할 로직
-        await BootstrapGameSceneAsync();
+        BootstrapGameSceneAsync();
     }
 
-    private async UniTask BootstrapGameSceneAsync()
+    private void BootstrapGameSceneAsync()
     {
         if (SaveLoadSystem.Instance.TryConsumePendingLoad(out int _, out SaveData loadedData))
         {
