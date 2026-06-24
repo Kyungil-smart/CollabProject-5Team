@@ -1,3 +1,4 @@
+using DG.Tweening;
 using R3;
 using TMPro;
 using UnityEngine;
@@ -32,11 +33,58 @@ namespace GameDevTycoon.UI.Ingame
 
         [Header("NightUI")]
         [SerializeField] private GameObject _nightUI;
+
+        [Header("NightUI — Buttons")]
         [SerializeField] private Button _hrButton;
         [SerializeField] private Button _projectButton;
         [SerializeField] private Button _companyButton;
         [SerializeField] private Button _saveButton;
         [SerializeField] private Button _nightQuitButton;
+
+        [Header("NightUI — Icons")]
+        [SerializeField] private RectTransform _hrIcon;
+        [SerializeField] private RectTransform _projectIcon;
+        [SerializeField] private RectTransform _companyIcon;
+        [SerializeField] private RectTransform _saveIcon;
+        [SerializeField] private RectTransform _nightQuitIcon;
+
+        [Header("NightUI — Labels")]
+        [SerializeField] private TextMeshProUGUI _hrLabel;
+        [SerializeField] private TextMeshProUGUI _projectLabel;
+        [SerializeField] private TextMeshProUGUI _companyLabel;
+        [SerializeField] private TextMeshProUGUI _saveLabel;
+        [SerializeField] private TextMeshProUGUI _nightQuitLabel;
+
+        [Header("NightUI — Sprites")]
+        [SerializeField] private Sprite _nightButtonActiveSprite;
+
+        [Header("NightUI — Label Colors")]
+        [SerializeField] private Color _activeLabelColor = new Color(0.337f, 0.247f, 0.063f);  // #563F10
+        [SerializeField] private Color _inactiveLabelColor = new Color(0.624f, 0.471f, 0.157f);  // #9F7828
+
+        private static readonly float ButtonHeightDefault = 220f;
+        private static readonly float ButtonHeightSelected = 260f;
+        private static readonly float IconPosYDefault = 20f;
+        private static readonly float IconPosYSelected = 80f;
+        private static readonly float LabelPosYDefault = -85f;
+        private static readonly float LabelPosYSelected = -50f;
+        private static readonly float LabelFontSizeDefault = 36f;
+        private static readonly float LabelFontSizeSelected = 50f;
+        private static readonly float AnimDuration = 0.2f;
+
+        private RectTransform[] _nightButtonRects;
+        private RectTransform[] _nightIconRects;
+        private RectTransform[] _nightLabelRects;
+        private TextMeshProUGUI[] _nightLabels;
+        private Image[] _nightButtonImages;
+        private Sprite[] _nightButtonDefaultSprites;
+
+        private Tweener[] _buttonTweeners;
+        private Tweener[] _iconTweeners;
+        private Tweener[] _labelPosTweeners;
+        private Tweener[] _labelFontTweeners;
+
+        private int _selectedIndex = -1;
 
         public Observable<Unit> OnSettingsClicked => _settingsButton.OnClickAsObservable();
         public Observable<Unit> OnQuestIconClicked => _questIconButton.OnClickAsObservable();
@@ -49,6 +97,53 @@ namespace GameDevTycoon.UI.Ingame
 
         private void Awake()
         {
+            _nightButtonRects = new RectTransform[]
+            {
+                _hrButton.GetComponent<RectTransform>(),
+                _projectButton.GetComponent<RectTransform>(),
+                _companyButton.GetComponent<RectTransform>(),
+                _saveButton.GetComponent<RectTransform>(),
+                _nightQuitButton.GetComponent<RectTransform>(),
+            };
+
+            _nightIconRects = new RectTransform[]
+            {
+                _hrIcon, _projectIcon, _companyIcon, _saveIcon, _nightQuitIcon
+            };
+
+            _nightLabels = new TextMeshProUGUI[]
+            {
+                _hrLabel, _projectLabel, _companyLabel, _saveLabel, _nightQuitLabel
+            };
+
+            _nightLabelRects = new RectTransform[]
+            {
+                _hrLabel.GetComponent<RectTransform>(),
+                _projectLabel.GetComponent<RectTransform>(),
+                _companyLabel.GetComponent<RectTransform>(),
+                _saveLabel.GetComponent<RectTransform>(),
+                _nightQuitLabel.GetComponent<RectTransform>(),
+            };
+
+            _nightButtonImages = new Image[]
+            {
+                _hrButton.GetComponent<Image>(),
+                _projectButton.GetComponent<Image>(),
+                _companyButton.GetComponent<Image>(),
+                _saveButton.GetComponent<Image>(),
+                _nightQuitButton.GetComponent<Image>(),
+            };
+
+            // 버튼 Image에 이미 적용된 비활성화 스프라이트를 초기값으로 캐싱
+            _nightButtonDefaultSprites = new Sprite[_nightButtonImages.Length];
+            for (int i = 0; i < _nightButtonImages.Length; i++)
+                _nightButtonDefaultSprites[i] = _nightButtonImages[i].sprite;
+
+            _buttonTweeners = new Tweener[_nightButtonRects.Length];
+            _iconTweeners = new Tweener[_nightIconRects.Length];
+            _labelPosTweeners = new Tweener[_nightLabels.Length];
+            _labelFontTweeners = new Tweener[_nightLabels.Length];
+
             _dayUI.SetActive(true);
             _nightUI.SetActive(false);
             _nightQuitButton.interactable = false;
@@ -88,6 +183,31 @@ namespace GameDevTycoon.UI.Ingame
             // [DoTween 페이드 연출 추가 예정]
             _dayUI.SetActive(false);
             _nightUI.SetActive(true);
+            DeselectAllNightButtons();
+        }
+
+        /// <summary>
+        /// 해당 인덱스 버튼을 선택 상태로, 나머지는 비선택으로 전환.
+        /// 동일 인덱스 재호출 시 토글(비선택).
+        /// </summary>
+        public void SelectNightButton(int index)
+        {
+            bool deselecting = _selectedIndex == index;
+            DeselectAllNightButtons();
+
+            if (!deselecting)
+            {
+                _selectedIndex = index;
+                AnimateButton(index, selected: true);
+            }
+        }
+
+        public void DeselectAllNightButtons()
+        {
+            for (int i = 0; i < _nightButtonRects.Length; i++)
+                AnimateButton(i, selected: false);
+
+            _selectedIndex = -1;
         }
 
         public void ShowQuestBanner(string questName, int current, int total)
@@ -110,6 +230,50 @@ namespace GameDevTycoon.UI.Ingame
             var group = _questBanner.GetComponent<CanvasGroup>();
             if (group != null)
                 group.alpha = 0.5f;
+        }
+
+        private void AnimateButton(int index, bool selected)
+        {
+            float targetHeight = selected ? ButtonHeightSelected : ButtonHeightDefault;
+            float targetIconY = selected ? IconPosYSelected : IconPosYDefault;
+            float targetLabelY = selected ? LabelPosYSelected : LabelPosYDefault;
+            float targetFontSize = selected ? LabelFontSizeSelected : LabelFontSizeDefault;
+            Color targetColor = selected ? _activeLabelColor : _inactiveLabelColor;
+            Sprite targetSprite = selected ? _nightButtonActiveSprite : _nightButtonDefaultSprites[index];
+
+            var rect = _nightButtonRects[index];
+            var icon = _nightIconRects[index];
+            var labelRect = _nightLabelRects[index];
+            var label = _nightLabels[index];
+
+            _buttonTweeners[index]?.Kill();
+            _iconTweeners[index]?.Kill();
+            _labelPosTweeners[index]?.Kill();
+            _labelFontTweeners[index]?.Kill();
+
+            _buttonTweeners[index] = rect
+                .DOSizeDelta(new Vector2(rect.sizeDelta.x, targetHeight), AnimDuration)
+                .SetEase(Ease.OutQuad);
+
+            _iconTweeners[index] = icon
+                .DOAnchorPosY(targetIconY, AnimDuration)
+                .SetEase(Ease.OutQuad);
+
+            _labelPosTweeners[index] = labelRect
+                .DOAnchorPosY(targetLabelY, AnimDuration)
+                .SetEase(Ease.OutQuad);
+
+            // DOTween Pro 없이 font size 트윈 — float 값을 직접 보간
+            float currentSize = label.fontSize;
+            _labelFontTweeners[index] = DOTween.To(
+                () => label.fontSize,
+                x => label.fontSize = x,
+                targetFontSize,
+                AnimDuration
+            ).SetEase(Ease.OutQuad);
+
+            label.color = targetColor;
+            _nightButtonImages[index].sprite = targetSprite;
         }
     }
 }
