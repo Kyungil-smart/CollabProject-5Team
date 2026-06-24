@@ -43,6 +43,7 @@ GameObject:
   - component: {fileID: 5425674600364845059}
   - component: {fileID: 8433585328644698670}
   - component: {fileID: 6932207529121870877}
+  - component: {fileID: 571903880502301701}
   m_Layer: 0
   m_Name: Lv1Chair
   m_TagString: Untagged
@@ -133,3 +134,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   sitPoint: {fileID: 5083435236281917954}
   isSeated: 0
+--- !u!114 &571903880502301701
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3933372842221466502}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d4badca14b6b9a642b820c3b1b6376db, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  SitPoint: {fileID: 5083435236281917954}
+  PointType: 0
+  IsOccupied: 0

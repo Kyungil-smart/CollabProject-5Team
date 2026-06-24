@@ -241,18 +241,12 @@ public class Project : MonoBehaviour
     // 프로젝트 종료
     public void Finish()
     {
-        // 평일 일일 퀘스트 클리어 누적 포인트를 소급 적용
-        qualityScore = qualityScore + QuestManager.Instance.GetWeeklyBonus(Role.PLANNER);
-        stabilityScore = stabilityScore + QuestManager.Instance.GetWeeklyBonus(Role.PROGRAMMER);
-        charmScore = charmScore + QuestManager.Instance.GetWeeklyBonus(Role.ARTIST);
-        CurScore = (qualityScore + stabilityScore + charmScore) / 3f;
-
         isFinished.Value = true;
-        Company.Instance.CompleteProject(this);
 #if UNITY_EDITOR
         Debug.Log($"[{userNamed.Value}] 프로젝트 완료! ({nightCount}주차) | 등급={Grade}\n" +
                   $"  최종 → 완성도={qualityScore:F1} 안정성={stabilityScore:F1} 매력도={charmScore:F1} | 평균={CurScore:F1}");
 #endif
+        Company.Instance.CompleteProject(this);
     }
 
     #region 세이브/로드

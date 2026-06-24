@@ -34,8 +34,6 @@ namespace GameDevTycoon.UI.Ingame
         public bool IsSelected => _isSelected;
         public bool IsLocked => _lockOverlay != null && _lockOverlay.activeSelf;
 
-        public event System.Action OnSelectedChanged;
-
         private void Awake()
         {
             _countSlider.wholeNumbers = true;
@@ -85,8 +83,6 @@ namespace GameDevTycoon.UI.Ingame
                 _countSlider.value = 1;
 
             RefreshJobButtonVisual();
-
-            OnSelectedChanged?.Invoke();
         }
 
         // 선택 상태 시각 피드백 — 실제 스프라이트 교체는 Inspector 배리언트에서 처리

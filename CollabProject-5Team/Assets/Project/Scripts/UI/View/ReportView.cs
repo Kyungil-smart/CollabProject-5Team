@@ -38,9 +38,20 @@ namespace GameDevTycoon.UI.Ingame
         [Header("Panel_EmployeeComment")]
         [SerializeField] private GameObject _panelEmployeeComment;
 
-        [Header("Panel_ReportReview — 담당자 위임, 직군별 확장 가능")]
-        [SerializeField] private List<GameObject> _panelReportReviews;
-        [SerializeField] private List<Transform> _ReportReviewContents;
+        [Header("Panel_ReportReview_Planner")]
+        [SerializeField] private GameObject _panelReportReviewPlanner;
+        [SerializeField] private ReportCardView[] _plannerCards;    // 고정 3슬롯
+        [SerializeField] private GameObject[] _plannerDividers; // 2개: [0]=1~2번 사이, [1]=2~3번 사이
+
+        [Header("Panel_ReportReview_Artist")]
+        [SerializeField] private GameObject _panelReportReviewArtist;
+        [SerializeField] private ReportCardView[] _artistCards;
+        [SerializeField] private GameObject[] _artistDividers;
+
+        [Header("Panel_ReportReview_Programmer")]
+        [SerializeField] private GameObject _panelReportReviewProgrammer;
+        [SerializeField] private ReportCardView[] _programmerCards;
+        [SerializeField] private GameObject[] _programmerDividers;
 
         [Header("Panel_ReportDetail — 담당자 위임")]
         [SerializeField] private GameObject _panelReportDetail;
@@ -75,18 +86,25 @@ namespace GameDevTycoon.UI.Ingame
 
         // 담당자 패널 Show/Hide용 — Presenter에서 순서 제어
         public GameObject PanelEmployeeComment => _panelEmployeeComment;
-        public List<GameObject> PanelReportReviews => _panelReportReviews;
-        public List<Transform> ReportReviewContents => _ReportReviewContents;
         public GameObject PanelReportDetail    => _panelReportDetail;
         public GameObject PanelPersonalOpinion => _panelPersonalOpinion;
 
         public Transform SlidePreviewContent => _slidePreviewContent;
 
+        public ReportCardView[] GetCards(int roleIndex) => roleIndex switch
+        {
+            0 => _plannerCards,
+            1 => _artistCards,
+            2 => _programmerCards,
+            _ => null,
+        };
+
         private void Awake()
         {
-            
             _panelEmployeeComment.SetActive(false);
-            foreach (var p in _panelReportReviews) p.SetActive(false);
+            _panelReportReviewPlanner.SetActive(false);
+            _panelReportReviewArtist.SetActive(false);
+            _panelReportReviewProgrammer.SetActive(false);
             _panelReportDetail.SetActive(false);
             _panelPersonalOpinion.SetActive(false);
             _panelReportEnd.SetActive(false);
@@ -98,11 +116,6 @@ namespace GameDevTycoon.UI.Ingame
             _slideToggleButton.OnClickAsObservable()
                 .Subscribe(_ => ToggleSlide())
                 .AddTo(this);
-
-            //_reportEndConfirmButton.OnClickAsObservable()
-            //    .Subscribe(_ => {
-            //        Hide();
-            //    }).AddTo(this);
         }
 
         public void Show()
@@ -121,27 +134,42 @@ namespace GameDevTycoon.UI.Ingame
         {
             _panelCover.SetActive(panel == ReportPanel.Cover);
             _panelEmployeeComment.SetActive(panel == ReportPanel.EmployeeComment);
-            foreach (var p in _panelReportReviews)
-                p.SetActive(panel == ReportPanel.ReportReview);
+            _panelReportReviewPlanner.SetActive(panel == ReportPanel.ReportReviewPlanner);
+            _panelReportReviewArtist.SetActive(panel == ReportPanel.ReportReviewArtist);
+            _panelReportReviewProgrammer.SetActive(panel == ReportPanel.ReportReviewProgrammer);
             _panelReportDetail.SetActive(panel == ReportPanel.ReportDetail);
             _panelPersonalOpinion.SetActive(panel == ReportPanel.PersonalOpinion);
             _panelReportEnd.SetActive(panel == ReportPanel.ReportEnd);
         }
 
         /// <summary>
-        /// 특정 직군 ReportReview 패널만 활성화. 직군별 순차 진행 시 사용.
+        /// 직군별 카드/구분선 바인딩. 보고서 수 초과 슬롯은 비활성.
         /// </summary>
-        public void ShowReportReviewPanel(int index)
+        public void BindReviewCards(int roleIndex, List<Report> reports, Action<Report> onCardClicked)
         {
-            for (int i = 0; i < _panelReportReviews.Count; i++)
-                _panelReportReviews[i].SetActive(i == index);
+            var cards = GetCards(roleIndex);
+            var dividers = GetDividers(roleIndex);
+
+            for (int i = 0; i < cards.Length; i++)
+            {
+                bool active = i < reports.Count;
+                cards[i].gameObject.SetActive(active);
+
+                if (active)
+                {
+                    cards[i].Bind(reports[i]);
+                    int captured = i;
+                    cards[i].OnCardClicked
+                        .Subscribe(r => onCardClicked(r))
+                        .AddTo(cards[captured]);
+                }
+            }
+
+            // 카드 사이 구분선 — 앞 카드와 뒷 카드 모두 활성일 때만 표시
+            for (int i = 0; i < dividers.Length; i++)
+                dividers[i].SetActive(i + 1 < reports.Count);
         }
 
-        public List<GameObject> GetReportReviewPanels() => _panelReportReviews;
-
-        /// <summary>
-        /// Panel_ReportDetail 내용을 지정 보고서로 채운다.
-        /// </summary>
         public void SetDetailInfo(Report report)
         {
             _detailTitleLable.text        = report.so.title;
@@ -163,6 +191,14 @@ namespace GameDevTycoon.UI.Ingame
         {
             _slideComment.text = comment;
         }
+
+        private GameObject[] GetDividers(int roleIndex) => roleIndex switch
+        {
+            0 => _plannerDividers,
+            1 => _artistDividers,
+            2 => _programmerDividers,
+            _ => null,
+        };
 
         private void ToggleSlide()
         {
@@ -190,7 +226,9 @@ namespace GameDevTycoon.UI.Ingame
     {
         Cover,
         EmployeeComment,
-        ReportReview,
+        ReportReviewPlanner,
+        ReportReviewArtist,
+        ReportReviewProgrammer,
         ReportDetail,
         PersonalOpinion,
         ReportEnd

@@ -165,7 +165,7 @@ namespace GameDevTycoon.UI.Ingame
         public void SetRankingUpdateNote(string note) => _rankingUpdateNoteLabel.text = note;
 
         /// <summary>
-        /// 누적 모드에서는 PreviousLabel 전체 비활성. 월간은 이번/지난 비교 표시.
+        /// 누적 모드에서는 PreviousLabel 전체 비활성. 월간/연간은 이번/지난 비교 표시.
         /// </summary>
         public void SetManagementStatusColumns(ManagementFilter filter, string periodText)
         {
@@ -176,9 +176,9 @@ namespace GameDevTycoon.UI.Ingame
             foreach (var label in _previousLabels)
                 label.gameObject.SetActive(!isCumulative);
 
-            _currentColumnHeader.text = isCumulative ? "누적" : "이번 달";
+            _currentColumnHeader.text = isCumulative ? "누적" : (filter == ManagementFilter.Monthly ? "이번 달" : "이번 해");
             _previousColumnHeader.gameObject.SetActive(!isCumulative);
-            _previousColumnHeader.text = "지난 달";
+            _previousColumnHeader.text = filter == ManagementFilter.Monthly ? "지난 달" : "지난 해";
         }
 
         public void SetManagementStatusValues(ManagementStatusData current, ManagementStatusData previous)
@@ -311,7 +311,21 @@ namespace GameDevTycoon.UI.Ingame
     public enum ManagementFilter
     {
         Monthly,
+        Annual,
         Cumulative
     }
 
+    public sealed class ManagementStatusData
+    {
+        public int totalIncome;
+        public int gameSales;
+        public int otherIncome;
+        public int totalExpense;
+        public int laborCost;
+        public int devCost;
+        public int operatingCost;
+        public int marketingCost;
+        public int otherExpense;
+        public int operatingProfit;
+    }
 }
