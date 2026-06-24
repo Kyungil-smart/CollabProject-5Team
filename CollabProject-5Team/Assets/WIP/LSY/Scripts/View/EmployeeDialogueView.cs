@@ -10,7 +10,7 @@ namespace Dialogue
     /// </summary>
     public class EmployeeDialogueView : DialogueBaseView, IBindable<EmployeeDialogueViewData>
     {
-        [SerializeField] private Image _portrait;
+        [SerializeField] private Image           _portrait;
         [SerializeField] private TextMeshProUGUI _nameText;
 
         public void Bind(EmployeeDialogueViewData data)
