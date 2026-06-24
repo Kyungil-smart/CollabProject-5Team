@@ -108,7 +108,6 @@ namespace Dialogue
         {
             Sprite portrait = emp?.so.iconNormal;
 
-            _playerView.gameObject.SetActive(false);
             _currentView = _employeeView;
             _employeeView.OnTypingComplete = null;
             _employeeView.OnNextAction     = () => HideAll();
@@ -196,13 +195,11 @@ namespace Dialogue
 
             if (payload.isUser)
             {
-                _employeeView.gameObject.SetActive(false);
                 _currentView = _playerView;
                 _playerView.Bind(payload.desc, payload.text);
             }
             else
             {
-                _playerView.gameObject.SetActive(false);
                 _currentView = _employeeView;
 
                 Employee emp = _EmployeeManager.Instance.haveEmployees.haveEmployeeList
@@ -233,7 +230,7 @@ namespace Dialogue
                 _isChoiceMode = true;
                 _currentView.OnTypingComplete = () =>
                 {
-                    _currentView.SetNextButtonVisible(false);
+                    _currentView.OnNextAction = () => { };
                     ShowChoice(_choiceItem01, payload.choice01, 0);
                     ShowChoice(_choiceItem02, payload.choice02, 1);
                 };
