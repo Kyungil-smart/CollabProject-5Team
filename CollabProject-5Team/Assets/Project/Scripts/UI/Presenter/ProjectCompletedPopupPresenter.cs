@@ -71,7 +71,7 @@ namespace GameDevTycoon.UI.Ingame
         {
             'S' => "갓겜",
             'A' => "명작",
-            'B' => "평겜",
+            'B' => "평작",
             _ => "망겜",
         };
     }

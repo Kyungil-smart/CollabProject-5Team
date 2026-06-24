@@ -272,7 +272,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &240765614
 RectTransform:
   m_ObjectHideFlags: 0
@@ -769,6 +769,17 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 363823794197603231, guid: 8376920dad8574f43a2e2f900af9424e, type: 3}
   m_PrefabInstance: {fileID: 2866119293566667412}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &724953064 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 6333983453602820237, guid: 2377f3ab642622244ba42b8bf8443f1b, type: 3}
+  m_PrefabInstance: {fileID: 1900006499}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 809d8e4aa87372e40b4434a08c9aefab, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &746541752
 GameObject:
   m_ObjectHideFlags: 0
@@ -1554,8 +1565,9 @@ GameObject:
   - component: {fileID: 1798257156}
   - component: {fileID: 1798257155}
   - component: {fileID: 1798257154}
+  - component: {fileID: 1798257158}
   m_Layer: 5
-  m_Name: Canvas_SimplePopup
+  m_Name: Canvas_TempLeave
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1644,6 +1656,18 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 0}
+--- !u!114 &1798257158
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1798257153}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c0ffbf033627e7b4fb5bfa3f07812178, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1807783012
 GameObject:
   m_ObjectHideFlags: 0
@@ -2614,9 +2638,17 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 251402929}
     - target: {fileID: 2838642515319906603, guid: 93dd82dcc61417c458e403da87a9c416, type: 3}
+      propertyPath: _saveView
+      value: 
+      objectReference: {fileID: 724953064}
+    - target: {fileID: 2838642515319906603, guid: 93dd82dcc61417c458e403da87a9c416, type: 3}
       propertyPath: _alertView
       value: 
       objectReference: {fileID: 1204401006}
+    - target: {fileID: 2838642515319906603, guid: 93dd82dcc61417c458e403da87a9c416, type: 3}
+      propertyPath: _savePresenter
+      value: 
+      objectReference: {fileID: 327173209}
     - target: {fileID: 2838642515319906603, guid: 93dd82dcc61417c458e403da87a9c416, type: 3}
       propertyPath: _questPresenter
       value: 
