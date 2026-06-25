@@ -1,78 +1,141 @@
+using R3;
+using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using System.Collections.Generic;
-using R3;
 
 namespace Tutorial
 {
-    // 튜토리얼이 감지할 트리거 타입 정의
     public enum TutorialTriggerType
     {
         None,
-        DialogueNodeReached, // 특정 대화 노드에 도달했을 때
-        PanelOpened,         // 특정 UI 창이 열렸을 때
-        GameStarted          // 게임이 시작되었을 때 등...
+        GameStarted,
+        PanelOpened,
+        DialogueNodeReached,
     }
-
-    [System.Serializable]
-    public struct PureTutorialStep
-    {
-        public TutorialTriggerType triggerType;
-        public int                 triggerValue; // DialogueNodeReached 라면 노드 ID, PanelOpened 라면 패널 ID 등
-        public Button              targetButton;
-    }
+    
 
     public class TutorialManager : MonoBehaviour
     {
         public static TutorialManager Instance { get; private set; }
 
-        // 대화창이나 다른 UI 시스템에 "가이드가 켜지고 꺼짐"을 방송할 R3 채널
         public static readonly Subject<bool> OnTutorialHighlightStateChanged = new();
 
         [Header("UI References")]
-        [SerializeField] private GameObject    _dimOverlay;
+        [SerializeField] private GameObject _dimOverlay;
         [SerializeField] private RectTransform _fingerPointer;
 
-        [Header("Tutorial Sequence")]
-        [SerializeField] private List<PureTutorialStep> _tutorialSteps = new();
-        private int _currentStepIndex = 0;
+        [Header("Text Only Tutorial")]
+        [SerializeField] private GameObject _textPanel;
+        [SerializeField] private TextMeshProUGUI _tutorialText;
 
-        private Canvas           _tempCanvas;
+        [Header("Tutorial Sequence")]
+        [SerializeField] private List<TutorialStepSO> _tutorialSteps = new();
+
+        private int _currentStepIndex = 0;
+        private HashSet<int> _completedSteps = new();   // 완료된 스텝 저장
+
+        private Canvas _tempCanvas;
         private GraphicRaycaster _tempRaycaster;
-        private Button           _currentButton;
+        private Button _currentButton;
+
+        private const string TUTORIAL_SAVE_KEY = "Tutorial_Completed_";
 
         private void Awake()
         {
-            if (Instance != null && Instance != this) { Destroy(gameObject); return; }
+            if (Instance != null && Instance != this)
+            {
+                Destroy(gameObject);
+                return;
+            }
             Instance = this;
 
-                          _dimOverlay.SetActive(false);
+            LoadCompletedSteps();
+
+            _dimOverlay.SetActive(false);
             _fingerPointer.gameObject.SetActive(false);
+            if (_textPanel != null) _textPanel.SetActive(false);
+
+            Button overlayButton = _dimOverlay.GetComponent<Button>();
+            if (overlayButton == null) overlayButton = _dimOverlay.AddComponent<Button>();
+            overlayButton.onClick.AddListener(OnPlayerTapped);
         }
 
         void Start()
         {
-            // 대화창에서 노드 타이핑이 끝났다는 방송 소리가 나면 귀를 기울입니다.
-            Dialogue.DialogueEvents.OnNodeTypingCompleted
-                .Subscribe(nodeId => CheckTrigger(TutorialTriggerType.DialogueNodeReached, nodeId))
-                .AddTo(this);
+            Invoke(nameof(StartInitialTutorial), 0.3f);
+        }
 
-            Dialogue.DialogueEvents.OnDialogueEnded
-                .Subscribe(_ => ClearTutorialUI())
-                .AddTo(this);
+        private void LoadCompletedSteps()
+        {
+            _completedSteps.Clear();
+            for (int i = 0; i < _tutorialSteps.Count; i++)
+            {
+                if (PlayerPrefs.GetInt(TUTORIAL_SAVE_KEY + i, 0) == 1)
+                {
+                    _completedSteps.Add(i);
+                }
+            }
+        }
+
+        private void SaveStepCompleted(int stepIndex)
+        {
+            if (!_completedSteps.Contains(stepIndex))
+            {
+                _completedSteps.Add(stepIndex);
+                PlayerPrefs.SetInt(TUTORIAL_SAVE_KEY + stepIndex, 1);
+                PlayerPrefs.Save();
+            }
+        }
+
+        public void StartInitialTutorial()
+        {
+            if (_tutorialSteps.Count == 0) return;
+
+            _currentStepIndex = 0;
+            while (_currentStepIndex < _tutorialSteps.Count && _completedSteps.Contains(_currentStepIndex))
+            {
+                _currentStepIndex++;
+            }
+
+            if (_currentStepIndex >= _tutorialSteps.Count) return;
+
+            CheckTrigger(TutorialTriggerType.GameStarted, 0);
+        }
+
+        public void TriggerTutorial(TutorialTriggerType type, int value = 0)
+        {
+            if (_currentStepIndex >= _tutorialSteps.Count) return;
+
+            CheckTrigger(type, value);
         }
 
         private void CheckTrigger(TutorialTriggerType type, int value)
         {
             if (_currentStepIndex >= _tutorialSteps.Count) return;
 
-            PureTutorialStep currentStep = _tutorialSteps[_currentStepIndex];
+            TutorialStepSO current = _tutorialSteps[_currentStepIndex];   // ← 변경
 
-            // 이번 스텝의 조건 종류나 세부 세팅 값이 다르면 발동하지 않고 무시
-            if (currentStep.triggerType != type || currentStep.triggerValue != value) return;
+            if (current.triggerType != type || current.triggerValue != value)
+                return;
 
-            // 조건이 명확하게 맞아떨어지는 순간 스나이핑 가이드 시작
-            ExecuteHighlight(currentStep.targetButton);
+            if (current.isTextOnly)
+                ExecuteTextOnlyTutorial(current);
+            else
+                ExecuteHighlight(current.targetButton);
+        }
+
+        private void ExecuteTextOnlyTutorial(TutorialStepSO step)
+        {
+            OnTutorialHighlightStateChanged.OnNext(true);
+
+            _textPanel.SetActive(true);
+            _tutorialText.text = step.tutorialText;
+
+            Button textButton = _textPanel.GetComponent<Button>();
+            if (textButton == null) textButton = _textPanel.AddComponent<Button>();
+            textButton.onClick.RemoveAllListeners();
+            textButton.onClick.AddListener(OnPlayerTapped);
         }
 
         private void ExecuteHighlight(Button button)
@@ -80,7 +143,6 @@ namespace Tutorial
             _currentButton = button;
             if (_currentButton == null) return;
 
-            // 가이드 시작했으니 대기 신호 전송
             OnTutorialHighlightStateChanged.OnNext(true);
 
             _dimOverlay.SetActive(true);
@@ -93,20 +155,37 @@ namespace Tutorial
             _fingerPointer.position = _currentButton.transform.position + new Vector3(0, 50f, 0);
 
             _currentButton.onClick.RemoveAllListeners();
-            _currentButton.onClick.AddListener(() =>
-            {
-                ClearTutorialUI();
-                _currentStepIndex++;
+            _currentButton.onClick.AddListener(OnPlayerTapped);
+        }
 
-                // 인게임 진행을 재개시킴
-                OnTutorialHighlightStateChanged.OnNext(false);
-            });
+        private void OnPlayerTapped()
+        {
+            SaveStepCompleted(_currentStepIndex);   // 완료 저장
+
+            ClearTutorialUI();
+            _currentStepIndex++;
+
+            // 완료된 스텝 스킵
+            while (_currentStepIndex < _tutorialSteps.Count && _completedSteps.Contains(_currentStepIndex))
+            {
+                _currentStepIndex++;
+            }
+
+            if (_currentStepIndex >= _tutorialSteps.Count) return;
+
+            // 다음 스텝이 같은 트리거라면 바로 실행 (연속 Text Only)
+            TutorialStepSO next = _tutorialSteps[_currentStepIndex];
+            if (next.isTextOnly && next.triggerType == _tutorialSteps[_currentStepIndex - 1].triggerType)
+            {
+                ExecuteTextOnlyTutorial(next);
+            }
         }
 
         private void ClearTutorialUI()
         {
             _dimOverlay.SetActive(false);
             _fingerPointer.gameObject.SetActive(false);
+            if (_textPanel != null) _textPanel.SetActive(false);
 
             if (_currentButton != null)
             {
@@ -115,6 +194,8 @@ namespace Tutorial
                 _currentButton.onClick.RemoveAllListeners();
                 _currentButton = null;
             }
+
+            OnTutorialHighlightStateChanged.OnNext(false);
         }
     }
 }
