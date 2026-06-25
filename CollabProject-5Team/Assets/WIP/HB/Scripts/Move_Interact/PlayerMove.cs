@@ -154,24 +154,37 @@ public class PlayerMove : MonoBehaviour
     // 화면을 터치해서 레이캐스트를 쏴서 이동
     private void MoveToTarget(Vector2 screenPosition)
     {
+        if (_hasInteracted)
+        {
+            ExitInteraction();
+        }
+
         Ray ray = _mainCamera.ScreenPointToRay(screenPosition);
-        RaycastHit hit;
 
         // interactableLayer가 붙은 사물에 Ray쏨
-        if (Physics.Raycast(ray, out hit, 100f, _interactableLayer))
+        if (Physics.Raycast(ray, out RaycastHit hit, 100f, _interactableLayer))
         {
             // 터치한 오브젝트의 인터페이스를 가져옴
             IInteractable interactable = hit.collider.GetComponent<IInteractable>();
 
             if (interactable != null)
             {
-                _targetInteractable = interactable;
-                _targetCollider = hit.collider;
-                _hasInteracted = false;
+                var point = interactable as IInteractablePoint;
+                if(point != null && point.GetPointType() == PointType.Desk)
+                {
+                    Debug.Log("이곳은 책상이라 앉을 수 없습니다.");
+                }
 
-                _agent.SetDestination(_targetInteractable.GetTransform().position);
+                else
+                {
+                    _targetInteractable = interactable;
+                    _targetCollider = hit.collider;
+                    _hasInteracted = false;
 
-                return;
+                    _agent.SetDestination(_targetInteractable.GetTransform().position);
+
+                    return;
+                }
             }
         }
 
@@ -181,6 +194,8 @@ public class PlayerMove : MonoBehaviour
             _targetInteractable = null;
             _targetCollider = null;
             _hasInteracted = false;
+            
+            _agent.ResetPath();
 
             // 일반 바닥 이동
             _agent.SetDestination(hit.point);
@@ -213,14 +228,46 @@ public class PlayerMove : MonoBehaviour
     {
         _hasInteracted = true;
         _agent.ResetPath();
+        _agent.enabled = false;
 
-        // 대상 바라보기
-        Vector3 targetPos = _targetInteractable.GetTransform().position;
-        Vector3 lookDirection = new Vector3(targetPos.x, transform.position.y, targetPos.z);
-        transform.LookAt(lookDirection);
+        var point = _targetInteractable as IInteractablePoint;
+        if (point != null)
+        {
+            Transform targetTransform = point.GetTransform();
+
+            transform.position = targetTransform.position;
+            transform.rotation = targetTransform.rotation;
+
+            switch (point.GetPointType())
+            {
+                case PointType.Sofa:        _anim.SetBool("IsResting", true); 
+                                            _anim.SetFloat("RestIndex", Random.Range(0,4)); break;
+                case PointType.Drink:       _anim.SetTrigger("Drink"); Invoke(nameof(ExitInteraction), 6f); break;
+                case PointType.CopyMachine: _anim.SetTrigger("Fax"); Invoke(nameof(ExitInteraction), 18f); break;
+                case PointType.ServerRoom:  _anim.SetTrigger("PushButton"); Invoke(nameof(ExitInteraction), 4f); break;
+
+            }
+        }
 
         // 상호작용 실행
         _targetInteractable.OnInteract();
+    }
+
+    public void ExitInteraction()
+    {
+        _hasInteracted = false;
+
+        _anim.SetBool("IsResting", false);
+        _anim.SetTrigger("Idle");
+
+        NavMeshHit closestHit;
+        if (NavMesh.SamplePosition(transform.position, out closestHit, 10.0f, NavMesh.AllAreas))
+        {
+            _agent.Warp(closestHit.position);
+        }
+
+        _agent.enabled = true;
+        _agent.ResetPath();
     }
 
     public void CloseInteractionUI()

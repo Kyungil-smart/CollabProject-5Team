@@ -36,10 +36,10 @@ public class NPCAction : INPCState
         switch (_pointType)
         {
             case PointType.Desk:        stayTime = Random.Range(20.0f, 30.0f); break;
-            case PointType.Sofa:        stayTime = Random.Range(5.0f, 8.0f); break;
+            case PointType.Sofa:        stayTime = Random.Range(5.0f, 10.0f); break;
             case PointType.CopyMachine: stayTime = Random.Range(20.0f, 20.0f); break;
-            case PointType.Drink:       stayTime = Random.Range(10.0f, 10.0f); break;
-            case PointType.ServerRoom:  stayTime = Random.Range(10.0f, 15.0f); break;
+            case PointType.Drink:       stayTime = Random.Range(7.0f, 7.0f); break;
+            case PointType.ServerRoom:  stayTime = Random.Range(4.0f, 5.0f); break;
         }
 
         try
