@@ -43,18 +43,6 @@ namespace Dialogue
                 .Subscribe(_ => HideAll())
                 .AddTo(this);
 
-            Tutorial.TutorialManager.OnTutorialHighlightStateChanged
-                .Subscribe(isGuided =>
-                {
-                    SetNextButtonActive(!isGuided);
-
-                    if (!isGuided && _isDialogueRunning)
-                    {
-                        AdvanceDialogue();
-                    }
-                })
-                .AddTo(this);
-
             HideAll();
         }
 
