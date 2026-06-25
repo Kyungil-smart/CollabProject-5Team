@@ -67,7 +67,7 @@ public class _EmployeeManager : MonoBehaviour
             return null;
         }
 
-        Employee employee = Instantiate(prefab, transform).GetComponent<Employee>();
+        Employee employee = Instantiate(prefab).GetComponent<Employee>();
         employee.gameObject.SetActive(false);
         return HireEmployee(employee);
     }

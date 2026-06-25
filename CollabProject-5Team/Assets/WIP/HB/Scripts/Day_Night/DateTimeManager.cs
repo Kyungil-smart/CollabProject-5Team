@@ -184,7 +184,7 @@ public class DateTimeManager : MonoBehaviour
             await GameManager.Instance.TryProcessUpgradeAsync();
 
             // 월요일 낮이 되면 퇴근했던 직원 다시 생성
-            await GameManager.Instance.HiredNPCGoToWork();
+            GameManager.Instance.HiredNPCGoToWork().Forget();
 
             ResetDayStatus();
             _EmployeeManager.Instance.TryProcessDailyLeave();

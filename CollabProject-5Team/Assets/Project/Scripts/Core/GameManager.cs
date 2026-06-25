@@ -40,7 +40,7 @@ public class GameManager : MonoBehaviour
     public async UniTask InitializeForSaveSystem()
     {
         GenerateOffice(Company.Instance.level);
-        await InitializeGameAsync();
+        InitializeGameAsync().Forget();
     }
 
     private void GenerateOffice(int companyLevel)
@@ -100,8 +100,7 @@ public class GameManager : MonoBehaviour
         RefreshSitPoints();
 
         // NPC 생성
-        var hiredEmployees = _EmployeeManager.Instance.haveEmployees.haveEmployeeList;
-        foreach (var emp in hiredEmployees)
+        foreach (var emp in _EmployeeManager.Instance.haveEmployees.haveEmployeeList)
         {
             await SpawnNPCsAsync(emp);
         }
@@ -121,21 +120,10 @@ public class GameManager : MonoBehaviour
 
     public async UniTask SpawnNPCsAsync(Employee emp)
     {
-        if (emp == null) return;
+        var controller = emp.GetComponent<NPCController>();
 
-        // 리스트에 있는지 확인하고 중복생성 방지
-        if (_activeEmployees.Any(e => e != null && e.so == emp.so))
-        {
-            return;
-        }
-
-        var empObj = Instantiate(emp.gameObject, _currentNpcSpawnPoint.position, Quaternion.identity);
-        var controller = empObj.GetComponent<NPCController>();
-        var employee = empObj.GetComponent<Employee>();
-
-        employee.Init();
-
-        _activeEmployees.Add(employee);
+        if (!_activeEmployees.Contains(emp))
+            _activeEmployees.Add(emp);
 
         // 빈자리 할당
         var target = PointManager.Instance.GetAllPoints().FirstOrDefault(p => !p.IsOccupied);
@@ -145,7 +133,9 @@ public class GameManager : MonoBehaviour
             controller.CurrentTarget = target;
         }
 
-        empObj.SetActive(true);
+        emp.transform.position = _currentNpcSpawnPoint.position;
+        emp.transform.rotation = Quaternion.identity;
+        emp.gameObject.SetActive(true);
         
         if (controller.CurrentTarget != null)
             controller.ChangeState(new NPCMove());
