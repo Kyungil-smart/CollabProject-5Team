@@ -14,6 +14,23 @@ namespace Tutorial
         DialogueNodeReached,
     }
 
+    [System.Serializable]
+    public struct TutorialGuide
+    {
+        [Header("트리거 조건")]
+        public TutorialTriggerType triggerType;
+        public int triggerValue;
+
+        [Header("강조할 버튼")]
+        public Button targetButton;
+
+        [Header("대사만 표시")]
+        public bool isTextOnly;
+
+        [TextArea(3, 6)]
+        public string tutorialText;
+    }
+
     public class TutorialManager : MonoBehaviour
     {
         public static TutorialManager Instance { get; private set; }
@@ -29,16 +46,13 @@ namespace Tutorial
         [SerializeField] private TextMeshProUGUI _tutorialText;
 
         [Header("Tutorial Sequence")]
-        [SerializeField] private List<TutorialStepSO> _tutorialSteps = new();
+        [SerializeField] private List<TutorialGuide> _tutorialGuides = new();
 
         private int _currentStepIndex = 0;
-        private HashSet<int> _completedSteps = new();
 
         private Canvas _tempCanvas;
         private GraphicRaycaster _tempRaycaster;
         private Button _currentButton;
-
-        private const string TUTORIAL_SAVE_KEY = "Tutorial_Completed_";
 
         private void Awake()
         {
@@ -48,8 +62,6 @@ namespace Tutorial
                 return;
             }
             Instance = this;
-
-            LoadCompletedSteps();
 
             _dimOverlay.SetActive(false);
             _fingerPointer.gameObject.SetActive(false);
@@ -65,50 +77,29 @@ namespace Tutorial
             Invoke(nameof(StartInitialTutorial), 0.3f);
         }
 
-        private void LoadCompletedSteps()
-        {
-            _completedSteps.Clear();
-            for (int i = 0; i < _tutorialSteps.Count; i++)
-            {
-                if (PlayerPrefs.GetInt(TUTORIAL_SAVE_KEY + i, 0) == 1)
-                    _completedSteps.Add(i);
-            }
-        }
-
-        private void SaveStepCompleted(int stepIndex)
-        {
-            if (!_completedSteps.Contains(stepIndex))
-            {
-                _completedSteps.Add(stepIndex);
-                PlayerPrefs.SetInt(TUTORIAL_SAVE_KEY + stepIndex, 1);
-                PlayerPrefs.Save();
-            }
-        }
-
         public void StartInitialTutorial()
         {
-            if (_tutorialSteps.Count == 0) return;
+            if (_tutorialGuides.Count == 0)
+            {
+                Debug.LogWarning("[Tutorial] 튜토리얼 스텝이 없습니다.");
+                return;
+            }
 
             _currentStepIndex = 0;
-            while (_currentStepIndex < _tutorialSteps.Count && _completedSteps.Contains(_currentStepIndex))
-                _currentStepIndex++;
-
-            if (_currentStepIndex >= _tutorialSteps.Count) return;
-
+            Debug.Log($"[Tutorial] 시작! 총 {_tutorialGuides.Count}개");
             CheckTrigger(TutorialTriggerType.GameStarted, 0);
         }
 
         public void TriggerTutorial(TutorialTriggerType type, int value = 0)
         {
-            if (_currentStepIndex >= _tutorialSteps.Count) return;
             CheckTrigger(type, value);
         }
 
         private void CheckTrigger(TutorialTriggerType type, int value)
         {
-            if (_currentStepIndex >= _tutorialSteps.Count) return;
+            if (_currentStepIndex >= _tutorialGuides.Count) return;
 
-            TutorialStepSO current = _tutorialSteps[_currentStepIndex];
+            TutorialGuide current = _tutorialGuides[_currentStepIndex];
 
             if (current.triggerType != type || current.triggerValue != value)
                 return;
@@ -119,7 +110,7 @@ namespace Tutorial
                 ExecuteHighlight(current.targetButton);
         }
 
-        private void ExecuteTextOnlyTutorial(TutorialStepSO step)
+        private void ExecuteTextOnlyTutorial(TutorialGuide step)
         {
             OnTutorialHighlightStateChanged.OnNext(true);
 
@@ -135,7 +126,12 @@ namespace Tutorial
         private void ExecuteHighlight(Button button)
         {
             _currentButton = button;
-            if (_currentButton == null) return;
+            if (_currentButton == null)
+            {
+                Debug.LogWarning("[Tutorial] targetButton이 None입니다!");
+                OnPlayerTapped();
+                return;
+            }
 
             OnTutorialHighlightStateChanged.OnNext(true);
 
@@ -154,19 +150,13 @@ namespace Tutorial
 
         private void OnPlayerTapped()
         {
-            SaveStepCompleted(_currentStepIndex);
-
             ClearTutorialUI();
             _currentStepIndex++;
 
-            while (_currentStepIndex < _tutorialSteps.Count && _completedSteps.Contains(_currentStepIndex))
-                _currentStepIndex++;
+            if (_currentStepIndex >= _tutorialGuides.Count) return;
 
-            if (_currentStepIndex >= _tutorialSteps.Count) return;
-
-            // 연속 Text Only 처리
-            TutorialStepSO next = _tutorialSteps[_currentStepIndex];
-            if (next.isTextOnly && next.triggerType == _tutorialSteps[_currentStepIndex - 1].triggerType)
+            TutorialGuide next = _tutorialGuides[_currentStepIndex];
+            if (next.isTextOnly && next.triggerType == _tutorialGuides[_currentStepIndex - 1].triggerType)
             {
                 ExecuteTextOnlyTutorial(next);
             }
