@@ -1,9 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Cysharp.Threading.Tasks;
-using R3;
 using UnityEngine;
-
 
 public class GameManager : MonoBehaviour
 {
@@ -24,7 +22,7 @@ public class GameManager : MonoBehaviour
 
     private List<Employee>     _activeEmployees = new List<Employee>();        // 활성화된 직원 NPC를 담아둘 리스트
     public bool isUpgradeReserved = false;                                   // 맵 증축 저장용
-
+    int _spawnDelayMs = 850;
     [Header("자동 주입")]
     public PlayerMove player;
 
@@ -93,8 +91,8 @@ public class GameManager : MonoBehaviour
         GameObject playerObj = Instantiate(_playerPrefab, _currentPlayerSpawnPoint.position, Quaternion.identity);
         InjectPlayer(playerObj.GetComponent<PlayerMove>());
 
-        // 플레이어가 생성되고 1초 대기
-        await UniTask.Delay(1000);
+        // 플레이어가 생성되고 대기
+        await UniTask.Delay(_spawnDelayMs);
 
         // 의자 정보
         RefreshSitPoints();
@@ -143,7 +141,7 @@ public class GameManager : MonoBehaviour
         else
             controller.ChangeState(new NPCIdle());
 
-        await UniTask.Delay(1000);
+        await UniTask.Delay(_spawnDelayMs);
     }
 
     // 월요일 아침에 호출
@@ -291,6 +289,7 @@ public class GameManager : MonoBehaviour
                 }
 
                 npc.AssignNewTask();
+                await UniTask.Delay(_spawnDelayMs);
             }
             else
             {
