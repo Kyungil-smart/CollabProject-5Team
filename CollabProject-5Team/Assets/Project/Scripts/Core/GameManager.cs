@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Cysharp.Threading.Tasks;
+using R3;
 using UnityEngine;
 
 
@@ -194,8 +195,17 @@ public class GameManager : MonoBehaviour
         await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
 
         _currentOfficeIndex++;
+
         MapInfo newOffice = Instantiate(_offices[_currentOfficeIndex], Vector3.zero, Quaternion.identity);
         _currentMapTransform = newOffice.transform;
+
+        // 잠시 대기 후 카메라 조정
+        await UniTask.Yield();
+
+        if (CameraManager.Instance != null)
+        {
+            CameraManager.Instance.MapSettings(newOffice);
+        }
 
         // 포인트, 스폰 정보 갱신
         PointManager.Instance.RefreshPoints(_currentMapTransform);
@@ -276,8 +286,6 @@ public class GameManager : MonoBehaviour
             if (activeEmployee != null)
             {
                 var npc = activeEmployee.GetComponent<NPCController>();
-
-                Debug.Log($"[DEBUG] {npc.name}에게 출근 명령을 내립니다.");
 
                 npc.gameObject.SetActive(true);
 

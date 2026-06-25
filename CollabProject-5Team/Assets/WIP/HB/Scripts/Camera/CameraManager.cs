@@ -356,6 +356,8 @@ public class CameraManager : MonoBehaviour
     {
         this.currentMapInfo = mapInfo;
 
+        Debug.Log($"[CameraManager] 맵 세팅 변경: {mapInfo.name}, Width: {mapInfo.DiamondWidth}, Size: {mapInfo.DefaultSize}");
+
         this._diamondWidth = mapInfo.DiamondWidth;
         this._diamondLength = mapInfo.DiamondLength;
 
