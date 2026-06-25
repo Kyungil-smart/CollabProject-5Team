@@ -111,10 +111,7 @@ namespace GameDevTycoon.UI.Ingame
                 item.GetComponent<IBindable<Employee>>().Bind(employee);
             }
 
-            int highFatigueCount = employees.Count(e => e.MutableData.fatigue >= 70);
-            _view.SetSlideComment(highFatigueCount > 0
-                ? $"피로도 주의 직원이 {highFatigueCount}명 있습니다."
-                : "이번 주 전체 컨디션 양호합니다.");
+
         }
 
         /// <summary>
@@ -149,7 +146,6 @@ namespace GameDevTycoon.UI.Ingame
                 return;
             }
 
-            // 해당 직군 패널 활성화
             ReportPanel panel = _roleIndex switch
             {
                 0 => ReportPanel.ReportReviewPlanner,
@@ -167,6 +163,7 @@ namespace GameDevTycoon.UI.Ingame
         {
             _viewingReport = report;
             _view.SetDetailInfo(report);
+            RefreshEmployeeStatusSlide();
             _view.PanelReportDetail.SetActive(true);
         }
 

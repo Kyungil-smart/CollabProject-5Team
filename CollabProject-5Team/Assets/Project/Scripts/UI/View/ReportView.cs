@@ -28,12 +28,12 @@ namespace GameDevTycoon.UI.Ingame
         [Header("EmployeeStatusSlide")]
         [SerializeField] private GameObject      _employeeStatusSlide;
         [SerializeField] private RectTransform   _employeeStatusSlideRect;
+        [SerializeField] private Image           _slideBackgroundImage;
+        [SerializeField] private Sprite          _slideBackgroundActive;
+        [SerializeField] private Sprite          _slideBackgroundInactive;
         [SerializeField] private Button          _slideToggleButton;
-        [SerializeField] private Image           _slideToggleIcon;
-        [SerializeField] private TextMeshProUGUI _slideComment;
-        [SerializeField] private Transform       _slidePreviewContent;
-        [SerializeField] private Sprite          _slideIconActive;
-        [SerializeField] private Sprite          _slideIconInactive;
+        [SerializeField] private Image          _slideToggleIcon;
+        [SerializeField] private Transform      _slidePreviewContent;
 
         [Header("Panel_EmployeeComment")]
         [SerializeField] private GameObject _panelEmployeeComment;
@@ -140,6 +140,11 @@ namespace GameDevTycoon.UI.Ingame
             _panelReportDetail.SetActive(panel == ReportPanel.ReportDetail);
             _panelPersonalOpinion.SetActive(panel == ReportPanel.PersonalOpinion);
             _panelReportEnd.SetActive(panel == ReportPanel.ReportEnd);
+
+            // Panel_ReportDetail / Panel_PersonalOpinion일 때만 슬라이드 활성 상태
+            bool slideActive = panel == ReportPanel.ReportDetail || panel == ReportPanel.PersonalOpinion;
+            if (_slideBackgroundImage != null)
+                _slideBackgroundImage.sprite = slideActive ? _slideBackgroundActive : _slideBackgroundInactive;
         }
 
         /// <summary>
@@ -185,11 +190,6 @@ namespace GameDevTycoon.UI.Ingame
         {
             _coverDateRangeLabel.text   = dateRange;
             _coverCompanyNameLabel.text = companyName;
-        }
-
-        public void SetSlideComment(string comment)
-        {
-            _slideComment.text = comment;
         }
 
         private GameObject[] GetDividers(int roleIndex) => roleIndex switch
