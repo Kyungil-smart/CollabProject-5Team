@@ -82,6 +82,7 @@ namespace GameDevTycoon.UI.Ingame
             }
 
             _view.Show();
+            _view.SetSlideVisible(true);
             RefreshCoverInfo();
             RefreshEmployeeStatusSlide();
         }
