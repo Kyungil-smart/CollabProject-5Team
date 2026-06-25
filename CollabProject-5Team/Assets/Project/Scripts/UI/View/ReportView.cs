@@ -20,20 +20,23 @@ namespace GameDevTycoon.UI.Ingame
         [SerializeField] private GameObject _canvasReport;
 
         [Header("Panel_Cover")]
-        [SerializeField] private GameObject      _panelCover;
+        [SerializeField] private GameObject _panelCover;
         [SerializeField] private TextMeshProUGUI _coverDateRangeLabel;
         [SerializeField] private TextMeshProUGUI _coverCompanyNameLabel;
-        [SerializeField] private Button          _coverNextPageButton;
+        [SerializeField] private Button _coverNextPageButton;
 
         [Header("EmployeeStatusSlide")]
-        [SerializeField] private GameObject      _employeeStatusSlide;
-        [SerializeField] private RectTransform   _employeeStatusSlideRect;
-        [SerializeField] private Button          _slideToggleButton;
-        [SerializeField] private Image           _slideToggleIcon;
-        [SerializeField] private TextMeshProUGUI _slideComment;
-        [SerializeField] private Transform       _slidePreviewContent;
-        [SerializeField] private Sprite          _slideIconActive;
-        [SerializeField] private Sprite          _slideIconInactive;
+        [SerializeField] private GameObject _employeeStatusSlide;
+        [SerializeField] private RectTransform _employeeStatusSlideRect;
+        [SerializeField] private Image _slideBackgroundImage;
+        [SerializeField] private Sprite _slideBackgroundActive;
+        [SerializeField] private Sprite _slideBackgroundInactive;
+        [SerializeField] private Button _slideToggleButton;
+        [SerializeField] private Image _slideToggleIcon;
+        [SerializeField] private Transform _slidePreviewContent;
+        [SerializeField] private Sprite _slideIconExpanded;   // 슬라이드 올라가 있을 때
+        [SerializeField] private Sprite _slideIconCollapsed;  // 슬라이드 닫혀있을 때
+        [SerializeField] private Sprite _slideIconDisabled;   // 비활성화 상태
 
         [Header("Panel_EmployeeComment")]
         [SerializeField] private GameObject _panelEmployeeComment;
@@ -55,38 +58,38 @@ namespace GameDevTycoon.UI.Ingame
 
         [Header("Panel_ReportDetail — 담당자 위임")]
         [SerializeField] private GameObject _panelReportDetail;
-        [SerializeField] private Image      _profileIcon;
-        [SerializeField]         TMP_Text  _detailTitleLable;   // 보고서 제목
-        [SerializeField] DepartmentTagView _departmentTagPrefab; // 직원 역할
-        [SerializeField]         TMP_Text  _detailEmployeeNameLable;  // 직원 이름
-        [SerializeField]         TMP_Text  _detailContentLable;    // 보고서 본문
-        [SerializeField]         Button    _adoptBtn;
-        [SerializeField]         Button    _cancelBtn;
+        [SerializeField] private Image _profileIcon;
+        [SerializeField] TMP_Text _detailTitleLable;
+        [SerializeField] DepartmentTagView _departmentTagPrefab;
+        [SerializeField] TMP_Text _detailEmployeeNameLable;
+        [SerializeField] TMP_Text _detailContentLable;
+        [SerializeField] Button _adoptBtn;
+        [SerializeField] Button _cancelBtn;
 
         [Header("Panel_PersonalOpinion - 추후 작업")]
         [SerializeField] private GameObject _panelPersonalOpinion;
 
         [Header("Panel_ReportEnd")]
         [SerializeField] private GameObject _panelReportEnd;
-        [SerializeField] private Button     _reportEndConfirmButton;
+        [SerializeField] private Button _reportEndConfirmButton;
 
         // [DoTween 수치 확정 후 조정]
         [Header("Slide Animation")]
-        [SerializeField] private float _slideHiddenY  = -200f;
-        [SerializeField] private float _slideShownY   = 0f;
+        [SerializeField] private float _slideHiddenY = -200f;
+        [SerializeField] private float _slideShownY = 0f;
         private const float SLIDE_DURATION = 0.3f;
 
-        private bool  _isSlideExpanded;
+        private bool _isSlideExpanded;
         private Tween _activeSlideTween;
 
-        public Observable<Unit> OnCoverNextPageClicked     => _coverNextPageButton.OnClickAsObservable();
-        public Observable<Unit> OnReportEndConfirmClicked  => _reportEndConfirmButton.OnClickAsObservable();
-        public Observable<Unit> OnAdoptClicked             => _adoptBtn.OnClickAsObservable();
-        public Observable<Unit> OnCancelClicked            => _cancelBtn.OnClickAsObservable();
+        public Observable<Unit> OnCoverNextPageClicked => _coverNextPageButton.OnClickAsObservable();
+        public Observable<Unit> OnReportEndConfirmClicked => _reportEndConfirmButton.OnClickAsObservable();
+        public Observable<Unit> OnAdoptClicked => _adoptBtn.OnClickAsObservable();
+        public Observable<Unit> OnCancelClicked => _cancelBtn.OnClickAsObservable();
 
         // 담당자 패널 Show/Hide용 — Presenter에서 순서 제어
         public GameObject PanelEmployeeComment => _panelEmployeeComment;
-        public GameObject PanelReportDetail    => _panelReportDetail;
+        public GameObject PanelReportDetail => _panelReportDetail;
         public GameObject PanelPersonalOpinion => _panelPersonalOpinion;
 
         public Transform SlidePreviewContent => _slidePreviewContent;
@@ -109,6 +112,7 @@ namespace GameDevTycoon.UI.Ingame
             _panelPersonalOpinion.SetActive(false);
             _panelReportEnd.SetActive(false);
 
+            _employeeStatusSlide.SetActive(false);
             _isSlideExpanded = false;
             _employeeStatusSlideRect.anchoredPosition =
                 new Vector2(_employeeStatusSlideRect.anchoredPosition.x, _slideHiddenY);
@@ -143,6 +147,40 @@ namespace GameDevTycoon.UI.Ingame
         }
 
         /// <summary>
+        /// 슬라이드 상호작용 가능 여부 — 배경 스프라이트 및 토글 아이콘 상태 반영.
+        /// </summary>
+        public void SetSlideInteractable(bool interactable)
+        {
+            Debug.Log($"[ReportView] SetSlideInteractable: {interactable}, Button: {_slideToggleButton != null}");
+
+            if (_slideBackgroundImage != null)
+                _slideBackgroundImage.sprite = interactable ? _slideBackgroundActive : _slideBackgroundInactive;
+
+            _slideToggleButton.interactable = interactable;
+            Debug.Log($"[ReportView] Button.interactable after set: {_slideToggleButton.interactable}");
+
+            if (_slideToggleIcon != null && _slideIconDisabled != null && _slideIconCollapsed != null)
+                _slideToggleIcon.sprite = interactable ? _slideIconCollapsed : _slideIconDisabled;
+
+            // 비활성화 시 슬라이드 닫힘 상태로 초기화
+            if (!interactable && _isSlideExpanded)
+            {
+                _isSlideExpanded = false;
+                _activeSlideTween?.Kill();
+                _employeeStatusSlideRect.anchoredPosition =
+                    new Vector2(_employeeStatusSlideRect.anchoredPosition.x, _slideHiddenY);
+            }
+        }
+
+        /// <summary>
+        /// 보고서 진입 여부에 따라 슬라이드 패널 노출 제어.
+        /// </summary>
+        public void SetSlideVisible(bool visible)
+        {
+            _employeeStatusSlide.SetActive(visible);
+        }
+
+        /// <summary>
         /// 직군별 카드/구분선 바인딩. 보고서 수 초과 슬롯은 비활성.
         /// </summary>
         public void BindReviewCards(int roleIndex, List<Report> reports, Action<Report> onCardClicked)
@@ -172,9 +210,9 @@ namespace GameDevTycoon.UI.Ingame
 
         public void SetDetailInfo(Report report)
         {
-            _detailTitleLable.text        = report.so.title;
+            _detailTitleLable.text = report.so.title;
             _detailEmployeeNameLable.text = report.owner.so.Name;
-            _detailContentLable.text      = report.so.content;
+            _detailContentLable.text = report.so.content;
 
             _profileIcon.sprite = report.owner.so.iconNormal;
 
@@ -183,13 +221,8 @@ namespace GameDevTycoon.UI.Ingame
 
         public void SetCoverInfo(string dateRange, string companyName)
         {
-            _coverDateRangeLabel.text   = dateRange;
+            _coverDateRangeLabel.text = dateRange;
             _coverCompanyNameLabel.text = companyName;
-        }
-
-        public void SetSlideComment(string comment)
-        {
-            _slideComment.text = comment;
         }
 
         private GameObject[] GetDividers(int roleIndex) => roleIndex switch
@@ -202,6 +235,8 @@ namespace GameDevTycoon.UI.Ingame
 
         private void ToggleSlide()
         {
+            Debug.Log($"[ReportView] ToggleSlide called, Button.interactable: {_slideToggleButton.interactable}");
+
             _isSlideExpanded = !_isSlideExpanded;
 
             _activeSlideTween?.Kill();
@@ -212,8 +247,8 @@ namespace GameDevTycoon.UI.Ingame
                 .DOAnchorPosY(targetY, SLIDE_DURATION)
                 .SetEase(Ease.OutQuart);
 
-            if (_slideIconActive != null && _slideIconInactive != null)
-                _slideToggleIcon.sprite = _isSlideExpanded ? _slideIconActive : _slideIconInactive;
+            if (_slideToggleIcon != null && _slideIconExpanded != null && _slideIconCollapsed != null)
+                _slideToggleIcon.sprite = _isSlideExpanded ? _slideIconExpanded : _slideIconCollapsed;
         }
 
         private void OnDestroy()

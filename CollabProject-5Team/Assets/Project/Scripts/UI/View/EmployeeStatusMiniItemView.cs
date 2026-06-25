@@ -15,14 +15,11 @@ namespace GameDevTycoon.UI.Ingame
 
         [Header("태그 앵커")]
         [SerializeField] private Transform _departmentTagAnchor;
-        [SerializeField] private Transform _mbtiTagAnchor;
 
         [Header("태그 프리팹")]
         [SerializeField] private DepartmentTagView _departmentTagPrefab;
-        [SerializeField] private MBTITagView _mbtiTagPrefab;
 
         private DepartmentTagView _departmentTag;
-        private MBTITagView _mbtiTag;
 
         [Header("의욕도")]
         [SerializeField] private Slider _motivationBar;
@@ -46,16 +43,12 @@ namespace GameDevTycoon.UI.Ingame
                 _departmentTag = Instantiate(_departmentTagPrefab, _departmentTagAnchor);
             _departmentTag.Bind(so.role);
 
-            if (_mbtiTag == null)
-                _mbtiTag = Instantiate(_mbtiTagPrefab, _mbtiTagAnchor);
-            _mbtiTag.Bind(so.mbtiParsed);
-
             _motivationBar.value = mutable.desire;
-            _motivationValue.text = mutable.desire.ToString();
+            _motivationValue.text = $"{mutable.desire}%";
             _motivationComment.text = GetMotivationComment(mutable.desire);
 
             _fatigueBar.value = mutable.fatigue;
-            _fatigueValue.text = mutable.fatigue.ToString();
+            _fatigueValue.text = $"{mutable.fatigue}%";
             _fatigueComment.text = GetFatigueComment(mutable.fatigue);
         }
 
@@ -82,6 +75,5 @@ namespace GameDevTycoon.UI.Ingame
             if (highFatigue || lowDesire) return so.iconCaution;
             return so.iconNormal;
         }
-
     }
 }

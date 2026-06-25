@@ -13,6 +13,7 @@ namespace GameDevTycoon.UI.Ingame
         [SerializeField] private Image _profileIcon;
         [SerializeField] private GameObject _deployBadge;
         [SerializeField] private TextMeshProUGUI _nameLabel;
+        [SerializeField] private Image _abilityImage;
         [SerializeField] private TextMeshProUGUI _abilityValue;
         [SerializeField] private GameObject _educationOverlay;
 
@@ -21,6 +22,11 @@ namespace GameDevTycoon.UI.Ingame
 
         [Header("태그 프리팹")]
         [SerializeField] private DepartmentTagView _departmentTagPrefab;
+
+        [Header("직군별 능력치 스프라이트")]
+        [SerializeField] private Sprite _plannerAbilitySprite;
+        [SerializeField] private Sprite _programmerAbilitySprite;
+        [SerializeField] private Sprite _artistAbilitySprite;
 
         private DepartmentTagView _departmentTag;
 
@@ -32,6 +38,7 @@ namespace GameDevTycoon.UI.Ingame
             _profileIcon.sprite = GetProfileSprite(so, mutable);
             _nameLabel.text = so.Name;
             _abilityValue.text = mutable.ability.ToString();
+            _abilityImage.sprite = GetRoleSprite(so.role);
 
             if (_departmentTag == null)
                 _departmentTag = Instantiate(_departmentTagPrefab, _departmentTagAnchor);
@@ -42,6 +49,14 @@ namespace GameDevTycoon.UI.Ingame
             // [TODO: 교육 시스템 연결 후 교육 잔여 주수 표시]
             _educationOverlay.SetActive(false);
         }
+
+        private Sprite GetRoleSprite(Role role) => role switch
+        {
+            Role.PLANNER => _plannerAbilitySprite,
+            Role.PROGRAMMER => _programmerAbilitySprite,
+            Role.ARTIST => _artistAbilitySprite,
+            _ => null,
+        };
 
         private static Sprite GetProfileSprite(EmployeeImmutableData so, EmployeeMutableData mutable)
         {
@@ -58,6 +73,5 @@ namespace GameDevTycoon.UI.Ingame
             if (Company.Instance.activeProjectCount.Value <= 0) return false;
             return Company.Instance.curProject.GetAllEmployees().Contains(employee);
         }
-
     }
 }

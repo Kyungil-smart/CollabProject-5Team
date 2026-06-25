@@ -262,7 +262,7 @@ namespace GameDevTycoon.UI.Ingame
 
                 slider.OnSelectedChanged += RefreshRecruitCost;
 
-                _sliderDisposables.Add(Disposable.Create(()=> slider.OnSelectedChanged -= RefreshRecruitCost));
+                _sliderDisposables.Add(Disposable.Create(() => slider.OnSelectedChanged -= RefreshRecruitCost));
             }
 
             RefreshRecruitCost();
@@ -609,8 +609,8 @@ namespace GameDevTycoon.UI.Ingame
             _ => 5,
         };
 
-    // 월요일이 지원 UI초기화
-    private void ResetOnMondayUI()
+        // 월요일이 지원 UI초기화
+        private void ResetOnMondayUI()
         {
             // 직원모집버튼 상태 초기화
             _view.SetRecruitButtonInteractable(true);
