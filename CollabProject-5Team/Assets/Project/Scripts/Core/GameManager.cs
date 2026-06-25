@@ -36,7 +36,6 @@ public class GameManager : MonoBehaviour
     #endregion
     }
 
-
     public async UniTask InitializeForSaveSystem()
     {
         GenerateOffice(Company.Instance.level);
