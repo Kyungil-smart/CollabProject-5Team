@@ -104,13 +104,12 @@ public class QuestManager : MonoBehaviour
     // OnDailyQuestChanged(End)를 안 거치고 넘어가므로 여기서 직접 활성 오브젝트를 정리해야 함
     public void ResetForNewDay()
     {
-        if (dailyQuestState.Value == QuestState.Playing && curDailyQuest != null)
-        {
-            if (_questPhase == 2)
-                SetObjectsActive(curDailyQuest.so.resultObjects, false);
-            else
-                SetObjectsActive(curDailyQuest.so.activeObjects, false);
-        }
+        if (curDailyQuest == null) return;
+
+        if (_questPhase == 2)
+            SetObjectsActive(curDailyQuest.so.resultObjects, false);
+        else
+            SetObjectsActive(curDailyQuest.so.activeObjects, false);
 
         dailyQuestState.Value = QuestState.Ready;
     }

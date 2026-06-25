@@ -46,8 +46,11 @@ public sealed class DebugUIPresenter : MonoBehaviour
             .AddTo(this);
 
         _nextDayButton.OnClickAsObservable()
-            .Subscribe(_ => DateTimeManager.Instance.OnClickEndDayButton().Forget())
-            .AddTo(this);
+            .Subscribe(_ =>
+            {
+                DateTimeManager.Instance.OnClickEndDayButton().Forget();
+                QuestManager.Instance.ResetForNewDay();
+            }).AddTo(this);
 
         _bonusQuestScoreButton.OnClickAsObservable()
             .Subscribe(_ =>

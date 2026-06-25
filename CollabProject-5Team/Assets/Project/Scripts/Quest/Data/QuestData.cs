@@ -69,12 +69,4 @@ public class DailyQuest : QuestBase
         curCount = 0;
         _targetCount = newTargetCount;
     }
-
-    // 시간 초과 등으로 실패 처리
-    public void Fail()
-    {
-        if (state != QuestState.Playing) return;
-        state = QuestState.End;
-        result = QuestResult.Fail;
-    }
 }
