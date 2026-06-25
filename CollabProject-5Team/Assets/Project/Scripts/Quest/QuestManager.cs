@@ -96,6 +96,13 @@ public class QuestManager : MonoBehaviour
 
             ShowSpeechBubble(curDailyQuest.so.npcDialogue);
             AddBonusPoint(curDailyQuest.so.role, curDailyQuest.so.successEffect);
+
+            if (TutorialManager.Instance != null)
+            {
+                // 인스펙터에 등록할 행동 ID 예시: "DailyQuestComplete"
+                TutorialManager.OnTutorialActionCompleted?.Invoke("DailyQuestComplete");
+            }
+
             DateTimeManager.Instance.CompleteDayWork();
         }
     }
