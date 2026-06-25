@@ -1,5 +1,4 @@
 using R3;
-using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -20,11 +19,9 @@ namespace GameDevTycoon.UI
         [Header("Buttons")]
         [SerializeField] private Button _confirmButton;
         [SerializeField] private Button _bgmToggle;
-        [SerializeField] private TextMeshProUGUI _bgmToggleLabel;
         [SerializeField] private Sprite _bgmToggleOnSprite;
         [SerializeField] private Sprite _bgmToggleOffSprite;
         [SerializeField] private Button _sfxToggle;
-        [SerializeField] private TextMeshProUGUI _sfxToggleLabel;
         [SerializeField] private Sprite _sfxToggleOnSprite;
         [SerializeField] private Sprite _sfxToggleOffSprite;
         [SerializeField] private Button _titleButton;
@@ -51,7 +48,6 @@ namespace GameDevTycoon.UI
 
         public void SetBGMToggle(bool isOn)
         {
-            _bgmToggleLabel.text = isOn ? "ON" : "OFF";
             var sprite = isOn ? _bgmToggleOnSprite : _bgmToggleOffSprite;
             if (sprite != null)
                 _bgmToggle.GetComponent<Image>().sprite = sprite;
@@ -59,7 +55,6 @@ namespace GameDevTycoon.UI
 
         public void SetSFXToggle(bool isOn)
         {
-            _sfxToggleLabel.text = isOn ? "ON" : "OFF";
             var sprite = isOn ? _sfxToggleOnSprite : _sfxToggleOffSprite;
             if (sprite != null)
                 _sfxToggle.GetComponent<Image>().sprite = sprite;
