@@ -11,6 +11,7 @@ namespace GameDevTycoon.UI
         public bool isAutoSlot;
         public string title;
         public string companyName;
+        public int companyLevel;
         public string dateTime;
         public string savedAt;
         public string gold;
@@ -33,6 +34,7 @@ namespace GameDevTycoon.UI
                 isAutoSlot = isAutoSlot,
                 title = title,
                 companyName = title,
+                companyLevel = data.company_Level,
                 dateTime = $"{DateTimeManager.GetDateString(data.day)} ({GetTimeOfDayLabel(data.currentTime)})",
                 savedAt = string.IsNullOrWhiteSpace(data.realSaveTime) ? "저장 시간 없음" : data.realSaveTime,
                 gold = $"{data.company_Gold:N0}G",
