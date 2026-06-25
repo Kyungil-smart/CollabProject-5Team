@@ -13,7 +13,6 @@ namespace Tutorial
         PanelOpened,
         DialogueNodeReached,
     }
-    
 
     public class TutorialManager : MonoBehaviour
     {
@@ -33,7 +32,7 @@ namespace Tutorial
         [SerializeField] private List<TutorialStepSO> _tutorialSteps = new();
 
         private int _currentStepIndex = 0;
-        private HashSet<int> _completedSteps = new();   // 완료된 스텝 저장
+        private HashSet<int> _completedSteps = new();
 
         private Canvas _tempCanvas;
         private GraphicRaycaster _tempRaycaster;
@@ -72,9 +71,7 @@ namespace Tutorial
             for (int i = 0; i < _tutorialSteps.Count; i++)
             {
                 if (PlayerPrefs.GetInt(TUTORIAL_SAVE_KEY + i, 0) == 1)
-                {
                     _completedSteps.Add(i);
-                }
             }
         }
 
@@ -94,9 +91,7 @@ namespace Tutorial
 
             _currentStepIndex = 0;
             while (_currentStepIndex < _tutorialSteps.Count && _completedSteps.Contains(_currentStepIndex))
-            {
                 _currentStepIndex++;
-            }
 
             if (_currentStepIndex >= _tutorialSteps.Count) return;
 
@@ -106,7 +101,6 @@ namespace Tutorial
         public void TriggerTutorial(TutorialTriggerType type, int value = 0)
         {
             if (_currentStepIndex >= _tutorialSteps.Count) return;
-
             CheckTrigger(type, value);
         }
 
@@ -114,7 +108,7 @@ namespace Tutorial
         {
             if (_currentStepIndex >= _tutorialSteps.Count) return;
 
-            TutorialStepSO current = _tutorialSteps[_currentStepIndex];   // ← 변경
+            TutorialStepSO current = _tutorialSteps[_currentStepIndex];
 
             if (current.triggerType != type || current.triggerValue != value)
                 return;
@@ -160,20 +154,17 @@ namespace Tutorial
 
         private void OnPlayerTapped()
         {
-            SaveStepCompleted(_currentStepIndex);   // 완료 저장
+            SaveStepCompleted(_currentStepIndex);
 
             ClearTutorialUI();
             _currentStepIndex++;
 
-            // 완료된 스텝 스킵
             while (_currentStepIndex < _tutorialSteps.Count && _completedSteps.Contains(_currentStepIndex))
-            {
                 _currentStepIndex++;
-            }
 
             if (_currentStepIndex >= _tutorialSteps.Count) return;
 
-            // 다음 스텝이 같은 트리거라면 바로 실행 (연속 Text Only)
+            // 연속 Text Only 처리
             TutorialStepSO next = _tutorialSteps[_currentStepIndex];
             if (next.isTextOnly && next.triggerType == _tutorialSteps[_currentStepIndex - 1].triggerType)
             {
