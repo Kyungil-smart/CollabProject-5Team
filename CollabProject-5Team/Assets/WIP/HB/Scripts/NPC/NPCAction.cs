@@ -42,7 +42,10 @@ public class NPCAction : INPCState
             case PointType.ServerRoom:  stayTime = Random.Range(10.0f, 15.0f); break;
         }
 
-        await UniTask.Delay((int)(stayTime * 1000));
+        bool cancelled = await UniTask.Delay((int)(stayTime * 1000), cancellationToken: npc.Cts.Token)
+                                        .SuppressCancellationThrow();
+
+        if (cancelled) return;
 
         npc.ReleaseCurrentTarget();
 
