@@ -21,8 +21,8 @@ namespace Tutorial
         public TutorialTriggerType triggerType;
         public int triggerValue;
 
-        [Header("강조할 버튼")]
-        public Button targetButton;
+        [Header("강조할 UI 오브젝트 (패널/창 전체)")]
+        public GameObject targetObject;
 
         [Header("대사만 표시")]
         public bool isTextOnly;
@@ -50,9 +50,11 @@ namespace Tutorial
 
         private int _currentStepIndex = 0;
 
-        private Canvas _tempCanvas;
-        private GraphicRaycaster _tempRaycaster;
-        private Button _currentButton;
+        // 원래 상태 복구를 위한 변수들
+        private GameObject _currentTargetObject;
+        private Transform _originalParent;
+        private int _originalSiblingIndex;
+        private Button _targetButtonInObject;
 
         private void Awake()
         {
@@ -68,8 +70,10 @@ namespace Tutorial
             if (_textPanel != null) _textPanel.SetActive(false);
 
             Button overlayButton = _dimOverlay.GetComponent<Button>();
-            if (overlayButton == null) overlayButton = _dimOverlay.AddComponent<Button>();
-            overlayButton.onClick.AddListener(OnPlayerTapped);
+            if (overlayButton != null)
+            {
+                overlayButton.onClick.RemoveAllListeners();
+            }
         }
 
         void Start()
@@ -107,13 +111,14 @@ namespace Tutorial
             if (current.isTextOnly)
                 ExecuteTextOnlyTutorial(current);
             else
-                ExecuteHighlight(current.targetButton);
+                ExecuteHighlight(current.targetObject); // 💡 targetObject 전달
         }
 
         private void ExecuteTextOnlyTutorial(TutorialGuide step)
         {
             OnTutorialHighlightStateChanged.OnNext(true);
 
+            _dimOverlay.SetActive(true);
             _textPanel.SetActive(true);
             _tutorialText.text = step.tutorialText;
 
@@ -121,44 +126,82 @@ namespace Tutorial
             if (textButton == null) textButton = _textPanel.AddComponent<Button>();
             textButton.onClick.RemoveAllListeners();
             textButton.onClick.AddListener(OnPlayerTapped);
+
+            Button overlayButton = _dimOverlay.GetComponent<Button>();
+            if (overlayButton == null) overlayButton = _dimOverlay.AddComponent<Button>();
+            overlayButton.onClick.RemoveAllListeners();
+            overlayButton.onClick.AddListener(OnPlayerTapped);
         }
 
-        private void ExecuteHighlight(Button button)
+        private void ExecuteHighlight(GameObject targetObj)
         {
-            _currentButton = button;
-            if (_currentButton == null)
+            _currentTargetObject = targetObj;
+            if (_currentTargetObject == null)
             {
-                Debug.LogWarning("[Tutorial] targetButton이 None입니다!");
+                Debug.LogWarning("[Tutorial] targetObject가 없어서 다음으로 강제 진행합니다.");
                 OnPlayerTapped();
                 return;
             }
 
             OnTutorialHighlightStateChanged.OnNext(true);
 
+            // 1. 딤 패널 활성화 (다른 곳 터치 완벽 차단)
             _dimOverlay.SetActive(true);
-            _tempCanvas = _currentButton.gameObject.AddComponent<Canvas>();
-            _tempCanvas.overrideSorting = true;
-            _tempCanvas.sortingOrder = 15;
-            _tempRaycaster = _currentButton.gameObject.AddComponent<GraphicRaycaster>();
+            Button overlayButton = _dimOverlay.GetComponent<Button>();
+            if (overlayButton != null) overlayButton.onClick.RemoveAllListeners();
 
-            _fingerPointer.gameObject.SetActive(true);
-            _fingerPointer.position = _currentButton.transform.position + new Vector3(0, 50f, 0);
+            // 2. 지정된 UI 오브젝트(창 전체)를 딤 패널 앞으로 탈출시키기
+            _originalParent = _currentTargetObject.transform.parent;
+            _originalSiblingIndex = _currentTargetObject.transform.GetSiblingIndex();
 
-            _currentButton.onClick.RemoveAllListeners();
-            _currentButton.onClick.AddListener(OnPlayerTapped);
+            _currentTargetObject.transform.SetParent(_dimOverlay.transform.parent, true);
+            _currentTargetObject.transform.SetAsLastSibling();
+
+            // 3. 오브젝트 내부(자식들 포함)에서 실제로 클릭되어야 하는 'Button' 컴포넌트를 탐색
+            _targetButtonInObject = _currentTargetObject.GetComponentInChildren<Button>();
+
+            if (_targetButtonInObject != null)
+            {
+                // 4. 오직 이 내부 버튼을 눌렀을 때만 튜토리얼이 다음으로 넘어가도록 리스너 추가
+                _targetButtonInObject.onClick.AddListener(OnPlayerTapped);
+
+                // 5. 손가락 포인터는 해당 버튼 위치 위에 띄워줌
+                _fingerPointer.gameObject.SetActive(true);
+                _fingerPointer.transform.SetAsLastSibling();
+                _fingerPointer.position = _targetButtonInObject.transform.position + new Vector3(50, 50f, 0);
+
+                Debug.Log($"[Tutorial] '{_currentTargetObject.name}' 패널을 위로 올림. 내부 버튼 '{_targetButtonInObject.name}' 클릭 시 다음으로 진행.");
+            }
+            else
+            {
+                // 패널 내부에 버튼이 하나도 없다면, 패널 자체를 눌러서 넘어가도록 백업 처리
+                Debug.LogWarning($"[Tutorial] {_currentTargetObject.name} 내부에 Button 컴포넌트가 없습니다. 패널 터치 시 넘어가도록 대체합니다.");
+                Button panelButton = _currentTargetObject.GetComponent<Button>();
+                if (panelButton == null) panelButton = _currentTargetObject.AddComponent<Button>();
+                _targetButtonInObject = panelButton;
+                _targetButtonInObject.onClick.AddListener(OnPlayerTapped);
+            }
         }
 
         private void OnPlayerTapped()
         {
+            Debug.Log($"[Tutorial] 올바른 타겟 버튼 탭 감지! 다음 인덱스로: {_currentStepIndex + 1}");
+
             ClearTutorialUI();
             _currentStepIndex++;
 
-            if (_currentStepIndex >= _tutorialGuides.Count) return;
+            if (_currentStepIndex >= _tutorialGuides.Count)
+            {
+                Debug.Log("[Tutorial] 모든 튜토리얼 완료.");
+                return;
+            }
 
             TutorialGuide next = _tutorialGuides[_currentStepIndex];
-            if (next.isTextOnly && next.triggerType == _tutorialGuides[_currentStepIndex - 1].triggerType)
+            TutorialGuide prev = _tutorialGuides[_currentStepIndex - 1];
+
+            if (next.triggerType == prev.triggerType && next.triggerValue == prev.triggerValue)
             {
-                ExecuteTextOnlyTutorial(next);
+                CheckTrigger(next.triggerType, next.triggerValue);
             }
         }
 
@@ -168,12 +211,24 @@ namespace Tutorial
             _fingerPointer.gameObject.SetActive(false);
             if (_textPanel != null) _textPanel.SetActive(false);
 
-            if (_currentButton != null)
+            Button overlayButton = _dimOverlay.GetComponent<Button>();
+            if (overlayButton != null) overlayButton.onClick.RemoveAllListeners();
+
+            if (_currentTargetObject != null)
             {
-                Destroy(_tempCanvas);
-                Destroy(_tempRaycaster);
-                _currentButton.onClick.RemoveAllListeners();
-                _currentButton = null;
+                // 추가했던 튜토리얼 리스너 안전하게 제거
+                if (_targetButtonInObject != null)
+                {
+                    _targetButtonInObject.onClick.RemoveListener(OnPlayerTapped);
+                    _targetButtonInObject = null;
+                }
+
+                // UI 오브젝트(창 전체)를 원래 살던 부모 위치와 순서로 완벽 복구
+                _currentTargetObject.transform.SetParent(_originalParent, true);
+                _currentTargetObject.transform.SetSiblingIndex(_originalSiblingIndex);
+
+                _currentTargetObject = null;
+                _originalParent = null;
             }
 
             OnTutorialHighlightStateChanged.OnNext(false);
