@@ -1497,7 +1497,9 @@ GameObject:
   - component: {fileID: 8367222380920339447}
   - component: {fileID: 2051877988501321751}
   - component: {fileID: 2313180479771193348}
-  m_Layer: 0
+  - component: {fileID: 192049365939661043}
+  - component: {fileID: 1485785321110570345}
+  m_Layer: 7
   m_Name: Hotel_Armchair_1 Variant (1)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1589,6 +1591,42 @@ MonoBehaviour:
   PointType: 1
   IsOccupied: 0
   Owner: {fileID: 0}
+--- !u!65 &192049365939661043
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1940589706694670496}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 1.5417092, y: 0.86987513, z: 1.2010669}
+  m_Center: {x: -0.00000008940697, y: 0.43493763, z: 0}
+--- !u!114 &1485785321110570345
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1940589706694670496}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 82a80c3a8056fd040a1cf7772e1a2230, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  type: 1
+  IsOccupied: 0
+  _sitPoint: {fileID: 2959265658976809454}
 --- !u!1 &2004769883105916665
 GameObject:
   m_ObjectHideFlags: 0
@@ -2248,7 +2286,9 @@ GameObject:
   - component: {fileID: 4202816126487390666}
   - component: {fileID: 6150429353972572442}
   - component: {fileID: 1944851226660054097}
-  m_Layer: 0
+  - component: {fileID: 8840224226653258505}
+  - component: {fileID: 298715765738452364}
+  m_Layer: 7
   m_Name: Hotel_Armchair_1 Variant
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2340,6 +2380,42 @@ MonoBehaviour:
   PointType: 1
   IsOccupied: 0
   Owner: {fileID: 0}
+--- !u!65 &8840224226653258505
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2649053777969900285}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 1.5417092, y: 0.86987513, z: 1.2010669}
+  m_Center: {x: -0.00000008940697, y: 0.43493763, z: 0}
+--- !u!114 &298715765738452364
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2649053777969900285}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 82a80c3a8056fd040a1cf7772e1a2230, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  type: 1
+  IsOccupied: 0
+  _sitPoint: {fileID: 7736592249110616363}
 --- !u!1 &2667605542925850489
 GameObject:
   m_ObjectHideFlags: 0
@@ -3700,7 +3776,7 @@ Transform:
   m_GameObject: {fileID: 4993230990492624316}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -2.5730004, y: -1, z: 0.04699999}
+  m_LocalPosition: {x: -2.5730004, y: -0.992, z: 0.04699999}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -4828,7 +4904,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7736592249110616363}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: SitPoint
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -6229,7 +6305,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2959265658976809454}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: SitPoint
   m_TagString: Untagged
   m_Icon: {fileID: 0}

@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Cysharp.Threading.Tasks;
+using R3;
 using UnityEngine;
 
 
@@ -99,7 +100,8 @@ public class GameManager : MonoBehaviour
         RefreshSitPoints();
 
         // NPC 생성
-        foreach (var emp in _EmployeeManager.Instance.haveEmployees.haveEmployeeList)
+        var hiredEmployees = _EmployeeManager.Instance.haveEmployees.haveEmployeeList;
+        foreach (var emp in hiredEmployees)
         {
             await SpawnNPCsAsync(emp);
         }
@@ -121,11 +123,19 @@ public class GameManager : MonoBehaviour
     {
         if (emp == null) return;
 
+        // 리스트에 있는지 확인하고 중복생성 방지
+        if (_activeEmployees.Any(e => e != null && e.so == emp.so))
+        {
+            return;
+        }
+
         var empObj = Instantiate(emp.gameObject, _currentNpcSpawnPoint.position, Quaternion.identity);
         var controller = empObj.GetComponent<NPCController>();
         var employee = empObj.GetComponent<Employee>();
 
-        if (!_activeEmployees.Contains(emp)) _activeEmployees.Add(emp);
+        employee.Init();
+
+        _activeEmployees.Add(employee);
 
         // 빈자리 할당
         var target = PointManager.Instance.GetAllPoints().FirstOrDefault(p => !p.IsOccupied);
@@ -143,7 +153,7 @@ public class GameManager : MonoBehaviour
         else
             controller.ChangeState(new NPCIdle());
 
-        await UniTask.Delay(100);
+        await UniTask.Delay(1000);
     }
 
     // 월요일 아침에 호출
@@ -163,7 +173,8 @@ public class GameManager : MonoBehaviour
             if (employee == null) continue;
 
             var npc = employee.GetComponent<NPCController>();
-            npc.ReleaseCurrentTarget(); // 자리 점유 해제
+            // 자리 점유 해제
+            npc.ReleaseCurrentTarget(); 
             npc.ChangeState(new NPCIdle());
         }
 
@@ -176,13 +187,24 @@ public class GameManager : MonoBehaviour
         if (_currentMapTransform != null)
         {
             DestroyImmediate(_currentMapTransform.gameObject);
+
+            _activeEmployees.RemoveAll(e => e == null || e.gameObject == null);
         }
 
         await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
 
         _currentOfficeIndex++;
+
         MapInfo newOffice = Instantiate(_offices[_currentOfficeIndex], Vector3.zero, Quaternion.identity);
         _currentMapTransform = newOffice.transform;
+
+        // 잠시 대기 후 카메라 조정
+        await UniTask.Yield();
+
+        if (CameraManager.Instance != null)
+        {
+            CameraManager.Instance.MapSettings(newOffice);
+        }
 
         // 포인트, 스폰 정보 갱신
         PointManager.Instance.RefreshPoints(_currentMapTransform);
@@ -223,57 +245,62 @@ public class GameManager : MonoBehaviour
 
     // 퇴근 명령 SpawnPoint로 이동 후 비활성화
     public void LeaveWorkNPCs()
-    {
+    {        
         foreach (var emp in _activeEmployees)
         {
-            emp.GetComponent<NPCController>().ChangeState(new NPCLeave());
+            if (emp == null) continue;
+
+            var npc = emp.GetComponent<NPCController>();
+
+            npc.ChangeState(new NPCLeave());
         }
     }
 
     public async UniTask HiredNPCGoToWork()
     {
-        _activeEmployees.RemoveAll(e => e == null);
+        _activeEmployees.RemoveAll(e => e == null || e.gameObject == null);
+
         var hiredEmployees = _EmployeeManager.Instance.haveEmployees.haveEmployeeList;
 
-        // 1. 해고된 직원 처리
+        // 해고된 직원 처리
         for (int i = _activeEmployees.Count - 1; i >= 0; i--)
         {
             var activeEmployee = _activeEmployees[i];
             if (!hiredEmployees.Exists(e => e.so == activeEmployee.so))
             {
                 var npc = activeEmployee.GetComponent<NPCController>();
-                npc.ReleaseCurrentTarget(); // 자리 점유 해제
+                
+                // 자리 점유 해제
+                npc.ReleaseCurrentTarget(); 
                 Destroy(activeEmployee.gameObject);
                 _activeEmployees.RemoveAt(i);
             }
         }
 
-        // 2. 고용된 직원 처리
+        // 고용된 직원 처리
         foreach (var employee in hiredEmployees)
         {
             var activeEmployee = _activeEmployees.Find(e => e != null && e.so == employee.so);
 
             if (activeEmployee != null)
             {
-                var existingNpc = activeEmployee.GetComponent<NPCController>();
-                existingNpc.gameObject.SetActive(true);
+                var npc = activeEmployee.GetComponent<NPCController>();
 
-                // 자리가 없는 경우에만 새로 찾음
-                if (existingNpc.CurrentTarget == null)
+                npc.gameObject.SetActive(true);
+
+                // 상태 초기화
+                npc.IsFirstTask = true;
+                npc.ReleaseCurrentTarget();
+
+
+                if (npc.Agent != null)
                 {
-                    var target = PointManager.Instance.GetAllPoints().FirstOrDefault(p => !p.IsOccupied);
-                    if (target != null)
-                    {
-                        target.IsOccupied = true;
-                        existingNpc.CurrentTarget = target;
-                    }
+                    npc.Agent.enabled = false;
+                    npc.Agent.Warp(npc.transform.position);
+                    npc.Agent.enabled = true;
                 }
 
-                // 자리가 할당된 경우에만 이동 명령 내림
-                if (existingNpc.CurrentTarget != null)
-                {
-                    existingNpc.ChangeState(new NPCMove());
-                }
+                npc.AssignNewTask();
             }
             else
             {
@@ -310,8 +337,11 @@ public class GameManager : MonoBehaviour
             }
 
             npc.ReleaseCurrentTarget();
-            _activeEmployees.Remove(activeEmployee); // 리스트에서 제거
-            Destroy(activeEmployee.gameObject); // 씬에서 파괴
+
+            // 리스트에서 제거
+            _activeEmployees.Remove(activeEmployee); 
+            // 씬에서 파괴
+            Destroy(activeEmployee.gameObject); 
             Debug.Log($"[GameManager] {employee.so.Name} 직원 씬에서 즉시 삭제 완료");
         }
     }
