@@ -1,32 +1,36 @@
 using UnityEngine;
 using UnityEngine.AI;
 using System.Linq;
+using System.Threading;
 
 public class NPCController : MonoBehaviour
 {
     [HideInInspector] public NavMeshAgent Agent;
     [HideInInspector] public Animator Anim;
 
-    [Header("의자 프리팹의 SitPoint참조")]
+    [Header("오브젝트의 SitPoint or Point 참조")]
     public IInteractablePoint CurrentTarget;
     private INPCState _currentState;            // 현재 상태
     public ActionPoint MyDesk;                  // 지정석
     public bool IsFirstTask = true;             // 출근하자마자 업무자리로 가기위한 플래그
     public bool IsMoveToRest = false;           // 업무의자에서 일어나면 휴게 공간으로 이동 플래그
+    
+    public CancellationTokenSource Cts = new CancellationTokenSource();
+
     private void Awake()
     {
         Agent = GetComponent<NavMeshAgent>();
         Anim = GetComponent<Animator>();    
-    }
-
-    private void Start()
-    {
-        AssignNewTask();
-    }
-    
+    }    
 
     public void AssignNewTask()
     {
+        if (_currentState is NPCLeave)
+        {
+            _currentState.Exit(this);
+            _currentState = null;
+        }
+
         ReleaseCurrentTarget();
         ActionPoint target = null;
 
@@ -87,6 +91,14 @@ public class NPCController : MonoBehaviour
 
     public void ChangeState(INPCState newState)
     {
+        if (_currentState is NPCLeave && newState is not NPCLeave)
+        {
+            return;
+        } 
+
+        Cts.Cancel();
+        Cts = new CancellationTokenSource();
+        
         if (newState is NPCMove)
         {
             if (Agent != null && !Agent.enabled) Agent.enabled = true;
@@ -95,6 +107,11 @@ public class NPCController : MonoBehaviour
         _currentState?.Exit(this);
         _currentState = newState;
         _currentState.Enter(this);
+    }
+
+    public INPCState GetCurrentState() 
+    {
+        return _currentState;
     }
 
     private void Update()

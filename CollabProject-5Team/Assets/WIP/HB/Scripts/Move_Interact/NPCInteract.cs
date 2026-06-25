@@ -26,14 +26,6 @@ public class NPCInteract : MonoBehaviour, IInteractable
     {
         // 하이어라키 창의 이름이 NPC의 고유 식별자로 등록
         npcName = gameObject.name;
-
-        // NPC 자신의 Employee를 haveEmployees에 등록
-        //_EmployeeManager.Instance.haveEmployees.AddEmployee(emp);
-
-        //if (questCompleteButton != null)
-        //{
-        //    questCompleteButton.onClick.AddListener(OnClickQuestComplete);
-        //}
     }
 
     public void OnInteract()
@@ -68,16 +60,6 @@ public class NPCInteract : MonoBehaviour, IInteractable
 
         interactionUI.SetActive(true);
     }
-
-    //private void OnClickQuestComplete()
-    //{
-    //    DateTimeManager.Instance.CompleteSpecialDialogue(npcName);
-    //    dialogueText.text = $"{npcName}: Quest Complete, Thanks";
-    //    if (questCompleteButton != null)
-    //    {
-    //        questCompleteButton.gameObject.SetActive(false);
-    //    }
-    //}
 
     public Transform GetTransform()
     {
