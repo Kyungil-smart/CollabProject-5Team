@@ -8,7 +8,7 @@ public class NPCController : MonoBehaviour
     [HideInInspector] public NavMeshAgent Agent;
     [HideInInspector] public Animator Anim;
 
-    [Header("의자 프리팹의 SitPoint참조")]
+    [Header("오브젝트의 SitPoint or Point 참조")]
     public IInteractablePoint CurrentTarget;
     private INPCState _currentState;            // 현재 상태
     public ActionPoint MyDesk;                  // 지정석
@@ -21,17 +21,16 @@ public class NPCController : MonoBehaviour
     {
         Agent = GetComponent<NavMeshAgent>();
         Anim = GetComponent<Animator>();    
-    }
-
-    private void Start()
-    {
-        AssignNewTask();
-    }
-    
+    }    
 
     public void AssignNewTask()
     {
-        if (_currentState is NPCLeave) return;
+        if (_currentState is NPCLeave)
+        {
+            Debug.Log($"[DEBUG] {gameObject.name}의 NPCLeave 상태를 강제 종료합니다.");
+            _currentState.Exit(this);
+            _currentState = null;
+        }
 
         ReleaseCurrentTarget();
         ActionPoint target = null;
@@ -93,10 +92,16 @@ public class NPCController : MonoBehaviour
 
     public void ChangeState(INPCState newState)
     {
+        Debug.Log($"[DEBUG] {gameObject.name} 상태 변경: {(_currentState == null ? "None" : _currentState.GetType().Name)} -> {newState.GetType().Name}");
+
+        if (_currentState is NPCLeave && newState is not NPCLeave)
+        {
+            Debug.LogWarning($"[DEBUG] {gameObject.name}이 퇴근 중인데 상태 변경이 무시되었습니다!");
+            return;
+        } 
+
         Cts.Cancel();
         Cts = new CancellationTokenSource();
-        
-        if (_currentState is NPCLeave) return;
         
         if (newState is NPCMove)
         {

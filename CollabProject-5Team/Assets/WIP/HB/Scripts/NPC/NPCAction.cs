@@ -42,10 +42,18 @@ public class NPCAction : INPCState
             case PointType.ServerRoom:  stayTime = Random.Range(10.0f, 15.0f); break;
         }
 
-        bool cancelled = await UniTask.Delay((int)(stayTime * 1000), cancellationToken: npc.Cts.Token)
-                                        .SuppressCancellationThrow();
+        try
+        {
+            Debug.Log($"[디버그] {npc.name} 업무 시작: {_pointType}");
+            await UniTask.Delay((int)(stayTime * 1000), cancellationToken: npc.Cts.Token);
+            Debug.Log($"[디버그] {npc.name} 업무 완료됨");
+        }
 
-        if (cancelled) return;
+        catch (System.OperationCanceledException)
+        {
+            Debug.Log($"[디버그] {npc.name} 업무가 퇴근 명령으로 인해 중단됨!");
+            return;
+        }
 
         npc.ReleaseCurrentTarget();
 

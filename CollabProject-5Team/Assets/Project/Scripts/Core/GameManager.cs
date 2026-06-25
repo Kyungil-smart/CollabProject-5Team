@@ -124,7 +124,10 @@ public class GameManager : MonoBehaviour
         if (emp == null) return;
 
         // 리스트에 있는지 확인하고 중복생성 방지
-        if (_activeEmployees.Any(e => e != null && e.so == emp.so)) return;
+        if (_activeEmployees.Any(e => e != null && e.so == emp.so))
+        {
+            return;
+        }
 
         var empObj = Instantiate(emp.gameObject, _currentNpcSpawnPoint.position, Quaternion.identity);
         var controller = empObj.GetComponent<NPCController>();
@@ -150,7 +153,7 @@ public class GameManager : MonoBehaviour
         else
             controller.ChangeState(new NPCIdle());
 
-        await UniTask.Delay(100);
+        await UniTask.Delay(1000);
     }
 
     // 월요일 아침에 호출
@@ -170,7 +173,8 @@ public class GameManager : MonoBehaviour
             if (employee == null) continue;
 
             var npc = employee.GetComponent<NPCController>();
-            npc.ReleaseCurrentTarget(); // 자리 점유 해제
+            // 자리 점유 해제
+            npc.ReleaseCurrentTarget(); 
             npc.ChangeState(new NPCIdle());
         }
 
@@ -183,6 +187,8 @@ public class GameManager : MonoBehaviour
         if (_currentMapTransform != null)
         {
             DestroyImmediate(_currentMapTransform.gameObject);
+
+            _activeEmployees.RemoveAll(e => e == null || e.gameObject == null);
         }
 
         await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
@@ -230,10 +236,11 @@ public class GameManager : MonoBehaviour
 
     // 퇴근 명령 SpawnPoint로 이동 후 비활성화
     public void LeaveWorkNPCs()
-    {
+    {        
         foreach (var emp in _activeEmployees)
         {
             if (emp == null) continue;
+
             var npc = emp.GetComponent<NPCController>();
 
             npc.ChangeState(new NPCLeave());
@@ -242,7 +249,8 @@ public class GameManager : MonoBehaviour
 
     public async UniTask HiredNPCGoToWork()
     {
-        _activeEmployees.RemoveAll(e => e == null);
+        _activeEmployees.RemoveAll(e => e == null || e.gameObject == null);
+
         var hiredEmployees = _EmployeeManager.Instance.haveEmployees.haveEmployeeList;
 
         // 해고된 직원 처리
@@ -267,32 +275,25 @@ public class GameManager : MonoBehaviour
 
             if (activeEmployee != null)
             {
-                var existingNpc = activeEmployee.GetComponent<NPCController>();
-                existingNpc.gameObject.SetActive(true);
-                
-                if (existingNpc.Agent != null)
-                {
-                    existingNpc.Agent.enabled = true;
+                var npc = activeEmployee.GetComponent<NPCController>();
 
-                    existingNpc.Agent.Warp(existingNpc.transform.position);
+                Debug.Log($"[DEBUG] {npc.name}에게 출근 명령을 내립니다.");
+
+                npc.gameObject.SetActive(true);
+
+                // 상태 초기화
+                npc.IsFirstTask = true;
+                npc.ReleaseCurrentTarget();
+
+
+                if (npc.Agent != null)
+                {
+                    npc.Agent.enabled = false;
+                    npc.Agent.Warp(npc.transform.position);
+                    npc.Agent.enabled = true;
                 }
 
-                // 자리가 없는 경우에만 새로 찾음
-                if (existingNpc.CurrentTarget == null)
-                {
-                    var target = PointManager.Instance.GetAllPoints().FirstOrDefault(p => !p.IsOccupied);
-                    if (target != null)
-                    {
-                        target.IsOccupied = true;
-                        existingNpc.CurrentTarget = target;
-                    }
-                }
-
-                // 자리가 할당된 경우에만 이동 명령 내림
-                if (existingNpc.CurrentTarget != null)
-                {
-                    existingNpc.ChangeState(new NPCMove());
-                }
+                npc.AssignNewTask();
             }
             else
             {

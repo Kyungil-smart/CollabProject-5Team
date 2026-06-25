@@ -42,7 +42,7 @@ GameObject:
   - component: {fileID: 7135541809420899323}
   - component: {fileID: 5253519765840075383}
   - component: {fileID: 5836118293757045637}
-  - component: {fileID: 5543289374059111448}
+  - component: {fileID: 6116479663419899303}
   m_Layer: 0
   m_Name: Lv3Chair
   m_TagString: Untagged
@@ -120,7 +120,7 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!114 &5543289374059111448
+--- !u!114 &6116479663419899303
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -129,8 +129,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 7759059078684864654}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 55e3e3915c6c9f44ca765f00ee4c5ee3, type: 3}
+  m_Script: {fileID: 11500000, guid: d4badca14b6b9a642b820c3b1b6376db, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  sitPoint: {fileID: 5597900204804414554}
-  isSeated: 0
+  SitPoint: {fileID: 5597900204804414554}
+  PointType: 0
+  IsOccupied: 0
+  Owner: {fileID: 0}
