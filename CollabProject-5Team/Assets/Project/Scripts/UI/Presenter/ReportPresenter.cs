@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Linq;
 using R3;
 using UnityEngine;
 using UnityEngine.UI;
@@ -84,7 +83,6 @@ namespace GameDevTycoon.UI.Ingame
             _view.Show();
             _view.SetSlideVisible(true);
             RefreshCoverInfo();
-            RefreshEmployeeStatusSlide();
         }
 
         private void RefreshCoverInfo()
@@ -96,23 +94,16 @@ namespace GameDevTycoon.UI.Ingame
             _view.SetCoverInfo(dateRange, Company.Instance.CompanyName);
         }
 
-        private void RefreshEmployeeStatusSlide()
+        private void RefreshEmployeeStatusSlide(Employee employee)
         {
-            foreach (Transform child in _view.SlidePreviewContent)
-                Destroy(child.gameObject);
+            for (int i = _view.SlidePreviewContent.childCount - 1; i >= 0; i--)
+                DestroyImmediate(_view.SlidePreviewContent.GetChild(i).gameObject);
 
-            var employees = _EmployeeManager.Instance.haveEmployees.haveEmployeeList
-                .OrderBy(e => GetRoleOrder(e.so.role))
-                .ThenBy(e => e.so.Name)
-                .ToList();
+            var item = Instantiate(_employeeStatusMiniItemPrefab, _view.SlidePreviewContent);
+            var bindable = item.GetComponent<IBindable<Employee>>();
+            bindable?.Bind(employee);
 
-            foreach (var employee in employees)
-            {
-                var item = Instantiate(_employeeStatusMiniItemPrefab, _view.SlidePreviewContent);
-                item.GetComponent<IBindable<Employee>>().Bind(employee);
-            }
-
-
+            Debug.Log($"[ReportPresenter] RefreshEmployeeStatusSlide: {employee.so.Name}, IBindable: {bindable != null}");
         }
 
         /// <summary>
@@ -156,6 +147,7 @@ namespace GameDevTycoon.UI.Ingame
             };
             _view.ShowPanel(panel);
             _view.PanelReportDetail.SetActive(false);
+            _view.SetSlideInteractable(false);
 
             _view.BindReviewCards(_roleIndex, _currentReports, ShowDetail);
         }
@@ -164,8 +156,11 @@ namespace GameDevTycoon.UI.Ingame
         {
             _viewingReport = report;
             _view.SetDetailInfo(report);
-            RefreshEmployeeStatusSlide();
             _view.PanelReportDetail.SetActive(true);
+            _view.SetSlideInteractable(true);
+            RefreshEmployeeStatusSlide(report.owner);
+
+            Debug.Log($"[ReportPresenter] ShowDetail: {report.owner.so.Name}, SlideContent 자식 수: {_view.SlidePreviewContent.childCount}");
         }
 
         private void OnAdoptReport()
@@ -180,12 +175,14 @@ namespace GameDevTycoon.UI.Ingame
                 card.SetDisabled(true);
 
             _view.PanelReportDetail.SetActive(false);
+            _view.SetSlideInteractable(false);
             _nextButtons[_roleIndex].interactable = true;
         }
 
         private void OnCancelDetail()
         {
             _view.PanelReportDetail.SetActive(false);
+            _view.SetSlideInteractable(false);
         }
 
         /// <summary>

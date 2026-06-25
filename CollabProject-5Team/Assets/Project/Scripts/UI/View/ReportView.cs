@@ -34,8 +34,9 @@ namespace GameDevTycoon.UI.Ingame
         [SerializeField] private Button _slideToggleButton;
         [SerializeField] private Image _slideToggleIcon;
         [SerializeField] private Transform _slidePreviewContent;
-        [SerializeField] private Sprite _slideIconActive;
-        [SerializeField] private Sprite _slideIconInactive;
+        [SerializeField] private Sprite _slideIconExpanded;   // 슬라이드 올라가 있을 때
+        [SerializeField] private Sprite _slideIconCollapsed;  // 슬라이드 닫혀있을 때
+        [SerializeField] private Sprite _slideIconDisabled;   // 비활성화 상태
 
         [Header("Panel_EmployeeComment")]
         [SerializeField] private GameObject _panelEmployeeComment;
@@ -143,11 +144,32 @@ namespace GameDevTycoon.UI.Ingame
             _panelReportDetail.SetActive(panel == ReportPanel.ReportDetail);
             _panelPersonalOpinion.SetActive(panel == ReportPanel.PersonalOpinion);
             _panelReportEnd.SetActive(panel == ReportPanel.ReportEnd);
+        }
 
-            // Panel_ReportDetail / Panel_PersonalOpinion일 때 슬라이드 상호작용 가능 상태
-            bool slideInteractable = panel == ReportPanel.ReportDetail || panel == ReportPanel.PersonalOpinion;
+        /// <summary>
+        /// 슬라이드 상호작용 가능 여부 — 배경 스프라이트 및 토글 아이콘 상태 반영.
+        /// </summary>
+        public void SetSlideInteractable(bool interactable)
+        {
+            Debug.Log($"[ReportView] SetSlideInteractable: {interactable}, Button: {_slideToggleButton != null}");
+
             if (_slideBackgroundImage != null)
-                _slideBackgroundImage.sprite = slideInteractable ? _slideBackgroundActive : _slideBackgroundInactive;
+                _slideBackgroundImage.sprite = interactable ? _slideBackgroundActive : _slideBackgroundInactive;
+
+            _slideToggleButton.interactable = interactable;
+            Debug.Log($"[ReportView] Button.interactable after set: {_slideToggleButton.interactable}");
+
+            if (_slideToggleIcon != null && _slideIconDisabled != null && _slideIconCollapsed != null)
+                _slideToggleIcon.sprite = interactable ? _slideIconCollapsed : _slideIconDisabled;
+
+            // 비활성화 시 슬라이드 닫힘 상태로 초기화
+            if (!interactable && _isSlideExpanded)
+            {
+                _isSlideExpanded = false;
+                _activeSlideTween?.Kill();
+                _employeeStatusSlideRect.anchoredPosition =
+                    new Vector2(_employeeStatusSlideRect.anchoredPosition.x, _slideHiddenY);
+            }
         }
 
         /// <summary>
@@ -213,6 +235,8 @@ namespace GameDevTycoon.UI.Ingame
 
         private void ToggleSlide()
         {
+            Debug.Log($"[ReportView] ToggleSlide called, Button.interactable: {_slideToggleButton.interactable}");
+
             _isSlideExpanded = !_isSlideExpanded;
 
             _activeSlideTween?.Kill();
@@ -223,8 +247,8 @@ namespace GameDevTycoon.UI.Ingame
                 .DOAnchorPosY(targetY, SLIDE_DURATION)
                 .SetEase(Ease.OutQuart);
 
-            if (_slideIconActive != null && _slideIconInactive != null)
-                _slideToggleIcon.sprite = _isSlideExpanded ? _slideIconActive : _slideIconInactive;
+            if (_slideToggleIcon != null && _slideIconExpanded != null && _slideIconCollapsed != null)
+                _slideToggleIcon.sprite = _isSlideExpanded ? _slideIconExpanded : _slideIconCollapsed;
         }
 
         private void OnDestroy()
