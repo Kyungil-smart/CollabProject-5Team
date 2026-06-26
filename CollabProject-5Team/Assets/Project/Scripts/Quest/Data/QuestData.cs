@@ -5,12 +5,6 @@ public enum QuestState
     Playing,   // 진행 중
     End,       // 완료
 }
-public enum QuestResult
-{
-    None,
-    Success,   // 성공
-    Fail,      // 실패
-}
 
 public enum QuestType
 {
@@ -28,7 +22,6 @@ public abstract class QuestBase
 {
     public QuestType type;
     public QuestState state;
-    public QuestResult result;
 }
 
 public class DailyQuest : QuestBase
@@ -45,7 +38,6 @@ public class DailyQuest : QuestBase
         type = QuestType.Daily;
         state = QuestState.Ready;
         so = questSO;
-        result = QuestResult.None;
         curCount = 0;
         _targetCount = questSO.targetCount;
     }
@@ -58,7 +50,6 @@ public class DailyQuest : QuestBase
         if (curCount >= TargetCount)
         {
             state = QuestState.End;
-            result = QuestResult.Success;
         }
     }
 
@@ -66,7 +57,6 @@ public class DailyQuest : QuestBase
     public void ResetForPhase2(int newTargetCount)
     {
         state = QuestState.Playing;
-        result = QuestResult.None;
         curCount = 0;
         _targetCount = newTargetCount;
     }
@@ -82,7 +72,6 @@ public class StoryQuest : QuestBase
         type = QuestType.Story;
         state = QuestState.Locked;
         so = questSO;
-        result = QuestResult.None;
     }
 
     public void SetReady()
@@ -100,7 +89,6 @@ public class StoryQuest : QuestBase
     public void Complete()
     {
         state = QuestState.End;
-        result = QuestResult.Success;
     }
 }
 

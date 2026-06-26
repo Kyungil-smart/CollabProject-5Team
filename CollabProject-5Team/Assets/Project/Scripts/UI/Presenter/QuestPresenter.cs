@@ -99,8 +99,7 @@ namespace GameDevTycoon.UI.Ingame
                     break;
 
                 case QuestState.End:
-                    if (quest.result == QuestResult.Success)
-                        ShowClearPopupForCurrentQuest();
+                    ShowClearPopupForCurrentQuest();
                     break;
             }
         }
