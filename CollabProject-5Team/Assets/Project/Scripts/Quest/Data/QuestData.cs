@@ -15,7 +15,7 @@ public enum QuestType
 {
     Daily,  // 일일 퀘스트
     Story,  // 스토리 퀘스트
-    Event,  // 이벤트 퀘스트
+    Event,  // 이벤트 퀘스트 (주로 대화)
 }
 
 public enum ControlType
