@@ -9,6 +9,7 @@ namespace GameDevTycoon.EditorQA
     {
         private const string SearchRoot = "Assets";
         private const string GoogleSheetHost = "docs.google.com/spreadsheets/d/";
+        private const int MaxFolderSyncDetailWarnings = 8;
 
         public string Name => "Sheet Sync";
 
@@ -236,9 +237,18 @@ namespace GameDevTycoon.EditorQA
 
             var linked = new HashSet<SheetDataSOBase>(set.targetSOList.Where(so => so != null));
 
+            int unlinkedCount = 0;
+            SheetDataSOBase firstUnlinked = null;
+
             foreach (SheetDataSOBase so in folderSos)
             {
                 if (linked.Contains(so))
+                    continue;
+
+                unlinkedCount++;
+                firstUnlinked ??= so;
+
+                if (unlinkedCount > MaxFolderSyncDetailWarnings)
                     continue;
 
                 yield return new QAResult(
@@ -249,6 +259,19 @@ namespace GameDevTycoon.EditorQA
                     so);
             }
 
+            if (unlinkedCount > MaxFolderSyncDetailWarnings)
+            {
+                yield return new QAResult(
+                    QASeverity.Warning,
+                    "Sheet Sync",
+                    $"{set.name}: targetSOList 미연결 SO가 {unlinkedCount}개 있습니다. 화면에는 최초 {MaxFolderSyncDetailWarnings}개만 표시했습니다.",
+                    firstUnlinked != null ? AssetDatabase.GetAssetPath(firstUnlinked) : entry.Path,
+                    firstUnlinked != null ? firstUnlinked : set);
+            }
+
+            int externalLinkCount = 0;
+            SheetDataSOBase firstExternalLink = null;
+
             foreach (SheetDataSOBase so in linked)
             {
                 string soPath = AssetDatabase.GetAssetPath(so);
@@ -257,6 +280,12 @@ namespace GameDevTycoon.EditorQA
 
                 if (!soPath.StartsWith(folderPath + "/"))
                 {
+                    externalLinkCount++;
+                    firstExternalLink ??= so;
+
+                    if (externalLinkCount > MaxFolderSyncDetailWarnings)
+                        continue;
+
                     yield return new QAResult(
                         QASeverity.Warning,
                         "Sheet Sync",
@@ -264,6 +293,16 @@ namespace GameDevTycoon.EditorQA
                         soPath,
                         so);
                 }
+            }
+
+            if (externalLinkCount > MaxFolderSyncDetailWarnings)
+            {
+                yield return new QAResult(
+                    QASeverity.Warning,
+                    "Sheet Sync",
+                    $"{set.name}: targetSOList에 같은 폴더 밖 SO가 {externalLinkCount}개 있습니다. 화면에는 최초 {MaxFolderSyncDetailWarnings}개만 표시했습니다.",
+                    firstExternalLink != null ? AssetDatabase.GetAssetPath(firstExternalLink) : entry.Path,
+                    firstExternalLink != null ? firstExternalLink : set);
             }
 
             yield return new QAResult(

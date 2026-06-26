@@ -7,6 +7,13 @@ namespace GameDevTycoon.EditorQA
 {
     public sealed class QAWindow : EditorWindow
     {
+        private enum QAViewMode
+        {
+            All,
+            Planning,
+            Development
+        }
+
         private readonly List<IQAValidator> _validators = new();
         private readonly List<QAResult> _results = new();
         private Vector2 _scrollPosition;
@@ -14,6 +21,7 @@ namespace GameDevTycoon.EditorQA
         private bool _showWarning = true;
         private bool _showError = true;
         private bool _showChecklist;
+        private QAViewMode _viewMode = QAViewMode.All;
         private string _selectedCategory = AllCategories;
         private string _selectedTriage = AllTriage;
         private string _selectedOwner = AllOwners;
@@ -22,6 +30,7 @@ namespace GameDevTycoon.EditorQA
         private const string AllCategories = "All";
         private const string AllTriage = "All";
         private const string AllOwners = "All";
+        private const int MaxVisibleResults = 400;
 
         [MenuItem("Tools/QA/Prototype QA Window")]
         public static void Open()
@@ -40,6 +49,7 @@ namespace GameDevTycoon.EditorQA
         private void OnGUI()
         {
             DrawToolbar();
+            DrawModeSelector();
             DrawChecklist();
             DrawSummary();
             DrawFilters();
@@ -50,7 +60,7 @@ namespace GameDevTycoon.EditorQA
         {
             using (new EditorGUILayout.HorizontalScope(EditorStyles.toolbar))
             {
-                if (GUILayout.Button("전체 검사 실행", EditorStyles.toolbarButton, GUILayout.Width(110f)))
+                if (GUILayout.Button(GetRunButtonLabel(), EditorStyles.toolbarButton, GUILayout.Width(130f)))
                 {
                     RunAllValidators();
                 }
@@ -71,6 +81,45 @@ namespace GameDevTycoon.EditorQA
             }
         }
 
+        private void DrawModeSelector()
+        {
+            EditorGUILayout.Space(6f);
+
+            using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
+            {
+                EditorGUILayout.LabelField("QA 보기 모드", EditorStyles.boldLabel);
+                using (new EditorGUILayout.HorizontalScope())
+                {
+                    DrawModeButton(QAViewMode.All, "전체 QA", EditorStyles.miniButtonLeft);
+                    DrawModeButton(QAViewMode.Planning, "기획 QA", EditorStyles.miniButtonMid);
+                    DrawModeButton(QAViewMode.Development, "개발 QA", EditorStyles.miniButtonRight);
+                }
+
+                EditorGUILayout.LabelField(GetModeDescription(), EditorStyles.wordWrappedMiniLabel);
+            }
+        }
+
+        private void DrawModeButton(QAViewMode mode, string label, GUIStyle style)
+        {
+            bool selected = _viewMode == mode;
+            bool nextSelected = GUILayout.Toggle(selected, label, style);
+            if (!selected && nextSelected)
+            {
+                _viewMode = mode;
+                _selectedOwner = AllOwners;
+            }
+        }
+
+        private string GetModeDescription()
+        {
+            return _viewMode switch
+            {
+                QAViewMode.Planning => "기획 QA 모드: 직원/보고서/퀘스트/코멘트/공식처럼 데이터와 기획 기준을 먼저 확인합니다.",
+                QAViewMode.Development => "개발 QA 모드: 씬, 프리팹, 버튼, Presenter/View, 플레이 플로우 연결 상태를 먼저 확인합니다.",
+                _ => "전체 QA 모드: 기획 데이터와 개발 연결 상태를 모두 함께 확인합니다."
+            };
+        }
+
         private void DrawChecklist()
         {
             EditorGUILayout.Space(6f);
@@ -86,6 +135,9 @@ namespace GameDevTycoon.EditorQA
 
                 foreach (IQAValidator validator in _validators)
                 {
+                    if (!ValidatorMatchesViewMode(validator))
+                        continue;
+
                     QAValidatorInfo info = QAValidatorInfoRegistry.Get(validator);
                     if (info == null)
                         continue;
@@ -100,6 +152,36 @@ namespace GameDevTycoon.EditorQA
                     }
                 }
             }
+        }
+
+        private bool ValidatorMatchesViewMode(IQAValidator validator)
+        {
+            if (_viewMode == QAViewMode.All || validator == null)
+                return true;
+
+            string owner = GetValidatorOwner(validator.Name);
+            return _viewMode switch
+            {
+                QAViewMode.Planning => owner == "기획 QA",
+                QAViewMode.Development => owner == "개발 QA",
+                _ => true
+            };
+        }
+
+        private static string GetValidatorOwner(string validatorName)
+        {
+            return validatorName switch
+            {
+                "Sheet Sync" => "기획 QA",
+                "Employee Data" => "기획 QA",
+                "Report Data" => "기획 QA",
+                "Report Generation Simulation" => "기획 QA",
+                "Project Formula" => "기획 QA",
+                "Quest / Comment Data" => "기획 QA",
+                "Scene / Prefab References" => "개발 QA",
+                "Play Flow" => "개발 QA",
+                _ => "공통 QA"
+            };
         }
 
         private void DrawSummary()
@@ -117,9 +199,9 @@ namespace GameDevTycoon.EditorQA
             int sharedOwnerCount = _results.Count(r => GetOwnerStatus(r) == "공통 QA");
 
             EditorGUILayout.Space(8f);
-            EditorGUILayout.LabelField("1차 QA 에디터", EditorStyles.boldLabel);
+            EditorGUILayout.LabelField($"1차 QA 에디터 - {GetModeLabel()}", EditorStyles.boldLabel);
             EditorGUILayout.LabelField(
-                $"결과: Error {errorCount} / Warning {warningCount} / Info {infoCount} / 표시 {visibleCount}");
+                $"결과: Error {errorCount} / Warning {warningCount} / Info {infoCount} / 현재 모드 표시 {visibleCount}");
             EditorGUILayout.LabelField(
                 $"처리 기준: 즉시 수정 {fixNowCount} / 데이터 입력 대기 {dataPendingCount} / 기획 확인 {designReviewCount} / 확인 필요 {checkNeededCount}");
             EditorGUILayout.LabelField(
@@ -194,9 +276,22 @@ namespace GameDevTycoon.EditorQA
         {
             EditorGUILayout.Space(6f);
 
+            List<QAResult> visibleResults = _results
+                .Where(ShouldShow)
+                .OrderBy(GetSeverityOrder)
+                .ThenBy(GetTriageOrder)
+                .ToList();
+
+            if (visibleResults.Count > MaxVisibleResults)
+            {
+                EditorGUILayout.HelpBox(
+                    $"표시 결과가 {visibleResults.Count}개라 최초 {MaxVisibleResults}개만 보여줍니다. Category/Triage/Search 필터로 범위를 좁혀 확인하세요.",
+                    MessageType.Warning);
+            }
+
             _scrollPosition = EditorGUILayout.BeginScrollView(_scrollPosition);
 
-            foreach (QAResult result in _results.Where(ShouldShow).OrderBy(GetSeverityOrder).ThenBy(GetTriageOrder))
+            foreach (QAResult result in visibleResults.Take(MaxVisibleResults))
             {
                 DrawResult(result);
             }
@@ -249,7 +344,17 @@ namespace GameDevTycoon.EditorQA
         private void RunAllValidators()
         {
             _results.Clear();
-            _results.AddRange(QARunner.RunAll(_validators));
+            _results.AddRange(QARunner.RunAll(_validators.Where(ValidatorMatchesViewMode)));
+        }
+
+        private string GetRunButtonLabel()
+        {
+            return _viewMode switch
+            {
+                QAViewMode.Planning => "기획 QA 실행",
+                QAViewMode.Development => "개발 QA 실행",
+                _ => "전체 QA 실행"
+            };
         }
 
         private bool ShouldShow(QAResult result)
@@ -271,6 +376,9 @@ namespace GameDevTycoon.EditorQA
             if (_selectedTriage != AllTriage && GetTriageStatus(result) != _selectedTriage)
                 return false;
 
+            if (!MatchesViewMode(result))
+                return false;
+
             if (_selectedOwner != AllOwners && GetOwnerStatus(result) != _selectedOwner)
                 return false;
 
@@ -278,6 +386,27 @@ namespace GameDevTycoon.EditorQA
                 return false;
 
             return true;
+        }
+
+        private bool MatchesViewMode(QAResult result)
+        {
+            string owner = GetOwnerStatus(result);
+            return _viewMode switch
+            {
+                QAViewMode.Planning => owner == "기획 QA",
+                QAViewMode.Development => owner == "개발 QA",
+                _ => true
+            };
+        }
+
+        private string GetModeLabel()
+        {
+            return _viewMode switch
+            {
+                QAViewMode.Planning => "기획 QA 모드",
+                QAViewMode.Development => "개발 QA 모드",
+                _ => "전체 QA 모드"
+            };
         }
 
         private static int GetSeverityOrder(QAResult result)

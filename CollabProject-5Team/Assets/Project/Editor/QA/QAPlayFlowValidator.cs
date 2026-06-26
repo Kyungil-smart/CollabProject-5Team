@@ -80,8 +80,7 @@ namespace GameDevTycoon.EditorQA
                         QASeverity.Warning,
                         "Play Flow Manager",
                         $"GameScene에 {managerType.Name}가 {components.Length}개 있습니다. 싱글톤이면 중복 생성/파괴 흐름을 확인하세요.",
-                        MainGameScenePath,
-                        components[0]);
+                        MainGameScenePath);
                 }
             }
         }
@@ -155,8 +154,7 @@ namespace GameDevTycoon.EditorQA
                     QASeverity.Warning,
                     "Play Flow Day",
                     "HUDPresenter 컴포넌트가 비활성화되어 있습니다. Play Mode에서 버튼 구독이 실행되지 않을 수 있습니다.",
-                    MainGameScenePath,
-                    hudPresenter);
+                    MainGameScenePath);
             }
 
             foreach (QAResult result in RequireReference(hudPresenter, "_view", "HUDPresenter._view가 비어 있어 HUD 버튼 입력을 받을 수 없습니다."))
@@ -171,8 +169,7 @@ namespace GameDevTycoon.EditorQA
                     QASeverity.Error,
                     "Play Flow Day",
                     "HUDView가 없어 업무 시작/퇴근/밤 하단 버튼 이벤트를 발행할 수 없습니다.",
-                    MainGameScenePath,
-                    hudPresenter);
+                    MainGameScenePath);
             }
             else
             {
@@ -186,8 +183,7 @@ namespace GameDevTycoon.EditorQA
                     QASeverity.Error,
                     "Play Flow Day",
                     "DeskInteract가 없어 업무 시작 버튼이 플레이어 책상 이동으로 이어질 수 없습니다.",
-                    MainGameScenePath,
-                    hudPresenter);
+                    MainGameScenePath);
             }
             else
             {
@@ -201,8 +197,7 @@ namespace GameDevTycoon.EditorQA
                     QASeverity.Error,
                     "Play Flow Night UI",
                     "HRPresenter가 없어 밤 하단 인사관리 버튼을 누를 때 팝업 흐름이 끊길 수 있습니다.",
-                    MainGameScenePath,
-                    hudPresenter);
+                    MainGameScenePath);
             }
 
             if (FindFirst<ProjectPresenter>(scene) == null)
@@ -211,8 +206,7 @@ namespace GameDevTycoon.EditorQA
                     QASeverity.Error,
                     "Play Flow Night UI",
                     "ProjectPresenter가 없어 밤 하단 프로젝트 버튼을 누를 때 팝업 흐름이 끊길 수 있습니다.",
-                    MainGameScenePath,
-                    hudPresenter);
+                    MainGameScenePath);
             }
         }
 
@@ -228,8 +222,7 @@ namespace GameDevTycoon.EditorQA
                     QASeverity.Error,
                     "Play Flow Quest",
                     "QuestManager.dailyQuests가 비어 있습니다. 하루 시작 시 일일 업무가 생성되지 않아 업무 완료/퇴근 흐름이 막힐 수 있습니다.",
-                    MainGameScenePath,
-                    questManager);
+                    MainGameScenePath);
                 yield break;
             }
 
@@ -242,8 +235,7 @@ namespace GameDevTycoon.EditorQA
                         QASeverity.Error,
                         "Play Flow Quest",
                         $"QuestManager.dailyQuests[{i}]가 비어 있습니다.",
-                        MainGameScenePath,
-                        questManager);
+                        MainGameScenePath);
                 }
             }
 
@@ -257,8 +249,7 @@ namespace GameDevTycoon.EditorQA
                     QASeverity.Error,
                     "Play Flow Quest",
                     "QuestManager.questObjectsRoot가 비어 있습니다. 퀘스트 activeObjects를 켜고 끌 수 없습니다.",
-                    MainGameScenePath,
-                    questManager);
+                    MainGameScenePath);
             }
             else
             {
@@ -272,8 +263,7 @@ namespace GameDevTycoon.EditorQA
                     QASeverity.Error,
                     "Play Flow Quest",
                     "QuestManager.questCanvas가 비어 있습니다. 퀘스트 완료 말풍선/연출이 표시되지 않습니다.",
-                    MainGameScenePath,
-                    questManager);
+                    MainGameScenePath);
             }
 
             if (speechBubblePrefab == null)
@@ -282,8 +272,7 @@ namespace GameDevTycoon.EditorQA
                     QASeverity.Warning,
                     "Play Flow Quest",
                     "QuestManager.speechBubblePrefab이 비어 있습니다. 퀘스트 완료 자체는 가능하지만 완료 말풍선은 나오지 않습니다.",
-                    MainGameScenePath,
-                    questManager);
+                    MainGameScenePath);
             }
         }
 
@@ -309,8 +298,7 @@ namespace GameDevTycoon.EditorQA
                     QASeverity.Warning,
                     "Play Flow Report",
                     "ReportPresenter 컴포넌트가 비활성화되어 있습니다. DateTimeManager.OnNight 구독이 실행되지 않을 수 있습니다.",
-                    MainGameScenePath,
-                    reportPresenter);
+                    MainGameScenePath);
             }
 
             foreach (QAResult result in RequireReference(reportPresenter, "_view", "ReportPresenter._view가 비어 있어 보고서 UI를 표시할 수 없습니다."))
@@ -328,8 +316,7 @@ namespace GameDevTycoon.EditorQA
                     QASeverity.Error,
                     "Play Flow Report",
                     "ReportView가 없어 보고서 패널/상세/종료 화면을 제어할 수 없습니다.",
-                    MainGameScenePath,
-                    reportPresenter);
+                    MainGameScenePath);
             }
 
             foreach (QAResult result in ValidateReportNextButtons(reportPresenter))
@@ -341,8 +328,7 @@ namespace GameDevTycoon.EditorQA
                     QASeverity.Error,
                     "Play Flow Report",
                     "HUDPresenter가 없어 보고서 완료 후 DateTimeManager.OnReportEnd를 받아 밤 UI로 전환하기 어렵습니다.",
-                    MainGameScenePath,
-                    reportPresenter);
+                    MainGameScenePath);
             }
         }
 
@@ -367,8 +353,7 @@ namespace GameDevTycoon.EditorQA
                         QASeverity.Error,
                         "Play Flow UI",
                         $"HUDView.{path} 버튼 참조가 비어 있습니다.",
-                        MainGameScenePath,
-                        hudView);
+                        MainGameScenePath);
                 }
             }
 
@@ -381,8 +366,7 @@ namespace GameDevTycoon.EditorQA
                         QASeverity.Error,
                         "Play Flow UI",
                         $"HUDView.{path} 패널 참조가 비어 있습니다.",
-                        MainGameScenePath,
-                        hudView);
+                        MainGameScenePath);
                 }
             }
         }
@@ -396,8 +380,7 @@ namespace GameDevTycoon.EditorQA
                     QASeverity.Error,
                     "Play Flow Day",
                     "DeskInteract._workPosition이 비어 있습니다. 업무 시작 시 플레이어 이동 목적지가 없어 버튼이 실패할 수 있습니다.",
-                    MainGameScenePath,
-                    deskInteract);
+                    MainGameScenePath);
             }
         }
 
@@ -412,8 +395,7 @@ namespace GameDevTycoon.EditorQA
                     QASeverity.Error,
                     "Play Flow Report",
                     "ReportPresenter._nextButtons 배열을 찾을 수 없습니다.",
-                    MainGameScenePath,
-                    reportPresenter);
+                    MainGameScenePath);
                 yield break;
             }
 
@@ -423,8 +405,7 @@ namespace GameDevTycoon.EditorQA
                     QASeverity.Error,
                     "Play Flow Report",
                     $"ReportPresenter._nextButtons는 기획/아트/개발 3개 이상이어야 합니다. 현재 {nextButtons.arraySize}개입니다.",
-                    MainGameScenePath,
-                    reportPresenter);
+                    MainGameScenePath);
             }
 
             int count = Math.Min(nextButtons.arraySize, 3);
@@ -437,8 +418,7 @@ namespace GameDevTycoon.EditorQA
                         QASeverity.Error,
                         "Play Flow Report",
                         $"ReportPresenter._nextButtons[{i}]가 비어 있습니다. 해당 직군 보고서 선택 후 다음 단계로 넘어갈 수 없습니다.",
-                        MainGameScenePath,
-                        reportPresenter);
+                        MainGameScenePath);
                 }
             }
         }
@@ -476,8 +456,7 @@ namespace GameDevTycoon.EditorQA
                 QASeverity.Error,
                 "Play Flow Reference",
                 message,
-                MainGameScenePath,
-                component);
+                MainGameScenePath);
         }
 
         private static T FindFirst<T>(Scene scene) where T : Component
