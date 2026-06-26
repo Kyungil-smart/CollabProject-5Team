@@ -364,6 +364,9 @@ public class PlayerMove : MonoBehaviour
     public void ResetMovementState()
     {
         _isMovingToPosition = false;
-        _agent.ResetPath();
+        if (_agent != null && _agent.enabled && _agent.isOnNavMesh)
+        {
+            _agent.ResetPath();
+        }
     }
 }

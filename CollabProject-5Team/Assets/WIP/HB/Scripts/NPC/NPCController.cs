@@ -14,7 +14,9 @@ public class NPCController : MonoBehaviour
     public ActionPoint MyDesk;                  // 지정석
     public bool IsFirstTask = true;             // 출근하자마자 업무자리로 가기위한 플래그
     public bool IsMoveToRest = false;           // 업무의자에서 일어나면 휴게 공간으로 이동 플래그
-    
+    public bool IsInteracting = false;          // 대화 중 상태 플래그
+    private IInteractablePoint _myTargetPoint;  // 목적지 저장용
+
     public CancellationTokenSource Cts = new CancellationTokenSource();
 
     private void Awake()
@@ -25,6 +27,10 @@ public class NPCController : MonoBehaviour
 
     public void AssignNewTask()
     {
+        if (IsInteracting) return;
+
+        ReleaseCurrentTarget();
+
         if (_currentState is NPCLeave)
         {
             _currentState.Exit(this);
@@ -82,6 +88,8 @@ public class NPCController : MonoBehaviour
 
     public void ReleaseCurrentTarget()
     {
+        if (IsInteracting) return;
+
         if(CurrentTarget != null)
         {
             ((ActionPoint)CurrentTarget).IsOccupied = false;
@@ -108,6 +116,63 @@ public class NPCController : MonoBehaviour
         _currentState = newState;
         _currentState.Enter(this);
     }
+
+    public void StartConversation()
+    {
+        if (IsInteracting) return;
+        IsInteracting = true;
+
+        if (Agent != null && Agent.enabled && Agent.isOnNavMesh)
+        {
+            Agent.ResetPath();
+            Agent.enabled = false;
+        }
+
+        if (_currentState is NPCMove)
+        {
+            ChangeState(new NPCIdle());
+        }
+    }
+
+    public void EndConversation()
+    {
+        IsInteracting = false;
+
+        if (Agent != null)
+        {
+            Agent.enabled = true;
+        }
+
+        if (_myTargetPoint != null && _myTargetPoint.GetTransform() != null)
+        {
+            Agent.ResetPath();
+            Agent.SetDestination(_myTargetPoint.GetTransform().position);
+        }
+
+        else
+        {
+            AssignNewTask();
+        }
+    }
+
+    public void RestoreActionAnimation()
+    {
+        if (Anim == null || CurrentTarget == null) return;
+
+        transform.rotation = CurrentTarget.GetTransform().rotation;
+
+        // 현재 업무 상태에 맞는 파라미터를 다시 세팅
+        switch (CurrentTarget.GetPointType())
+        {
+            case PointType.Desk: Anim.SetTrigger("Sit"); break;
+            case PointType.Sofa: Anim.SetTrigger("Rest"); break;
+            case PointType.CopyMachine: Anim.SetTrigger("Fax"); break;
+            case PointType.Drink: Anim.SetTrigger("Drink"); break;
+            case PointType.ServerRoom: Anim.SetTrigger("PushButton"); break;
+        }
+    }
+
+    public void SetTargetPoint(IInteractablePoint point) => _myTargetPoint = point;
 
     public INPCState GetCurrentState() 
     {

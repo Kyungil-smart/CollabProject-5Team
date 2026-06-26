@@ -14,7 +14,10 @@ public class NPCAction : INPCState
         npc.Agent.enabled = false;
 
         npc.transform.position = targetTransform.position;
-        npc.transform.rotation = targetTransform.rotation;
+        if (!npc.IsInteracting)
+        {
+            npc.transform.rotation = targetTransform.rotation;
+        }
 
         switch (_pointType)
         {

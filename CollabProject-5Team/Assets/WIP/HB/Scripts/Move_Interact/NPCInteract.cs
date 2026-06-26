@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using TMPro;
 using UnityEngine;
 
@@ -30,16 +31,48 @@ public class NPCInteract : MonoBehaviour, IInteractable
 
     public void OnInteract()
     {
+        var controller = GetComponent<NPCController>();
+        var player = GameManager.Instance.player;
+        
+        
+        if (controller != null)
+        {
+            controller.StartConversation();
+        }
+
+
+        if (player != null)
+        {
+            Vector3 lookAtPlayer = player.transform.position;
+            lookAtPlayer.y = transform.position.y;
+            transform.LookAt(lookAtPlayer);
+
+            Vector3 lookAtNpc = transform.position;
+            lookAtNpc.y = player.transform.position.y;
+            player.transform.LookAt(lookAtNpc);
+        }
+
         if (anim != null)
         {
             anim.SetTrigger("Greet");
+
+            Invoke(nameof(RollBackAnimation), 1.0f);
         }
+
+        if (player != null)
+        {
+            player.GetComponent<Animator>()?.SetTrigger("Greet");
+            player.ResetMovementState();
+        }
+
 
         int state = DateTimeManager.Instance.GetDialogueState(emp.so.id.ToString(),DateTimeManager.Instance.isEventQuest);
         
         // 일반 대화
         if (state == 0)
         {
+            player?.CloseInteractionUI();
+            controller?.EndConversation();
             // 임무 없으면 대화 없음 - 플레이어 이동 잠금 해제
             GameManager.Instance.player.CloseInteractionUI();
             return;
@@ -55,10 +88,19 @@ public class NPCInteract : MonoBehaviour, IInteractable
         else if (state == 2)
         {
             Dialogue.DialogueManager.Instance.ShowBusyMessage(emp);
+
+            controller?.EndConversation();
+
             return;
         }
 
         interactionUI.SetActive(true);
+    }
+
+    private void RollBackAnimation()
+    {
+        var controller = GetComponent<NPCController>();
+        controller?.RestoreActionAnimation();
     }
 
     public Transform GetTransform()

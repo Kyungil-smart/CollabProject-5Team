@@ -47,7 +47,7 @@ public class PointManager : MonoBehaviour
 
     public List<ActionPoint> GetPublicPoints()
     {
-        var list = _allPoints.Where(p => p.Owner == null && p.PointType != PointType.Desk && !p.IsOccupied).ToList();
+        var list = _allPoints.Where(p => p.Owner == null && !p.IsOccupied).ToList();
         Debug.Log($"[PointManager] 사용 가능한 공용 포인트 개수: {list.Count}");
         return list;
     }
