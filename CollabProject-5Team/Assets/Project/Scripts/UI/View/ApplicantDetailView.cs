@@ -16,6 +16,7 @@ namespace GameDevTycoon.UI.Ingame
         [SerializeField] private TextMeshProUGUI _nameValue;
         [SerializeField] private TextMeshProUGUI _honorificValue;
         [SerializeField] private TextMeshProUGUI _salaryValue;
+        [SerializeField] private TextMeshProUGUI _hiringCostValue;
 
         [Header("태그 앵커")]
         [SerializeField] private Transform _departmentTagAnchor;
@@ -45,18 +46,38 @@ namespace GameDevTycoon.UI.Ingame
             _nameValue.text = so.Name;
             _honorificValue.text = so.style;
             _salaryValue.text = $"{so.weekSalary:N0}G";
+            _hiringCostValue.text = $"{so.hiringCost:N0}G";
             _selfIntroValue.text = so.hireText;
 
             SpawnTag(_departmentTagAnchor, _departmentTagPrefab, so.role);
             SpawnTag(_mbtiTagAnchor, _mbtiTagPrefab, so.mbtiParsed);
-            SpawnTraitTag(_mainTraitTagAnchor, so.mainTrait);
-            SpawnTraitTag(_subTraitTagAnchor, so.subTrait);
-            SpawnTraitTag(_riskTraitTagAnchor, so.riskTrait);
+            SpawnTraitTags(so.mainTrait, so.subTrait, so.riskTrait);
 
             _abilityBar.value = so.ability;
             _abilityValue.text = so.ability.ToString();
 
             _hireStamp.SetActive(false);
+        }
+
+        private void SpawnTraitTags(Trait main, Trait sub, Trait risk)
+        {
+            ClearAnchor(_mainTraitTagAnchor);
+            ClearAnchor(_subTraitTagAnchor);
+            ClearAnchor(_riskTraitTagAnchor);
+
+            if (sub != Trait.None)
+            {
+                SpawnTraitTag(_mainTraitTagAnchor, main);
+                SpawnTraitTag(_subTraitTagAnchor, sub);
+                SpawnTraitTag(_riskTraitTagAnchor, risk);
+                _riskTraitTagAnchor.gameObject.SetActive(true);
+            }
+            else
+            {
+                SpawnTraitTag(_mainTraitTagAnchor, main);
+                SpawnTraitTag(_subTraitTagAnchor, risk);
+                _riskTraitTagAnchor.gameObject.SetActive(false);
+            }
         }
 
         public void SetHireStamp(bool active)
@@ -80,7 +101,6 @@ namespace GameDevTycoon.UI.Ingame
 
         private void SpawnTraitTag(Transform anchor, Trait trait)
         {
-            ClearAnchor(anchor);
             var tag = Instantiate(_traitTagPrefab, anchor);
             tag.Bind(trait);
         }
