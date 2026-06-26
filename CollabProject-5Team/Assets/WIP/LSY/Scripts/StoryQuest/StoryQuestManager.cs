@@ -34,14 +34,7 @@ public class StoryQuestManager : MonoBehaviour
 
     private bool IsParentSatisfied(StoryQuestPoolSO quest)
     {
-        if (quest.parentIds == null || quest.parentIds.Length == 0) return true;
-
-        foreach (int parentId in quest.parentIds)
-        {
-            if (parentId == 0) return true;
-            if (_completedQuestIds.Contains(parentId)) return true;
-        }
-        return false;
+        return quest.parentId == 0 || _completedQuestIds.Contains(quest.parentId);
     }
 
     private bool IsConditionSatisfied(StoryQuestPoolSO quest)

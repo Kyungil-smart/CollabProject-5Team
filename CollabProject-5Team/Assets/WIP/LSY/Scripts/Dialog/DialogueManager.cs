@@ -25,7 +25,6 @@ namespace Dialogue
         [SerializeField] private ChoiceItemView _choiceItem02;
 
         private DialogueBaseView _currentView;
-        private bool _isChoiceMode;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         public static void Init() => Instance = null;
@@ -83,7 +82,6 @@ namespace Dialogue
             if (_chosenBranch == 0)
                 _chosenBranch = selectedIndex + 1;
 
-            _isChoiceMode = false;
             HideChoices();
             if (_currentView != null) _currentView.SetNextButtonVisible(true);
 
@@ -186,7 +184,6 @@ namespace Dialogue
         void BindViews(DialogueStartPayload payload)
         {
             HideChoices();
-            _isChoiceMode = false;
             if (_currentView != null)
             {
                 _currentView.OnTypingComplete = null;
@@ -228,15 +225,10 @@ namespace Dialogue
             _currentView.OnTypingComplete = () =>
             {
                 DialogueEvents.OnNodeTypingCompleted.OnNext(_currentNodeId);
-
-                if (payload.isChoice)
-                {
-                    _isChoiceMode = true;
-                    _currentView.SetNextButtonVisible(false);
-                    ShowChoice(_choiceItem01, payload.choice01, 0);
-                    ShowChoice(_choiceItem02, payload.choice02, 1);
-                }
             };
+
+            if (payload.isChoice)
+                _currentView.OnNextAction = () => EnterChoiceMode(payload);
         }
 
         public void SetNextButtonActive(bool active)
@@ -258,6 +250,13 @@ namespace Dialogue
             });
         }
 
+        void EnterChoiceMode(DialogueStartPayload payload)
+        {
+            _currentView.SetNextButtonVisible(false);
+            ShowChoice(_choiceItem01, payload.choice01, 0);
+            ShowChoice(_choiceItem02, payload.choice02, 1);
+        }
+
         void HideChoices()
         {
             if (_choiceItem01 != null) _choiceItem01.gameObject.SetActive(false);
@@ -269,7 +268,6 @@ namespace Dialogue
             if (_playerView   != null) _playerView.gameObject.SetActive(false);
             if (_employeeView != null) _employeeView.gameObject.SetActive(false);
             _currentView   = null;
-            _isChoiceMode  = false;
             HideChoices();
             GameManager.Instance?.player?.CloseInteractionUI();
         }

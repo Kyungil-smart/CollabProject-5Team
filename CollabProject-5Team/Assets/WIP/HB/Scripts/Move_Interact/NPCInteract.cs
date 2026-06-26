@@ -35,13 +35,13 @@ public class NPCInteract : MonoBehaviour, IInteractable
             anim.SetTrigger("Greet");
         }
 
-        int state = DateTimeManager.Instance.GetDialogueState(emp.so.id.ToString());
+        int state = DateTimeManager.Instance.GetDialogueState(emp.so.id.ToString(),DateTimeManager.Instance.isEventQuest);
         
         // 일반 대화
         if (state == 0)
         {
             // 임무 없으면 대화 없음 - 플레이어 이동 잠금 해제
-            GameManager.Instance.player?.CloseInteractionUI();
+            GameManager.Instance.player.CloseInteractionUI();
             return;
         }
         // 업무 완료 후 첫 대화
