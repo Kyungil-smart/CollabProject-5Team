@@ -69,6 +69,22 @@ namespace GameDevTycoon.UI.Ingame
                     UpdateDailyQuestProgress(progress, quest.TargetCount);
                 })
                 .AddTo(this);
+
+            if (EventQuestManager.Instance == null) return;
+
+            EventQuestManager.Instance.eventQuestState
+                .Subscribe(OnEventQuestStateChanged)
+                .AddTo(this);
+
+            EventQuestManager.Instance.eventQuestProgress
+                .Subscribe(progress =>
+                {
+                    EventQuest quest = EventQuestManager.Instance.curEventQuest;
+                    if (quest == null) return;
+
+                    UpdateEventQuestProgress(progress, quest.TargetCount);
+                })
+                .AddTo(this);
         }
 
         private void OnDailyQuestStateChanged(QuestState state)
@@ -138,6 +154,19 @@ namespace GameDevTycoon.UI.Ingame
             );
         }
 
+        public void ShowEventQuestAlert()
+        {
+            EventQuest quest = EventQuestManager.Instance.curEventQuest;
+            if (quest == null) return;
+
+            _view.ShowQuestAlert(
+                questType: EventQuest.QuestTypeName,
+                questName: EventQuest.QuestName,
+                current: quest.curCount,
+                total: quest.TargetCount
+            );
+        }
+
         /// <summary>
         /// 퀘스트 완료 시 외부에서 호출.
         /// completionUp/stabilityUp/appealUp은 해당 직군 퀘스트 여부로 결정.
@@ -151,6 +180,28 @@ namespace GameDevTycoon.UI.Ingame
         public void UpdateDailyQuestProgress(int current, int total)
         {
             _view.SetAlertProgress(current, total);
+        }
+
+        public void UpdateEventQuestProgress(int current, int total)
+        {
+            _view.SetAlertProgress(current, total);
+        }
+
+        private void OnEventQuestStateChanged(QuestState state)
+        {
+            EventQuest quest = EventQuestManager.Instance.curEventQuest;
+            if (quest == null) return;
+
+            switch (state)
+            {
+                case QuestState.Playing:
+                    ShowEventQuestAlert();
+                    break;
+
+                case QuestState.End:
+                    UpdateEventQuestProgress(quest.curCount, quest.TargetCount);
+                    break;
+            }
         }
 
         private void RefreshQuestDetail()
@@ -216,7 +267,23 @@ namespace GameDevTycoon.UI.Ingame
 
         // [TODO: 스토리/이벤트 퀘스트 시스템 구현 후 연결]
         private static List<QuestItemData> GetStoryQuests() => new();
-        private static List<QuestItemData> GetEventQuests() => new();
+        private static List<QuestItemData> GetEventQuests()
+        {
+            EventQuest quest = EventQuestManager.Instance != null
+                ? EventQuestManager.Instance.curEventQuest
+                : null;
+
+            if (quest == null) return new();
+
+            return new()
+            {
+                new QuestItemData
+                {
+                    questName = EventQuest.QuestName,
+                    isCompleted = quest.state == QuestState.End
+                }
+            };
+        }
     }
 
     public sealed class QuestItemData

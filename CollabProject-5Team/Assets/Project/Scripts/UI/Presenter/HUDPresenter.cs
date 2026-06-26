@@ -123,6 +123,22 @@ namespace GameDevTycoon.UI.Ingame
                     _view.SetQuestBannerProgress(progress, quest.TargetCount);
                 })
                 .AddTo(this);
+
+            if (EventQuestManager.Instance == null) return;
+
+            EventQuestManager.Instance.eventQuestState
+                .Subscribe(OnEventQuestStateChanged)
+                .AddTo(this);
+
+            EventQuestManager.Instance.eventQuestProgress
+                .Subscribe(progress =>
+                {
+                    EventQuest quest = EventQuestManager.Instance.curEventQuest;
+                    if (quest == null) return;
+
+                    _view.SetQuestBannerProgress(progress, quest.TargetCount);
+                })
+                .AddTo(this);
         }
 
         private void OnDailyQuestStateChanged(QuestState state)
@@ -134,6 +150,31 @@ namespace GameDevTycoon.UI.Ingame
             {
                 case QuestState.Playing:
                     _view.ShowQuestBanner(quest.so.Name, quest.curCount, quest.TargetCount);
+                    break;
+
+                case QuestState.End:
+                    _view.SetQuestBannerCompleted();
+                    break;
+
+                case QuestState.Ready:
+                    _view.HideQuestBanner();
+                    break;
+            }
+        }
+
+        private void OnEventQuestStateChanged(QuestState state)
+        {
+            EventQuest quest = EventQuestManager.Instance.curEventQuest;
+            if (quest == null) return;
+
+            switch (state)
+            {
+                case QuestState.Playing:
+                    _view.ShowQuestBanner(
+                        EventQuest.QuestTypeName,
+                        EventQuest.QuestName,
+                        quest.curCount,
+                        quest.TargetCount);
                     break;
 
                 case QuestState.End:
@@ -174,7 +215,7 @@ namespace GameDevTycoon.UI.Ingame
         private void OnWorkStartClicked()
         {
             _view.SetWorkStartActive(false);
-            QuestManager.Instance.StartDailyQuest();
+            QuestManager.Instance.StartQuestForToday();
 
             if (_desk != null)
                 _desk.OnClickWorkButton();

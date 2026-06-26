@@ -1,9 +1,9 @@
 public enum QuestState
 {
+    Locked,    // 스토리 퀘스트 조건 미충족
     Ready,
     Playing,   // 진행 중
     End,       // 완료
-    Locked,    // 잠금
 }
 public enum QuestResult
 {
@@ -28,12 +28,12 @@ public abstract class QuestBase
 {
     public QuestType type;
     public QuestState state;
+    public QuestResult result;
 }
 
 public class DailyQuest : QuestBase
 {
     public QuestSO so;
-    public QuestResult result;
 
     private int _targetCount;
     public int TargetCount => _targetCount;
@@ -75,7 +75,6 @@ public class DailyQuest : QuestBase
 public class StoryQuest : QuestBase
 {
     public StoryQuestPoolSO so;
-    public QuestResult result;
 
     // 스토리 퀘스트 초기화
     public void Init(StoryQuestPoolSO questSO)
@@ -102,5 +101,36 @@ public class StoryQuest : QuestBase
     {
         state = QuestState.End;
         result = QuestResult.Success;
+    }
+}
+
+public class EventQuest : QuestBase
+{
+    public const string QuestTypeName = "대화 퀘스트"; // 일단 이거 하나로 퀘스트 고정
+    public const string QuestName = "아무 직원이랑 대화하기";
+
+    private const int DefaultTargetCount = 1;
+
+    public int TargetCount => DefaultTargetCount;
+    public int curCount;
+
+    public void Init()
+    {
+        type = QuestType.Event;
+        state = QuestState.Ready;
+        curCount = 0;
+    }
+
+    public void StartQuest()
+    {
+        if (state != QuestState.Ready) return;
+        state = QuestState.Playing;
+    }
+
+    public void CompleteDialogue()
+    {
+        if (state != QuestState.Playing) return;
+        curCount = TargetCount;
+        state = QuestState.End;
     }
 }

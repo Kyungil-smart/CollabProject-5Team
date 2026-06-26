@@ -121,6 +121,18 @@ public class QuestManager : MonoBehaviour
         dailyQuestState.Value = QuestState.Ready;
     }
 
+    // 오늘 진행할 퀘스트 시작. 이벤트 퀘스트가 발동하지 않으면 기존 일일 퀘스트를 진행한다.
+    public void StartQuestForToday()
+    {
+        if (EventQuestManager.Instance != null &&
+            EventQuestManager.Instance.TryStartEventQuestForToday())
+        {
+            return;
+        }
+
+        StartDailyQuest();
+    }
+
     // 일일 퀘스트 시작! (출근 시 호출)
     public void StartDailyQuest()
     {

@@ -17,6 +17,7 @@ public class DateTimeManager : MonoBehaviour
 
     [Header("오늘 하루 상태 값")]
     public bool isWorkCompleted = false;        // 일일 업무 완료 여부
+    public bool isEventQuest = false;           // 이벤트 퀘스트 대화 진행 여부
     private HashSet<string> talkedNpcsToday = new HashSet<string>();
 
     public static Action OnDay;  // 낮
@@ -63,10 +64,12 @@ public class DateTimeManager : MonoBehaviour
     private void ResetDayStatus()
     {
         isWorkCompleted = false;
+        isEventQuest = false;
         talkedNpcsToday.Clear();
 
         // 상태만 Ready로 초기화 - 실제 시작은 WorkStart 버튼 클릭 시 HUDPresenter에서 호출
         QuestManager.Instance.dailyQuestState.Value = QuestState.Ready;
+        EventQuestManager.Instance?.ResetForNewDay();
     }
 
     /// <summary>
@@ -84,21 +87,30 @@ public class DateTimeManager : MonoBehaviour
     /// <summary>
     /// NPC가 대화가 가능한 상태인지
     /// </sumary>
-    public int GetDialogueState(string npcName)
+    public int GetDialogueState(string npcName, bool isStoryQuest = false)
     {
+        // 스토리 퀘스트 대화라면, 업무 완료 여부와 상관없이 대화 가능
+        if (isStoryQuest)
+        {
+            if (talkedNpcsToday.Contains(npcName))
+                return 2;
+
+            return 1;
+        }
+
         // 업무를 마치지 않았다면 대화 불가
         if (!isWorkCompleted)
         {
             return 0;
         }
 
-        // 업무를 마쳤는데, 이미 해당 NPC와 특별 대화를 나눴다면
+        // 업무를 마쳤는데, 이미 해당 NPC와 대화를 나눴다면
         if (talkedNpcsToday.Contains(npcName))
         {
             return 2;
         }
 
-        // 업무 마쳤고, 해당 NPC와 첫 대화라면 특별 대화
+        // 업무 마쳤고, 해당 NPC와 오늘 첫 대화
         return 1;
     }
 
