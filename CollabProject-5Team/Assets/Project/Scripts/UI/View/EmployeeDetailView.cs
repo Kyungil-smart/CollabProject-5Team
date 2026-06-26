@@ -60,9 +60,7 @@ namespace GameDevTycoon.UI.Ingame
 
             SpawnTag(_departmentTagAnchor, _departmentTagPrefab, so.role);
             SpawnTag(_mbtiTagAnchor, _mbtiTagPrefab, so.mbtiParsed);
-            SpawnTraitTag(_mainTraitTagAnchor, so.mainTrait);
-            SpawnTraitTag(_subTraitTagAnchor, so.subTrait);
-            SpawnTraitTag(_riskTraitTagAnchor, so.riskTrait);
+            SpawnTraitTags(so.mainTrait, so.subTrait, so.riskTrait);
 
             _statusValue.text = GetStatusString(employee);
 
@@ -76,6 +74,33 @@ namespace GameDevTycoon.UI.Ingame
             _loyaltyValue.text = mutable.loyalty.ToString();
 
             RefreshProjectHistory(employee);
+        }
+
+        private void SpawnTraitTags(Trait main, Trait sub, Trait risk)
+        {
+            ClearAnchor(_mainTraitTagAnchor);
+            ClearAnchor(_subTraitTagAnchor);
+            ClearAnchor(_riskTraitTagAnchor);
+
+            if (sub != Trait.None)
+            {
+                SpawnTraitTag(_mainTraitTagAnchor, main);
+                SpawnTraitTag(_subTraitTagAnchor, sub);
+                SpawnTraitTag(_riskTraitTagAnchor, risk);
+                _riskTraitTagAnchor.gameObject.SetActive(true);
+            }
+            else
+            {
+                SpawnTraitTag(_mainTraitTagAnchor, main);
+                SpawnTraitTag(_subTraitTagAnchor, risk);
+                _riskTraitTagAnchor.gameObject.SetActive(false);
+            }
+        }
+
+        private void SpawnTraitTag(Transform anchor, Trait trait)
+        {
+            var tag = Instantiate(_traitTagPrefab, anchor);
+            tag.Bind(trait);
         }
 
         private void RefreshProjectHistory(Employee employee)
@@ -113,13 +138,6 @@ namespace GameDevTycoon.UI.Ingame
             ClearAnchor(anchor);
             var tag = Instantiate(prefab, anchor);
             tag.Bind(mbti);
-        }
-
-        private void SpawnTraitTag(Transform anchor, Trait trait)
-        {
-            ClearAnchor(anchor);
-            var tag = Instantiate(_traitTagPrefab, anchor);
-            tag.Bind(trait);
         }
 
         private static void ClearAnchor(Transform anchor)
