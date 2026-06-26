@@ -24,6 +24,7 @@ namespace GameDevTycoon.UI.Ingame
 
         [Header("DailyQuestAlertPopup")]
         [SerializeField] private GameObject _dailyQuestAlertPopup;
+        [SerializeField] private TextMeshProUGUI _alertQuestTypeLabel;
         [SerializeField] private TextMeshProUGUI _alertQuestNameLabel;
         [SerializeField] private TextMeshProUGUI _alertProgressLabel;
         [SerializeField] private Button _alertConfirmButton;
@@ -49,6 +50,9 @@ namespace GameDevTycoon.UI.Ingame
 
         private void Awake()
         {
+            if (_alertQuestTypeLabel == null && _dailyQuestAlertPopup != null)
+                _alertQuestTypeLabel = FindDeepChild(_dailyQuestAlertPopup.transform, "TitleLabel")?.GetComponent<TextMeshProUGUI>();
+
             _questDetailPopup.SetActive(false);
             _dailyQuestAlertPopup.SetActive(false);
             _questClearPopup.SetActive(false);
@@ -66,7 +70,13 @@ namespace GameDevTycoon.UI.Ingame
 
         // DailyQuestAlertPopup
         public void ShowDailyQuestAlert(string questName, int current, int total)
+            => ShowQuestAlert("일일 퀘스트", questName, current, total);
+
+        public void ShowQuestAlert(string questType, string questName, int current, int total)
         {
+            if (_alertQuestTypeLabel != null)
+                _alertQuestTypeLabel.text = questType;
+
             _alertQuestNameLabel.text = questName;
             _alertProgressLabel.text = $"{current} / {total}";
             _dailyQuestAlertPopup.SetActive(true);
@@ -87,5 +97,16 @@ namespace GameDevTycoon.UI.Ingame
         }
 
         public void HideClearPopup() => _questClearPopup.SetActive(false);
+
+        private static Transform FindDeepChild(Transform root, string childName)
+        {
+            foreach (Transform child in root.GetComponentsInChildren<Transform>(true))
+            {
+                if (child.name == childName)
+                    return child;
+            }
+
+            return null;
+        }
     }
 }

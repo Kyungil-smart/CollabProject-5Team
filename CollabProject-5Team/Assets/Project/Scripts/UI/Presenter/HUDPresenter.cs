@@ -123,6 +123,22 @@ namespace GameDevTycoon.UI.Ingame
                     _view.SetQuestBannerProgress(progress, quest.TargetCount);
                 })
                 .AddTo(this);
+
+            if (EventQuestManager.Instance == null) return;
+
+            EventQuestManager.Instance.eventQuestState
+                .Subscribe(OnEventQuestStateChanged)
+                .AddTo(this);
+
+            EventQuestManager.Instance.eventQuestProgress
+                .Subscribe(progress =>
+                {
+                    EventQuest quest = EventQuestManager.Instance.curEventQuest;
+                    if (quest == null) return;
+
+                    _view.SetQuestBannerProgress(progress, quest.TargetCount);
+                })
+                .AddTo(this);
         }
 
         private void OnDailyQuestStateChanged(QuestState state)
@@ -146,6 +162,31 @@ namespace GameDevTycoon.UI.Ingame
             }
         }
 
+        private void OnEventQuestStateChanged(QuestState state)
+        {
+            EventQuest quest = EventQuestManager.Instance.curEventQuest;
+            if (quest == null) return;
+
+            switch (state)
+            {
+                case QuestState.Playing:
+                    _view.ShowQuestBanner(
+                        EventQuest.QuestTypeName,
+                        EventQuest.QuestName,
+                        quest.curCount,
+                        quest.TargetCount);
+                    break;
+
+                case QuestState.End:
+                    _view.SetQuestBannerCompleted();
+                    break;
+
+                case QuestState.Ready:
+                    _view.HideQuestBanner();
+                    break;
+            }
+        }
+
         /// <summary>
         /// DateTimeManager year/month 확정 후 시간 표시 형식 연결.
         /// </summary>
@@ -154,6 +195,7 @@ namespace GameDevTycoon.UI.Ingame
             // [TODO: DateTimeManager year/month 데이터 확정 후 시간 표시 형식 연결]
             var dtm = DateTimeManager.Instance;
             _view.SetTimeLabel($"{dtm.currentWeek.Value}주 {dtm.GetDayName()}");
+            _view.SetTimeIcon(dtm.currentTime == TimeOfDay.Day);
         }
 
         private void OnNewDay()
@@ -174,7 +216,7 @@ namespace GameDevTycoon.UI.Ingame
         private void OnWorkStartClicked()
         {
             _view.SetWorkStartActive(false);
-            QuestManager.Instance.StartDailyQuest();
+            QuestManager.Instance.StartQuestForToday();
 
             if (_desk != null)
                 _desk.OnClickWorkButton();

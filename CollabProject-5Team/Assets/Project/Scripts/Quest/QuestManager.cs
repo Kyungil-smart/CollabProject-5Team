@@ -89,30 +89,45 @@ public class QuestManager : MonoBehaviour
         else
             SetObjectsActive(curDailyQuest.so.activeObjects, false);
 
-        if (curDailyQuest.result == QuestResult.Success)
-        {
-            if (_questPhase != 2)
-                SetObjectsActive(curDailyQuest.so.resultObjects, true);
+        if (_questPhase != 2)
+            SetObjectsActive(curDailyQuest.so.resultObjects, true);
 
-            ShowSpeechBubble(curDailyQuest.so.npcDialogue);
-            AddBonusPoint(curDailyQuest.so.role, curDailyQuest.so.successEffect);
-            DateTimeManager.Instance.CompleteDayWork();
+        ShowSpeechBubble(curDailyQuest.so.npcDialogue);
+        AddBonusPoint(curDailyQuest.so.role, curDailyQuest.so.successEffect);
+
+        if (TutorialManager.Instance != null)
+        {
+            // 인스펙터에 등록할 행동 ID 예시: "DailyQuestComplete"
+            TutorialManager.OnTutorialActionCompleted?.Invoke("DailyQuestComplete");
         }
+
+        DateTimeManager.Instance.CompleteDayWork();
     }
 
     // 새 하루 시작 전 상태 초기화. 디버그 스킵 등으로 퀘스트가 미완료 상태로 남아있으면
     // OnDailyQuestChanged(End)를 안 거치고 넘어가므로 여기서 직접 활성 오브젝트를 정리해야 함
     public void ResetForNewDay()
     {
-        if (dailyQuestState.Value == QuestState.Playing && curDailyQuest != null)
-        {
-            if (_questPhase == 2)
-                SetObjectsActive(curDailyQuest.so.resultObjects, false);
-            else
-                SetObjectsActive(curDailyQuest.so.activeObjects, false);
-        }
+        if (curDailyQuest == null) return;
+
+        if (_questPhase == 2)
+            SetObjectsActive(curDailyQuest.so.resultObjects, false);
+        else
+            SetObjectsActive(curDailyQuest.so.activeObjects, false);
 
         dailyQuestState.Value = QuestState.Ready;
+    }
+
+    // 오늘 진행할 퀘스트 시작. 이벤트 퀘스트가 발동하지 않으면 기존 일일 퀘스트를 진행한다.
+    public void StartQuestForToday()
+    {
+        if (EventQuestManager.Instance != null &&
+            EventQuestManager.Instance.TryStartEventQuestForToday())
+        {
+            return;
+        }
+
+        StartDailyQuest();
     }
 
     // 일일 퀘스트 시작! (출근 시 호출)

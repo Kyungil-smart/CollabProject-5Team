@@ -1,5 +1,4 @@
 using R3;
-using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -7,19 +6,20 @@ namespace GameDevTycoon.UI.Ingame
 {
     /// <summary>
     /// 직원 모집 직군별 슬라이더 행 프리팹 바인딩.
-    /// Panel_Recruit.JobSliders 하위에 배리언트 5개 고정 배치.
+    /// Panel_Recruit.JobSliders 하위에 배리언트 3개 고정 배치.
     /// 직군 버튼 클릭 시 슬라이더 활성화, 슬라이더 변경 시 인원수/비용 외부 전달.
     /// </summary>
     public sealed class JobSliderGroupView : MonoBehaviour
     {
         [Header("직군 버튼")]
         [SerializeField] private Button _jobButton;
+        [SerializeField] private Image _checkImage;
 
         [Header("모집인원 슬라이더")]
         [SerializeField] private Slider _countSlider;
-
-        [Header("잠금 오버레이")]
-        [SerializeField] private GameObject _lockOverlay;
+        [SerializeField] private Image _sliderBackground;
+        [SerializeField] private Sprite _sliderActiveSprite;
+        [SerializeField] private Sprite _sliderInactiveSprite;
 
         [Header("직군 정보")]
         [SerializeField] private Role _role;
@@ -32,7 +32,6 @@ namespace GameDevTycoon.UI.Ingame
         public Role Role => _role;
         public int Count => _isSelected ? Mathf.RoundToInt(_countSlider.value) : 0;
         public bool IsSelected => _isSelected;
-        public bool IsLocked => _lockOverlay != null && _lockOverlay.activeSelf;
 
         public event System.Action OnSelectedChanged;
 
@@ -44,6 +43,9 @@ namespace GameDevTycoon.UI.Ingame
             _countSlider.value = 1;
             _countSlider.interactable = false;
 
+            _checkImage.gameObject.SetActive(false);
+            RefreshSliderBackground();
+
             OnCountChanged = _countSlider.OnValueChangedAsObservable()
                 .Select(v => (_role, Mathf.RoundToInt(v)));
 
@@ -52,12 +54,8 @@ namespace GameDevTycoon.UI.Ingame
                 .AddTo(this);
         }
 
-        /// <summary>
-        /// 회사 레벨 기준으로 잠금 여부 설정. HRPresenter에서 초기화 시 호출.
-        /// </summary>
         public void Setup(bool isLocked)
         {
-            _lockOverlay.SetActive(isLocked);
             _jobButton.interactable = !isLocked;
             _countSlider.interactable = false;
 
@@ -65,6 +63,8 @@ namespace GameDevTycoon.UI.Ingame
             {
                 _isSelected = false;
                 _countSlider.value = 1;
+                _checkImage.gameObject.SetActive(false);
+                RefreshSliderBackground();
             }
         }
 
@@ -73,6 +73,8 @@ namespace GameDevTycoon.UI.Ingame
             _isSelected = false;
             _countSlider.interactable = false;
             _countSlider.value = 1;
+            _checkImage.gameObject.SetActive(false);
+            RefreshSliderBackground();
             RefreshJobButtonVisual();
         }
 
@@ -84,9 +86,16 @@ namespace GameDevTycoon.UI.Ingame
             if (!_isSelected)
                 _countSlider.value = 1;
 
+            _checkImage.gameObject.SetActive(_isSelected);
+            RefreshSliderBackground();
             RefreshJobButtonVisual();
 
             OnSelectedChanged?.Invoke();
+        }
+
+        private void RefreshSliderBackground()
+        {
+            _sliderBackground.sprite = _isSelected ? _sliderActiveSprite : _sliderInactiveSprite;
         }
 
         // 선택 상태 시각 피드백 — 실제 스프라이트 교체는 Inspector 배리언트에서 처리
