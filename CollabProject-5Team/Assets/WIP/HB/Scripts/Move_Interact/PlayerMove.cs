@@ -279,6 +279,7 @@ public class PlayerMove : MonoBehaviour
 
             switch (point.GetPointType())
             {
+                case PointType.Work:        _anim.SetBool("IsWorking", true); break;
                 case PointType.Sofa:        _anim.SetBool("IsResting", true); 
                                             _anim.SetFloat("RestIndex", Random.Range(0,4)); break;
                 case PointType.Drink:       _anim.SetTrigger("Drink"); Invoke(nameof(ExitInteraction), 6f); break;
@@ -304,6 +305,7 @@ public class PlayerMove : MonoBehaviour
 
         _hasInteracted = false;
 
+        _anim.SetBool("IsWorking", false);
         _anim.SetBool("IsResting", false);
         _anim.SetTrigger("Idle");
 
