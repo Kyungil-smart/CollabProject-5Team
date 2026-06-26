@@ -17,41 +17,46 @@ namespace GameDevTycoon.UI.Title
         [SerializeField] private GameObject _loadPopup;
         [SerializeField] private Button _closeButton;
 
+        [Header("회사 레벨별 아이콘 (1/2/3)")]
+        [SerializeField] private Sprite[] _companyLevelIcons;
+
         [Header("AutoSaveSlot")]
         [SerializeField] private Button _autoSlotButton;
+        [SerializeField] private GameObject _autoSlotSelectEffect;
         [SerializeField] private GameObject _autoSavedGroup;
         [SerializeField] private GameObject _autoEmptyGroup;
+        [SerializeField] private Image _autoLevelIconImage;
         [SerializeField] private TextMeshProUGUI _autoCompanyNameLabel;
         [SerializeField] private TextMeshProUGUI _autoDateTimeLabel;
         [SerializeField] private TextMeshProUGUI _autoGoldLabel;
         [SerializeField] private TextMeshProUGUI _autoEmployeeCountLabel;
-        [SerializeField] private Sprite _autoSlotSelectedSprite;
-        [SerializeField] private Sprite _autoSlotDefaultSprite;
 
         [Header("SaveSlot_1")]
         [SerializeField] private Button _slot1Button;
+        [SerializeField] private GameObject _slot1SelectEffect;
         [SerializeField] private GameObject _slot1SavedGroup;
         [SerializeField] private GameObject _slot1EmptyGroup;
+        [SerializeField] private Image _slot1LevelIconImage;
         [SerializeField] private TextMeshProUGUI _slot1CompanyNameLabel;
         [SerializeField] private TextMeshProUGUI _slot1DateTimeLabel;
         [SerializeField] private TextMeshProUGUI _slot1GoldLabel;
         [SerializeField] private TextMeshProUGUI _slot1EmployeeCountLabel;
-        [SerializeField] private Sprite _slot1SelectedSprite;
-        [SerializeField] private Sprite _slot1DefaultSprite;
 
         [Header("SaveSlot_2")]
         [SerializeField] private Button _slot2Button;
+        [SerializeField] private GameObject _slot2SelectEffect;
         [SerializeField] private GameObject _slot2SavedGroup;
         [SerializeField] private GameObject _slot2EmptyGroup;
+        [SerializeField] private Image _slot2LevelIconImage;
         [SerializeField] private TextMeshProUGUI _slot2CompanyNameLabel;
         [SerializeField] private TextMeshProUGUI _slot2DateTimeLabel;
         [SerializeField] private TextMeshProUGUI _slot2GoldLabel;
         [SerializeField] private TextMeshProUGUI _slot2EmployeeCountLabel;
-        [SerializeField] private Sprite _slot2SelectedSprite;
-        [SerializeField] private Sprite _slot2DefaultSprite;
 
         [Header("Buttons")]
         [SerializeField] private Button _loadButton;
+        [SerializeField] private Sprite _loadActiveSprite;
+        [SerializeField] private Sprite _buttonInactiveSprite;
 
         public Observable<Unit> OnCloseClicked => _closeButton.OnClickAsObservable();
         public Observable<Unit> OnAutoSlotClicked => _autoSlotButton.OnClickAsObservable();
@@ -64,7 +69,7 @@ namespace GameDevTycoon.UI.Title
         private void Awake()
         {
             _loadPopup.SetActive(false);
-            _loadButton.interactable = false;
+            SetLoadButtonInteractable(false);
         }
 
         public void Show() => _loadPopup.SetActive(true);
@@ -88,22 +93,23 @@ namespace GameDevTycoon.UI.Title
 
         public void BindAutoSlot(SaveSlotData data)
         {
-            BindSlotData(data, _autoSavedGroup, _autoEmptyGroup,
+            BindSlotData(data, _autoSavedGroup, _autoEmptyGroup, _autoLevelIconImage,
                 _autoCompanyNameLabel, _autoDateTimeLabel, _autoGoldLabel, _autoEmployeeCountLabel);
         }
 
         public void BindSlot1(SaveSlotData data)
         {
-            BindSlotData(data, _slot1SavedGroup, _slot1EmptyGroup,
+            BindSlotData(data, _slot1SavedGroup, _slot1EmptyGroup, _slot1LevelIconImage,
                 _slot1CompanyNameLabel, _slot1DateTimeLabel, _slot1GoldLabel, _slot1EmployeeCountLabel);
         }
 
         public void BindSlot2(SaveSlotData data)
         {
-            BindSlotData(data, _slot2SavedGroup, _slot2EmptyGroup,
+            BindSlotData(data, _slot2SavedGroup, _slot2EmptyGroup, _slot2LevelIconImage,
                 _slot2CompanyNameLabel, _slot2DateTimeLabel, _slot2GoldLabel, _slot2EmployeeCountLabel);
         }
 
+        // 선택 상태 표시 — 슬롯 배경 위에 선택 이펙트 오브젝트 on/off
         public void SetSlotSelected(int slotIndex)
         {
             SetAutoSlotSelected(slotIndex == 1);
@@ -112,18 +118,26 @@ namespace GameDevTycoon.UI.Title
         }
 
         public void SetAutoSlotSelected(bool selected)
-            => ApplySlotSprite(_autoSlotButton, selected ? _autoSlotSelectedSprite : _autoSlotDefaultSprite);
+            => SetActiveIfExists(_autoSlotSelectEffect, selected);
 
         public void SetSlot1Selected(bool selected)
-            => ApplySlotSprite(_slot1Button, selected ? _slot1SelectedSprite : _slot1DefaultSprite);
+            => SetActiveIfExists(_slot1SelectEffect, selected);
 
         public void SetSlot2Selected(bool selected)
-            => ApplySlotSprite(_slot2Button, selected ? _slot2SelectedSprite : _slot2DefaultSprite);
+            => SetActiveIfExists(_slot2SelectEffect, selected);
 
         public void SetLoadButtonInteractable(bool interactable)
-            => _loadButton.interactable = interactable;
+        {
+            _loadButton.interactable = interactable;
+            ApplyButtonSprite(_loadButton, interactable ? _loadActiveSprite : _buttonInactiveSprite);
+        }
 
-        private static void ApplySlotSprite(Button button, Sprite sprite)
+        private static void SetActiveIfExists(GameObject obj, bool active)
+        {
+            if (obj != null) obj.SetActive(active);
+        }
+
+        private static void ApplyButtonSprite(Button button, Sprite sprite)
         {
             if (sprite == null) return;
             var image = button.GetComponent<Image>();
@@ -131,10 +145,11 @@ namespace GameDevTycoon.UI.Title
                 image.sprite = sprite;
         }
 
-        private static void BindSlotData(
+        private void BindSlotData(
             SaveSlotData data,
             GameObject savedGroup,
             GameObject emptyGroup,
+            Image levelIconImage,
             TextMeshProUGUI companyNameLabel,
             TextMeshProUGUI dateTimeLabel,
             TextMeshProUGUI goldLabel,
@@ -150,6 +165,20 @@ namespace GameDevTycoon.UI.Title
             dateTimeLabel.text = data.dateTime;
             goldLabel.text = data.gold;
             employeeCountLabel.text = $"{data.employeeCount}명";
+
+            ApplyLevelIcon(levelIconImage, data.companyLevel);
+        }
+
+        private void ApplyLevelIcon(Image levelIconImage, int companyLevel)
+        {
+            if (levelIconImage == null || _companyLevelIcons == null) return;
+
+            int index = companyLevel - 1;
+            if (index < 0 || index >= _companyLevelIcons.Length) return;
+
+            Sprite sprite = _companyLevelIcons[index];
+            if (sprite != null)
+                levelIconImage.sprite = sprite;
         }
     }
 }

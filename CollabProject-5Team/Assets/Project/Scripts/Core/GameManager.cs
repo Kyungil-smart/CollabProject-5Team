@@ -1,7 +1,7 @@
 using System.Collections.Generic;
+using System.Linq;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
-using UnityEngine.AI;
 
 public class GameManager : MonoBehaviour
 {
@@ -20,10 +20,9 @@ public class GameManager : MonoBehaviour
     private Transform _currentNpcSpawnPoint;
     private Transform _currentMapTransform;                                 // 의자가 있는 현재 맵
 
-    private List<Transform>          _sitPoints = new List<Transform>();       // 앉을 좌표 리스트
     private List<Employee>     _activeEmployees = new List<Employee>();        // 활성화된 직원 NPC를 담아둘 리스트
     public bool isUpgradeReserved = false;                                   // 맵 증축 저장용
-
+    int _spawnDelayMs = 850;
     [Header("자동 주입")]
     public PlayerMove player;
 
@@ -36,11 +35,10 @@ public class GameManager : MonoBehaviour
     #endregion
     }
 
-
     public async UniTask InitializeForSaveSystem()
     {
         GenerateOffice(Company.Instance.level);
-        await InitializeGameAsync();
+        InitializeGameAsync().Forget();
     }
 
     private void GenerateOffice(int companyLevel)
@@ -93,8 +91,8 @@ public class GameManager : MonoBehaviour
         GameObject playerObj = Instantiate(_playerPrefab, _currentPlayerSpawnPoint.position, Quaternion.identity);
         InjectPlayer(playerObj.GetComponent<PlayerMove>());
 
-        // 플레이어가 생성되고 1초 대기
-        await UniTask.Delay(1000);
+        // 플레이어가 생성되고 대기
+        await UniTask.Delay(_spawnDelayMs);
 
         // 의자 정보
         RefreshSitPoints();
@@ -106,6 +104,46 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    public void RefreshSitPoints()
+    {
+        // 현재 맵에서 포인트들을 찾음
+        var foundPoints = _currentMapTransform.GetComponentsInChildren<ActionPoint>().ToList();
+
+        // PointManager에게 전달 (갱신 요청)        
+        PointManager.Instance.RefreshPoints(_currentMapTransform);
+        
+
+        Debug.Log($"[GameManager] 찾은 포인트 개수: {foundPoints.Count}");
+    }
+
+    public async UniTask SpawnNPCsAsync(Employee emp)
+    {
+        var controller = emp.GetComponent<NPCController>();
+
+        if (!_activeEmployees.Contains(emp))
+            _activeEmployees.Add(emp);
+
+        // 빈자리 할당
+        var target = PointManager.Instance.GetAllPoints().FirstOrDefault(p => !p.IsOccupied);
+        if (target != null)
+        {
+            target.IsOccupied = true;
+            controller.CurrentTarget = target;
+        }
+
+        emp.transform.position = _currentNpcSpawnPoint.position;
+        emp.transform.rotation = Quaternion.identity;
+        emp.gameObject.SetActive(true);
+        
+        if (controller.CurrentTarget != null)
+            controller.ChangeState(new NPCMove());
+        
+        else
+            controller.ChangeState(new NPCIdle());
+
+        await UniTask.Delay(_spawnDelayMs);
+    }
+
     // 월요일 아침에 호출
     public async UniTask TryProcessUpgradeAsync()
     {
@@ -114,130 +152,76 @@ public class GameManager : MonoBehaviour
         await UpgradeOfficeAsync();
         isUpgradeReserved = false;    
     }
-    // 사무실 업그레이드 시 맵 교체 및 NPC재배치
+
     public async UniTask UpgradeOfficeAsync()
     {
+        // 기존 NPC 자리 해제, 상태 초기화
         foreach (var employee in _activeEmployees)
         {
+            if (employee == null) continue;
+
             var npc = employee.GetComponent<NPCController>();
-            var agent = npc. GetComponent<NavMeshAgent>();
-
-            if (agent != null) agent.enabled = false;
-
-            npc.TargetDesk = null;
+            // 자리 점유 해제
+            npc.ReleaseCurrentTarget(); 
             npc.ChangeState(new NPCIdle());
         }
 
-        // 현재 맵의 인덱스가 맵의 개수와 같거나 크면 리턴
         if (_currentOfficeIndex + 1 >= _offices.Count) return;
 
+        LeaveWorkNPCs();
         await UniTask.Yield();
 
-        // 기존 맵 파괴
+        // 맵 교체
         if (_currentMapTransform != null)
         {
-            Debug.Log($"기존 맵 제거 시도: {_currentMapTransform.name}");
-            Destroy(_currentMapTransform.gameObject);
-            _currentMapTransform = null;
+            DestroyImmediate(_currentMapTransform.gameObject);
+
+            _activeEmployees.RemoveAll(e => e == null || e.gameObject == null);
         }
 
-        // 인덱스 증가시키고 새 맵 생성
+        await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
+
         _currentOfficeIndex++;
 
         MapInfo newOffice = Instantiate(_offices[_currentOfficeIndex], Vector3.zero, Quaternion.identity);
-        
         _currentMapTransform = newOffice.transform;
 
-        CameraManager.Instance.MapSettings(newOffice);     
+        // 잠시 대기 후 카메라 조정
+        await UniTask.Yield();
 
-        // 스폰 포인트 찾기
-        _currentPlayerSpawnPoint = newOffice.PlayerSpawn;
-        _currentNpcSpawnPoint = newOffice.NpcSpawn;
-
-        // 의자 좌표 갱신
-        RefreshSitPoints();
-
-        // 교체된 맵의 퀘스트 오브젝트 루트를 QuestManager에 재주입
-        QuestManager.Instance.SetQuestObjectsRoot(_currentMapTransform);
-
-        // 플레이어 위치 갱신
-        if (player != null && _currentPlayerSpawnPoint != null)
+        if (CameraManager.Instance != null)
         {
-            player.ResetMovementState();
-
-            // transform.position 대신 NavMeshAgent.Warp 사용
-            var agent = player.GetComponent<NavMeshAgent>();
-            if (agent != null)
-            {
-                agent.Warp(_currentPlayerSpawnPoint.position);
-            }
-            else
-            {
-                player.transform.position = _currentPlayerSpawnPoint.position;
-            }
-
-            player.transform.rotation = Quaternion.identity;
+            CameraManager.Instance.MapSettings(newOffice);
         }
 
+        // 포인트, 스폰 정보 갱신
+        PointManager.Instance.RefreshPoints(_currentMapTransform);
+
+        
+        RefreshSitPoints();
+        _currentNpcSpawnPoint = newOffice.NpcSpawn;
+
+        // NPC재배치, 새로운 자리 할당
         foreach (var employee in _activeEmployees)
         {
             var npc = employee.GetComponent<NPCController>();
+            // 위치 초기하
             npc.transform.position = _currentNpcSpawnPoint.position;
-            npc.transform.rotation = Quaternion.identity;
 
-            var agent = npc.GetComponent<NavMeshAgent>();
-            if (agent != null) agent.enabled = true;
+            var target = PointManager.Instance.GetAllPoints().FirstOrDefault(p => !p.IsOccupied);
 
-            npc.ChangeState(new NPCIdle());
+            if (target != null)
+            {
+                target.IsOccupied = true;
+                npc.CurrentTarget = target;
+                npc.ChangeState(new NPCMove());
+            }
+
+            else
+            {
+                npc.ChangeState(new NPCIdle());
+            }
         }
-    }
-
-
-    // 현재 맵에서 SitPoint 위치를 찾아 리스트 갱신
-    public void RefreshSitPoints()
-    {
-        // 의자 데이터 초기화
-        _sitPoints.Clear();
-
-        // 현재 맵의 자식 오브젝트 중 Seat.cs를 참조한 오브젝트 찾음
-        Seat[] foundSeats = _currentMapTransform.GetComponentsInChildren<Seat>();
-
-        foreach (var chair in foundSeats)
-        {
-            // 각 의자의 SitPoint를 리스트에 추가
-            _sitPoints.Add(chair.sitPoint);
-        }
-    }
-
-    // 신규 채용된 직원을 씬에 생성하고 관리 리스트에 추가
-    public async UniTask SpawnNPCsAsync(Employee emp)
-    {
-        // NPC 생성
-        if (emp == null) return;
-
-        var spawnedEmp = emp;
-        spawnedEmp.transform.position = _currentNpcSpawnPoint.position;
-        spawnedEmp.transform.rotation = Quaternion.identity;
-
-        // 데이터 주입            
-        var controller = spawnedEmp.GetComponent<NPCController>();
-        
-        // 생성된 직원을 List에 담음
-        if (!_activeEmployees.Contains(spawnedEmp))
-            _activeEmployees.Add(spawnedEmp);
-
-        // 비어있는 자리 할당
-        controller.TargetDesk = GetEmptySitPoint();
-
-        // 활성화 및 이동 명령
-        controller.gameObject.SetActive(true);
-        if (controller.TargetDesk != null)
-        {
-            controller.ChangeState(new NPCMove());
-        }
-        // 1초 간격으로 생성
-        await UniTask.Delay(1000);
-
     }
 
     // 활성 NPC 중 아무나 한 명의 Transform을 랜덤으로 반환 (퀘스트 말풍선 표시용)
@@ -249,54 +233,72 @@ public class GameManager : MonoBehaviour
 
     // 퇴근 명령 SpawnPoint로 이동 후 비활성화
     public void LeaveWorkNPCs()
-    {
+    {        
         foreach (var emp in _activeEmployees)
         {
-            emp.GetComponent<NPCController>().ChangeState(new NPCLeave());
+            if (emp == null) continue;
+
+            var npc = emp.GetComponent<NPCController>();
+
+            npc.ChangeState(new NPCLeave());
         }
     }
 
-    // 고용, 해고 반영 후 출근 실행
     public async UniTask HiredNPCGoToWork()
     {
-        _activeEmployees.RemoveAll(e => e == null);
+        _activeEmployees.RemoveAll(e => e == null || e.gameObject == null);
 
         var hiredEmployees = _EmployeeManager.Instance.haveEmployees.haveEmployeeList;
 
+        // 해고된 직원 처리
         for (int i = _activeEmployees.Count - 1; i >= 0; i--)
         {
             var activeEmployee = _activeEmployees[i];
             if (!hiredEmployees.Exists(e => e.so == activeEmployee.so))
             {
+                var npc = activeEmployee.GetComponent<NPCController>();
+                
+                // 자리 점유 해제
+                npc.ReleaseCurrentTarget(); 
                 Destroy(activeEmployee.gameObject);
                 _activeEmployees.RemoveAt(i);
             }
         }
 
+        // 고용된 직원 처리
         foreach (var employee in hiredEmployees)
         {
             var activeEmployee = _activeEmployees.Find(e => e != null && e.so == employee.so);
+
             if (activeEmployee != null)
             {
-                var existingNpc = activeEmployee.GetComponent<NPCController>();
-                existingNpc.gameObject.SetActive(true);
+                var npc = activeEmployee.GetComponent<NPCController>();
 
-                if (existingNpc.TargetDesk == null)
+                npc.gameObject.SetActive(true);
+
+                // 상태 초기화
+                npc.IsFirstTask = true;
+                npc.ReleaseCurrentTarget();
+
+
+                if (npc.Agent != null)
                 {
-                    existingNpc.TargetDesk = GetEmptySitPoint();
-                    existingNpc.ChangeState(new NPCMove());
+                    npc.Agent.enabled = false;
+                    npc.Agent.Warp(npc.transform.position);
+                    npc.Agent.enabled = true;
                 }
-                else
-                {
-                    existingNpc.ChangeState(new NPCMove());
-                }
+
+                npc.AssignNewTask();
+                await UniTask.Delay(_spawnDelayMs);
             }
             else
             {
+                // 새로 생성
                 await SpawnNPCsAsync(employee);
             }
         }
     }
+    
     public void InjectPlayer(PlayerMove player)
     {
         this.player = player;
@@ -310,37 +312,27 @@ public class GameManager : MonoBehaviour
         return _EmployeeManager.Instance.haveEmployees.haveEmployeeList.Count < maxEmployee;
     }
 
-
-
-    private Transform GetEmptySitPoint()
-    {
-        foreach (var sitPoint in _sitPoints)
-        {
-            bool isOccupied = false;
-            foreach (var employee in _activeEmployees)
-            {
-                if (employee.GetComponent<NPCController>().TargetDesk == sitPoint)
-                {
-                    isOccupied = true;
-                    break;
-                }
-            }
-            if (!isOccupied) return sitPoint;
-        }
-
-        return null;
-    }
-
     public void RemoveNpcFromScene(Employee employee)
     {
         var activeEmployee = _activeEmployees.Find(e => e != null && e.so == employee.so);
         if (activeEmployee != null)
         {
-            _activeEmployees.Remove(activeEmployee); // 리스트에서 제거
-            Destroy(activeEmployee.gameObject); // 씬에서 파괴
+            var npc = activeEmployee.GetComponent<NPCController>();
+
+            if (npc.MyDesk != null)
+            {
+                npc.MyDesk.Owner = null;
+                npc.MyDesk.IsOccupied = false;
+            }
+
+            npc.ReleaseCurrentTarget();
+
+            // 리스트에서 제거
+            _activeEmployees.Remove(activeEmployee); 
+            // 씬에서 파괴
+            Destroy(activeEmployee.gameObject); 
             Debug.Log($"[GameManager] {employee.so.Name} 직원 씬에서 즉시 삭제 완료");
         }
     }
-
 }
 

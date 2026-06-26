@@ -16,6 +16,7 @@ namespace GameDevTycoon.UI.Ingame
         [SerializeField] private AlertView _alertView;
         [SerializeField] private SettingsPresenter _settingsPresenter;
         [SerializeField] private SavePresenter _savePresenter;
+        [SerializeField] private SaveView _saveView;
         [SerializeField] private QuestPresenter _questPresenter;
 
         [Header("업무 시작 시 이동할 데스크탑 프리팹")]
@@ -24,6 +25,12 @@ namespace GameDevTycoon.UI.Ingame
         private HRPresenter _hrPresenter;
         private ProjectPresenter _projectPresenter;
         private CompanyPresenter _companyPresenter;
+
+        // NightUI 버튼 인덱스 — HUDView 배열 순서와 일치해야 함
+        private const int IndexHR = 0;
+        private const int IndexProject = 1;
+        private const int IndexCompany = 2;
+        private const int IndexSave = 3;
 
         private void Awake()
         {
@@ -59,8 +66,6 @@ namespace GameDevTycoon.UI.Ingame
 
         private void BindButtons()
         {
-            var dtm = DateTimeManager.Instance;
-
             _view.OnQuestIconClicked
                 .Subscribe(_ => OnQuestIconClicked())
                 .AddTo(this);
@@ -70,19 +75,19 @@ namespace GameDevTycoon.UI.Ingame
                 .AddTo(this);
 
             _view.OnHRClicked
-                .Subscribe(_ => OnHRClicked())
+                .Subscribe(_ => OnNightButtonClicked(IndexHR, _hrPresenter))
                 .AddTo(this);
 
             _view.OnProjectClicked
-                .Subscribe(_ => OnProjectClicked())
+                .Subscribe(_ => OnNightButtonClicked(IndexProject, _projectPresenter))
                 .AddTo(this);
 
             _view.OnCompanyClicked
-                .Subscribe(_ => OnCompanyClicked())
+                .Subscribe(_ => OnNightButtonClicked(IndexCompany, _companyPresenter))
                 .AddTo(this);
 
             _view.OnSaveClicked
-                .Subscribe(_ => _savePresenter.Show())
+                .Subscribe(_ => OnSaveClicked())
                 .AddTo(this);
 
             _view.OnNightQuitClicked
@@ -91,6 +96,11 @@ namespace GameDevTycoon.UI.Ingame
 
             _view.OnSettingsClicked
                 .Subscribe(_ => _settingsPresenter.Show())
+                .AddTo(this);
+
+            // Save 팝업 닫힐 때 버튼 선택 해제
+            _saveView.OnCloseClicked
+                .Subscribe(_ => _view.DeselectAllNightButtons())
                 .AddTo(this);
 
             Company.Instance.activeProjectCount
@@ -156,13 +166,9 @@ namespace GameDevTycoon.UI.Ingame
         private void OnQuestIconClicked()
         {
             if (_questPresenter.IsDetailVisible)
-            {
                 _questPresenter.HideDetail();
-            }
             else
-            {
                 _questPresenter.ShowDetailAsync().Forget();
-            }
         }
 
         private void OnWorkStartClicked()
@@ -171,37 +177,12 @@ namespace GameDevTycoon.UI.Ingame
             QuestManager.Instance.StartDailyQuest();
 
             if (_desk != null)
-            {
                 _desk.OnClickWorkButton();
-            }
 
             // [TODO: WorkStartBubble 비활성화 메서드 HUDView에 추가 후 연결]
         }
 
-        private void OnHRClicked()
-        {
-            ToggleBottomPopup(_hrPresenter);
-        }
-
-        private void OnProjectClicked()
-        {
-            ToggleBottomPopup(_projectPresenter);
-        }
-
-        private void OnCompanyClicked()
-        {
-            ToggleBottomPopup(_companyPresenter);
-        }
-
-        private void OnNightQuitClicked()
-        {
-            CloseAllBottomPopups();
-            _view.SwitchToDay();
-
-            DateTimeManager.Instance.OnClickEndDayButton().Forget();
-        }
-
-        private void ToggleBottomPopup(IBottomNightUI targetPresenter)
+        private void OnNightButtonClicked(int index, IBottomNightUI targetPresenter)
         {
             bool wasVisible = targetPresenter.IsVisible;
 
@@ -210,29 +191,42 @@ namespace GameDevTycoon.UI.Ingame
             if (!wasVisible)
             {
                 targetPresenter.Show();
+                _view.SelectNightButton(index);
             }
+            else
+            {
+                _view.DeselectAllNightButtons();
+            }
+        }
+
+        private void OnSaveClicked()
+        {
+            _view.SelectNightButton(IndexSave);
+            _savePresenter.Show();
+        }
+
+        private void OnNightQuitClicked()
+        {
+            CloseAllBottomPopups();
+            _view.SwitchToDay();
+            DateTimeManager.Instance.OnClickEndDayButton().Forget();
         }
 
         private void CloseAllBottomPopups()
         {
+            _view.DeselectAllNightButtons();
+
             foreach (var presenter in GetBottomPopupPresenters())
-            {
                 presenter.Hide();
-            }
         }
 
         private IEnumerable<IBottomNightUI> GetBottomPopupPresenters()
         {
             var yielded = new HashSet<IBottomNightUI>();
 
-            if (yielded.Add(_hrPresenter))
-                yield return _hrPresenter;
-
-            if (yielded.Add(_projectPresenter))
-                yield return _projectPresenter;
-
-            if (yielded.Add(_companyPresenter))
-                yield return _companyPresenter;
+            if (yielded.Add(_hrPresenter)) yield return _hrPresenter;
+            if (yielded.Add(_projectPresenter)) yield return _projectPresenter;
+            if (yielded.Add(_companyPresenter)) yield return _companyPresenter;
 
             //추후 IBottomNightUI가 추가로 존재하면 여기에 추가
         }

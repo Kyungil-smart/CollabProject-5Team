@@ -1,13 +1,20 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 // 별 아이콘 프리팹. Canvas_Quest 하위에 런타임 생성되며, 대상 오브젝트 위치를 화면 좌표로 추적한다.
 // 컨트롤 타입(TAP/HOLD/SWIPE)에 맞게 입력을 처리해 QuestObject를 완료시킨다.
 public class QuestInteract : MonoBehaviour, IPointerClickHandler, IPointerDownHandler, IPointerUpHandler
 {
-    [SerializeField] private RectTransform progressGauge; // HOLD 진행 게이지(옵션)
+    [SerializeField] private Slider progressGauge; // HOLD 진행 게이지 (실린더 Slider, 옵션)
     [SerializeField] private RectTransform icon;          // HOLD 중 살짝 작아질 아이콘(옵션)
+    [SerializeField] private Image iconImage;             // icon의 스프라이트 교체용 (옵션)
 
+    [Header("퀘스트가 필요한 탭 횟수별 스프라이트 (옵션, 순서대로 1탭/2탭/...)")]
+    [SerializeField] private Sprite[] tapSprites;
+
+    [Header("퀘스트가 HOLD일 때 스프라이트 (옵션)")]
+    [SerializeField] private Sprite holdSprite;
 
     private const float HoldIconScale = 0.9f; // HOLD 중 아이콘 축소 비율
 
@@ -40,8 +47,23 @@ public class QuestInteract : MonoBehaviour, IPointerClickHandler, IPointerDownHa
     {
         _questObject = questObject;
 
-        if (progressGauge != null && QuestManager.Instance?.curDailyQuest != null)
-            progressGauge.gameObject.SetActive(QuestManager.Instance.EffectiveControlType == ControlType.HOLD);
+        if (QuestManager.Instance?.curDailyQuest == null) return;
+
+        ControlType type = QuestManager.Instance.EffectiveControlType;
+
+        if (progressGauge != null)
+            progressGauge.gameObject.SetActive(type == ControlType.HOLD);
+
+        if (iconImage == null) return;
+
+        if (type == ControlType.HOLD && holdSprite != null)
+        {
+            iconImage.sprite = holdSprite;
+        }
+        else if (type == ControlType.TAP && tapSprites != null && tapSprites.Length > 0)
+        {
+            iconImage.sprite = tapSprites[0]; // 탭 0회 상태
+        }
     }
 
     private void LateUpdate()
@@ -57,7 +79,7 @@ public class QuestInteract : MonoBehaviour, IPointerClickHandler, IPointerDownHa
 
         int effectiveTarget = QuestManager.Instance.EffectiveTargetCount;
         if (progressGauge != null)
-            progressGauge.localScale = new Vector3(Mathf.Clamp01(_holdTime / effectiveTarget), 1f, 1f);
+            progressGauge.value = Mathf.Clamp01(_holdTime / effectiveTarget);
 
         QuestManager.Instance.SetDisplayProgress(Mathf.FloorToInt(_holdTime));
 
@@ -89,6 +111,9 @@ public class QuestInteract : MonoBehaviour, IPointerClickHandler, IPointerDownHa
 
         // 퀘스트 배너 진행도 실시간 갱신
         QuestManager.Instance.SetDisplayProgress(_tapCount);
+
+        if (iconImage != null && tapSprites != null && tapSprites.Length > 0)
+            iconImage.sprite = tapSprites[Mathf.Min(_tapCount, tapSprites.Length - 1)];
 
         if (_tapCount >= tapsNeeded)
             _questObject.CompleteInteraction();

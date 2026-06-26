@@ -6,7 +6,7 @@ namespace Dialogue
     [CreateAssetMenu(fileName = "DialoguePoolEntry_", menuName = "Scriptable Objects/Dialogue/DialoguePoolEntrySO")]
     public class DialoguePoolEntrySO : SheetDataSOBase
     {
-        public int talkId; // 대화 시작 노드 ID
+        public int     talkId; // 대화 시작 노드 ID
         public int employeeId; // 직원 ID
         public EmployeeDialogueState empStatusReq; // 출력 조건 상태
 
@@ -15,10 +15,10 @@ namespace Dialogue
 
         public override void SetData(string[] data)
         {
-            id = ParseInt(data[0]);
-            talkId = ParseInt(data[1]);
-            employeeId = ParseInt(data[2]);
-            empStatusReq = ParseEnum<EmployeeDialogueState>(data[3].Trim());
+            id             = ParseInt(data[0]);
+            talkId         = ParseInt(data[1]);
+            employeeId     = ParseInt(data[2]);
+            empStatusReq   = ParseEnum<EmployeeDialogueState>(data[3].Trim());
             branch01Effect = data[4].Trim();
             branch02Effect = data[5].Trim();
         }

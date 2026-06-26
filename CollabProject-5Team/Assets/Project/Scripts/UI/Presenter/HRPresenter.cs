@@ -51,8 +51,8 @@ namespace GameDevTycoon.UI.Ingame
         public void Show()
         {
             _view.Show();
-            _view.ShowTab(HRTab.EmployeeManage);
             RefreshEmployeeManageList();
+            _view.ShowTab(HRTab.EmployeeManage);
         }
 
         public void Hide() => _view.Hide();
@@ -262,7 +262,7 @@ namespace GameDevTycoon.UI.Ingame
 
                 slider.OnSelectedChanged += RefreshRecruitCost;
 
-                _sliderDisposables.Add(Disposable.Create(()=> slider.OnSelectedChanged -= RefreshRecruitCost));
+                _sliderDisposables.Add(Disposable.Create(() => slider.OnSelectedChanged -= RefreshRecruitCost));
             }
 
             RefreshRecruitCost();
@@ -487,7 +487,7 @@ namespace GameDevTycoon.UI.Ingame
             Company.Instance.cumulativeManagementStatus.Recalculate();
 
             _EmployeeManager.Instance.HireEmployee(applicant);
-            _EmployeeManager.Instance.RemoveFromApplicants(applicant);
+            _EmployeeManager.Instance.currentApplicants.Remove(applicant);
             _hudPresenter.RefreshHUD();
 
             _selectedApplicant = null;
@@ -589,7 +589,7 @@ namespace GameDevTycoon.UI.Ingame
         /// </summary>
         private bool IsEmployeeBusy(Employee employee)
         {
-            if (Company.Instance.curProject != null)
+            if (Company.Instance.activeProjectCount.Value > 0)
                 if (Company.Instance.curProject.GetAllEmployees().Contains(employee)) return true;
             return false;
         }
@@ -609,8 +609,8 @@ namespace GameDevTycoon.UI.Ingame
             _ => 5,
         };
 
-    // 월요일이 지원 UI초기화
-    private void ResetOnMondayUI()
+        // 월요일이 지원 UI초기화
+        private void ResetOnMondayUI()
         {
             // 직원모집버튼 상태 초기화
             _view.SetRecruitButtonInteractable(true);

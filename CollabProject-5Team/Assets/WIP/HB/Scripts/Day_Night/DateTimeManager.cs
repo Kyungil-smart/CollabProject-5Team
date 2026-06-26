@@ -184,9 +184,10 @@ public class DateTimeManager : MonoBehaviour
             await GameManager.Instance.TryProcessUpgradeAsync();
 
             // 월요일 낮이 되면 퇴근했던 직원 다시 생성
-            await GameManager.Instance.HiredNPCGoToWork();
+            GameManager.Instance.HiredNPCGoToWork().Forget();
 
             ResetDayStatus();
+            _EmployeeManager.Instance.TryProcessDailyLeave();
             OnDay?.Invoke();// 낮
             OnWeekStarted?.Invoke(); // 월요일 아침
         }
@@ -200,6 +201,7 @@ public class DateTimeManager : MonoBehaviour
 
             Progress();
             ResetDayStatus();
+            _EmployeeManager.Instance.TryProcessDailyLeave();
             OnDay?.Invoke();
         }
     }
@@ -225,9 +227,10 @@ public class DateTimeManager : MonoBehaviour
         Company.Instance.TickWeeklyOfficeCost();
         Company.Instance.TickWeeklyCompletedProjects();
 
-        if (Company.Instance.curProject != null)
+        if (Company.Instance.activeProjectCount.Value > 0)
             Company.Instance.curProject.ProgressNight();
 
+        _EmployeeManager.Instance.RegisterLeavePendingEmployees();
         _EmployeeManager.Instance.GenerateWeeklyApplicants();
         OnNight?.Invoke();
     }

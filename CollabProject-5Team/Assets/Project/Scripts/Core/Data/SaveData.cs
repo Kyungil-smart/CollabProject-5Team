@@ -18,13 +18,15 @@ public class SaveData
 
     // Employee 저장
     public List<EmployeeSaveData> savedEmployees = new List<EmployeeSaveData>();
+    public List<int> leavePendingEmployeeIds = new();
 
     // QuestManager 저장
     public Dictionary<Role, int> weeklyBonusPoints = new();
 
     // Company 저장
     [Header("Company Data")]
-    public string company_Name;
+    public string company_PlayerName;
+    public string company_CompanyName;
     public int    company_Gold;
     public int    company_Level;
     public int    company_Popularity;
@@ -63,6 +65,7 @@ public class EmployeeSaveData
 
     public EmployeeWorkStatus workStatus;
     public bool hasTalkedThisWeek;
+    public List<string> completedProjectNames = new();
 
     public int    trainingRemainingWeeks;
     public int    trainingStartedWeek;

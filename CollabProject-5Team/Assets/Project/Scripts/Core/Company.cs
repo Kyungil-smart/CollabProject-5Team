@@ -10,13 +10,11 @@ public class Company : MonoBehaviour
     public GameObject[] projectPrefab; // 소형, 중형, 대형 순서 (Project 컴포넌트 포함)
 
     [Header("회사 정보")]
-    public string Name;
+    public string playerName;
+    public string CompanyName;
     public ReactiveProperty<int> gold = new(10000); // 보유 자금
     public int level = 1;                           // 회사 레벨, 회사 증축 상황(소형=1 중형=2 대형=3) 과 같음
 
-    public int ProjectSlots = 1;  // 기획 변경으로 1고정(추후 삭제)
-
-    public List<Project> projects = new(); //기획변경으로 필요없는 리스트, 이전코드 호환용으로 일단 냅둠
     public ReactiveProperty<int> activeProjectCount = new(0); // 현재 프로젝트 보유 여부 0: 없음, 1: 있음
     public Project curProject; // 진행중인 프로젝트는 오직 1개만 존재
     public List<Employee> selectedProjectEmployees = new(); // 신규 프로젝트 UI에서 임시 선택된 직원들
@@ -48,22 +46,6 @@ public class Company : MonoBehaviour
         Instance = this;
     #endregion
     }
-
-    #region 테스트 코드
-    // 자식 오브젝트의 Project를 curProject로 세팅하는 "테스트"코드
-    //public void InitProjects()
-    //{
-    //    projects.AddRange(GetComponentsInChildren<Project>());
-    //    curProject = projects.Count > 0 ? projects[0] : null;
-    //    activeProjectCount.Value = curProject != null ? 1 : 0;
-
-    //    if (curProject == null) return;
-    //    foreach (var employee in _EmployeeManager.Instance.haveEmployees.haveEmployeeList)
-    //    {
-    //        curProject.HireEmployee(employee);
-    //    }
-    //}
-    #endregion
 
     #region 프로젝트 시작 관리
     public Project CreateProject(ProjectSize scale, string projectName)
@@ -97,9 +79,6 @@ public class Company : MonoBehaviour
         cumulativeManagementStatus.Recalculate();
 
         QuestManager.Instance.ResetWeeklyBonus();
-
-        if (!projects.Contains(project))
-            projects.Add(project);
 
         curProject = project;
         activeProjectCount.Value = 1;
@@ -174,13 +153,18 @@ public class Company : MonoBehaviour
         popularity += PerkPolicy.CalcPopularityDelta(project.Grade);
         ApplyCompletionEmployeeRewards(project);
 
+        // 직원 프로젝트 이력에 이번 프로젝트 이름 추가
+        foreach (var employee in project.GetAllEmployees())
+        {
+            employee.completedProjectNames.Add(record.projectName);
+        }
+
         // 객체 정리
         _EmployeeManager.Instance.ReleaseProjectEmployees(project.GetAllEmployees());
         completedProjects.Add(record);
         hasPendingCompletedProject = true;
         pendingCompletedProject = record;
-        projects.Remove(project);
-
+        Destroy(project.gameObject);
         curProject = null;
 
         activeProjectCount.Value = 0;
@@ -207,7 +191,6 @@ public class Company : MonoBehaviour
             cumulativeManagementStatus.gameSales += p.dailyGold;
             curManagementStatus.Recalculate();
             cumulativeManagementStatus.Recalculate();
-            p.RetentionFactor -= PerkPolicy.RETENTION_DECAY; // 유지력 감소
         }
     }
 
@@ -219,14 +202,20 @@ public class Company : MonoBehaviour
         {
             if (p.isServiceOver) continue;
 
-            // 이번 주 수치를 지난 주로 백업
+            int previousWeekGold = 0;
+            foreach (int weekGold in p.weeklyGoldHistory)
+            {
+                previousWeekGold = weekGold;
+            }
+
+            // UI 비교용 지난 주 수치 보관
             p.prevWeekUsers = p.users;
-            p.prevWeekGold = p.weeklyGoldAccum;
+            p.prevWeekGold = previousWeekGold;
 
             // 히스토리에 이번 주 누적 매출 push
             p.QueueWeeklyGold(p.weeklyGoldAccum);
 
-            // 유저수 재계산 (이탈자 반영)
+            // 이번 주 유저수 확정 (이탈자 반영)
             p.users = PerkPolicy.CalcUsers(p.scale, p.qualityScore, p.prevWeekUsers);
 
             // 유지비 차감
@@ -239,10 +228,11 @@ public class Company : MonoBehaviour
             // 평판: 이번 주 판매 100당 +1
             reputation += PerkPolicy.CalcReputationGainFromSales(p.weeklySales);
             // 누적매출 증가
-            totalRevenue += p.prevWeekGold;
+            totalRevenue += p.weeklyGoldAccum;
 
             p.weeklySales = 0;
             p.weeklyGoldAccum = 0;
+            p.RetentionFactor -= PerkPolicy.RETENTION_DECAY; // 유지력 주간 감소
         }
 
         // 적자 패널티
@@ -364,7 +354,6 @@ public class Company : MonoBehaviour
 
         Project project = InstantiateProject(projectData.project_Scale, projectData.project_userNamed);
 
-        projects.Add(project);
         curProject = project;
         activeProjectCount.Value = 1;
 
@@ -373,16 +362,9 @@ public class Company : MonoBehaviour
 
     private void ClearActiveProjectForLoad()
     {
-        if (curProject != null && !projects.Contains(curProject))
+        if (activeProjectCount.Value > 0)
             Destroy(curProject.gameObject);
 
-        foreach (var project in projects)
-        {
-            if (project != null)
-                Destroy(project.gameObject);
-        }
-
-        projects.Clear();
         curProject = null;
         activeProjectCount.Value = 0;
         selectedProjectEmployees.Clear();
@@ -390,9 +372,10 @@ public class Company : MonoBehaviour
 
     public void ExportCompanyData(SaveData data)
     {
-        data.company_Name  = this.Name;
-        data.company_Gold  = this.gold.Value;
-        data.company_Level = this.level;
+        data.company_PlayerName  = this.playerName;
+        data.company_CompanyName = this.CompanyName;
+        data.company_Gold        = this.gold.Value;
+        data.company_Level       = this.level;
 
         data.company_Popularity = this.popularity;
         data.company_Reputation = this.reputation;
@@ -451,9 +434,10 @@ public class Company : MonoBehaviour
 
     public void ImportCompanyData(SaveData data)
     {
-        this.Name       = data.company_Name;
-        this.gold.Value = data.company_Gold;
-        this.level      = data.company_Level;
+        this.CompanyName = data.company_CompanyName;
+        this.playerName  = data.company_PlayerName;
+        this.gold.Value  = data.company_Gold;
+        this.level       = data.company_Level;
 
         this.popularity = data.company_Popularity;
         this.reputation = data.company_Reputation;
