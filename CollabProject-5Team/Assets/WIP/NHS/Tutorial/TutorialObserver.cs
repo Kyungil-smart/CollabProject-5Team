@@ -10,8 +10,6 @@ public class TutorialObserver : MonoBehaviour
     {
         DialogueEvents.OnNodeTypingCompleted.Subscribe(nodeId =>
         {
-            Debug.Log($"[Observer] 인게임 일반 대화 완독 감지: {nodeId}");
-
             if (TutorialManager.Instance != null)
             {
             }
