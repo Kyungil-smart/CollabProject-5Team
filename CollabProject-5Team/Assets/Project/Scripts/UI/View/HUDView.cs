@@ -28,6 +28,7 @@ namespace GameDevTycoon.UI.Ingame
 
         [Header("DayUI — QuestBanner")]
         [SerializeField] private GameObject _questBanner;
+        [SerializeField] private TextMeshProUGUI _questTypeLabel;
         [SerializeField] private TextMeshProUGUI _questNameLabel;
         [SerializeField] private TextMeshProUGUI _questProgressLabel;
 
@@ -147,6 +148,10 @@ namespace GameDevTycoon.UI.Ingame
             _dayUI.SetActive(true);
             _nightUI.SetActive(false);
             _nightQuitButton.interactable = false;
+
+            if (_questTypeLabel == null && _questBanner != null)
+                _questTypeLabel = FindDeepChild(_questBanner.transform, "QuestTypeLabel")?.GetComponent<TextMeshProUGUI>();
+
             _questBanner.SetActive(false);
         }
 
@@ -211,9 +216,20 @@ namespace GameDevTycoon.UI.Ingame
         }
 
         public void ShowQuestBanner(string questName, int current, int total)
+            => ShowQuestBanner("일일 퀘스트", questName, current, total);
+
+        public void ShowQuestBanner(string questType, string questName, int current, int total)
         {
+            if (_questTypeLabel != null)
+                _questTypeLabel.text = questType;
+
             _questNameLabel.text = questName;
             _questProgressLabel.text = $"{current}/{total}";
+
+            var group = _questBanner.GetComponent<CanvasGroup>();
+            if (group != null)
+                group.alpha = 1f;
+
             _questBanner.SetActive(true);
         }
 
@@ -274,6 +290,17 @@ namespace GameDevTycoon.UI.Ingame
 
             label.color = targetColor;
             _nightButtonImages[index].sprite = targetSprite;
+        }
+
+        private static Transform FindDeepChild(Transform root, string childName)
+        {
+            foreach (Transform child in root.GetComponentsInChildren<Transform>(true))
+            {
+                if (child.name == childName)
+                    return child;
+            }
+
+            return null;
         }
     }
 }
