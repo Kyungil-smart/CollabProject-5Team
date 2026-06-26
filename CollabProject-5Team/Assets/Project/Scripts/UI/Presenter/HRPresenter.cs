@@ -207,16 +207,32 @@ namespace GameDevTycoon.UI.Ingame
                 .Subscribe(_ =>
                 {
                     if (_selectedEmployee == null) return;
-                    _view.ShowEducationCourse();
+
+                    // 현재 교육 중인 직원이면 해당 과정 인덱스를 넘겨 EducationOverlay 표시
+                    var training = _EmployeeManager.Instance.GetTraining(_selectedEmployee);
+                    int inTrainingIndex = -1;
+                    if (training != null)
+                    {
+                        var courses = _EmployeeManager.Instance.trainingCourses;
+                        inTrainingIndex = courses.FindIndex(c => c.courseName == training.course.courseName);
+                    }
+
                     _selectedCourseIndex = -1;
                     _view.SetEducationCourseConfirmInteractable(false);
+                    _view.ShowEducationCourse(inTrainingIndex);
+                    InitCourseCostValues();
                 })
                 .AddTo(this);
 
             _view.OnCourseSelected
                 .Subscribe(index =>
                 {
+                    // 이전 SelectIMG 해제 후 새 선택 반영
+                    if (_selectedCourseIndex >= 0)
+                        _view.SetCourseSelectImg(_selectedCourseIndex, false);
+
                     _selectedCourseIndex = index;
+                    _view.SetCourseSelectImg(index, true);
                     _view.SetEducationCourseConfirmInteractable(true);
                 })
                 .AddTo(this);
@@ -236,6 +252,25 @@ namespace GameDevTycoon.UI.Ingame
             _view.OnEducationCourseBackClicked
                 .Subscribe(_ => _view.ShowEducationDetail())
                 .AddTo(this);
+        }
+
+        /// <summary>
+        /// trainingCourses 데이터 기반으로 CourseCostValue 텍스트 세팅.
+        /// </summary>
+        private void InitCourseCostValues()
+        {
+            var courses = _EmployeeManager.Instance.trainingCourses;
+            _view.SetCourseCostValues(
+                FormatCourseCost(courses, 0),
+                FormatCourseCost(courses, 1),
+                FormatCourseCost(courses, 2)
+            );
+        }
+
+        private static string FormatCourseCost(System.Collections.Generic.List<EmployeeTrainingCourse> courses, int index)
+        {
+            if (index >= courses.Count) return string.Empty;
+            return $"{courses[index].cost:N0}G";
         }
 
         private void InitRecruitSliders()
@@ -539,6 +574,8 @@ namespace GameDevTycoon.UI.Ingame
                 return;
             }
 
+            // 결정 완료 후 선택 상태 초기화
+            _view.ResetCourseSelection();
             _selectedEmployee = null;
             _selectedCourseIndex = -1;
             _view.ShowEducationList();
