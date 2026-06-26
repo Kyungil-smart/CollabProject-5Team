@@ -248,13 +248,9 @@ namespace GameDevTycoon.UI.Ingame
         {
             _sliderDisposables.Clear();
 
-            int level = Company.Instance.level;
-
             foreach (var slider in _view.AllSliders)
             {
-                bool isLocked = slider.Role == Role.QA && level < 2
-                             || slider.Role == Role.MARKETING && level < 4;
-                slider.Setup(isLocked);
+                slider.Setup(false);
 
                 slider.OnCountChanged
                     .Subscribe(_ => RefreshRecruitCost())
