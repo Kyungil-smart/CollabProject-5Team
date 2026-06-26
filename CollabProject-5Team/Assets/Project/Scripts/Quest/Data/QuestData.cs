@@ -3,6 +3,7 @@ public enum QuestState
     Ready,
     Playing,   // 진행 중
     End,       // 완료
+    Locked,    // 잠금
 }
 public enum QuestResult
 {
@@ -68,5 +69,38 @@ public class DailyQuest : QuestBase
         result = QuestResult.None;
         curCount = 0;
         _targetCount = newTargetCount;
+    }
+}
+
+public class StoryQuest : QuestBase
+{
+    public StoryQuestPoolSO so;
+    public QuestResult result;
+
+    // 스토리 퀘스트 초기화
+    public void Init(StoryQuestPoolSO questSO)
+    {
+        type = QuestType.Story;
+        state = QuestState.Locked;
+        so = questSO;
+        result = QuestResult.None;
+    }
+
+    public void SetReady()
+    {
+        if (state != QuestState.Locked) return;
+        state = QuestState.Ready;
+    }
+
+    public void StartQuest()
+    {
+        if (state != QuestState.Ready) return;
+        state = QuestState.Playing;
+    }
+
+    public void Complete()
+    {
+        state = QuestState.End;
+        result = QuestResult.Success;
     }
 }
