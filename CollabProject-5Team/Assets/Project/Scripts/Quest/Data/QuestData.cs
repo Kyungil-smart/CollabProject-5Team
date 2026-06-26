@@ -15,7 +15,7 @@ public enum QuestType
 {
     Daily,  // 일일 퀘스트
     Story,  // 스토리 퀘스트
-    Event,  // 이벤트 퀘스트
+    Event,  // 이벤트 퀘스트 (주로 대화)
 }
 
 public enum ControlType
@@ -68,13 +68,5 @@ public class DailyQuest : QuestBase
         result = QuestResult.None;
         curCount = 0;
         _targetCount = newTargetCount;
-    }
-
-    // 시간 초과 등으로 실패 처리
-    public void Fail()
-    {
-        if (state != QuestState.Playing) return;
-        state = QuestState.End;
-        result = QuestResult.Fail;
     }
 }
