@@ -49,6 +49,7 @@ namespace GameDevTycoon.EditorQA
             builder.AppendLine();
 
             AppendSummaryByCategory(builder, results);
+            AppendSummaryByOwner(builder, results);
             AppendSummaryByPriority(builder, results);
             AppendResults(builder, results);
 
@@ -63,6 +64,24 @@ namespace GameDevTycoon.EditorQA
             builder.AppendLine("|---|---:|---:|---:|---:|");
 
             foreach (var group in results.GroupBy(r => r.Category).OrderBy(g => g.Key))
+            {
+                int error = group.Count(r => r.Severity == QASeverity.Error);
+                int warning = group.Count(r => r.Severity == QASeverity.Warning);
+                int info = group.Count(r => r.Severity == QASeverity.Info);
+                builder.AppendLine($"| {Escape(group.Key)} | {error} | {warning} | {info} | {group.Count()} |");
+            }
+
+            builder.AppendLine();
+        }
+
+        private static void AppendSummaryByOwner(StringBuilder builder, List<QAResult> results)
+        {
+            builder.AppendLine("## Owner Summary");
+            builder.AppendLine();
+            builder.AppendLine("| Owner | Error | Warning | Info | Total |");
+            builder.AppendLine("|---|---:|---:|---:|---:|");
+
+            foreach (var group in results.GroupBy(GetOwnerStatus).OrderBy(g => GetOwnerOrder(g.Key)))
             {
                 int error = group.Count(r => r.Severity == QASeverity.Error);
                 int warning = group.Count(r => r.Severity == QASeverity.Warning);
@@ -106,6 +125,7 @@ namespace GameDevTycoon.EditorQA
                 builder.AppendLine($"### [{result.Severity}] {result.Category}");
                 builder.AppendLine();
                 builder.AppendLine($"- Message: {Escape(result.Message)}");
+                builder.AppendLine($"- Owner: {Escape(GetOwnerStatus(result))}");
                 builder.AppendLine($"- Priority: {advice.Priority}");
                 builder.AppendLine($"- Expected Cause: {Escape(advice.ExpectedCause)}");
                 builder.AppendLine($"- Related Code: `{Escape(advice.RelatedCode)}`");
@@ -127,6 +147,84 @@ namespace GameDevTycoon.EditorQA
                 QASeverity.Info => 2,
                 _ => 3
             };
+        }
+
+        private static string GetOwnerStatus(QAResult result)
+        {
+            if (result.Severity == QASeverity.Info)
+                return "공통 QA";
+
+            if (IsDevelopmentOwnerResult(result))
+                return "개발 QA";
+
+            if (IsDesignOwnerResult(result))
+                return "기획 QA";
+
+            return "공통 QA";
+        }
+
+        private static int GetOwnerOrder(string owner)
+        {
+            return owner switch
+            {
+                "기획 QA" => 0,
+                "개발 QA" => 1,
+                "공통 QA" => 2,
+                _ => 3
+            };
+        }
+
+        private static bool IsDesignOwnerResult(QAResult result)
+        {
+            return IsDataPendingResult(result)
+                || IsDesignReviewResult(result)
+                || Contains(result.Category, "Sheet Sync")
+                || Contains(result.Category, "Employee")
+                || Contains(result.Category, "Report")
+                || Contains(result.Category, "Quest")
+                || Contains(result.Category, "Comment");
+        }
+
+        private static bool IsDevelopmentOwnerResult(QAResult result)
+        {
+            return Contains(result.Category, "Scene")
+                || Contains(result.Category, "Prefab")
+                || Contains(result.Category, "Play Flow")
+                || Contains(result.Message, "Missing Script")
+                || Contains(result.Message, "깨진 Object Reference")
+                || Contains(result.Message, "OnClick")
+                || Contains(result.Message, "Presenter")
+                || Contains(result.Message, "View")
+                || Contains(result.Message, "Manager가 없어");
+        }
+
+        private static bool IsDataPendingResult(QAResult result)
+        {
+            return Contains(result.Category, "Report Coverage")
+                || Contains(result.Category, "Report Simulation")
+                || Contains(result.Category, "Report Team Simulation")
+                || Contains(result.Message, "보고서 후보")
+                || Contains(result.Message, "보고서 구간")
+                || Contains(result.Message, "아직 입력")
+                || Contains(result.Message, "조합 누락")
+                || Contains(result.Message, "coverage");
+        }
+
+        private static bool IsDesignReviewResult(QAResult result)
+        {
+            return Contains(result.Category, "Project Formula")
+                || Contains(result.Message, "기획")
+                || Contains(result.Message, "정책")
+                || Contains(result.Message, "공식")
+                || Contains(result.Message, "클램프")
+                || Contains(result.Message, "최소값")
+                || Contains(result.Message, "극단 케이스");
+        }
+
+        private static bool Contains(string value, string searchText)
+        {
+            return !string.IsNullOrEmpty(value)
+                && value.IndexOf(searchText, StringComparison.OrdinalIgnoreCase) >= 0;
         }
 
         private static string Escape(string value)

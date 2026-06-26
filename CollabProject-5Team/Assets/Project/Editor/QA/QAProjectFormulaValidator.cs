@@ -80,15 +80,6 @@ namespace GameDevTycoon.EditorQA
                         project));
                 }
 
-                if (project.goalScore < 0f || project.goalScore > 100f)
-                {
-                    results.Add(new QAResult(
-                        QASeverity.Warning,
-                        "Project Formula",
-                        $"{project.Name} 프로젝트의 goalScore가 0~100 범위를 벗어납니다. 현재 값: {project.goalScore}",
-                        entry.Path,
-                        project));
-                }
             }
         }
 
@@ -159,23 +150,23 @@ namespace GameDevTycoon.EditorQA
 
         private static void ValidateCompletedProjectFormula(List<QAResult> results)
         {
-            float minRating = PerkPolicy.CalcRating(0f, 0f, 0f);
-            if (minRating < 0.5f)
+            AssertFloat(results, "점수 가중치 score=25", 0f, PerkPolicy.CalcScoreWeight(25f));
+            AssertFloat(results, "점수 가중치 score=75", 0.5f, PerkPolicy.CalcScoreWeight(75f));
+            AssertFloat(results, "점수 가중치 score=100", 0.75f, PerkPolicy.CalcScoreWeight(100f));
+
+            if (PerkPolicy.CalcScoreWeight(0f) < 0f)
             {
                 results.Add(new QAResult(
-                    QASeverity.Warning,
+                    QASeverity.Error,
                     "Project Formula",
-                    $"CalcRating 주석/기획상 평점 최소값은 0.5인데 현재 0점 입력 시 {minRating:F2}가 반환됩니다. 최소 평점 클램프가 필요합니다."));
+                    "점수 가중치가 음수로 내려갑니다. 판매량 계산에서 최소 0 처리가 필요합니다."));
             }
 
-            float maxRating = PerkPolicy.CalcRating(100f, 100f, 100f);
-            AssertFloat(results, "최대 평점 quality/stability/charm=100", 5f, maxRating);
-
-            foreach (ProjectSize size in new[] { ProjectSize.small, ProjectSize.medium, ProjectSize.large })
+            foreach (ProjectSize size in new[] { ProjectSize.Small, ProjectSize.Medium, ProjectSize.Large })
             {
-                ValidateSalesCase(results, size, rating: 0.5f, retention: 0f, popularity: 0);
-                ValidateSalesCase(results, size, rating: 3f, retention: 0.5f, popularity: 0);
-                ValidateSalesCase(results, size, rating: 5f, retention: 1f, popularity: 100);
+                ValidateSalesCase(results, size, quality: 25f, stability: 25f, charm: 25f, retention: 0f, popularity: 0);
+                ValidateSalesCase(results, size, quality: 50f, stability: 50f, charm: 50f, retention: 0.5f, popularity: 0);
+                ValidateSalesCase(results, size, quality: 100f, stability: 100f, charm: 100f, retention: 1f, popularity: 100);
 
                 int weeklyCost = PerkPolicy.CalcWeeklyCost(size);
                 if (weeklyCost < 0)
@@ -187,11 +178,7 @@ namespace GameDevTycoon.EditorQA
                 }
             }
 
-            AssertInt(results, "매력도 49 굿즈 판매량", 0, PerkPolicy.CalcGoodsSales(49f));
-            AssertInt(results, "매력도 50 굿즈 판매량", 0, PerkPolicy.CalcGoodsSales(50f));
-            AssertInt(results, "매력도 100 굿즈 판매량", 5000, PerkPolicy.CalcGoodsSales(100f));
-
-            int extremeUsers = PerkPolicy.CalcUsers(ProjectSize.small, projectScore: 0f, prevUsers: 10000);
+            int extremeUsers = PerkPolicy.CalcUsers(ProjectSize.Small, projectScore: 0f, prevUsers: 10000);
             if (extremeUsers < 0)
             {
                 results.Add(new QAResult(
@@ -200,7 +187,7 @@ namespace GameDevTycoon.EditorQA
                     $"극단 케이스에서 유저 수가 음수가 될 수 있습니다. small, projectScore=0, prevUsers=10000 => users={extremeUsers}. 서비스 종료/최소값 처리 정책이 필요할 수 있습니다."));
             }
 
-            foreach (ProjectSize size in new[] { ProjectSize.small, ProjectSize.medium, ProjectSize.large })
+            foreach (ProjectSize size in new[] { ProjectSize.Small, ProjectSize.Medium, ProjectSize.Large })
             {
                 int users = PerkPolicy.CalcUsers(size, projectScore: 100f, prevUsers: 0);
                 if (users <= 0)
@@ -216,20 +203,22 @@ namespace GameDevTycoon.EditorQA
         private static void ValidateSalesCase(
             List<QAResult> results,
             ProjectSize size,
-            float rating,
+            float quality,
+            float stability,
+            float charm,
             float retention,
             int popularity)
         {
-            int dailySales = PerkPolicy.CalcDailySales(size, rating, retention, popularity);
+            int dailySales = PerkPolicy.CalcDailySales(size, quality, stability, charm, retention, popularity);
             if (dailySales < 0)
             {
                 results.Add(new QAResult(
                     QASeverity.Error,
                     "Project Formula",
-                    $"일일 판매량이 음수입니다. size={size}, rating={rating}, retention={retention}, popularity={popularity}, dailySales={dailySales}"));
+                    $"일일 판매량이 음수입니다. size={size}, quality={quality}, stability={stability}, charm={charm}, retention={retention}, popularity={popularity}, dailySales={dailySales}"));
             }
 
-            int dailyGold = PerkPolicy.CalcDailyGold(size, dailySales, goodsSales: 0);
+            int dailyGold = PerkPolicy.CalcDailyGold(size, dailySales);
             if (dailyGold < 0)
             {
                 results.Add(new QAResult(
