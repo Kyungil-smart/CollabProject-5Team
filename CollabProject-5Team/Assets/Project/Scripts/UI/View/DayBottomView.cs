@@ -26,12 +26,17 @@ namespace GameDevTycoon.UI.Ingame
         [SerializeField] private Button _saveButton;
         [SerializeField] private Button _dayQuitButton;
 
+        [Header("퇴근 버튼 뒤 배경 이미지")]
+        [SerializeField] private Image _dayQuitBackgroundImage;
+        [SerializeField] private Sprite _dayQuitActiveSprite;
+        [SerializeField] private Sprite _dayQuitInactiveSprite;
+
         public Observable<Unit> OnSaveClicked => _saveButton.OnClickAsObservable();
         public Observable<Unit> OnDayQuitClicked => _dayQuitButton.OnClickAsObservable();
 
         private void Awake()
         {
-            _dayQuitButton.interactable = false;
+            SetDayQuitInteractable(false);
             _emptyGroup.SetActive(true);
             _projectInfoGroup.SetActive(false);
         }
@@ -55,6 +60,10 @@ namespace GameDevTycoon.UI.Ingame
         public void SetDayQuitInteractable(bool interactable)
         {
             _dayQuitButton.interactable = interactable;
+
+            Sprite sprite = interactable ? _dayQuitActiveSprite : _dayQuitInactiveSprite;
+            if (_dayQuitBackgroundImage != null && sprite != null)
+                _dayQuitBackgroundImage.sprite = sprite;
         }
     }
 }

@@ -195,6 +195,7 @@ namespace GameDevTycoon.UI.Ingame
             // [TODO: DateTimeManager year/month 데이터 확정 후 시간 표시 형식 연결]
             var dtm = DateTimeManager.Instance;
             _view.SetTimeLabel($"{dtm.currentWeek.Value}주 {dtm.GetDayName()}");
+            _view.SetTimeIcon(dtm.currentTime == TimeOfDay.Day);
         }
 
         private void OnNewDay()
