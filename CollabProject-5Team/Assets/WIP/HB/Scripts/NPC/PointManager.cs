@@ -33,6 +33,7 @@ public class PointManager : MonoBehaviour
         _allPoints = mapRoot.GetComponentsInChildren<ActionPoint>().ToList();
         foreach (var p in _allPoints)
         {
+            Debug.Log($"[PointManager] 등록된 포인트: {p.name}, ID: {p.GetInstanceID()}");
             p.IsOccupied = false;
             p.Owner = null;
         }
