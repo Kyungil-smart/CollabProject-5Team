@@ -72,7 +72,6 @@ namespace GameDevTycoon.UI.Ingame
         [SerializeField] private GameObject _panelApplicantDetail;
         [SerializeField] private Transform _applicantDetailContent;
         [SerializeField] public Button HireButton;
-        [SerializeField] private Button _cancelHireButton;
         [SerializeField] private Button _applicantDetailBackButton;
 
         [Header("Tab_Fire")]
@@ -127,7 +126,6 @@ namespace GameDevTycoon.UI.Ingame
         public Observable<int> OnApplicantSortChanged => _applicantSortDropdown.OnValueChangedAsObservable();
         //public Observable<Unit> OnFinalHireClicked        => _finalHireButton.OnClickAsObservable();
         public Observable<Unit> OnHireClicked => HireButton.OnClickAsObservable();
-        public Observable<Unit> OnCancelHireClicked => _cancelHireButton.OnClickAsObservable();
         public Observable<Unit> OnApplicantDetailBackClicked => _applicantDetailBackButton.OnClickAsObservable();
 
         // Tab_Fire 이벤트
@@ -182,7 +180,6 @@ namespace GameDevTycoon.UI.Ingame
 
             //_finalHireButton.interactable     = false;
             HireButton.interactable = false;
-            _cancelHireButton.interactable = false;
             _educationButton.interactable = false;
             _educationCourseConfirmButton.interactable = false;
             _recruitConfirmButton.interactable = false;
@@ -320,9 +317,6 @@ namespace GameDevTycoon.UI.Ingame
 
         public void SetHireButtonInteractable(bool interactable)
             => HireButton.interactable = interactable;
-
-        public void SetCancelHireButtonInteractable(bool interactable)
-            => _cancelHireButton.interactable = interactable;
 
         public void SetEducationButtonInteractable(bool interactable)
             => _educationButton.interactable = interactable;
