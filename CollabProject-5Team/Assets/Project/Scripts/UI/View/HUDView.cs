@@ -18,6 +18,11 @@ namespace GameDevTycoon.UI.Ingame
         [SerializeField] private TextMeshProUGUI _timeLabel;
         [SerializeField] private TextMeshProUGUI _moneyLabel;
 
+        [Header("TopBar — 낮/밤 아이콘")]
+        [SerializeField] private Image _timeIcon;
+        [SerializeField] private Sprite _dayTimeIconSprite;
+        [SerializeField] private Sprite _nightTimeIconSprite;
+
         [Header("Buttons")]
         [SerializeField] private Button _settingsButton;
 
@@ -159,6 +164,15 @@ namespace GameDevTycoon.UI.Ingame
         public void SetMoneyLabel(int money)
         {
             _moneyLabel.text = $"{money:N0}G";
+        }
+
+        public void SetTimeIcon(bool isDay)
+        {
+            if (_timeIcon == null) return;
+
+            Sprite sprite = isDay ? _dayTimeIconSprite : _nightTimeIconSprite;
+            if (sprite != null)
+                _timeIcon.sprite = sprite;
         }
 
         public void SetWorkStartActive(bool active)
