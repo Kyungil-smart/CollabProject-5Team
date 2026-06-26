@@ -21,80 +21,84 @@ namespace GameDevTycoon.UI.Ingame
         [SerializeField] private Button _fireTabButton;
         [SerializeField] private Button _educationTabButton;
 
+        [Header("TabButton Sprites")]
+        [SerializeField] private Sprite _tabActiveSprite;
+        [SerializeField] private Sprite _tabInactiveSprite;
+        [SerializeField] private Color _tabActiveLabelColor;
+        [SerializeField] private Color _tabInactiveLabelColor;
+
         [Header("Tab_EmployeeManage")]
-        [SerializeField] private GameObject      _tabEmployeeManage;
+        [SerializeField] private GameObject _tabEmployeeManage;
         [SerializeField] private TextMeshProUGUI _employeeManageCountLabel;
-        [SerializeField] private TMP_Dropdown    _employeeManageSortDropdown;
-        [SerializeField] private Transform       _employeeGridContent;
-        [SerializeField] private GameObject      _employeeManagePanelList;
-        [SerializeField] private GameObject      _employeeManagePanelDetail;
-        [SerializeField] private Transform       _employeeManageDetailContent;
-        [SerializeField] private Button          _employeeManageEducationButton;
-        [SerializeField] private Button          _employeeManageFireButton;
-        [SerializeField] private Button          _employeeManageBackButton;
+        [SerializeField] private TMP_Dropdown _employeeManageSortDropdown;
+        [SerializeField] private Transform _employeeGridContent;
+        [SerializeField] private GameObject _employeeManagePanelList;
+        [SerializeField] private GameObject _employeeManagePanelDetail;
+        [SerializeField] private Transform _employeeManageDetailContent;
+        [SerializeField] private Button _employeeManageEducationButton;
+        [SerializeField] private Button _employeeManageFireButton;
+        [SerializeField] private Button _employeeManageBackButton;
 
         [Header("Tab_Hire — Panel_HireMain")]
         [SerializeField] private GameObject _tabHire;
         [SerializeField] private GameObject _panelHireMain;
-        [SerializeField] private Button     _recruitButton;
+        [SerializeField] private Button _recruitButton;
         [SerializeField] private TextMeshProUGUI _recruitButtonLabel;
-        [SerializeField] private Button     _applicantButton;
+        [SerializeField] private Button _applicantButton;
         [SerializeField] private TextMeshProUGUI _applicantButtonLabel;
 
         [Header("Tab_Hire — Panel_Recruit")]
-        [SerializeField] private GameObject      _panelRecruit;
+        [SerializeField] private GameObject _panelRecruit;
         [SerializeField] private TextMeshProUGUI _jobCategoryTag;
         [SerializeField] private TextMeshProUGUI _recruitCountTag;
-        [SerializeField] private Button          _recruitBackButton;
+        [SerializeField] private Button _recruitBackButton;
         [SerializeField] private TextMeshProUGUI _totalCountLabel;
         [SerializeField] private TextMeshProUGUI _totalCostLabel;
-        [SerializeField] private Button          _recruitConfirmButton;
+        [SerializeField] private Button _recruitConfirmButton;
 
         [Header("Tab_Hire — Panel_Recruit — JobSliders")]
         [SerializeField] private JobSliderGroupView _sliderPlanning;
         [SerializeField] private JobSliderGroupView _sliderArt;
         [SerializeField] private JobSliderGroupView _sliderDev;
-        [SerializeField] private JobSliderGroupView _sliderQA;
-        [SerializeField] private JobSliderGroupView _sliderMarketing;
 
         [Header("Tab_Hire — Panel_ApplicantList")]
-        [SerializeField] private GameObject      _panelApplicantList;
-        [SerializeField] private TMP_Dropdown    _applicantSortDropdown;
-        [SerializeField] private Transform       _applicantScrollContent;
-        [SerializeField] private Button          _applicantListBackButton;
+        [SerializeField] private GameObject _panelApplicantList;
+        [SerializeField] private TMP_Dropdown _applicantSortDropdown;
+        [SerializeField] private Transform _applicantScrollContent;
+        [SerializeField] private Button _applicantListBackButton;
         //[SerializeField] private Button        _finalHireButton;
 
         [Header("Tab_Hire — Panel_ApplicantDetail")]
         [SerializeField] private GameObject _panelApplicantDetail;
-        [SerializeField] private Transform  _applicantDetailContent;
-        [SerializeField] public  Button      HireButton;
-        [SerializeField] private Button     _cancelHireButton;
-        [SerializeField] private Button     _applicantDetailBackButton;
+        [SerializeField] private Transform _applicantDetailContent;
+        [SerializeField] public Button HireButton;
+        [SerializeField] private Button _cancelHireButton;
+        [SerializeField] private Button _applicantDetailBackButton;
 
         [Header("Tab_Fire")]
-        [SerializeField] private GameObject      _tabFire;
+        [SerializeField] private GameObject _tabFire;
         [SerializeField] private TextMeshProUGUI _fireCountLabel;
-        [SerializeField] private TMP_Dropdown    _fireSortDropdown;
-        [SerializeField] private Transform       _fireListContent;
-        [SerializeField] private GameObject      _firePanelList;
-        [SerializeField] private GameObject      _firePanelDetail;
-        [SerializeField] private Transform       _fireDetailContent;
-        [SerializeField] private Button          _fireConfirmButton;
-        [SerializeField] private Button          _fireBackButton;
+        [SerializeField] private TMP_Dropdown _fireSortDropdown;
+        [SerializeField] private Transform _fireListContent;
+        [SerializeField] private GameObject _firePanelList;
+        [SerializeField] private GameObject _firePanelDetail;
+        [SerializeField] private Transform _fireDetailContent;
+        [SerializeField] private Button _fireConfirmButton;
+        [SerializeField] private Button _fireBackButton;
 
         [Header("Tab_Education")]
-        [SerializeField] private GameObject      _tabEducation;
+        [SerializeField] private GameObject _tabEducation;
         [SerializeField] private TextMeshProUGUI _educationCountLabel;
-        [SerializeField] private TMP_Dropdown    _educationSortDropdown;
-        [SerializeField] private Transform       _educationListContent;
-        [SerializeField] private GameObject      _educationPanelList;
-        [SerializeField] private GameObject      _educationPanelDetail;
-        [SerializeField] private Transform       _educationDetailContent;
-        [SerializeField] private Button          _educationButton;
-        [SerializeField] private Button          _educationDetailBackButton;
-        [SerializeField] private GameObject      _panelEducationCourse;
-        [SerializeField] private Button          _educationCourseConfirmButton;
-        [SerializeField] private Button          _educationCourseBackButton;
+        [SerializeField] private TMP_Dropdown _educationSortDropdown;
+        [SerializeField] private Transform _educationListContent;
+        [SerializeField] private GameObject _educationPanelList;
+        [SerializeField] private GameObject _educationPanelDetail;
+        [SerializeField] private Transform _educationDetailContent;
+        [SerializeField] private Button _educationButton;
+        [SerializeField] private Button _educationDetailBackButton;
+        [SerializeField] private GameObject _panelEducationCourse;
+        [SerializeField] private Button _educationCourseConfirmButton;
+        [SerializeField] private Button _educationCourseBackButton;
 
         [Header("Tab_Education — CourseCards")]
         [SerializeField] private ToggleGroup _courseToggleGroup;
@@ -104,39 +108,39 @@ namespace GameDevTycoon.UI.Ingame
 
         // Tab 이벤트
         public Observable<Unit> OnEmployeeManageTabClicked => _employeeManageTabButton.OnClickAsObservable();
-        public Observable<Unit> OnHireTabClicked           => _hireTabButton.OnClickAsObservable();
-        public Observable<Unit> OnFireTabClicked           => _fireTabButton.OnClickAsObservable();
-        public Observable<Unit> OnEducationTabClicked      => _educationTabButton.OnClickAsObservable();
+        public Observable<Unit> OnHireTabClicked => _hireTabButton.OnClickAsObservable();
+        public Observable<Unit> OnFireTabClicked => _fireTabButton.OnClickAsObservable();
+        public Observable<Unit> OnEducationTabClicked => _educationTabButton.OnClickAsObservable();
 
         // Tab_EmployeeManage 이벤트
-        public Observable<int>  OnEmployeeManageSortChanged => _employeeManageSortDropdown.OnValueChangedAsObservable();
+        public Observable<int> OnEmployeeManageSortChanged => _employeeManageSortDropdown.OnValueChangedAsObservable();
         public Observable<Unit> OnEmployeeManageEducationClicked => _employeeManageEducationButton.OnClickAsObservable();
-        public Observable<Unit> OnEmployeeManageFireClicked      => _employeeManageFireButton.OnClickAsObservable();
-        public Observable<Unit> OnEmployeeManageBackClicked      => _employeeManageBackButton.OnClickAsObservable();
+        public Observable<Unit> OnEmployeeManageFireClicked => _employeeManageFireButton.OnClickAsObservable();
+        public Observable<Unit> OnEmployeeManageBackClicked => _employeeManageBackButton.OnClickAsObservable();
 
         // Tab_Hire 이벤트
-        public Observable<Unit> OnRecruitClicked          => _recruitButton.OnClickAsObservable();
-        public Observable<Unit> OnApplicantClicked        => _applicantButton.OnClickAsObservable();
-        public Observable<Unit> OnRecruitBackClicked      => _recruitBackButton.OnClickAsObservable();
-        public Observable<Unit> OnRecruitConfirmClicked   => _recruitConfirmButton.OnClickAsObservable();
-        public Observable<Unit> OnApplicantListBackClicked   => _applicantListBackButton.OnClickAsObservable();
-        public Observable<int>  OnApplicantSortChanged    => _applicantSortDropdown.OnValueChangedAsObservable();
+        public Observable<Unit> OnRecruitClicked => _recruitButton.OnClickAsObservable();
+        public Observable<Unit> OnApplicantClicked => _applicantButton.OnClickAsObservable();
+        public Observable<Unit> OnRecruitBackClicked => _recruitBackButton.OnClickAsObservable();
+        public Observable<Unit> OnRecruitConfirmClicked => _recruitConfirmButton.OnClickAsObservable();
+        public Observable<Unit> OnApplicantListBackClicked => _applicantListBackButton.OnClickAsObservable();
+        public Observable<int> OnApplicantSortChanged => _applicantSortDropdown.OnValueChangedAsObservable();
         //public Observable<Unit> OnFinalHireClicked        => _finalHireButton.OnClickAsObservable();
-        public Observable<Unit> OnHireClicked             => HireButton.OnClickAsObservable();
-        public Observable<Unit> OnCancelHireClicked       => _cancelHireButton.OnClickAsObservable();
+        public Observable<Unit> OnHireClicked => HireButton.OnClickAsObservable();
+        public Observable<Unit> OnCancelHireClicked => _cancelHireButton.OnClickAsObservable();
         public Observable<Unit> OnApplicantDetailBackClicked => _applicantDetailBackButton.OnClickAsObservable();
 
         // Tab_Fire 이벤트
-        public Observable<int>  OnFireSortChanged     => _fireSortDropdown.OnValueChangedAsObservable();
-        public Observable<Unit> OnFireConfirmClicked  => _fireConfirmButton.OnClickAsObservable();
-        public Observable<Unit> OnFireBackClicked     => _fireBackButton.OnClickAsObservable();
+        public Observable<int> OnFireSortChanged => _fireSortDropdown.OnValueChangedAsObservable();
+        public Observable<Unit> OnFireConfirmClicked => _fireConfirmButton.OnClickAsObservable();
+        public Observable<Unit> OnFireBackClicked => _fireBackButton.OnClickAsObservable();
 
         // Tab_Education 이벤트
-        public Observable<int>  OnEducationSortChanged        => _educationSortDropdown.OnValueChangedAsObservable();
-        public Observable<Unit> OnEducationClicked            => _educationButton.OnClickAsObservable();
-        public Observable<Unit> OnEducationDetailBackClicked  => _educationDetailBackButton.OnClickAsObservable();
+        public Observable<int> OnEducationSortChanged => _educationSortDropdown.OnValueChangedAsObservable();
+        public Observable<Unit> OnEducationClicked => _educationButton.OnClickAsObservable();
+        public Observable<Unit> OnEducationDetailBackClicked => _educationDetailBackButton.OnClickAsObservable();
         public Observable<Unit> OnEducationCourseConfirmClicked => _educationCourseConfirmButton.OnClickAsObservable();
-        public Observable<Unit> OnEducationCourseBackClicked  => _educationCourseBackButton.OnClickAsObservable();
+        public Observable<Unit> OnEducationCourseBackClicked => _educationCourseBackButton.OnClickAsObservable();
 
         // 코스 선택 시 인덱스(0~2) 발행
         public Observable<int> OnCourseSelected => Observable.Merge(
@@ -146,14 +150,14 @@ namespace GameDevTycoon.UI.Ingame
         );
 
         // Content Transform (Presenter에서 프리팹 Instantiate 위치로 사용)
-        public Transform EmployeeGridContent       => _employeeGridContent;
+        public Transform EmployeeGridContent => _employeeGridContent;
         public Transform EmployeeManageDetailContent => _employeeManageDetailContent;
-        public Transform ApplicantScrollContent    => _applicantScrollContent;
-        public Transform ApplicantDetailContent    => _applicantDetailContent;
-        public Transform FireListContent           => _fireListContent;
-        public Transform FireDetailContent         => _fireDetailContent;
-        public Transform EducationListContent      => _educationListContent;
-        public Transform EducationDetailContent    => _educationDetailContent;
+        public Transform ApplicantScrollContent => _applicantScrollContent;
+        public Transform ApplicantDetailContent => _applicantDetailContent;
+        public Transform FireListContent => _fireListContent;
+        public Transform FireDetailContent => _fireDetailContent;
+        public Transform EducationListContent => _educationListContent;
+        public Transform EducationDetailContent => _educationDetailContent;
         public int EmployeeManageSortIndex => _employeeManageSortDropdown.value;
         public int ApplicantSortIndex => _applicantSortDropdown.value;
         public int FireSortIndex => _fireSortDropdown.value;
@@ -177,9 +181,9 @@ namespace GameDevTycoon.UI.Ingame
             _panelEducationCourse.SetActive(false);
 
             //_finalHireButton.interactable     = false;
-            HireButton.interactable          = false;
-            _cancelHireButton.interactable    = false;
-            _educationButton.interactable     = false;
+            HireButton.interactable = false;
+            _cancelHireButton.interactable = false;
+            _educationButton.interactable = false;
             _educationCourseConfirmButton.interactable = false;
             _recruitConfirmButton.interactable = false;
         }
@@ -194,6 +198,17 @@ namespace GameDevTycoon.UI.Ingame
             _tabHire.SetActive(tab == HRTab.Hire);
             _tabFire.SetActive(tab == HRTab.Fire);
             _tabEducation.SetActive(tab == HRTab.Education);
+
+            SetTabButtonState(_employeeManageTabButton, tab == HRTab.EmployeeManage);
+            SetTabButtonState(_hireTabButton, tab == HRTab.Hire);
+            SetTabButtonState(_fireTabButton, tab == HRTab.Fire);
+            SetTabButtonState(_educationTabButton, tab == HRTab.Education);
+        }
+
+        private void SetTabButtonState(Button button, bool isActive)
+        {
+            button.image.sprite = isActive ? _tabActiveSprite : _tabInactiveSprite;
+            button.GetComponentInChildren<TextMeshProUGUI>().color = isActive ? _tabActiveLabelColor : _tabInactiveLabelColor;
         }
 
         // Tab_EmployeeManage 패널 전환
@@ -225,7 +240,7 @@ namespace GameDevTycoon.UI.Ingame
         }
 
         public JobSliderGroupView[] AllSliders => new[]
-            { _sliderPlanning, _sliderArt, _sliderDev, _sliderQA, _sliderMarketing };
+            { _sliderPlanning, _sliderArt, _sliderDev };
 
         public void SetTotalRecruitInfo(int count, int cost)
         {
@@ -282,10 +297,10 @@ namespace GameDevTycoon.UI.Ingame
 
         // 수치 표시
         public void SetEmployeeManageCountLabel(int count) => _employeeManageCountLabel.text = $"직원 {count}명";
-        public void SetFireCountLabel(int count)           => _fireCountLabel.text = $"직원 {count}명";
-        public void SetEducationCountLabel(int count)      => _educationCountLabel.text = $"직원 {count}명";
-        public void SetJobCategoryTag(string category)     => _jobCategoryTag.text = category;
-        public void SetRecruitCountTag(int count)          => _recruitCountTag.text = count.ToString();
+        public void SetFireCountLabel(int count) => _fireCountLabel.text = $"직원 {count}명";
+        public void SetEducationCountLabel(int count) => _educationCountLabel.text = $"직원 {count}명";
+        public void SetJobCategoryTag(string category) => _jobCategoryTag.text = category;
+        public void SetRecruitCountTag(int count) => _recruitCountTag.text = count.ToString();
 
         public void SetRecruitButtonLabel(bool isRecruiting)
             => _recruitButtonLabel.text = isRecruiting ? "직원모집중" : "직원모집";
