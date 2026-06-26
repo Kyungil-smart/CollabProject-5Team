@@ -10,6 +10,11 @@ public class ReportManager : MonoBehaviour
     [SerializeField] List<ReportSO> _allReports = new();
     public IReadOnlyList<ReportSO> AllReports => _allReports;
 
+#if UNITY_EDITOR
+    [Header("Editor Debug")]
+    [SerializeField] bool _logReportCandidates = false;
+#endif
+
     // Trait/startRepo/grade 조합에 여러 ReportSO가 있을 수 있음
     Dictionary<(Trait trait, int startRepo, int grade), List<ReportSO>> _reportMap = new();
 
@@ -61,7 +66,8 @@ public class ReportManager : MonoBehaviour
         }
 
 #if UNITY_EDITOR
-        LogCandidates(e, grade, startRepo);
+        if (_logReportCandidates)
+            LogCandidates(e, grade, startRepo);
 #endif
 
         return _candidateBuffer.Count > 0

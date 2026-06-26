@@ -104,6 +104,7 @@ namespace GameDevTycoon.UI.Ingame
 
         private void Awake()
         {
+            _panelCover.SetActive(false);
             _panelEmployeeComment.SetActive(false);
             _panelReportReviewPlanner.SetActive(false);
             _panelReportReviewArtist.SetActive(false);

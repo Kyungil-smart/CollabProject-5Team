@@ -5,6 +5,9 @@ using Random = UnityEngine.Random;
 // 각종 보고서 계산 정책 모음
 public static class ReportPolicy
 {
+    const int MaxMissingReportWarnings = 30;
+    static readonly HashSet<string> MissingReportWarningKeys = new();
+
     // 보고서 등급 결정용 점수 계산
     // 직원 기본 점수(20 + ability * 0.5) + 의욕 가중치
     public static float CalcScore(EmployeeImmutableData so, int desire)
@@ -35,11 +38,35 @@ public static class ReportPolicy
             int isStartRepo = project.day <= 5 ? 1 : 0;
 
             ReportSO picked = ReportManager.Instance.GetReportsByTrait(e, grade, isStartRepo);
-            if (picked == null) { Debug.LogWarning($"[ReportPolicy] {e.so.Name} 에 맞는 보고서 SO 없음"); continue; }
+            if (picked == null)
+            {
+                LogMissingReportOnce(e, grade, isStartRepo);
+                continue;
+            }
+
             Report report = new Report { so = picked, owner = e };
             
             project.pendingReports.Add(report);
         }
+    }
+
+    static void LogMissingReportOnce(Employee e, int grade, int startRepo)
+    {
+        string key = $"{e.so.id}:{e.so.mainTrait}:{e.so.riskTrait}:{e.so.subTrait}:{grade}:{startRepo}";
+        if (!MissingReportWarningKeys.Add(key))
+            return;
+
+        if (MissingReportWarningKeys.Count <= MaxMissingReportWarnings)
+        {
+            Debug.LogWarning(
+                $"[ReportPolicy] {e.so.Name} 에 맞는 보고서 SO 없음. "
+                + $"grade={grade}, startRepo={startRepo}, "
+                + $"traits={e.so.mainTrait}/{e.so.riskTrait}/{e.so.subTrait}");
+            return;
+        }
+
+        if (MissingReportWarningKeys.Count == MaxMissingReportWarnings + 1)
+            Debug.LogWarning("[ReportPolicy] 보고서 SO 누락 Warning이 많아 이후 동일 계열 로그를 생략합니다. 상세 검증은 Prototype QA 창에서 확인하세요.");
     }
 
     // 이번 주 stat별 최종 점수 계산 (매 주차 독립)
