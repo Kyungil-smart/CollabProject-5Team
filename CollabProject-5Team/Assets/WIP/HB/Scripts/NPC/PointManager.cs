@@ -12,11 +12,13 @@ public class PointManager : MonoBehaviour
         Instance = this;
     }
 
+    // 포인트 리스트 반환
     public List<ActionPoint> GetAllPoints()
     {
         return _allPoints;
     }
 
+    // 점유도히지 않은 포인트 중 랜덤 반환
     public ActionPoint GetRandomAvailablePoint()
     {
         var availablePoints = _allPoints.Where(p => !p.IsOccupied).ToList();
@@ -26,6 +28,7 @@ public class PointManager : MonoBehaviour
         return availablePoints[Random.Range(0, availablePoints.Count)];
     }
 
+    // 맵이 로드 되거나 변경될 때 포인트 리스트를 새로
     public void RefreshPoints(Transform mapRoot)
     {
         if (mapRoot == null) return;
@@ -40,15 +43,15 @@ public class PointManager : MonoBehaviour
         Debug.Log($"[PointManager] 리스트 갱신 완료. 총 {_allPoints.Count}개");
     }
 
+    // 지정한 PointType만 필터링해서 반환
     public List<ActionPoint> GetPointsByType(PointType type)
     {
         return _allPoints.Where(p => p.GetPointType() == type).ToList();
     }
 
+    // 공용 공간 현재는 Desk(업무 의자)만 빼고 반환
     public List<ActionPoint> GetPublicPoints()
     {
-        var list = _allPoints.Where(p => p.Owner == null && !p.IsOccupied).ToList();
-        Debug.Log($"[PointManager] 사용 가능한 공용 포인트 개수: {list.Count}");
-        return list;
+        return _allPoints.Where(p => !p.IsOccupied && p.PointType != PointType.Desk).ToList();
     }
 }

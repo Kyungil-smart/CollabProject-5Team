@@ -67,10 +67,22 @@ public class NPCController : MonoBehaviour
         // 평상시 상태 (휴식 모드가 아닐 때만 실행)
         else
         {
+            
             if (MyDesk != null && !MyDesk.IsOccupied && Random.value < 0.7f)
+            {
                 target = MyDesk;
+            }
+
             else
-                target = PointManager.Instance.GetPublicPoints().FirstOrDefault(p => !p.IsOccupied);
+            {
+                var validPublicPoints = PointManager.Instance.GetPublicPoints();
+
+                if (validPublicPoints.Count > 0)
+                {
+                    target = validPublicPoints.OrderBy(x => Random.value).FirstOrDefault();
+                }
+            }
+  
         }
 
         // 최종 할당
