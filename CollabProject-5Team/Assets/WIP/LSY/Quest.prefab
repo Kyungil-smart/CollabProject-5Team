@@ -700,8 +700,7 @@ GameObject:
   - component: {fileID: 3920225587264913877}
   - component: {fileID: 328617734229985422}
   - component: {fileID: 1762067360840461509}
-  - component: {fileID: 3804568462880467342}
-  m_Layer: 7
+  m_Layer: 0
   m_Name: Cafe_Coffee_Machine_1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -832,21 +831,6 @@ MonoBehaviour:
   PointType: 3
   IsOccupied: 0
   Owner: {fileID: 0}
---- !u!114 &3804568462880467342
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1303578129581895404}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 82a80c3a8056fd040a1cf7772e1a2230, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  type: 3
-  IsOccupied: 0
-  _sitPoint: {fileID: 3656841979679045233}
 --- !u!1 &1413263621729943404
 GameObject:
   m_ObjectHideFlags: 0
@@ -1412,7 +1396,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3656841979679045233}
-  m_Layer: 7
+  m_Layer: 0
   m_Name: Point
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -4384,7 +4368,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3479968449297350299}
-  m_Layer: 7
+  m_Layer: 0
   m_Name: Point
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -7891,7 +7875,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2811408189750377104, guid: d0a525aa373c7b945b29bbbacabf73b2, type: 3}
       propertyPath: m_Layer
-      value: 7
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2811408189750377104, guid: d0a525aa373c7b945b29bbbacabf73b2, type: 3}
       propertyPath: m_IsActive
@@ -7908,9 +7892,6 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 2811408189750377104, guid: d0a525aa373c7b945b29bbbacabf73b2, type: 3}
       insertIndex: -1
       addedObject: {fileID: 2490594815791163798}
-    - targetCorrespondingSourceObject: {fileID: 2811408189750377104, guid: d0a525aa373c7b945b29bbbacabf73b2, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1754683125562612055}
     - targetCorrespondingSourceObject: {fileID: 2811408189750377104, guid: d0a525aa373c7b945b29bbbacabf73b2, type: 3}
       insertIndex: -1
       addedObject: {fileID: 2239884086553332345}
@@ -7941,21 +7922,6 @@ MonoBehaviour:
   PointType: 2
   IsOccupied: 0
   Owner: {fileID: 0}
---- !u!114 &1754683125562612055
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 9055670537516763868}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 82a80c3a8056fd040a1cf7772e1a2230, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  type: 2
-  IsOccupied: 0
-  _sitPoint: {fileID: 3479968449297350299}
 --- !u!65 &2239884086553332345
 BoxCollider:
   m_ObjectHideFlags: 0

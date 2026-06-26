@@ -45,7 +45,7 @@ public class PlayerMove : MonoBehaviour
         UpdateAnimation();
 
         // UI창이 열려있다면 터치 이동로직을 무시
-        if (_hasInteracted || IsPointerOverUI()) return;
+        if (IsPointerOverUI()) return;
 
         if(_isMovingToPosition)
         {
