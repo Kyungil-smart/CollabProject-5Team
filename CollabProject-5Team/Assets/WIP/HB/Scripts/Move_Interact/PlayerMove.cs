@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.EventSystems;
+using System.Linq;
 
 
 public class PlayerMove : MonoBehaviour
@@ -56,9 +57,6 @@ public class PlayerMove : MonoBehaviour
 
             return;
         }
-
-        // 카메라 매니저가 유효하고, 현재 UI창이 열려있다면 이동 금지
-        //if (CameraManager.Instance != null && CameraManager.Instance.IsUIOpen.Value) return;
 
         bool IsUIOpen = CameraManager.Instance != null && CameraManager.Instance.IsUIOpen.Value;
 
@@ -158,6 +156,7 @@ public class PlayerMove : MonoBehaviour
         {
             ExitInteraction();
         }
+        if (_agent != null && !_agent.enabled) _agent.enabled = true;
 
         Ray ray = _mainCamera.ScreenPointToRay(screenPosition);
 
@@ -177,6 +176,16 @@ public class PlayerMove : MonoBehaviour
 
                 else
                 {
+                    var actionPoint = PointManager.Instance.GetAllPoints()
+                                        .FirstOrDefault(p => p.name == hit.collider.name 
+                                        && Vector3.Distance(p.transform.position, hit.collider.transform.position) < 0.1f);
+
+                    if (actionPoint != null && actionPoint.IsOccupied)
+                    {
+                        Debug.Log("이미 누군가 앉아있습니다.");
+                        return; // 점유 중이면 이동하지 않고 종료
+                    }
+
                     _targetInteractable = interactable;
                     _targetCollider = hit.collider;
                     _hasInteracted = false;
@@ -205,11 +214,28 @@ public class PlayerMove : MonoBehaviour
     // 외부(퀘스트 말풍선 버튼 등)에서 상호작용 대상을 지정 - 해당 위치로 이동 후 도착하면 자동으로 상호작용 실행
     public void SetInteractTarget(IInteractable target, Collider collider)
     {
-        _targetInteractable = target;
-        _targetCollider = collider;
-        _hasInteracted = false;
+        // 앉아있는 상태라면 먼저 일어나서 에이전트를 활성화함
+        if (_hasInteracted)
+        {
+            ExitInteraction();
+        }
 
-        _agent.SetDestination(target.GetTransform().position);
+        // 에이전트가 비활성화 상태라면 활성화
+        if (_agent != null && !_agent.enabled)
+        {
+            _agent.enabled = true;
+        }
+
+        // 경로를 설정하기 전에 에이전트가 NavMesh 위에 있는지 확인
+        NavMeshHit hit;
+        if (NavMesh.SamplePosition(transform.position, out hit, 2.0f, NavMesh.AllAreas))
+        {
+            _targetInteractable = target;
+            _targetCollider = collider;
+            _hasInteracted = false;
+
+            _agent.SetDestination(target.GetTransform().position);
+        }
     }
 
     // 해당 좌표로 이동(업무 시작 시 자기 자리로 이동)
@@ -233,6 +259,19 @@ public class PlayerMove : MonoBehaviour
         var point = _targetInteractable as IInteractablePoint;
         if (point != null)
         {
+            // 진짜 컴포넌트인지, 원본과 같은지 ID로 확인
+            Debug.Log($"[플레이어] 점유할 포인트 이름: {((MonoBehaviour)point).name}, ID: {((MonoBehaviour)point).GetInstanceID()}");
+        
+            // 형변환
+            var actionPoint = PointManager.Instance.GetAllPoints()
+                                .FirstOrDefault(p => p.name == ((MonoBehaviour)point).name 
+                                && Vector3.Distance(p.transform.position, ((MonoBehaviour)point).transform.position) < 0.1f);
+            if(actionPoint != null) 
+            {
+                actionPoint.IsOccupied = true;
+                Debug.Log($"[플레이어] {actionPoint.name}의 IsOccupied를 {actionPoint.IsOccupied}로 변경함");
+            }
+        
             Transform targetTransform = point.GetTransform();
 
             transform.position = targetTransform.position;
@@ -255,6 +294,14 @@ public class PlayerMove : MonoBehaviour
 
     public void ExitInteraction()
     {
+        var point = _targetInteractable as IInteractablePoint;
+        if (point != null)
+        {
+            // PointManager 리스트를 통해 실제 객체 찾아 점유 해제
+            var realPoint = PointManager.Instance.GetAllPoints().FirstOrDefault(p => p.name == ((MonoBehaviour)point).name && Vector3.Distance(p.transform.position, ((MonoBehaviour)point).transform.position) < 0.1f);
+            if(realPoint != null) realPoint.IsOccupied = false;
+        }
+
         _hasInteracted = false;
 
         _anim.SetBool("IsResting", false);
