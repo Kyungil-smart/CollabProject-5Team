@@ -1,6 +1,7 @@
+using System.Collections;
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
-using System.Collections.Generic;
 
 public class TutorialManager : MonoBehaviour
 {
@@ -12,28 +13,33 @@ public class TutorialManager : MonoBehaviour
         WaitPlayerAction
     }
 
-    [System.Serializable]
-    public struct TutorialData
-    {
-        public string tutorialTextId;
-
-        public ShowMode   showMode;
-        public GameObject activateObject;
-        public string     tutorialText; 
-    }
+    // 싱글톤
+    public  static TutorialManager  Instance => _instance;
+    private static TutorialManager _instance;
 
     [Header("UI")]
     [SerializeField] private TextMeshProUGUI _tutorialText;
     [SerializeField] private GameObject      _tutorialPanel;
 
     // 튜토리얼 진행
-    [SerializeField] private List<TutorialData> _tutorialSteps = new List<TutorialData>();
+    [SerializeField] private List<TutorialDataSO> _tutorialSteps = new List<TutorialDataSO>();
     private int _curIndex = -1;
 
     private bool _isWaitingPlayerInput = false;
 
-    private void Start()
+    // 오브젝트 ID 등록
+    private Dictionary<string, GameObject> _registeredObjects = new Dictionary<string, GameObject>();
+
+    private void Awake()
     {
+        if (_instance == null) _instance = this;
+        else Destroy(gameObject);
+    }
+
+    private IEnumerator Start()
+    {
+        yield return null;
+
         StartTutorial();
     }
 
@@ -49,6 +55,17 @@ public class TutorialManager : MonoBehaviour
     private void StartTutorial()
     {
         ProceedTutorial();
+    }
+
+    public void RegisterObject(string id, GameObject tutorialObject)
+    {
+        if (string.IsNullOrEmpty(id)) return;
+
+        if (_registeredObjects.ContainsKey(id))
+            _registeredObjects[id] = tutorialObject;
+
+        else
+            _registeredObjects.Add(id, tutorialObject);
     }
 
     private void ExecuteTutorial()
@@ -68,7 +85,7 @@ public class TutorialManager : MonoBehaviour
         {
             _tutorialText.text = _tutorialSteps[_curIndex].tutorialText;
 
-            TutorialActivateButton();
+            TutorialButtonActivated();
         }
 
         // 특정부분 강조 그 부분 터치하면 넘어감
@@ -95,14 +112,63 @@ public class TutorialManager : MonoBehaviour
         ExecuteTutorial();
     }
 
+    /////////////////// - TextOnly - ///////////////////
+
     private void TutorialTextOnly()
     {
         // 터치 입력
         _isWaitingPlayerInput = true;
     }
 
-    private void TutorialActivateButton()
-    {
+    /////////////////// - ButtonActivated - ///////////////////
 
+    private void TutorialButtonActivated()
+    {
+        string targetId = _tutorialSteps[_curIndex].tutorialObjectId;
+
+        if (_registeredObjects.TryGetValue(targetId, out GameObject targetObj))
+        {
+            Canvas targetCanvas = targetObj.GetComponent<Canvas>();
+            if (targetCanvas == null) targetCanvas = targetObj.AddComponent<Canvas>();
+
+            targetCanvas.overrideSorting = true;
+            targetCanvas.sortingOrder = 1001;
+
+            if (targetObj.GetComponent<UnityEngine.UI.GraphicRaycaster>() == null)
+                targetObj.AddComponent<UnityEngine.UI.GraphicRaycaster>();
+
+            UnityEngine.UI.Button button = targetObj.GetComponent<UnityEngine.UI.Button>();
+            if (button != null)
+            {
+                button.onClick.RemoveListener(OnTutorialButtonClicked);
+                button.onClick.   AddListener(OnTutorialButtonClicked);
+            }
+        }
+        else
+            return;
     }
+
+    private void OnTutorialButtonClicked()
+    {
+        string targetId = _tutorialSteps[_curIndex].tutorialObjectId;
+
+        if(_registeredObjects.TryGetValue(targetId, out GameObject targetObj))
+        {
+            var raycaster = targetObj.GetComponent<UnityEngine.UI.GraphicRaycaster>();
+            if (raycaster != null) Destroy(raycaster);
+
+            Canvas targetCanvas = targetObj.GetComponent<Canvas>();
+            if (targetCanvas != null) Destroy(targetCanvas);
+
+            UnityEngine.UI.Button btn = targetObj.GetComponent<UnityEngine.UI.Button>();
+            if (btn != null) 
+                btn.onClick.RemoveListener(OnTutorialButtonClicked);
+        }
+
+        ProceedTutorial();
+    }
+
+    /////////////////// - HighlightSqure - ///////////////////
+
+
 }

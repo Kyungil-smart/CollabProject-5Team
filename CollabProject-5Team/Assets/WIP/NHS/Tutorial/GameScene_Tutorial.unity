@@ -990,18 +990,22 @@ MonoBehaviour:
   _tutorialText: {fileID: 944183528}
   _tutorialPanel: {fileID: 360810912}
   _tutorialSteps:
-  - tutorialTextId: 
+  - tutorialObjectId: 
     showMode: 0
     activateObject: {fileID: 0}
     tutorialText: "\uC2A4\uD15D1"
-  - tutorialTextId: 
+  - tutorialObjectId: 
     showMode: 0
     activateObject: {fileID: 0}
     tutorialText: "\uC2A4\uD15D2"
-  - tutorialTextId: 
+  - tutorialObjectId: 
     showMode: 0
     activateObject: {fileID: 0}
     tutorialText: "\uC2A4\uD15D3"
+  - tutorialObjectId: WorkStartBubble
+    showMode: 1
+    activateObject: {fileID: 0}
+    tutorialText: "\uC77C \uC2DC\uC791"
 --- !u!1001 &883283753
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1594,6 +1598,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _tutorialButtonId: WorkStartBubble
+--- !u!114 &1469150625
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1469150613}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: af080b7816cde7f4d9bdc649f2e26d05, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _tutorialObjectId: WorkStartBubble
 --- !u!1001 &1515028544
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -3049,6 +3066,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 5637360466619084490, guid: 93dd82dcc61417c458e403da87a9c416, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1469150620}
+    - targetCorrespondingSourceObject: {fileID: 5637360466619084490, guid: 93dd82dcc61417c458e403da87a9c416, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1469150625}
   m_SourcePrefab: {fileID: 100100000, guid: 93dd82dcc61417c458e403da87a9c416, type: 3}
 --- !u!1001 &4576557018171643236
 PrefabInstance:
