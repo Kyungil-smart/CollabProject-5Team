@@ -9,15 +9,17 @@ public class TutorialManager : MonoBehaviour
     {
         TextOnly,
         ButtonActivated,
-        HighlightSqure,
-        WaitPlayerAction
+        HighlightSqureTouchAnywhere,
+        HighLightSqureTouchSomewhere
     }
 
     // 싱글톤
     public  static TutorialManager  Instance => _instance;
     private static TutorialManager _instance;
 
+    // UI 요소들
     [Header("UI")]
+    [SerializeField] private GameObject      _guideBox;
     [SerializeField] private TextMeshProUGUI _tutorialText;
     [SerializeField] private GameObject      _tutorialPanel;
 
@@ -29,6 +31,11 @@ public class TutorialManager : MonoBehaviour
 
     // 오브젝트 ID 등록
     private Dictionary<string, GameObject> _registeredObjects = new Dictionary<string, GameObject>();
+
+    // 외부 신호를 받기 위한 Action
+    public static System.Action OnSomewhereTutorialCompleted;
+
+    /////////////////// - 라이프사이클 - ///////////////////
 
     private void Awake()
     {
@@ -48,9 +55,22 @@ public class TutorialManager : MonoBehaviour
         if(_isWaitingPlayerInput && Input.GetMouseButtonDown(0))
         {
             _isWaitingPlayerInput = false;
+
+            if (_tutorialSteps[_curIndex].showMode == ShowMode.HighlightSqureTouchAnywhere)
+            {
+                CleanUpHighlightSqure();
+            }
+
             ProceedTutorial();
         }
     }
+
+    private void OnDestroy()
+    {
+        OnSomewhereTutorialCompleted = null;
+    }
+
+    /////////////////// - 실행 - ///////////////////
 
     private void StartTutorial()
     {
@@ -72,30 +92,36 @@ public class TutorialManager : MonoBehaviour
     {
         _tutorialPanel.SetActive(true);
 
+        if (string.IsNullOrEmpty(_tutorialSteps[_curIndex].tutorialText))
+            _guideBox.SetActive(false);
+        else
+        {
+            _guideBox.SetActive(true);
+            _tutorialText.text = _tutorialSteps[_curIndex].tutorialText;
+        }
+
         // 텍스트만 출력
         if (_tutorialSteps[_curIndex].showMode == ShowMode.TextOnly)
         {
-            _tutorialText.text = _tutorialSteps[_curIndex].tutorialText;
-
             TutorialTextOnly();
         }
 
         // 버튼 눌러야 넘어가짐
         else if (_tutorialSteps[_curIndex].showMode == ShowMode.ButtonActivated)
         {
-            _tutorialText.text = _tutorialSteps[_curIndex].tutorialText;
-
             TutorialButtonActivated();
         }
 
-        // 특정부분 강조 그 부분 터치하면 넘어감
-        else if (_tutorialSteps[_curIndex].showMode == ShowMode.HighlightSqure)
+        // 특정부분 강조 아무데나 터치해도 넘어감
+        else if (_tutorialSteps[_curIndex].showMode == ShowMode.HighlightSqureTouchAnywhere)
         {
+            TutorialHighlightSqureTouchAnywhere();
         }
 
-        // 플레이어의 행동 기다림 , 특정 행동만 가능하게
-        else if (_tutorialSteps[_curIndex].showMode == ShowMode.WaitPlayerAction)
+        // 특정 부분 강조 그 부분 터치해야 넘어감
+        else if (_tutorialSteps[_curIndex].showMode == ShowMode.HighLightSqureTouchSomewhere)
         {
+            TutorialHighLightSqureTouchSomewhere();
         }
     }
 
@@ -132,7 +158,7 @@ public class TutorialManager : MonoBehaviour
             if (targetCanvas == null) targetCanvas = targetObj.AddComponent<Canvas>();
 
             targetCanvas.overrideSorting = true;
-            targetCanvas.sortingOrder = 1001;
+            targetCanvas.sortingOrder    = 1001;
 
             if (targetObj.GetComponent<UnityEngine.UI.GraphicRaycaster>() == null)
                 targetObj.AddComponent<UnityEngine.UI.GraphicRaycaster>();
@@ -168,7 +194,76 @@ public class TutorialManager : MonoBehaviour
         ProceedTutorial();
     }
 
-    /////////////////// - HighlightSqure - ///////////////////
+    /////////////////// - HighlightSqureTouchAnywhere - ///////////////////
 
+    private void TutorialHighlightSqureTouchAnywhere()
+    {
+        string targetId = _tutorialSteps[_curIndex].tutorialObjectId;
 
+        if(_registeredObjects.TryGetValue(targetId, out GameObject targetObj))
+        {
+            Canvas targetCanvas =     targetObj.GetComponent<Canvas>();
+            if (targetCanvas == null) targetObj.AddComponent<Canvas>();
+
+            targetCanvas.overrideSorting = true;
+            targetCanvas.sortingOrder    = 1001;
+        }
+
+        _isWaitingPlayerInput = true;
+    }
+
+    private void CleanUpHighlightSqure()
+    {
+        string targetId = _tutorialSteps[_curIndex].tutorialObjectId;
+
+        if(_registeredObjects.TryGetValue(targetId, out GameObject targetObj))
+        {
+            Canvas targetCanvas = targetObj.GetComponent<Canvas>();
+            if (targetCanvas != null) Destroy(targetCanvas);
+        }
+    }
+
+    /////////////////// - HighLightSqureTouchSomewhere - ///////////////////
+    private async void TutorialHighLightSqureTouchSomewhere()
+    {
+        string targetId = _tutorialSteps[_curIndex].tutorialObjectId;
+
+        if (_registeredObjects.TryGetValue(targetId, out GameObject targetObj))
+        {
+            Canvas targetCanvas = targetObj.GetComponent<Canvas>();
+            if (targetCanvas == null) targetCanvas = targetObj.AddComponent<Canvas>();
+
+            targetCanvas.overrideSorting = true;
+            targetCanvas.sortingOrder    = 1001;
+
+            if (targetObj.GetComponent<UnityEngine.UI.GraphicRaycaster>() == null)
+                targetObj.AddComponent<UnityEngine.UI.GraphicRaycaster>();
+        }
+
+        OnSomewhereTutorialCompleted -= OnSomewhereConditionMet;
+        OnSomewhereTutorialCompleted += OnSomewhereConditionMet;
+    }
+
+    private void OnSomewhereConditionMet()
+    {
+        OnSomewhereTutorialCompleted -= OnSomewhereConditionMet;
+
+        CleanUpHighlightSqureSomewhere();
+
+        ProceedTutorial();
+    }
+
+    private void CleanUpHighlightSqureSomewhere()
+    {
+        string targetId = _tutorialSteps[_curIndex].tutorialObjectId;
+
+        if (_registeredObjects.TryGetValue(targetId, out GameObject targetObj))
+        {
+            var raycaster = targetObj.GetComponent<UnityEngine.UI.GraphicRaycaster>();
+            if (raycaster != null) Destroy(raycaster);
+
+            Canvas targetCanvas = targetObj.GetComponent<Canvas>();
+            if (targetCanvas != null) Destroy(targetCanvas);
+        }
+    }
 }
