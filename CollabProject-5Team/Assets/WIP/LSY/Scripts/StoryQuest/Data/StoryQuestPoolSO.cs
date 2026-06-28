@@ -10,7 +10,7 @@ public class StoryQuestPoolSO : SheetDataSOBase
     public int conditionReputation;
     public bool isSpyQuest;
     public int startDialogueId;
-    public string successEffect;  // 기획 미확정 - 빈 값일 수 있음, placeholder로 취급
+    public int successGold;  // 보상 골드
 
     public override void SetData(string[] data)
     {
@@ -22,6 +22,6 @@ public class StoryQuestPoolSO : SheetDataSOBase
         conditionReputation = ParseInt(data[5]);
         isSpyQuest          = ParseBool(data[6]);
         startDialogueId     = ParseInt(data[7]);
-        successEffect       = data.Length > 8 ? data[8].Trim() : "";
+        successGold         = ParseInt(data[8]);
     }
 }

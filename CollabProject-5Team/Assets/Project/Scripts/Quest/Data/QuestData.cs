@@ -120,10 +120,10 @@ public class StoryQuest : QuestBase
 }
 
 public class EventQuest : QuestBase
-{
-    public const string QuestTypeName = "대화 퀘스트"; // 일단 이거 하나로 퀘스트 고정
+{ // 일단 이거 하나로 퀘스트 고정
+    public const string QuestTypeName = "대화 퀘스트";
     public const string QuestName = "아무 직원이랑 대화하기";
-    public const int GoldRewardAmount = 200; // 임시로 200골드로 설정
+    public const int GoldRewardAmount = 200;
 
     private const int DefaultTargetCount = 1;
 
