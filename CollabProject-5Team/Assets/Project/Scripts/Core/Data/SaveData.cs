@@ -130,6 +130,8 @@ public class ProjectCompletedSaveData
 
     public List<int> weeklyGoldHistoryList;
     public bool isServiceOver;
+    public bool isUpdatePending;
+
 }
 
 [Serializable]

@@ -105,15 +105,6 @@ namespace GameDevTycoon.UI.Ingame
                 )
                 .AddTo(this);
 
-            _view.OnProjectSetupBackClicked
-                .Subscribe(_ =>
-                {
-                    ClearSelectedEmployees();
-                    _selectedScale = UnselectedScale;
-                    Hide();
-                })
-                .AddTo(this);
-
             _view.OnProjectSetupNextClicked
                 .Subscribe(_ =>
                 {
@@ -216,6 +207,7 @@ namespace GameDevTycoon.UI.Ingame
             if (!hasActiveProject)
             {
                 _selectedScale = UnselectedScale;
+                _view.ClearScaleCardSelectImg();
                 _view.SetProjectSetupNextInteractable(false);
 
                 int level = Company.Instance.level;
@@ -400,7 +392,6 @@ namespace GameDevTycoon.UI.Ingame
             );
             _view.SetProgressBar(1f);
             _view.SetOperationGroupVisible(true);
-            _view.SetStatusValue("서비스 중");
             SetServiceOperationValues(record);
             _view.SetServiceStopInteractable(!record.isServiceOver);
             _view.SetUpdateButtonInteractable(false);
@@ -484,6 +475,7 @@ namespace GameDevTycoon.UI.Ingame
                 return;
             }
 
+            _view.SetScaleCardSelectImg(scale);
             _view.SetProjectSetupNextInteractable(!string.IsNullOrWhiteSpace(GetCurrentProjectName()));
         }
 

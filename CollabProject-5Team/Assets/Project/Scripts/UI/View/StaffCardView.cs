@@ -27,8 +27,9 @@ namespace GameDevTycoon.UI.Ingame
         [SerializeField] private Button _infoButton;
         [SerializeField] private Button _assignButton;
         [SerializeField] private TextMeshProUGUI _assignButtonLabel;
-        [SerializeField] private Sprite _assignSprite;    // "배치" 버튼 스프라이트
-        [SerializeField] private Sprite _releaseSprite;   // "해제" 버튼 스프라이트
+        [SerializeField] private Sprite _assignSprite;         // 배치 활성
+        [SerializeField] private Sprite _assignInactiveSprite; // 배치 비활성
+        [SerializeField] private Sprite _releaseSprite;        // 해제
 
         public Observable<Unit> OnInfoClicked => _infoButton.OnClickAsObservable();
         public Observable<Unit> OnAssignClicked => _assignButton.OnClickAsObservable();
@@ -74,20 +75,17 @@ namespace GameDevTycoon.UI.Ingame
                 case StaffAssignState.Assigned:
                     _assignButtonLabel.text = "해제";
                     _assignButton.interactable = true;
-                    if (_releaseSprite != null)
-                        _assignButton.GetComponent<Image>().sprite = _releaseSprite;
+                    _assignButton.GetComponent<Image>().sprite = _releaseSprite;
                     break;
                 case StaffAssignState.InEducation:
                     _assignButtonLabel.text = "배치";
                     _assignButton.interactable = false;
-                    if (_assignSprite != null)
-                        _assignButton.GetComponent<Image>().sprite = _assignSprite;
+                    _assignButton.GetComponent<Image>().sprite = _assignInactiveSprite;
                     break;
                 default:
                     _assignButtonLabel.text = "배치";
                     _assignButton.interactable = true;
-                    if (_assignSprite != null)
-                        _assignButton.GetComponent<Image>().sprite = _assignSprite;
+                    _assignButton.GetComponent<Image>().sprite = _assignSprite;
                     break;
             }
         }
