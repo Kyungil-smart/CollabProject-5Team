@@ -8,7 +8,6 @@ public class StoryQuestManager : MonoBehaviour
 
     private const int FirstStoryQuestId = 1001;
     private const int FirstHireQuestId = 1002;
-    private const int LastImplementedStoryQuestId = 1002; // 마지막 구현된 스토리 ID
     private const string StoryBubbleMessage = "<b>...</b>";
 
     public ReactiveProperty<QuestState> storyQuestState = new(QuestState.Ready);
@@ -31,9 +30,6 @@ public class StoryQuestManager : MonoBehaviour
 
     public bool TryStartStoryQuestForToday()
     {
-        if (curQuestId > LastImplementedStoryQuestId)
-            return false;
-
         StoryQuestPoolSO questSO = StoryQuestDataManager.Instance.GetPoolEntry(curQuestId);
         if (questSO == null) return false;
         if (!IsConditionSatisfied(questSO)) return false;
@@ -48,8 +44,6 @@ public class StoryQuestManager : MonoBehaviour
             Destroy(_currentBubble.gameObject);
             _currentBubble = null;
         }
-
-        DateTimeManager.Instance.isStoryQuest = false;
 
         curStoryQuest = null;
         _currentSpeaker = null;
@@ -73,7 +67,6 @@ public class StoryQuestManager : MonoBehaviour
             StoryBubbleMessage,
             StartCurrentStoryDialogue);
 
-        DateTimeManager.Instance.isStoryQuest = true;
         storyQuestState.Value = curStoryQuest.state;
         return true;
     }
@@ -125,7 +118,6 @@ public class StoryQuestManager : MonoBehaviour
         if (completedQuestId == FirstHireQuestId)
             _EmployeeManager.Instance.lastHiredEmployee = null;
 
-        DateTimeManager.Instance.isStoryQuest = false;
         DateTimeManager.Instance.CompleteDayWork();
     }
 
