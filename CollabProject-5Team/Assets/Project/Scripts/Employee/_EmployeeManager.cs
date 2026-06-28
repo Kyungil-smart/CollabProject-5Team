@@ -26,6 +26,7 @@ public class _EmployeeManager : MonoBehaviour
     public HaveEmployees haveEmployees;
     public List<EmployeeTrainingProgress> activeTrainings = new();
     public List<Employee> leavePendingEmployees = new();
+    public Employee lastHiredEmployee;
     public const int TrainingDurationWeeks = 4;
     const float DailyLeaveChance = 0.25f;
     public static event Action<string> OnEmployeeLeft;
@@ -86,6 +87,9 @@ public class _EmployeeManager : MonoBehaviour
     {
         if (Company.Instance.activeProjectCount.Value > 0 && Company.Instance.curProject.GetAllEmployees().Contains(employee))
             Company.Instance.curProject.RemoveEmployee(employee);
+
+        if (lastHiredEmployee == employee)
+            lastHiredEmployee = null;
 
         RemoveTraining(employee);
         haveEmployees.RemoveEmployee(employee);
@@ -275,6 +279,7 @@ public class _EmployeeManager : MonoBehaviour
     public void ExportEmployeeData(SaveData data)
     {
         data.savedEmployees.Clear();
+        data.lastHiredEmployeeId = lastHiredEmployee != null ? lastHiredEmployee.so.id : 0;
         if (data.leavePendingEmployeeIds == null)
             data.leavePendingEmployeeIds = new List<int>();
         else
@@ -378,6 +383,8 @@ public class _EmployeeManager : MonoBehaviour
                 if (emp != null) leavePendingEmployees.Add(emp);
             }
         }
+
+        lastHiredEmployee = haveEmployees.haveEmployeeList.Find(e => e.so.id == data.lastHiredEmployeeId);
     }
 
     void RestoreEmployeeStatus(Employee employee, EmployeeSaveData saveData)

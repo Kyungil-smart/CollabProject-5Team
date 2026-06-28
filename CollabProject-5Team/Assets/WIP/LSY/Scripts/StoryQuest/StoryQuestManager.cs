@@ -17,7 +17,6 @@ public class StoryQuestManager : MonoBehaviour
     public StoryQuest curStoryQuest;
     public int curQuestId = FirstStoryQuestId;
 
-    private int _lastHiredEmployeeId;
     private Employee _currentSpeaker;
     private SpeechBubble _currentBubble;
 
@@ -42,12 +41,6 @@ public class StoryQuestManager : MonoBehaviour
         return StartStoryQuest(questSO);
     }
 
-    public void NotifyEmployeeHired(Employee employee)
-    {
-        if (employee == null) return;
-        _lastHiredEmployeeId = employee.so.id;
-    }
-
     public void ResetForNewDay()
     {
         if (_currentBubble != null)
@@ -66,38 +59,38 @@ public class StoryQuestManager : MonoBehaviour
 
     private bool StartStoryQuest(StoryQuestPoolSO questSO)
     {
-        Employee speaker = ResolveSpeaker(questSO.id);
-        if (speaker == null)
-        {
-            Debug.LogWarning($"[StoryQuestManager] {questSO.id}번 스토리 퀘스트를 띄울 직원을 찾지 못했습니다.");
-            return false;
-        }
+        Transform bubbleTarget = ResolveBubbleTarget(questSO.id);
 
         curStoryQuest = new StoryQuest();
         curStoryQuest.Init(questSO);
         curStoryQuest.SetReady();
         curStoryQuest.StartQuest();
 
-        _currentSpeaker = speaker;
         storyQuestProgress.Value = curStoryQuest.curCount;
 
         _currentBubble = QuestManager.Instance.ShowClickableSpeechBubble(
-            speaker.transform,
+            bubbleTarget,
             StoryBubbleMessage,
             StartCurrentStoryDialogue);
 
-        if (_currentBubble == null)
-        {
-            curStoryQuest = null;
-            _currentSpeaker = null;
-            storyQuestProgress.Value = 0;
-            return false;
-        }
-
         DateTimeManager.Instance.isStoryQuest = true;
-
         storyQuestState.Value = curStoryQuest.state;
         return true;
+    }
+
+    // 말풍선 버튼 띄워줄 객체 결정
+    private Transform ResolveBubbleTarget(int questId)
+    {
+        _currentSpeaker = null;
+
+        if (questId == FirstHireQuestId)
+        {
+            _currentSpeaker = _EmployeeManager.Instance.lastHiredEmployee;
+            return _currentSpeaker.transform;
+        }
+
+        _currentSpeaker = GameManager.Instance.GetRandomActiveEmployee();
+        return _currentSpeaker.transform;
     }
 
     private void StartCurrentStoryDialogue()
@@ -130,7 +123,7 @@ public class StoryQuestManager : MonoBehaviour
 
         curQuestId = completedQuestId + 1;
         if (completedQuestId == FirstHireQuestId)
-            _lastHiredEmployeeId = 0;
+            _EmployeeManager.Instance.lastHiredEmployee = null;
 
         DateTimeManager.Instance.isStoryQuest = false;
         DateTimeManager.Instance.CompleteDayWork();
@@ -148,67 +141,11 @@ public class StoryQuestManager : MonoBehaviour
             case FirstStoryQuestId: // 1001
                 return Company.Instance.activeProjectCount.Value > 0;
             case FirstHireQuestId:  // 1002
-                return HasHiredEmployeeBeyondDefaults();
+                return _EmployeeManager.Instance.lastHiredEmployee != null;
 
             default:
                 return false;
         }
-    }
-
-    private Employee ResolveSpeaker(int questId)
-    {
-        if (questId == FirstHireQuestId)
-        {
-            Employee hired = GameManager.Instance.GetActiveEmployee(_lastHiredEmployeeId);
-            if (hired != null) return hired;
-
-            hired = GetFirstActiveNonDefaultEmployee();
-            if (hired != null) return hired;
-
-            return null;
-        }
-
-        return GameManager.Instance.GetRandomActiveEmployee();
-    }
-
-    private bool HasHiredEmployeeBeyondDefaults()
-    {
-        if (_lastHiredEmployeeId != 0) return true;
-
-        foreach (Employee employee in _EmployeeManager.Instance.haveEmployees.haveEmployeeList)
-        {
-            if (!IsDefaultEmployee(employee))
-                return true;
-        }
-
-        return false;
-    }
-
-    private Employee GetFirstActiveNonDefaultEmployee()
-    {
-        if (_EmployeeManager.Instance == null || GameManager.Instance == null) return null;
-
-        foreach (Employee employee in _EmployeeManager.Instance.haveEmployees.haveEmployeeList)
-        {
-            if (employee == null || IsDefaultEmployee(employee)) continue;
-
-            Employee activeEmployee = GameManager.Instance.GetActiveEmployee(employee.so.id);
-            if (activeEmployee != null)
-                return activeEmployee;
-        }
-
-        return null;
-    }
-
-    private bool IsDefaultEmployee(Employee employee)
-    {
-        foreach (Employee defaultEmployee in _EmployeeManager.Instance.defaultEmployees)
-        {
-            if (defaultEmployee.so.id == employee.so.id)
-                return true;
-        }
-
-        return false;
     }
 
     private void ApplyReward(QuestReward reward)

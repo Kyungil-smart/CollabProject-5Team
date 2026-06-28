@@ -17,6 +17,7 @@ public class QuestManager : MonoBehaviour
     [SerializeField] private Vector3 bubbleWorldOffset = new Vector3(0f, 2f, 0f); // 말풍선이 뜰 위치 (직원 기준 오프셋)
     [SerializeField] private RectTransform questCanvas;    // 전구/별/말풍선이 생성될 Canvas_Quest
 
+    // 동적 말풍선 버튼 생성용
     private static readonly Vector2 StoryBubbleSize = new(123f, 65f);
     private const float StoryBubbleFontSize = 56f;
 
@@ -284,8 +285,6 @@ public class QuestManager : MonoBehaviour
     // 활성 NPC 중 한 명의 머리 위에 말풍선을 띄움 (몇 초 후 자동 소멸)
     private void ShowSpeechBubble(string message)
     {
-        if (speechBubblePrefab == null || questCanvas == null) return;
-
         Transform npcTransform = GameManager.Instance.GetRandomActiveNpcTransform();
         if (npcTransform == null) return;
 
@@ -301,6 +300,7 @@ public class QuestManager : MonoBehaviour
         bubble.Show(npcTransform, bubbleWorldOffset, message);
     }
 
+    // SpeechBubble 프리펩을 버튼으로써 우려먹기
     public SpeechBubble ShowClickableSpeechBubble(Transform target, string message, UnityAction onClick)
     {
         SpeechBubble bubble = Instantiate(speechBubblePrefab, questCanvas).GetComponent<SpeechBubble>();
@@ -309,30 +309,22 @@ public class QuestManager : MonoBehaviour
         ResizeStorySpeechBubble(bubble);
         bubble.Show(target, bubbleWorldOffset, message, 0f);
 
-        Button button = bubble.GetComponent<Button>();
-        if (button == null)
-            button = bubble.gameObject.AddComponent<Button>();
+        Button button = bubble.gameObject.AddComponent<Button>();
 
         button.transition = Selectable.Transition.None;
-        if (button.targetGraphic == null)
-            button.targetGraphic = bubble.GetComponent<Graphic>() ?? bubble.GetComponentInChildren<Graphic>();
-
-        button.onClick.RemoveAllListeners();
         button.onClick.AddListener(() =>
         {
-            onClick?.Invoke();
-            if (bubble != null)
-                Destroy(bubble.gameObject);
+            onClick.Invoke();
+            Destroy(bubble.gameObject);
         });
 
         return bubble;
     }
-
     private void ResizeStorySpeechBubble(SpeechBubble bubble)
     {
         ((RectTransform)bubble.transform).sizeDelta = StoryBubbleSize;
-
         TextMeshProUGUI bubbleText = bubble.GetComponentInChildren<TextMeshProUGUI>();
+        bubbleText.rectTransform.anchoredPosition = new Vector2(bubbleText.rectTransform.anchoredPosition.x, 10f);
         bubbleText.fontSize = StoryBubbleFontSize;
     }
 

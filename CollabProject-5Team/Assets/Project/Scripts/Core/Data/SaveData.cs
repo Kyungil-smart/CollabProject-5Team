@@ -18,6 +18,7 @@ public class SaveData
 
     // Employee 저장
     public List<EmployeeSaveData> savedEmployees = new List<EmployeeSaveData>();
+    public int lastHiredEmployeeId;
     public List<int> leavePendingEmployeeIds = new();
 
     // QuestManager 저장
