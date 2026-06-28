@@ -987,7 +987,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 53f105f8a4fc66940bd19dbf4d113983, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _guideBox: {fileID: 0}
+  _guideBox: {fileID: 2108984844}
   _tutorialText: {fileID: 944183528}
   _tutorialPanel: {fileID: 360810912}
   _tutorialSteps:
@@ -1400,6 +1400,24 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 944183526}
   m_CullTransparentMesh: 1
+--- !u!1 &1065538308 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 6443819466936464575, guid: ad1afc9983dda0041bafb01fc9d494ec, type: 3}
+  m_PrefabInstance: {fileID: 1515028544}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1065538313
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1065538308}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: af080b7816cde7f4d9bdc649f2e26d05, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _tutorialObjectId: NextDayButton
 --- !u!114 &1204401006 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 8654902207363816660, guid: b82583b22905db24a86349a98bea2b01, type: 3}
@@ -1586,7 +1604,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 39443641321dacd489eb620e28f903a7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _tutorialButtonId: WorkStartBubble
 --- !u!114 &1469150625
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1695,7 +1712,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 6443819466936464575, guid: ad1afc9983dda0041bafb01fc9d494ec, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1065538313}
   m_SourcePrefab: {fileID: 100100000, guid: ad1afc9983dda0041bafb01fc9d494ec, type: 3}
 --- !u!1 &1656775004
 GameObject:
@@ -2706,6 +2726,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 404016144483051364, guid: bd8f24df11c0f33418fe3095c47f18cd, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 2094773134518813371, guid: bd8f24df11c0f33418fe3095c47f18cd, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
@@ -2792,6 +2816,14 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3905464804378689649, guid: bd8f24df11c0f33418fe3095c47f18cd, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4111813417971696051, guid: bd8f24df11c0f33418fe3095c47f18cd, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0.51989746
+      objectReference: {fileID: 0}
+    - target: {fileID: 4111813417971696051, guid: bd8f24df11c0f33418fe3095c47f18cd, type: 3}
+      propertyPath: m_AnchoredPosition.y
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4517254787974573827, guid: bd8f24df11c0f33418fe3095c47f18cd, type: 3}
