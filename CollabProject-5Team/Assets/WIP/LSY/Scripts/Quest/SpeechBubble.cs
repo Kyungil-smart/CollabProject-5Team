@@ -13,17 +13,19 @@ public class SpeechBubble : MonoBehaviour
     private Transform _target;
     private Vector3 _worldOffset;
     private float _timer;
+    private bool _isPersistent;
 
     private void Awake()
     {
         _rect = GetComponent<RectTransform>();
     }
 
-    public void Show(Transform target, Vector3 worldOffset, string message)
+    public void Show(Transform target, Vector3 worldOffset, string message, float displayDuration = DisplayDuration)
     {
         _target = target;
         _worldOffset = worldOffset;
-        _timer = DisplayDuration;
+        _timer = displayDuration;
+        _isPersistent = displayDuration <= 0f;
 
         if (text != null) text.text = message;
 
@@ -33,6 +35,8 @@ public class SpeechBubble : MonoBehaviour
     private void LateUpdate()
     {
         UpdatePosition();
+
+        if (_isPersistent) return;
 
         _timer -= Time.deltaTime;
         if (_timer <= 0f) Destroy(gameObject);

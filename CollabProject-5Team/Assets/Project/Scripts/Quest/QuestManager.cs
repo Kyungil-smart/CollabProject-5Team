@@ -1,5 +1,8 @@
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
+using UnityEngine.Events;
+using UnityEngine.UI;
 using R3;
 using Cysharp.Threading.Tasks;
 
@@ -13,6 +16,9 @@ public class QuestManager : MonoBehaviour
     [SerializeField] private GameObject speechBubblePrefab; // 퀘스트 성공 시 직원 머리 위에 띄울 말풍선 프리팹
     [SerializeField] private Vector3 bubbleWorldOffset = new Vector3(0f, 2f, 0f); // 말풍선이 뜰 위치 (직원 기준 오프셋)
     [SerializeField] private RectTransform questCanvas;    // 전구/별/말풍선이 생성될 Canvas_Quest
+
+    private static readonly Vector2 StoryBubbleSize = new(123f, 65f);
+    private const float StoryBubbleFontSize = 56f;
 
     public RectTransform QuestCanvas => questCanvas;
 
@@ -112,14 +118,14 @@ public class QuestManager : MonoBehaviour
         dailyQuestState.Value = QuestState.Ready;
     }
 
-    // 오늘 진행할 퀘스트 시작. 이벤트 퀘스트가 발동하지 않으면 기존 일일 퀘스트를 진행한다.
+    // 오늘 진행할 퀘스트 시작. 스토리 > 이벤트 > 일일 순서로 하루 퀘스트를 배정한다.
     public void StartQuestForToday()
     {
+        if (StoryQuestManager.Instance != null &&
+            StoryQuestManager.Instance.TryStartStoryQuestForToday()) return;
+
         if (EventQuestManager.Instance != null &&
-            EventQuestManager.Instance.TryStartEventQuestForToday())
-        {
-            return;
-        }
+            EventQuestManager.Instance.TryStartEventQuestForToday()) return;
 
         StartDailyQuest();
     }
@@ -293,6 +299,41 @@ public class QuestManager : MonoBehaviour
         bubble.transform.SetAsFirstSibling();
 
         bubble.Show(npcTransform, bubbleWorldOffset, message);
+    }
+
+    public SpeechBubble ShowClickableSpeechBubble(Transform target, string message, UnityAction onClick)
+    {
+        SpeechBubble bubble = Instantiate(speechBubblePrefab, questCanvas).GetComponent<SpeechBubble>();
+
+        bubble.transform.SetAsFirstSibling();
+        ResizeStorySpeechBubble(bubble);
+        bubble.Show(target, bubbleWorldOffset, message, 0f);
+
+        Button button = bubble.GetComponent<Button>();
+        if (button == null)
+            button = bubble.gameObject.AddComponent<Button>();
+
+        button.transition = Selectable.Transition.None;
+        if (button.targetGraphic == null)
+            button.targetGraphic = bubble.GetComponent<Graphic>() ?? bubble.GetComponentInChildren<Graphic>();
+
+        button.onClick.RemoveAllListeners();
+        button.onClick.AddListener(() =>
+        {
+            onClick?.Invoke();
+            if (bubble != null)
+                Destroy(bubble.gameObject);
+        });
+
+        return bubble;
+    }
+
+    private void ResizeStorySpeechBubble(SpeechBubble bubble)
+    {
+        ((RectTransform)bubble.transform).sizeDelta = StoryBubbleSize;
+
+        TextMeshProUGUI bubbleText = bubble.GetComponentInChildren<TextMeshProUGUI>();
+        bubbleText.fontSize = StoryBubbleFontSize;
     }
 
     private QuestObject FindQuestObject(string name)

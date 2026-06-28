@@ -224,11 +224,24 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    // 활성 NPC 중 아무나 한 명의 Transform을 랜덤으로 반환 (퀘스트 말풍선 표시용)
     public Transform GetRandomActiveNpcTransform()
     {
+        Employee employee = GetRandomActiveEmployee();
+        return employee != null ? employee.transform : null;
+    }
+    public Employee GetRandomActiveEmployee()
+    {
+        _activeEmployees.RemoveAll(e => e == null || e.gameObject == null);
+
         if (_activeEmployees.Count == 0) return null;
-        return _activeEmployees[Random.Range(0, _activeEmployees.Count)].transform;
+        return _activeEmployees[Random.Range(0, _activeEmployees.Count)];
+    }
+    public Employee GetActiveEmployee(int employeeId)
+    {
+        if (employeeId == 0) return null;
+
+        _activeEmployees.RemoveAll(e => e == null || e.gameObject == null);
+        return _activeEmployees.Find(e => e != null && e.so.id == employeeId);
     }
 
     // 퇴근 명령 SpawnPoint로 이동 후 비활성화

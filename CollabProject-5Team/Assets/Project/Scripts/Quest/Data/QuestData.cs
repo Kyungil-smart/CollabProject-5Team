@@ -92,6 +92,14 @@ public class DailyQuest : QuestBase
 public class StoryQuest : QuestBase
 {
     public StoryQuestPoolSO so;
+    private const int DefaultTargetCount = 1;
+
+    public int TargetCount => DefaultTargetCount;
+    public int curCount;
+    public override QuestReward Reward =>
+        so != null && so.successGold > 0
+            ? QuestReward.Gold(so.successGold)
+            : QuestReward.None;
 
     // 스토리 퀘스트 초기화
     public void Init(StoryQuestPoolSO questSO)
@@ -99,6 +107,7 @@ public class StoryQuest : QuestBase
         type = QuestType.Story;
         state = QuestState.Locked;
         so = questSO;
+        curCount = 0;
     }
 
     public void SetReady()
@@ -115,6 +124,7 @@ public class StoryQuest : QuestBase
 
     public void Complete()
     {
+        curCount = TargetCount;
         state = QuestState.End;
     }
 }

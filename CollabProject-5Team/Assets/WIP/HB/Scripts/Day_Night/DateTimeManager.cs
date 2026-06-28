@@ -18,6 +18,7 @@ public class DateTimeManager : MonoBehaviour
     [Header("오늘 하루 상태 값")]
     public bool isWorkCompleted = false;        // 일일 업무 완료 여부
     public bool isEventQuest = false;           // 이벤트 퀘스트 대화 진행 여부
+    public bool isStoryQuest = false;           // 스토리 퀘스트 대화 진행 여부
     private HashSet<string> talkedNpcsToday = new HashSet<string>();
 
     public static Action OnDay;  // 낮
@@ -65,10 +66,12 @@ public class DateTimeManager : MonoBehaviour
     {
         isWorkCompleted = false;
         isEventQuest = false;
+        isStoryQuest = false;
         talkedNpcsToday.Clear();
 
         // 상태만 Ready로 초기화 - 실제 시작은 WorkStart 버튼 클릭 시 HUDPresenter에서 호출
         QuestManager.Instance.dailyQuestState.Value = QuestState.Ready;
+        StoryQuestManager.Instance?.ResetForNewDay();
         EventQuestManager.Instance?.ResetForNewDay();
     }
 

@@ -506,7 +506,8 @@ namespace GameDevTycoon.UI.Ingame
             Company.Instance.curManagementStatus.Recalculate();
             Company.Instance.cumulativeManagementStatus.Recalculate();
 
-            _EmployeeManager.Instance.HireEmployee(applicant);
+            Employee hiredEmployee = _EmployeeManager.Instance.HireEmployee(applicant);
+            StoryQuestManager.Instance?.NotifyEmployeeHired(hiredEmployee ?? applicant);
             _EmployeeManager.Instance.currentApplicants.Remove(applicant);
             _hudPresenter.RefreshHUD();
 

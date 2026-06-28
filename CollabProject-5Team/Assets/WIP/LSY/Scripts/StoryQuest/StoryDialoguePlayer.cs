@@ -22,11 +22,30 @@ public class StoryDialoguePlayer : MonoBehaviour
     {
         if (Instance != null && Instance != this) { Destroy(gameObject); return; }
         Instance = this;
+
+        EnsureViews();
+    }
+
+    private void EnsureViews()
+    {
+        if (_playerView == null)
+            _playerView = FindFirstObjectByType<PlayerDialogueView>(FindObjectsInactive.Include);
+
+        if (_employeeView == null)
+            _employeeView = FindFirstObjectByType<EmployeeDialogueView>(FindObjectsInactive.Include);
     }
 
     /// <param name="speakerEmployees">"NPC1"/"NPC2"/"SPY"/"UCSPY" 토큰과 실제 배정된 직원 매핑</param>
     public void StartStoryDialogue(int startNodeId, Dictionary<string, Employee> speakerEmployees, Action onComplete)
     {
+        EnsureViews();
+
+        if (_playerView == null || _employeeView == null)
+        {
+            Debug.LogWarning("[StoryDialoguePlayer] 대화 View 참조가 없습니다.");
+            return;
+        }
+
         _speakerEmployees = speakerEmployees ?? new Dictionary<string, Employee>();
         _onComplete       = onComplete;
         ShowNode(startNodeId);
