@@ -28,6 +28,10 @@ namespace GameDevTycoon.UI.Ingame
         [SerializeField] private Sprite _thumbnailMedium;
         [SerializeField] private Sprite _thumbnailLarge;
 
+        [Header("업데이트 확정")]
+        [SerializeField] private GameObject _overlay;
+        [SerializeField] private GameObject _stamp;
+
         public void Bind(Project project)
         {
             _projectNameLabel.text = project.userNamed.Value;
@@ -35,6 +39,9 @@ namespace GameDevTycoon.UI.Ingame
             _projectIcon.sprite = GetThumbnail(project.Scale);
             _statusValue.text = "제작 중";
             _itemFrame.sprite = _spriteInProgress;
+
+            _overlay.SetActive(false);
+            _stamp.SetActive(false);
         }
 
         public void Bind(ProjectCompleted record)
@@ -42,6 +49,10 @@ namespace GameDevTycoon.UI.Ingame
             _projectNameLabel.text = record.projectName;
             _scaleValue.text = GetScaleText(record.scale);
             _projectIcon.sprite = GetThumbnail(record.scale);
+
+            bool isPending = record.isUpdatePending;
+            _overlay.SetActive(isPending);
+            _stamp.SetActive(isPending);
 
             if (record.isServiceOver)
             {

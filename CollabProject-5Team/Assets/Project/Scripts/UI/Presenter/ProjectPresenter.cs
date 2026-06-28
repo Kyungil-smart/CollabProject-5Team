@@ -412,7 +412,6 @@ namespace GameDevTycoon.UI.Ingame
             _view.SetCompletedProgressBar(1f);
 
             _view.SetCompletedOperationGroupVisible(true);
-            _view.SetCompletedStatusValue("서비스 종료");
             SetCompletedOperationValues(record);
         }
 
@@ -422,6 +421,7 @@ namespace GameDevTycoon.UI.Ingame
 
             _selectedUpdatePart = null;
             _view.SetUpdateConfirmInteractable(false);
+            _view.SetUpdateItemSelectImg(null);
 
             // [TODO: 업데이트 시스템 연동 후 지난주 완료 항목 오버레이 처리]
             _view.SetUpdateItemCompletedOverlay(UpdatePart.Plan, false);
@@ -434,6 +434,7 @@ namespace GameDevTycoon.UI.Ingame
         private void OnUpdateItemSelected(UpdatePart part)
         {
             _selectedUpdatePart = part;
+            _view.SetUpdateItemSelectImg(part);
             _view.SetUpdateConfirmInteractable(true);
         }
 
@@ -455,9 +456,11 @@ namespace GameDevTycoon.UI.Ingame
                 onConfirm: () =>
                 {
                     // [TODO: 비용 차감 및 업데이트 진행 처리]
+                    _currentServiceRecord.isUpdatePending = true;
+
                     _selectedUpdatePart = null;
                     _view.HideUpdateManagement();
-                    ShowProjectDetail(_currentDetailProject);
+                    RefreshInProgressList();
                 }
             );
         }

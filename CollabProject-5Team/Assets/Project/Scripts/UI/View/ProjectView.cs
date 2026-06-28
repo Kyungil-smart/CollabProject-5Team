@@ -98,11 +98,18 @@ namespace GameDevTycoon.UI.Ingame
         [SerializeField] private Button _updateItem_Plan;
         [SerializeField] private Button _updateItem_Art;
         [SerializeField] private Button _updateItem_Dev;
+        [SerializeField] private GameObject _selectImg_Plan;
+        [SerializeField] private GameObject _selectImg_Art;
+        [SerializeField] private GameObject _selectImg_Dev;
         [SerializeField] private GameObject _completedOverlay_Plan;
         [SerializeField] private GameObject _completedOverlay_Art;
         [SerializeField] private GameObject _completedOverlay_Dev;
         [SerializeField] private Button _updateBackButton;
         [SerializeField] private Button _updateConfirmButton;
+
+        [Header("Tab_InProgress — Panel_UpdateManagement — ConfirmButton Sprites")]
+        [SerializeField] private Sprite _updateConfirmActiveSprite;
+        [SerializeField] private Sprite _updateConfirmInactiveSprite;
 
         [Header("Tab_Completed")]
         [SerializeField] private GameObject _tabCompleted;
@@ -122,8 +129,6 @@ namespace GameDevTycoon.UI.Ingame
         [SerializeField] private TextMeshProUGUI _completedProgressValueLabel;
         [SerializeField] private GameObject _completedOperationGroup;
         [SerializeField] private GameObject _completedOperationEmptyLabel;
-        [SerializeField] private GameObject _completedStatusGroup;
-        [SerializeField] private TextMeshProUGUI _completedStatusValue;
         [SerializeField] private GameObject _completedUserCountGroup;
         [SerializeField] private TextMeshProUGUI _completedUserCountValue;
         [SerializeField] private GameObject _completedSalesGroup;
@@ -456,7 +461,10 @@ namespace GameDevTycoon.UI.Ingame
             => _updateButton.interactable = interactable;
 
         public void SetUpdateConfirmInteractable(bool interactable)
-            => _updateConfirmButton.interactable = interactable;
+        {
+            _updateConfirmButton.interactable = interactable;
+            _updateConfirmButton.image.sprite = interactable ? _updateConfirmActiveSprite : _updateConfirmInactiveSprite;
+        }
 
         /// <summary>
         /// 지난주 완료된 업데이트 항목 오버레이 표시.
@@ -478,6 +486,16 @@ namespace GameDevTycoon.UI.Ingame
                 _ => _updateItem_Dev,
             };
             button.interactable = !completed;
+        }
+
+        /// <summary>
+        /// 업데이트 항목 선택 상태 SelectIMG 토글.
+        /// </summary>
+        public void SetUpdateItemSelectImg(UpdatePart? selectedPart)
+        {
+            _selectImg_Plan.SetActive(selectedPart == UpdatePart.Plan);
+            _selectImg_Art.SetActive(selectedPart == UpdatePart.Art);
+            _selectImg_Dev.SetActive(selectedPart == UpdatePart.Dev);
         }
 
         // Tab_Completed 수치 표시
@@ -505,7 +523,6 @@ namespace GameDevTycoon.UI.Ingame
         {
             _completedOperationGroup.SetActive(true);
             _completedOperationEmptyLabel.SetActive(!isServiceEnded);
-            _completedStatusGroup.SetActive(isServiceEnded);
             _completedUserCountGroup.SetActive(isServiceEnded);
             _completedSalesGroup.SetActive(isServiceEnded);
             _completedMaintenanceGroup.SetActive(isServiceEnded);
@@ -513,7 +530,6 @@ namespace GameDevTycoon.UI.Ingame
             _completedRevenueGraph.SetActive(isServiceEnded);
         }
 
-        public void SetCompletedStatusValue(string status) => _completedStatusValue.text = status;
         public void SetCompletedUserCountValue(string value) => _completedUserCountValue.text = value;
         public void SetCompletedSalesValue(string value) => _completedSalesValue.text = value;
         public void SetCompletedMaintenanceValue(string value) => _completedMaintenanceValue.text = value;
