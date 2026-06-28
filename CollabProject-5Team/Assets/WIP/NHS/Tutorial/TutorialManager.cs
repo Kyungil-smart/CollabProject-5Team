@@ -42,7 +42,6 @@ public class TutorialManager : MonoBehaviour
     private bool       _isRaycasterAddedByManager;
 
     /////////////////// - 라이프사이클 - ///////////////////
-
     private void Awake()
     {
         if (_instance == null) _instance = this;
@@ -73,11 +72,11 @@ public class TutorialManager : MonoBehaviour
 
     private void OnDestroy()
     {
+        OnSomewhereTutorialCompleted -= OnSomewhereConditionMet;
         OnSomewhereTutorialCompleted = null;
     }
 
     /////////////////// - 실행 - ///////////////////
-
     private void StartTutorial()
     {
         ProceedTutorial();
@@ -139,7 +138,6 @@ public class TutorialManager : MonoBehaviour
     }
 
     /////////////////// - 필요한 요소 추가, 삭제 - ///////////////////
-
     private void SetupActiveObjectContext()
     {
               _currentActiveObject = null;
@@ -205,7 +203,6 @@ public class TutorialManager : MonoBehaviour
     }
 
     /////////////////// - TextOnly - ///////////////////
-
     private void TutorialTextOnly()
     {
         // 터치 입력
@@ -213,7 +210,6 @@ public class TutorialManager : MonoBehaviour
     }
 
     /////////////////// - ButtonActivated - ///////////////////
-
     private void TutorialButtonActivated()
     {
         if (_currentActiveObject == null) return;
@@ -241,14 +237,13 @@ public class TutorialManager : MonoBehaviour
     }
 
     /////////////////// - HighlightSqureTouchAnywhere - ///////////////////
-
     private void TutorialHighlightSqureTouchAnywhere()
     {
         _isWaitingPlayerInput = true;
     }
 
     /////////////////// - HighLightSqureTouchSomewhere - ///////////////////
-    private async void TutorialHighLightSqureTouchSomewhere()
+    private void TutorialHighLightSqureTouchSomewhere()
     {
         OnSomewhereTutorialCompleted -= OnSomewhereConditionMet;
         OnSomewhereTutorialCompleted += OnSomewhereConditionMet;
