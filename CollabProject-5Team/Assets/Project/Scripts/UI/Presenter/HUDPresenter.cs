@@ -124,6 +124,23 @@ namespace GameDevTycoon.UI.Ingame
                 })
                 .AddTo(this);
 
+            if (StoryQuestManager.Instance != null)
+            {
+                StoryQuestManager.Instance.storyQuestState
+                    .Subscribe(OnStoryQuestStateChanged)
+                    .AddTo(this);
+
+                StoryQuestManager.Instance.storyQuestProgress
+                    .Subscribe(progress =>
+                    {
+                        StoryQuest quest = StoryQuestManager.Instance.curStoryQuest;
+                        if (quest == null) return;
+
+                        _view.SetQuestBannerProgress(progress, quest.TargetCount);
+                    })
+                    .AddTo(this);
+            }
+
             if (EventQuestManager.Instance == null) return;
 
             EventQuestManager.Instance.eventQuestState
@@ -150,6 +167,31 @@ namespace GameDevTycoon.UI.Ingame
             {
                 case QuestState.Playing:
                     _view.ShowQuestBanner(quest.so.Name, quest.curCount, quest.TargetCount);
+                    break;
+
+                case QuestState.End:
+                    _view.SetQuestBannerCompleted();
+                    break;
+
+                case QuestState.Ready:
+                    _view.HideQuestBanner();
+                    break;
+            }
+        }
+
+        private void OnStoryQuestStateChanged(QuestState state)
+        {
+            StoryQuest quest = StoryQuestManager.Instance.curStoryQuest;
+            if (quest == null) return;
+
+            switch (state)
+            {
+                case QuestState.Playing:
+                    _view.ShowQuestBanner(
+                        "스토리 퀘스트",
+                        quest.so.questName,
+                        quest.curCount,
+                        quest.TargetCount);
                     break;
 
                 case QuestState.End:

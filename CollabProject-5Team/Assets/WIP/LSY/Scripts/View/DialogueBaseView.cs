@@ -45,6 +45,8 @@ namespace Dialogue
                 SkipTyping();
             else if (OnNextAction != null)
                 OnNextAction.Invoke();
+            else if (StoryDialoguePlayer.Instance != null && StoryDialoguePlayer.Instance.IsDialogueRunning)
+                StoryDialoguePlayer.Instance.AdvanceDialogue();
             else
                 DialogueManager.Instance.AdvanceDialogue();
         }

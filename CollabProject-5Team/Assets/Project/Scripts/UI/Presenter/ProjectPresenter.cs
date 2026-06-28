@@ -212,7 +212,7 @@ namespace GameDevTycoon.UI.Ingame
 
                 int level = Company.Instance.level;
                 _view.SetScaleMediumLocked(level < 2);
-                _view.SetScaleLargeLocked(level < 4);
+                _view.SetScaleLargeLocked(level < 3);
             }
         }
 

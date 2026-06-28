@@ -18,10 +18,12 @@ public class SaveData
 
     // Employee 저장
     public List<EmployeeSaveData> savedEmployees = new List<EmployeeSaveData>();
+    public int lastHiredEmployeeId;
     public List<int> leavePendingEmployeeIds = new();
 
     // QuestManager 저장
     public Dictionary<Role, int> weeklyBonusPoints = new();
+    public int storyQuestId = 1001;
 
     // Company 저장
     [Header("Company Data")]
