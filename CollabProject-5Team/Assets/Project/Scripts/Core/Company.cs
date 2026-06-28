@@ -424,6 +424,7 @@ public class Company : MonoBehaviour
                 prevWeekUsers   = p.prevWeekUsers,
                 prevWeekGold    = p.prevWeekGold,
                 isServiceOver   = p.isServiceOver,
+                isUpdatePending = p.isUpdatePending,
 
                 weeklyGoldHistoryList = new List<int>(p.weeklyGoldHistory)
             };
@@ -486,7 +487,8 @@ public class Company : MonoBehaviour
                     weeklyGoldAccum = pData.weeklyGoldAccum,
                     prevWeekUsers   = pData.prevWeekUsers,
                     prevWeekGold    = pData.prevWeekGold,
-                    isServiceOver   = pData.isServiceOver
+                    isServiceOver   = pData.isServiceOver,
+                    isUpdatePending = pData.isUpdatePending,
                 };
 
                 p.weeklyGoldHistory = new Queue<int>();

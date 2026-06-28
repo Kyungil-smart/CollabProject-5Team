@@ -22,6 +22,7 @@ public class ProjectCompleted
     public char grade; // 등급 (S, A, B, C)
     public string genre; public string artStyle; public string engine;
 
+
     // 완료 데이터
     float _retentionFactor; // 유지력 계수 (0.0~1.0, 출시 후 감소)
     public float RetentionFactor
@@ -53,4 +54,5 @@ public class ProjectCompleted
 
     // 종료
     public bool isServiceOver; // 서비스 종료 여부
+    public bool isUpdatePending; // 업데이트 확정 대기 여부
 }

@@ -66,7 +66,6 @@ namespace GameDevTycoon.UI.Ingame
         [SerializeField] private TMP_Dropdown _applicantSortDropdown;
         [SerializeField] private Transform _applicantScrollContent;
         [SerializeField] private Button _applicantListBackButton;
-        //[SerializeField] private Button        _finalHireButton;
 
         [Header("Tab_Hire — Panel_ApplicantDetail")]
         [SerializeField] private GameObject _panelApplicantDetail;
@@ -99,11 +98,29 @@ namespace GameDevTycoon.UI.Ingame
         [SerializeField] private Button _educationCourseConfirmButton;
         [SerializeField] private Button _educationCourseBackButton;
 
+        [Header("Tab_Education — ConfirmButton Sprites")]
+        [SerializeField] private Sprite _confirmActiveSprite;
+        [SerializeField] private Sprite _confirmInactiveSprite;
+
         [Header("Tab_Education — CourseCards")]
-        [SerializeField] private ToggleGroup _courseToggleGroup;
-        [SerializeField] private Toggle _courseToggle0;
-        [SerializeField] private Toggle _courseToggle1;
-        [SerializeField] private Toggle _courseToggle2;
+        [SerializeField] private Button _courseButton0;
+        [SerializeField] private Button _courseButton1;
+        [SerializeField] private Button _courseButton2;
+
+        [Header("Tab_Education — CourseCards — SelectIMG")]
+        [SerializeField] private GameObject _courseSelectImg0;
+        [SerializeField] private GameObject _courseSelectImg1;
+        [SerializeField] private GameObject _courseSelectImg2;
+
+        [Header("Tab_Education — CourseCards — EducationOverlay")]
+        [SerializeField] private GameObject _courseEducationOverlay0;
+        [SerializeField] private GameObject _courseEducationOverlay1;
+        [SerializeField] private GameObject _courseEducationOverlay2;
+
+        [Header("Tab_Education — CourseCards — CostValue")]
+        [SerializeField] private TextMeshProUGUI _courseCostValue0;
+        [SerializeField] private TextMeshProUGUI _courseCostValue1;
+        [SerializeField] private TextMeshProUGUI _courseCostValue2;
 
         // Tab 이벤트
         public Observable<Unit> OnEmployeeManageTabClicked => _employeeManageTabButton.OnClickAsObservable();
@@ -124,7 +141,6 @@ namespace GameDevTycoon.UI.Ingame
         public Observable<Unit> OnRecruitConfirmClicked => _recruitConfirmButton.OnClickAsObservable();
         public Observable<Unit> OnApplicantListBackClicked => _applicantListBackButton.OnClickAsObservable();
         public Observable<int> OnApplicantSortChanged => _applicantSortDropdown.OnValueChangedAsObservable();
-        //public Observable<Unit> OnFinalHireClicked        => _finalHireButton.OnClickAsObservable();
         public Observable<Unit> OnHireClicked => HireButton.OnClickAsObservable();
         public Observable<Unit> OnApplicantDetailBackClicked => _applicantDetailBackButton.OnClickAsObservable();
 
@@ -140,11 +156,11 @@ namespace GameDevTycoon.UI.Ingame
         public Observable<Unit> OnEducationCourseConfirmClicked => _educationCourseConfirmButton.OnClickAsObservable();
         public Observable<Unit> OnEducationCourseBackClicked => _educationCourseBackButton.OnClickAsObservable();
 
-        // 코스 선택 시 인덱스(0~2) 발행
+        // 카드 버튼 클릭 시 인덱스(0~2) 발행
         public Observable<int> OnCourseSelected => Observable.Merge(
-            _courseToggle0.OnValueChangedAsObservable().Where(v => v).Select(_ => 0),
-            _courseToggle1.OnValueChangedAsObservable().Where(v => v).Select(_ => 1),
-            _courseToggle2.OnValueChangedAsObservable().Where(v => v).Select(_ => 2)
+            _courseButton0.OnClickAsObservable().Select(_ => 0),
+            _courseButton1.OnClickAsObservable().Select(_ => 1),
+            _courseButton2.OnClickAsObservable().Select(_ => 2)
         );
 
         // Content Transform (Presenter에서 프리팹 Instantiate 위치로 사용)
@@ -163,9 +179,6 @@ namespace GameDevTycoon.UI.Ingame
 
         private void Awake()
         {
-            //_hrPopup.SetActive(false);
-
-            // Tab_EmployeeManage를 기본 탭으로
             ShowTab(HRTab.EmployeeManage);
 
             _employeeManagePanelDetail.SetActive(false);
@@ -178,11 +191,18 @@ namespace GameDevTycoon.UI.Ingame
             _educationPanelDetail.SetActive(false);
             _panelEducationCourse.SetActive(false);
 
-            //_finalHireButton.interactable     = false;
             HireButton.interactable = false;
             _educationButton.interactable = false;
             _educationCourseConfirmButton.interactable = false;
             _recruitConfirmButton.interactable = false;
+
+            // SelectIMG / EducationOverlay 초기 비활성화
+            _courseSelectImg0.SetActive(false);
+            _courseSelectImg1.SetActive(false);
+            _courseSelectImg2.SetActive(false);
+            _courseEducationOverlay0.SetActive(false);
+            _courseEducationOverlay1.SetActive(false);
+            _courseEducationOverlay2.SetActive(false);
         }
 
         public void Show() => _hrPopup.SetActive(true);
@@ -285,11 +305,68 @@ namespace GameDevTycoon.UI.Ingame
             _panelEducationCourse.SetActive(false);
         }
 
-        public void ShowEducationCourse()
+        /// <summary>
+        /// 교육 과정 패널 진입.
+        /// inTrainingIndex: 현재 교육 중인 과정 인덱스(-1이면 미교육 상태).
+        /// </summary>
+        public void ShowEducationCourse(int inTrainingIndex = -1)
         {
-            // 코스 패널 진입 시 이전 선택 초기화
-            _courseToggleGroup.SetAllTogglesOff();
+            ResetCourseSelection();
             _panelEducationCourse.SetActive(true);
+
+            // 교육 중인 직원의 경우 해당 카드에 EducationOverlay 표시 및 버튼 잠금
+            bool isInTraining = inTrainingIndex >= 0;
+            SetCourseButtonsInteractable(!isInTraining);
+
+            if (isInTraining)
+                SetCourseEducationOverlay(inTrainingIndex, true);
+        }
+
+        /// <summary>
+        /// 선택 상태 초기화. 패널 진입 및 결정 완료 후 호출.
+        /// </summary>
+        public void ResetCourseSelection()
+        {
+            _courseSelectImg0.SetActive(false);
+            _courseSelectImg1.SetActive(false);
+            _courseSelectImg2.SetActive(false);
+            _courseEducationOverlay0.SetActive(false);
+            _courseEducationOverlay1.SetActive(false);
+            _courseEducationOverlay2.SetActive(false);
+        }
+
+        public void SetCourseSelectImg(int index, bool active)
+        {
+            switch (index)
+            {
+                case 0: _courseSelectImg0.SetActive(active); break;
+                case 1: _courseSelectImg1.SetActive(active); break;
+                case 2: _courseSelectImg2.SetActive(active); break;
+            }
+        }
+
+        public void SetCourseEducationOverlay(int index, bool active)
+        {
+            switch (index)
+            {
+                case 0: _courseEducationOverlay0.SetActive(active); break;
+                case 1: _courseEducationOverlay1.SetActive(active); break;
+                case 2: _courseEducationOverlay2.SetActive(active); break;
+            }
+        }
+
+        public void SetCourseButtonsInteractable(bool interactable)
+        {
+            _courseButton0.interactable = interactable;
+            _courseButton1.interactable = interactable;
+            _courseButton2.interactable = interactable;
+        }
+
+        public void SetCourseCostValues(string cost0, string cost1, string cost2)
+        {
+            _courseCostValue0.text = cost0;
+            _courseCostValue1.text = cost1;
+            _courseCostValue2.text = cost2;
         }
 
         // 수치 표시
@@ -312,9 +389,6 @@ namespace GameDevTycoon.UI.Ingame
         public void SetRecruitConfirmInteractable(bool interactable)
             => _recruitConfirmButton.interactable = interactable;
 
-        //public void SetFinalHireInteractable(bool interactable)
-        //    => _finalHireButton.interactable = interactable;
-
         public void SetHireButtonInteractable(bool interactable)
             => HireButton.interactable = interactable;
 
@@ -322,7 +396,10 @@ namespace GameDevTycoon.UI.Ingame
             => _educationButton.interactable = interactable;
 
         public void SetEducationCourseConfirmInteractable(bool interactable)
-            => _educationCourseConfirmButton.interactable = interactable;
+        {
+            _educationCourseConfirmButton.interactable = interactable;
+            _educationCourseConfirmButton.image.sprite = interactable ? _confirmActiveSprite : _confirmInactiveSprite;
+        }
     }
 
     public enum HRTab { EmployeeManage, Hire, Fire, Education }
