@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class TutorialManager : MonoBehaviour
 {
@@ -35,6 +36,11 @@ public class TutorialManager : MonoBehaviour
     // 외부 신호를 받기 위한 Action
     public static System.Action OnSomewhereTutorialCompleted;
 
+    // 현재 진행 중인 단계의 안전한 추적을 위한 상태 변수들
+    private GameObject       _currentActiveObject;
+    private bool          _isCanvasAddedByManager;
+    private bool       _isRaycasterAddedByManager;
+
     /////////////////// - 라이프사이클 - ///////////////////
 
     private void Awake()
@@ -58,7 +64,7 @@ public class TutorialManager : MonoBehaviour
 
             if (_tutorialSteps[_curIndex].showMode == ShowMode.HighlightSqureTouchAnywhere)
             {
-                CleanUpHighlightSqure();
+                CleanUpActiveObjectComponents();
             }
 
             ProceedTutorial();
@@ -100,28 +106,22 @@ public class TutorialManager : MonoBehaviour
             _tutorialText.text = _tutorialSteps[_curIndex].tutorialText;
         }
 
-        // 텍스트만 출력
-        if (_tutorialSteps[_curIndex].showMode == ShowMode.TextOnly)
-        {
-            TutorialTextOnly();
-        }
+        SetupActiveObjectContext();
 
-        // 버튼 눌러야 넘어가짐
-        else if (_tutorialSteps[_curIndex].showMode == ShowMode.ButtonActivated)
+        switch (_tutorialSteps[_curIndex].showMode)
         {
-            TutorialButtonActivated();
-        }
-
-        // 특정부분 강조 아무데나 터치해도 넘어감
-        else if (_tutorialSteps[_curIndex].showMode == ShowMode.HighlightSqureTouchAnywhere)
-        {
-            TutorialHighlightSqureTouchAnywhere();
-        }
-
-        // 특정 부분 강조 그 부분 터치해야 넘어감
-        else if (_tutorialSteps[_curIndex].showMode == ShowMode.HighLightSqureTouchSomewhere)
-        {
-            TutorialHighLightSqureTouchSomewhere();
+            case ShowMode.TextOnly:
+                TutorialTextOnly();
+                break;
+            case ShowMode.ButtonActivated:
+                TutorialButtonActivated();
+                break;
+            case ShowMode.HighlightSqureTouchAnywhere:
+                TutorialHighlightSqureTouchAnywhere();
+                break;
+            case ShowMode.HighLightSqureTouchSomewhere:
+                TutorialHighLightSqureTouchSomewhere();
+                break;
         }
     }
 
@@ -138,6 +138,72 @@ public class TutorialManager : MonoBehaviour
         ExecuteTutorial();
     }
 
+    /////////////////// - 필요한 요소 추가, 삭제 - ///////////////////
+
+    private void SetupActiveObjectContext()
+    {
+              _currentActiveObject = null;
+           _isCanvasAddedByManager = false;
+        _isRaycasterAddedByManager = false;
+
+        string targetId = _tutorialSteps[_curIndex].tutorialObjectId;
+
+        if (string.IsNullOrEmpty(targetId)) return;
+
+        if (_registeredObjects.TryGetValue(targetId, out GameObject targetObj))
+        {
+            _currentActiveObject = targetObj;
+
+            // Canvas 체크
+            Canvas targetCanvas = _currentActiveObject.GetComponent<Canvas>();
+            if (targetCanvas == null)
+            {
+                targetCanvas = _currentActiveObject.AddComponent<Canvas>();
+                _isCanvasAddedByManager = true;
+            }
+
+            targetCanvas.overrideSorting = true;
+            targetCanvas.sortingOrder    = 1001;
+
+            var showMode = _tutorialSteps[_curIndex].showMode;
+            if (showMode == ShowMode.ButtonActivated || showMode == ShowMode.HighLightSqureTouchSomewhere)
+            {
+                if (_currentActiveObject.GetComponent<GraphicRaycaster>() == null)
+                {
+                    _currentActiveObject.AddComponent<GraphicRaycaster>();
+                    _isRaycasterAddedByManager = true;
+                }
+            }
+        }
+    }
+
+    private void CleanUpActiveObjectComponents()
+    {
+        if (_currentActiveObject == null) return;
+
+        if (_isRaycasterAddedByManager)
+        {
+            var raycaster = _currentActiveObject.GetComponent<GraphicRaycaster>();
+            if (raycaster != null) Destroy(raycaster);
+        }
+
+        Canvas targetCanvas = _currentActiveObject.GetComponent<Canvas>();
+        if (targetCanvas != null)
+        {
+            if (_isCanvasAddedByManager)
+            {
+                Destroy(targetCanvas);
+            }
+            else
+            {
+                targetCanvas.overrideSorting = false;
+                targetCanvas.sortingOrder    = 0;
+            }
+        }
+
+        _currentActiveObject = null;
+    }
+
     /////////////////// - TextOnly - ///////////////////
 
     private void TutorialTextOnly()
@@ -150,46 +216,26 @@ public class TutorialManager : MonoBehaviour
 
     private void TutorialButtonActivated()
     {
-        string targetId = _tutorialSteps[_curIndex].tutorialObjectId;
+        if (_currentActiveObject == null) return;
 
-        if (_registeredObjects.TryGetValue(targetId, out GameObject targetObj))
+        Button button = _currentActiveObject.GetComponent<Button>();
+        if(button != null)
         {
-            Canvas targetCanvas = targetObj.GetComponent<Canvas>();
-            if (targetCanvas == null) targetCanvas = targetObj.AddComponent<Canvas>();
-
-            targetCanvas.overrideSorting = true;
-            targetCanvas.sortingOrder    = 1001;
-
-            if (targetObj.GetComponent<UnityEngine.UI.GraphicRaycaster>() == null)
-                targetObj.AddComponent<UnityEngine.UI.GraphicRaycaster>();
-
-            UnityEngine.UI.Button button = targetObj.GetComponent<UnityEngine.UI.Button>();
-            if (button != null)
-            {
-                button.onClick.RemoveListener(OnTutorialButtonClicked);
-                button.onClick.   AddListener(OnTutorialButtonClicked);
-            }
+            button.onClick.RemoveListener(OnTutorialButtonClicked);
+            button.onClick.   AddListener(OnTutorialButtonClicked);
         }
-        else
-            return;
     }
 
     private void OnTutorialButtonClicked()
     {
-        string targetId = _tutorialSteps[_curIndex].tutorialObjectId;
-
-        if(_registeredObjects.TryGetValue(targetId, out GameObject targetObj))
+        if(_currentActiveObject != null)
         {
-            var raycaster = targetObj.GetComponent<UnityEngine.UI.GraphicRaycaster>();
-            if (raycaster != null) Destroy(raycaster);
-
-            Canvas targetCanvas = targetObj.GetComponent<Canvas>();
-            if (targetCanvas != null) Destroy(targetCanvas);
-
-            UnityEngine.UI.Button btn = targetObj.GetComponent<UnityEngine.UI.Button>();
-            if (btn != null) 
-                btn.onClick.RemoveListener(OnTutorialButtonClicked);
+            Button button = _currentActiveObject.GetComponent<Button>();
+            if (button != null)
+                button.onClick.RemoveListener(OnTutorialButtonClicked);
         }
+
+        CleanUpActiveObjectComponents();
 
         ProceedTutorial();
     }
@@ -198,48 +244,12 @@ public class TutorialManager : MonoBehaviour
 
     private void TutorialHighlightSqureTouchAnywhere()
     {
-        string targetId = _tutorialSteps[_curIndex].tutorialObjectId;
-
-        if(_registeredObjects.TryGetValue(targetId, out GameObject targetObj))
-        {
-            Canvas targetCanvas =     targetObj.GetComponent<Canvas>();
-            if (targetCanvas == null) targetObj.AddComponent<Canvas>();
-
-            targetCanvas.overrideSorting = true;
-            targetCanvas.sortingOrder    = 1001;
-        }
-
         _isWaitingPlayerInput = true;
-    }
-
-    private void CleanUpHighlightSqure()
-    {
-        string targetId = _tutorialSteps[_curIndex].tutorialObjectId;
-
-        if(_registeredObjects.TryGetValue(targetId, out GameObject targetObj))
-        {
-            Canvas targetCanvas = targetObj.GetComponent<Canvas>();
-            if (targetCanvas != null) Destroy(targetCanvas);
-        }
     }
 
     /////////////////// - HighLightSqureTouchSomewhere - ///////////////////
     private async void TutorialHighLightSqureTouchSomewhere()
     {
-        string targetId = _tutorialSteps[_curIndex].tutorialObjectId;
-
-        if (_registeredObjects.TryGetValue(targetId, out GameObject targetObj))
-        {
-            Canvas targetCanvas = targetObj.GetComponent<Canvas>();
-            if (targetCanvas == null) targetCanvas = targetObj.AddComponent<Canvas>();
-
-            targetCanvas.overrideSorting = true;
-            targetCanvas.sortingOrder    = 1001;
-
-            if (targetObj.GetComponent<UnityEngine.UI.GraphicRaycaster>() == null)
-                targetObj.AddComponent<UnityEngine.UI.GraphicRaycaster>();
-        }
-
         OnSomewhereTutorialCompleted -= OnSomewhereConditionMet;
         OnSomewhereTutorialCompleted += OnSomewhereConditionMet;
     }
@@ -248,22 +258,8 @@ public class TutorialManager : MonoBehaviour
     {
         OnSomewhereTutorialCompleted -= OnSomewhereConditionMet;
 
-        CleanUpHighlightSqureSomewhere();
+        CleanUpActiveObjectComponents();
 
         ProceedTutorial();
-    }
-
-    private void CleanUpHighlightSqureSomewhere()
-    {
-        string targetId = _tutorialSteps[_curIndex].tutorialObjectId;
-
-        if (_registeredObjects.TryGetValue(targetId, out GameObject targetObj))
-        {
-            var raycaster = targetObj.GetComponent<UnityEngine.UI.GraphicRaycaster>();
-            if (raycaster != null) Destroy(raycaster);
-
-            Canvas targetCanvas = targetObj.GetComponent<Canvas>();
-            if (targetCanvas != null) Destroy(targetCanvas);
-        }
     }
 }
