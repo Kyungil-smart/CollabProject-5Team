@@ -1,6 +1,7 @@
 using Dialogue;
 using R3;
 using UnityEngine;
+using static UnityEngine.Rendering.DebugUI;
 
 public class EventQuestManager : MonoBehaviour
 {
@@ -74,9 +75,24 @@ public class EventQuestManager : MonoBehaviour
         if (curEventQuest == null || curEventQuest.state != QuestState.Playing) return;
 
         curEventQuest.CompleteDialogue();
+        ApplyReward(curEventQuest.Reward);
         eventQuestProgress.Value = curEventQuest.curCount;
         DateTimeManager.Instance.isEventQuest = false;
         eventQuestState.Value = curEventQuest.state;
         DateTimeManager.Instance.CompleteDayWork();
+    }
+
+    private void ApplyReward(QuestReward reward)
+    {
+        switch (reward.type)
+        {
+            case QuestRewardType.Gold:
+                Company.Instance.gold.Value += reward.amount;
+                Company.Instance.curManagementStatus.otherIncome += reward.amount;
+                Company.Instance.cumulativeManagementStatus.otherIncome += reward.amount;
+                Company.Instance.curManagementStatus.Recalculate();
+                Company.Instance.cumulativeManagementStatus.Recalculate();
+                break;
+        }
     }
 }

@@ -35,6 +35,10 @@ namespace GameDevTycoon.UI.Ingame
         [SerializeField] private GameObject _stabilityUpIcon;
         [SerializeField] private GameObject _appealUpIcon;
 
+        [Header("QuestClearPopupGold")]
+        [SerializeField] private GameObject _questClearPopupGold;
+        [SerializeField] private TextMeshProUGUI _goldRewardLabel;
+
         // QuestDetailPopup 이벤트
         public Observable<Unit> OnQuestDetailCloseClicked => _questDetailCloseButton.OnClickAsObservable();
 
@@ -56,6 +60,7 @@ namespace GameDevTycoon.UI.Ingame
             _questDetailPopup.SetActive(false);
             _dailyQuestAlertPopup.SetActive(false);
             _questClearPopup.SetActive(false);
+            _questClearPopupGold.SetActive(false);
         }
 
         // QuestDetailPopup
@@ -95,8 +100,19 @@ namespace GameDevTycoon.UI.Ingame
             _appealUpIcon.SetActive(appealUp);
             _questClearPopup.SetActive(true);
         }
+        // 골드가 있는 퀘스트 클리어 팝업은 이거
+        public void ShowGoldClearPopup(int goldAmount)
+        {
+            _goldRewardLabel.text = $"+ {goldAmount:N0}";
 
-        public void HideClearPopup() => _questClearPopup.SetActive(false);
+            _questClearPopupGold.SetActive(true);
+        }
+
+        public void HideClearPopup()
+        {
+            _questClearPopup.SetActive(false);
+            _questClearPopupGold.SetActive(false);
+        }
 
         private static Transform FindDeepChild(Transform root, string childName)
         {

@@ -107,8 +107,25 @@ namespace GameDevTycoon.UI.Ingame
         // 완료한 퀘스트의 직군에 맞는 스탯 UP 아이콘만 표시 (Project.cs의 직군별 스탯 매핑과 동일)
         private void ShowClearPopupForCurrentQuest()
         {
-            Role role = QuestManager.Instance.curDailyQuest.so.role;
+            ShowRewardPopup(QuestManager.Instance.curDailyQuest.Reward);
+        }
 
+        private void ShowRewardPopup(QuestReward reward)
+        {
+            switch (reward.type)
+            {
+                case QuestRewardType.ProjectScore:
+                    ShowProjectScoreClearPopup(reward.role);
+                    break;
+
+                case QuestRewardType.Gold:
+                    ShowGoldClearPopup(reward.amount);
+                    break;
+            }
+        }
+
+        private void ShowProjectScoreClearPopup(Role role)
+        {
             ShowClearPopup(
                 completionUp: role == Role.PLANNER,
                 stabilityUp: role == Role.PROGRAMMER,
@@ -176,6 +193,12 @@ namespace GameDevTycoon.UI.Ingame
             AutoHideClearPopupAsync().Forget();
         }
 
+        public void ShowGoldClearPopup(int goldAmount)
+        {
+            _view.ShowGoldClearPopup(goldAmount);
+            AutoHideClearPopupAsync().Forget();
+        }
+
         public void UpdateDailyQuestProgress(int current, int total)
         {
             _view.SetAlertProgress(current, total);
@@ -199,6 +222,7 @@ namespace GameDevTycoon.UI.Ingame
 
                 case QuestState.End:
                     UpdateEventQuestProgress(quest.curCount, quest.TargetCount);
+                    ShowRewardPopup(quest.Reward);
                     break;
             }
         }

@@ -13,6 +13,31 @@ public enum QuestType
     Event,  // 이벤트 퀘스트 (주로 대화)
 }
 
+public enum QuestRewardType
+{
+    None,
+    ProjectScore,
+    Gold,
+}
+
+public struct QuestReward
+{
+    public QuestRewardType type;
+    public Role role;
+    public int amount;
+
+    QuestReward(QuestRewardType type, Role role, int amount)
+    {
+        this.type = type;
+        this.role = role;
+        this.amount = amount;
+    }
+
+    public static QuestReward None => new(QuestRewardType.None, default, 0);
+    public static QuestReward ProjectScore(Role role, int amount) => new(QuestRewardType.ProjectScore, role, amount);
+    public static QuestReward Gold(int amount) => new(QuestRewardType.Gold, default, amount);
+}
+
 public enum ControlType
 {
     NONE, TAP, HOLD,
@@ -22,6 +47,7 @@ public abstract class QuestBase
 {
     public QuestType type;
     public QuestState state;
+    public virtual QuestReward Reward => QuestReward.None;
 }
 
 public class DailyQuest : QuestBase
@@ -31,6 +57,7 @@ public class DailyQuest : QuestBase
     private int _targetCount;
     public int TargetCount => _targetCount;
     public int curCount;
+    public override QuestReward Reward => QuestReward.ProjectScore(so.role, so.successEffect);
 
     // 퀘스트 초기화
     public void Init(QuestSO questSO)
@@ -96,11 +123,13 @@ public class EventQuest : QuestBase
 {
     public const string QuestTypeName = "대화 퀘스트"; // 일단 이거 하나로 퀘스트 고정
     public const string QuestName = "아무 직원이랑 대화하기";
+    public const int GoldRewardAmount = 200; // 임시로 200골드로 설정
 
     private const int DefaultTargetCount = 1;
 
     public int TargetCount => DefaultTargetCount;
     public int curCount;
+    public override QuestReward Reward => QuestReward.Gold(GoldRewardAmount);
 
     public void Init()
     {
