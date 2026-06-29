@@ -24,8 +24,6 @@ public class NPCLeave : INPCState
         // 목적지 도착 체크
         if (!npc.Agent.pathPending && npc.Agent.remainingDistance <= 0.5f)
         {
-            Debug.Log($"[DEBUG] {npc.name}이 NPCLeave 상태로 목적지에 도착하여 SetActive(false)를 호출합니다.");
-
             npc.Anim.SetBool("IsWalking", false);
             
             // 에이전트 끄기
