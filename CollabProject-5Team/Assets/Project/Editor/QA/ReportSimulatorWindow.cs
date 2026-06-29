@@ -25,7 +25,7 @@ namespace GameDevTycoon.EditorQA
         private bool _showContent = true;
         private bool _usePlayModeEmployees;
 
-        [MenuItem("Tools/Simulation/Report Simulator")]
+        [MenuItem("Tools/Balance/3. Report Generation", false, 203)]
         public static void Open()
         {
             ReportSimulatorWindow window = GetWindow<ReportSimulatorWindow>("Report Simulator");

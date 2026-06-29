@@ -13,7 +13,7 @@ namespace GameDevTycoon.EditorQA
 
         public int callbackOrder => -1000;
 
-        [MenuItem("Tools/QA/Run Build Precheck")]
+        [MenuItem("Tools/QA/4. Run Build Precheck", false, 104)]
         public static void RunFromMenu()
         {
             List<QAResult> results = QARunner.RunAll(QARunner.CreateDefaultValidators());
@@ -73,7 +73,7 @@ namespace GameDevTycoon.EditorQA
             return $"QA 결과: Error {errorCount} / Warning {warningCount} / Info {infoCount}\n\n"
                 + "빌드 전에 확인할 Error 미리보기:\n"
                 + preview
-                + "\n\n전체 상세 결과는 Tools > QA > Prototype QA Window에서 확인할 수 있습니다.";
+                + "\n\n전체 상세 결과는 Tools > QA > 2. Data & Connection QA에서 확인할 수 있습니다.";
         }
 
         private static void LogSummary(

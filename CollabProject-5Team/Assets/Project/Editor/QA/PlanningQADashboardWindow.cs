@@ -43,7 +43,7 @@ namespace GameDevTycoon.EditorQA
         private int _questNameLimit = 20;
         private string _issueSearchText = string.Empty;
 
-        [MenuItem("Tools/QA/Planning QA Dashboard")]
+        [MenuItem("Tools/QA/3. Planning QA Dashboard", false, 103)]
         public static void Open()
         {
             PlanningQADashboardWindow window = GetWindow<PlanningQADashboardWindow>("Planning QA");

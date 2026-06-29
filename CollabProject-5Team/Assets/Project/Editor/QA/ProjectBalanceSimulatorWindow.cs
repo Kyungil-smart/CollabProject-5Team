@@ -17,6 +17,13 @@ namespace GameDevTycoon.EditorQA
         private readonly int[] _artistSlotIds = { -1, -1, -1 };
         private readonly int[] _programmerSlotIds = { -1, -1, -1 };
 
+        private enum EmployeePickMode
+        {
+            Low,
+            Average,
+            Strong
+        }
+
         private Vector2 _scrollPosition;
         private ProjectSize _projectSize = ProjectSize.Small;
         private int _startRepo = 1;
@@ -26,8 +33,20 @@ namespace GameDevTycoon.EditorQA
         private int _artistQuestBonus;
         private int _programmerQuestBonus;
         private bool _usePlayModeEmployees;
+        private bool _hasBaseline;
+        private bool _showScenarioMatrix = true;
+        private TeamSimulationResult _baselineResult;
+        private float _targetTotalMin = 50f;
+        private float _targetTotalMax = 90f;
+        private float _targetQualityMin = 45f;
+        private float _targetStabilityMin = 45f;
+        private float _targetCharmMin = 45f;
+        private int _targetDailyGoldMin;
+        private int _targetDailyGoldMax = 100000;
+        private int _targetWeeklyNetMin;
+        private int _targetWeeklyNetMax = 500000;
 
-        [MenuItem("Tools/Simulation/Project Balance Simulator")]
+        [MenuItem("Tools/Balance/2. Project Balance", false, 202)]
         public static void Open()
         {
             ProjectBalanceSimulatorWindow window = GetWindow<ProjectBalanceSimulatorWindow>("Project Balance");
@@ -46,8 +65,13 @@ namespace GameDevTycoon.EditorQA
 
             _scrollPosition = EditorGUILayout.BeginScrollView(_scrollPosition);
             DrawInputPanel();
+            DrawScenarioControls();
             DrawTeamSlots();
-            DrawResult(SimulateTeam(GetMaxEmployeePerPart(_projectSize)));
+
+            TeamSimulationResult result = SimulateTeam(GetMaxEmployeePerPart(_projectSize));
+            DrawTargetCheck(result);
+            DrawResult(result);
+            DrawScenarioMatrix();
             EditorGUILayout.EndScrollView();
         }
 
@@ -118,6 +142,251 @@ namespace GameDevTycoon.EditorQA
                 DrawRoleSlots(Role.PROGRAMMER, _programmerSlotIds, maxPerPart);
             }
         }
+        private void DrawScenarioControls()
+        {
+            using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
+            {
+                EditorGUILayout.LabelField("대표 케이스 빠른 설정", EditorStyles.boldLabel);
+                EditorGUILayout.LabelField(
+                    "같은 대표 케이스를 반복해서 돌리며 수치 변경 전후를 비교하는 용도입니다.",
+                    EditorStyles.wordWrappedMiniLabel);
+
+                using (new EditorGUILayout.HorizontalScope())
+                {
+                    DrawPresetButton("소형/평균", ProjectSize.Small, EmployeePickMode.Average, 0, 1f, 0, 0, 0);
+                    DrawPresetButton("소형/상위", ProjectSize.Small, EmployeePickMode.Strong, 20, 1f, 5, 5, 5);
+                    DrawPresetButton("중형/평균", ProjectSize.Medium, EmployeePickMode.Average, 30, 0.9f, 5, 5, 5);
+                }
+
+                using (new EditorGUILayout.HorizontalScope())
+                {
+                    DrawPresetButton("중형/상위", ProjectSize.Medium, EmployeePickMode.Strong, 60, 0.95f, 10, 10, 10);
+                    DrawPresetButton("대형/상위", ProjectSize.Large, EmployeePickMode.Strong, 100, 1f, 15, 15, 15);
+                    DrawPresetButton("대형/압박", ProjectSize.Large, EmployeePickMode.Average, 40, 0.75f, 0, 0, 0);
+                }
+            }
+        }
+
+        private void DrawPresetButton(
+            string label,
+            ProjectSize size,
+            EmployeePickMode pickMode,
+            int popularity,
+            float retention,
+            int plannerBonus,
+            int artistBonus,
+            int programmerBonus)
+        {
+            if (!GUILayout.Button(label, GUILayout.Height(28f)))
+                return;
+
+            ApplyPreset(size, pickMode, popularity, retention, plannerBonus, artistBonus, programmerBonus);
+        }
+
+        private void ApplyPreset(
+            ProjectSize size,
+            EmployeePickMode pickMode,
+            int popularity,
+            float retention,
+            int plannerBonus,
+            int artistBonus,
+            int programmerBonus)
+        {
+            _projectSize = size;
+            _companyPopularity = popularity;
+            _retentionFactor = retention;
+            _plannerQuestBonus = plannerBonus;
+            _artistQuestBonus = artistBonus;
+            _programmerQuestBonus = programmerBonus;
+            AutoFillTeam(pickMode);
+        }
+
+        private void AutoFillTeam(EmployeePickMode pickMode)
+        {
+            int maxPerPart = GetMaxEmployeePerPart(_projectSize);
+            FillSlots(Role.PLANNER, _plannerSlotIds, maxPerPart, pickMode);
+            FillSlots(Role.ARTIST, _artistSlotIds, maxPerPart, pickMode);
+            FillSlots(Role.PROGRAMMER, _programmerSlotIds, maxPerPart, pickMode);
+        }
+
+        private void FillSlots(Role role, int[] slotIds, int maxPerPart, EmployeePickMode pickMode)
+        {
+            List<EmployeeSnapshot> picked = PickEmployees(GetEmployeesForRole(role), maxPerPart, pickMode);
+
+            for (int i = 0; i < slotIds.Length; i++)
+                slotIds[i] = i < picked.Count ? picked[i].So.id : -1;
+        }
+
+        private static List<EmployeeSnapshot> PickEmployees(List<EmployeeSnapshot> source, int count, EmployeePickMode pickMode)
+        {
+            if (source.Count == 0 || count <= 0)
+                return new List<EmployeeSnapshot>();
+
+            IEnumerable<EmployeeSnapshot> ordered = pickMode switch
+            {
+                EmployeePickMode.Low => source.OrderBy(e => e.StatAbility).ThenBy(e => e.So.id),
+                EmployeePickMode.Strong => source.OrderByDescending(e => e.StatAbility).ThenBy(e => e.So.id),
+                _ => source.OrderBy(e => Mathf.Abs(e.StatAbility - 50)).ThenBy(e => e.So.id)
+            };
+
+            return ordered.Take(count).ToList();
+        }
+
+        private void DrawTargetCheck(TeamSimulationResult result)
+        {
+            using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
+            {
+                EditorGUILayout.LabelField("목표 범위 검증", EditorStyles.boldLabel);
+                EditorGUILayout.LabelField(
+                    "밸런싱 목표치를 정해두고 현재 조합이 의도한 범위에 들어오는지 확인합니다.",
+                    EditorStyles.wordWrappedMiniLabel);
+
+                using (new EditorGUILayout.HorizontalScope())
+                {
+                    _targetTotalMin = EditorGUILayout.FloatField("평균 최소", _targetTotalMin);
+                    _targetTotalMax = EditorGUILayout.FloatField("평균 최대", _targetTotalMax);
+                }
+
+                using (new EditorGUILayout.HorizontalScope())
+                {
+                    _targetQualityMin = EditorGUILayout.FloatField("완성도 최소", _targetQualityMin);
+                    _targetStabilityMin = EditorGUILayout.FloatField("안정성 최소", _targetStabilityMin);
+                    _targetCharmMin = EditorGUILayout.FloatField("매력도 최소", _targetCharmMin);
+                }
+
+                using (new EditorGUILayout.HorizontalScope())
+                {
+                    _targetDailyGoldMin = EditorGUILayout.IntField("일일 매출 최소", _targetDailyGoldMin);
+                    _targetDailyGoldMax = EditorGUILayout.IntField("일일 매출 최대", _targetDailyGoldMax);
+                }
+
+                using (new EditorGUILayout.HorizontalScope())
+                {
+                    _targetWeeklyNetMin = EditorGUILayout.IntField("주간 순수익 최소", _targetWeeklyNetMin);
+                    _targetWeeklyNetMax = EditorGUILayout.IntField("주간 순수익 최대", _targetWeeklyNetMax);
+                }
+
+                DrawTargetMetric("평균 점수", result.TotalScore, _targetTotalMin, _targetTotalMax);
+                DrawTargetMetric("완성도", result.Quality, _targetQualityMin, 150f);
+                DrawTargetMetric("안정성", result.Stability, _targetStabilityMin, 150f);
+                DrawTargetMetric("매력도", result.Charm, _targetCharmMin, 150f);
+                DrawTargetMetric("일일 매출", result.DailyGold, _targetDailyGoldMin, _targetDailyGoldMax);
+                DrawTargetMetric("주간 순수익", GetWeeklyNetGold(result), _targetWeeklyNetMin, _targetWeeklyNetMax);
+
+                using (new EditorGUILayout.HorizontalScope())
+                {
+                    if (GUILayout.Button("현재 결과를 기준값으로 저장", GUILayout.Height(28f)))
+                    {
+                        _baselineResult = result;
+                        _hasBaseline = true;
+                    }
+
+                    EditorGUI.BeginDisabledGroup(!_hasBaseline);
+                    if (GUILayout.Button("기준값 지우기", GUILayout.Height(28f)))
+                    {
+                        _hasBaseline = false;
+                    }
+                    EditorGUI.EndDisabledGroup();
+                }
+
+                DrawBaselineCompare(result);
+            }
+        }
+
+        private static void DrawTargetMetric(string label, float value, float min, float max)
+        {
+            bool passed = value >= min && value <= max;
+            EditorGUILayout.LabelField(
+                $"{(passed ? "OK" : "NG")} {label}: {value:0.#} / 목표 {min:0.#}~{max:0.#}",
+                passed ? EditorStyles.miniLabel : EditorStyles.boldLabel);
+        }
+
+        private void DrawBaselineCompare(TeamSimulationResult current)
+        {
+            if (!_hasBaseline)
+            {
+                EditorGUILayout.HelpBox(
+                    "수치 변경 전 결과를 기준값으로 저장하면, 이후 변경 결과와 차이를 바로 비교할 수 있습니다.",
+                    MessageType.Info);
+                return;
+            }
+
+            EditorGUILayout.Space(4f);
+            EditorGUILayout.LabelField("기준값 대비 변화", EditorStyles.boldLabel);
+            EditorGUILayout.LabelField(BuildDeltaText("평균", current.TotalScore, _baselineResult.TotalScore), EditorStyles.miniLabel);
+            EditorGUILayout.LabelField(BuildDeltaText("완성도", current.Quality, _baselineResult.Quality), EditorStyles.miniLabel);
+            EditorGUILayout.LabelField(BuildDeltaText("안정성", current.Stability, _baselineResult.Stability), EditorStyles.miniLabel);
+            EditorGUILayout.LabelField(BuildDeltaText("매력도", current.Charm, _baselineResult.Charm), EditorStyles.miniLabel);
+            EditorGUILayout.LabelField(BuildDeltaText("일일 매출", current.DailyGold, _baselineResult.DailyGold), EditorStyles.miniLabel);
+            EditorGUILayout.LabelField(BuildDeltaText("주간 순수익", GetWeeklyNetGold(current), GetWeeklyNetGold(_baselineResult)), EditorStyles.miniLabel);
+        }
+
+        private static string BuildDeltaText(string label, float current, float baseline)
+        {
+            float delta = current - baseline;
+            return $"{label}: {current:0.#} ({delta:+0.#;-0.#;0} / 기준 {baseline:0.#})";
+        }
+
+        private void DrawScenarioMatrix()
+        {
+            EditorGUILayout.Space(4f);
+            _showScenarioMatrix = EditorGUILayout.Foldout(_showScenarioMatrix, "대표 케이스 매트릭스", true);
+            if (!_showScenarioMatrix)
+                return;
+
+            using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
+            {
+                EditorGUILayout.LabelField(
+                    "직접 슬롯을 바꾸지 않아도 프로젝트 규모와 직원 수준별 결과를 한 번에 비교합니다.",
+                    EditorStyles.wordWrappedMiniLabel);
+                EditorGUILayout.LabelField("규모 / 직원 수준 / 평균 / 등급 / 일일 매출 / 주간 순수익 / 판정", EditorStyles.miniLabel);
+
+                foreach (ProjectSize size in new[] { ProjectSize.Small, ProjectSize.Medium, ProjectSize.Large })
+                {
+                    DrawMatrixRow(size, EmployeePickMode.Low);
+                    DrawMatrixRow(size, EmployeePickMode.Average);
+                    DrawMatrixRow(size, EmployeePickMode.Strong);
+                }
+            }
+        }
+
+        private void DrawMatrixRow(ProjectSize size, EmployeePickMode pickMode)
+        {
+            TeamSimulationResult result = SimulatePreset(size, pickMode);
+            bool passed = result.TotalScore >= _targetTotalMin
+                && result.TotalScore <= _targetTotalMax
+                && result.Quality >= _targetQualityMin
+                && result.Stability >= _targetStabilityMin
+                && result.Charm >= _targetCharmMin
+                && result.DailyGold >= _targetDailyGoldMin
+                && result.DailyGold <= _targetDailyGoldMax
+                && GetWeeklyNetGold(result) >= _targetWeeklyNetMin
+                && GetWeeklyNetGold(result) <= _targetWeeklyNetMax;
+
+            EditorGUILayout.LabelField(
+                $"{GetProjectSizeLabel(size)} / {GetPickModeLabel(pickMode)} / {result.TotalScore:0.#} / {GetProjectGrade(result.TotalScore)} / {result.DailyGold:N0}G / {GetWeeklyNetGold(result):N0}G / {(passed ? "OK" : "NG")}",
+                passed ? EditorStyles.miniLabel : EditorStyles.boldLabel);
+        }
+
+        private TeamSimulationResult SimulatePreset(ProjectSize size, EmployeePickMode pickMode)
+        {
+            int maxPerPart = GetMaxEmployeePerPart(size);
+            List<EmployeeSnapshot> planners = PickEmployees(GetEmployeesForRole(Role.PLANNER), maxPerPart, pickMode);
+            List<EmployeeSnapshot> artists = PickEmployees(GetEmployeesForRole(Role.ARTIST), maxPerPart, pickMode);
+            List<EmployeeSnapshot> programmers = PickEmployees(GetEmployeesForRole(Role.PROGRAMMER), maxPerPart, pickMode);
+
+            return SimulateTeam(
+                planners,
+                artists,
+                programmers,
+                _plannerQuestBonus,
+                _artistQuestBonus,
+                _programmerQuestBonus,
+                _retentionFactor,
+                _companyPopularity,
+                size);
+        }
+
 
         private void DrawRoleSlots(Role role, int[] slotIds, int maxPerPart)
         {
@@ -151,20 +420,43 @@ namespace GameDevTycoon.EditorQA
 
         private TeamSimulationResult SimulateTeam(int maxPerPart)
         {
-            RoleSimulationResult planner = SimulateRole(Role.PLANNER, GetSelectedTeamMembers(Role.PLANNER, maxPerPart));
-            RoleSimulationResult artist = SimulateRole(Role.ARTIST, GetSelectedTeamMembers(Role.ARTIST, maxPerPart));
-            RoleSimulationResult programmer = SimulateRole(Role.PROGRAMMER, GetSelectedTeamMembers(Role.PROGRAMMER, maxPerPart));
+            return SimulateTeam(
+                GetSelectedTeamMembers(Role.PLANNER, maxPerPart),
+                GetSelectedTeamMembers(Role.ARTIST, maxPerPart),
+                GetSelectedTeamMembers(Role.PROGRAMMER, maxPerPart),
+                _plannerQuestBonus,
+                _artistQuestBonus,
+                _programmerQuestBonus,
+                _retentionFactor,
+                _companyPopularity,
+                _projectSize);
+        }
+
+        private TeamSimulationResult SimulateTeam(
+            List<EmployeeSnapshot> planners,
+            List<EmployeeSnapshot> artists,
+            List<EmployeeSnapshot> programmers,
+            int plannerQuestBonus,
+            int artistQuestBonus,
+            int programmerQuestBonus,
+            float retentionFactor,
+            int companyPopularity,
+            ProjectSize projectSize)
+        {
+            RoleSimulationResult planner = SimulateRole(Role.PLANNER, planners);
+            RoleSimulationResult artist = SimulateRole(Role.ARTIST, artists);
+            RoleSimulationResult programmer = SimulateRole(Role.PROGRAMMER, programmers);
 
             float baseQuality = planner.HasReport ? planner.Score : 0f;
             float baseCharm = artist.HasReport ? artist.Score : 0f;
             float baseStability = programmer.HasReport ? programmer.Score : 0f;
-            float quality = baseQuality + _plannerQuestBonus;
-            float charm = baseCharm + _artistQuestBonus;
-            float stability = baseStability + _programmerQuestBonus;
+            float quality = baseQuality + plannerQuestBonus;
+            float charm = baseCharm + artistQuestBonus;
+            float stability = baseStability + programmerQuestBonus;
             float totalScore = (quality + stability + charm) / 3f;
-            int dailySales = PerkPolicy.CalcDailySales(_projectSize, quality, stability, charm, _retentionFactor, _companyPopularity);
-            int dailyGold = PerkPolicy.CalcDailyGold(_projectSize, dailySales);
-            int weeklyCost = PerkPolicy.CalcWeeklyCost(_projectSize);
+            int dailySales = PerkPolicy.CalcDailySales(projectSize, quality, stability, charm, retentionFactor, companyPopularity);
+            int dailyGold = PerkPolicy.CalcDailyGold(projectSize, dailySales);
+            int weeklyCost = PerkPolicy.CalcWeeklyCost(projectSize);
 
             return new TeamSimulationResult(
                 planner,
@@ -173,9 +465,9 @@ namespace GameDevTycoon.EditorQA
                 baseQuality,
                 baseStability,
                 baseCharm,
-                _plannerQuestBonus,
-                _programmerQuestBonus,
-                _artistQuestBonus,
+                plannerQuestBonus,
+                programmerQuestBonus,
+                artistQuestBonus,
                 quality,
                 stability,
                 charm,
@@ -434,6 +726,31 @@ namespace GameDevTycoon.EditorQA
                 > 75f => "A",
                 > 50f => "B",
                 _ => "C"
+            };
+        }
+
+        private static int GetWeeklyNetGold(TeamSimulationResult result)
+        {
+            return result.DailyGold * 5 - result.WeeklyCost;
+        }
+
+        private static string GetProjectSizeLabel(ProjectSize size)
+        {
+            return size switch
+            {
+                ProjectSize.Medium => "중형",
+                ProjectSize.Large => "대형",
+                _ => "소형"
+            };
+        }
+
+        private static string GetPickModeLabel(EmployeePickMode pickMode)
+        {
+            return pickMode switch
+            {
+                EmployeePickMode.Low => "하위 직원",
+                EmployeePickMode.Strong => "상위 직원",
+                _ => "평균 직원"
             };
         }
 

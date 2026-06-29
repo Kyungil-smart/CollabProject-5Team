@@ -29,7 +29,7 @@ namespace GameDevTycoon.EditorQA
         private ProjectSize _completionProjectSize = ProjectSize.Small;
         private ProjectGradeOption _completionGrade = ProjectGradeOption.B;
 
-        [MenuItem("Tools/Simulation/Employee Lifecycle Simulator")]
+        [MenuItem("Tools/Balance/6. Employee Lifecycle", false, 206)]
         public static void Open()
         {
             EmployeeLifecycleSimulatorWindow window = GetWindow<EmployeeLifecycleSimulatorWindow>("Employee Lifecycle");

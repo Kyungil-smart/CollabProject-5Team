@@ -18,12 +18,27 @@ namespace GameDevTycoon.EditorQA
         private int _serviceWeeks = 8;
         private bool _chargeWeeklyCost = true;
         private bool _decayRetentionWeekly = true;
+        private bool _showScenarioMatrix = true;
+        private bool _hasBaseline;
+        private RevenueSummary _baselineSummary;
+        private int _targetTotalSalesMin;
+        private int _targetTotalSalesMax = 10000000;
+        private int _targetTotalGoldMin;
+        private int _targetTotalGoldMax = 100000000;
+        private int _targetNetGoldMin;
+        private int _targetNetGoldMax = 100000000;
+        private float _targetCostCoverageMin = 1f;
+        private float _targetCostCoverageMax = 50f;
+        private int _targetFirstDeficitDayMin;
+        private int _targetRetentionZeroDayMin;
+        private int _burstDailyGoldLimit = 1000000;
+        private int _lowDailyGoldLimit = 100;
 
-        [MenuItem("Tools/Simulation/Revenue Simulator")]
+        [MenuItem("Tools/Balance/4. Revenue Balance", false, 204)]
         public static void Open()
         {
             RevenueSimulatorWindow window = GetWindow<RevenueSimulatorWindow>("Revenue Simulator");
-            window.minSize = new Vector2(620f, 520f);
+            window.minSize = new Vector2(700f, 620f);
             window.Show();
         }
 
@@ -38,7 +53,13 @@ namespace GameDevTycoon.EditorQA
 
             _scrollPosition = EditorGUILayout.BeginScrollView(_scrollPosition);
             DrawInputPanel();
-            DrawSummary();
+            DrawPresetPanel();
+
+            RevenueSummary summary = BuildSummary(_days);
+            DrawTargetCheck(summary);
+            DrawSummary(summary);
+            DrawRiskPanel(summary);
+            DrawScenarioMatrix();
             DrawTimeline();
             EditorGUILayout.EndScrollView();
         }
@@ -81,38 +102,285 @@ namespace GameDevTycoon.EditorQA
             }
         }
 
-        private void DrawSummary()
+        private void DrawPresetPanel()
+        {
+            using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
+            {
+                EditorGUILayout.LabelField("대표 출시 케이스", EditorStyles.boldLabel);
+                EditorGUILayout.LabelField(
+                    "자주 검증할 등급/규모 조합을 빠르게 불러와 매출 곡선을 비교합니다.",
+                    EditorStyles.wordWrappedMiniLabel);
+
+                using (new EditorGUILayout.HorizontalScope())
+                {
+                    DrawPresetButton("소형 B급", ProjectSize.Small, 55f, 55f, 55f, 0, 1f, 8);
+                    DrawPresetButton("소형 A급", ProjectSize.Small, 75f, 75f, 75f, 20, 1f, 8);
+                    DrawPresetButton("중형 B급", ProjectSize.Medium, 60f, 60f, 60f, 30, 1f, 10);
+                }
+
+                using (new EditorGUILayout.HorizontalScope())
+                {
+                    DrawPresetButton("중형 A급", ProjectSize.Medium, 78f, 78f, 78f, 50, 1f, 10);
+                    DrawPresetButton("대형 A급", ProjectSize.Large, 82f, 82f, 82f, 80, 1f, 12);
+                    DrawPresetButton("대형 S급", ProjectSize.Large, 95f, 95f, 95f, 120, 1f, 16);
+                }
+            }
+        }
+
+        private void DrawPresetButton(
+            string label,
+            ProjectSize size,
+            float quality,
+            float stability,
+            float charm,
+            int popularity,
+            float retention,
+            int weeks)
+        {
+            if (!GUILayout.Button(label, GUILayout.Height(28f)))
+                return;
+
+            _projectSize = size;
+            _quality = quality;
+            _stability = stability;
+            _charm = charm;
+            _companyPopularity = popularity;
+            _startRetention = retention;
+            _serviceWeeks = weeks;
+            Simulate();
+        }
+
+        private void DrawTargetCheck(RevenueSummary summary)
+        {
+            using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
+            {
+                EditorGUILayout.LabelField("목표 범위 검증", EditorStyles.boldLabel);
+                EditorGUILayout.LabelField(
+                    "대표 케이스가 의도한 판매량/매출/순수익 범위에 들어오는지 확인합니다.",
+                    EditorStyles.wordWrappedMiniLabel);
+
+                using (new EditorGUILayout.HorizontalScope())
+                {
+                    _targetTotalSalesMin = EditorGUILayout.IntField("총 판매량 최소", _targetTotalSalesMin);
+                    _targetTotalSalesMax = EditorGUILayout.IntField("총 판매량 최대", _targetTotalSalesMax);
+                }
+
+                using (new EditorGUILayout.HorizontalScope())
+                {
+                    _targetTotalGoldMin = EditorGUILayout.IntField("총 매출 최소", _targetTotalGoldMin);
+                    _targetTotalGoldMax = EditorGUILayout.IntField("총 매출 최대", _targetTotalGoldMax);
+                }
+
+                using (new EditorGUILayout.HorizontalScope())
+                {
+                    _targetNetGoldMin = EditorGUILayout.IntField("순수익 최소", _targetNetGoldMin);
+                    _targetNetGoldMax = EditorGUILayout.IntField("순수익 최대", _targetNetGoldMax);
+                }
+
+                using (new EditorGUILayout.HorizontalScope())
+                {
+                    _targetCostCoverageMin = EditorGUILayout.FloatField("유지비 대비 최소", _targetCostCoverageMin);
+                    _targetCostCoverageMax = EditorGUILayout.FloatField("유지비 대비 최대", _targetCostCoverageMax);
+                }
+
+                using (new EditorGUILayout.HorizontalScope())
+                {
+                    _targetFirstDeficitDayMin = EditorGUILayout.IntField("적자 최소 일차(0=무시)", _targetFirstDeficitDayMin);
+                    _targetRetentionZeroDayMin = EditorGUILayout.IntField("유지력 0 최소 일차(0=무시)", _targetRetentionZeroDayMin);
+                }
+
+                using (new EditorGUILayout.HorizontalScope())
+                {
+                    _burstDailyGoldLimit = EditorGUILayout.IntField("매출 과폭발 기준", _burstDailyGoldLimit);
+                    _lowDailyGoldLimit = EditorGUILayout.IntField("출시 직후 저매출 기준", _lowDailyGoldLimit);
+                }
+
+                DrawTargetMetric("총 판매량", summary.TotalSales, _targetTotalSalesMin, _targetTotalSalesMax);
+                DrawTargetMetric("총 매출", summary.TotalGold, _targetTotalGoldMin, _targetTotalGoldMax);
+                DrawTargetMetric("순수익", summary.TotalNetGold, _targetNetGoldMin, _targetNetGoldMax);
+                DrawTargetMetric("유지비 대비 매출", summary.CostCoverage, _targetCostCoverageMin, _targetCostCoverageMax);
+                DrawOptionalDayMetric("누적 적자 전환", summary.FirstCumulativeDeficitDay, _targetFirstDeficitDayMin);
+                DrawOptionalDayMetric("유지력 0 도달", summary.RetentionZeroDay, _targetRetentionZeroDayMin);
+
+                using (new EditorGUILayout.HorizontalScope())
+                {
+                    if (GUILayout.Button("현재 결과를 기준값으로 저장", GUILayout.Height(28f)))
+                    {
+                        _baselineSummary = summary;
+                        _hasBaseline = true;
+                    }
+
+                    EditorGUI.BeginDisabledGroup(!_hasBaseline);
+                    if (GUILayout.Button("기준값 지우기", GUILayout.Height(28f)))
+                        _hasBaseline = false;
+                    EditorGUI.EndDisabledGroup();
+                }
+
+                DrawBaselineCompare(summary);
+            }
+        }
+
+        private static void DrawTargetMetric(string label, float value, float min, float max)
+        {
+            bool passed = value >= min && value <= max;
+            EditorGUILayout.LabelField(
+                $"{(passed ? "OK" : "NG")} {label}: {value:0.#} / 목표 {min:0.#}~{max:0.#}",
+                passed ? EditorStyles.miniLabel : EditorStyles.boldLabel);
+        }
+
+        private static void DrawOptionalDayMetric(string label, int day, int minDay)
+        {
+            if (minDay <= 0)
+            {
+                EditorGUILayout.LabelField($"SKIP {label}: {FormatDay(day)}", EditorStyles.miniLabel);
+                return;
+            }
+
+            bool passed = day == 0 || day >= minDay;
+            EditorGUILayout.LabelField(
+                $"{(passed ? "OK" : "NG")} {label}: {FormatDay(day)} / 목표 {minDay}일차 이후",
+                passed ? EditorStyles.miniLabel : EditorStyles.boldLabel);
+        }
+
+        private void DrawBaselineCompare(RevenueSummary current)
+        {
+            if (!_hasBaseline)
+            {
+                EditorGUILayout.HelpBox(
+                    "수치 변경 전 결과를 기준값으로 저장하면, 이후 매출 곡선 변화량을 바로 비교할 수 있습니다.",
+                    MessageType.Info);
+                return;
+            }
+
+            EditorGUILayout.Space(4f);
+            EditorGUILayout.LabelField("기준값 대비 변화", EditorStyles.boldLabel);
+            EditorGUILayout.LabelField(BuildDeltaText("총 판매량", current.TotalSales, _baselineSummary.TotalSales), EditorStyles.miniLabel);
+            EditorGUILayout.LabelField(BuildDeltaText("총 매출", current.TotalGold, _baselineSummary.TotalGold), EditorStyles.miniLabel);
+            EditorGUILayout.LabelField(BuildDeltaText("순수익", current.TotalNetGold, _baselineSummary.TotalNetGold), EditorStyles.miniLabel);
+            EditorGUILayout.LabelField(BuildDeltaText("유지비 대비", current.CostCoverage, _baselineSummary.CostCoverage), EditorStyles.miniLabel);
+            EditorGUILayout.LabelField($"누적 적자 전환: {FormatDay(current.FirstCumulativeDeficitDay)} / 기준 {FormatDay(_baselineSummary.FirstCumulativeDeficitDay)}", EditorStyles.miniLabel);
+        }
+
+        private static string BuildDeltaText(string label, float current, float baseline)
+        {
+            float delta = current - baseline;
+            return $"{label}: {current:0.#} ({delta:+0.#;-0.#;0} / 기준 {baseline:0.#})";
+        }
+
+        private void DrawSummary(RevenueSummary summary)
         {
             if (_days.Count == 0)
                 return;
 
-            int totalSales = 0;
-            int totalGold = 0;
-            int totalCost = 0;
-            int totalNetGold = 0;
-            int finalRetentionPercent = Mathf.RoundToInt(_days[_days.Count - 1].RetentionFactor * 100f);
-
-            foreach (RevenueDaySnapshot day in _days)
-            {
-                totalSales += day.DailySales;
-                totalGold += day.DailyGold;
-                totalCost += day.WeeklyCost;
-                totalNetGold += day.NetGold;
-            }
-
             using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
             {
                 EditorGUILayout.LabelField("요약", EditorStyles.boldLabel);
-                EditorGUILayout.LabelField($"총 판매량: {totalSales:N0}");
-                EditorGUILayout.LabelField($"총 매출: {totalGold:N0}G");
-                EditorGUILayout.LabelField($"총 유지비: {totalCost:N0}G");
-                EditorGUILayout.LabelField($"순수익: {totalNetGold:N0}G");
-                EditorGUILayout.LabelField($"예상 평판 증가: +{PerkPolicy.CalcReputationGainFromSales(totalSales):N0}");
-                EditorGUILayout.LabelField($"마지막 유지력: {finalRetentionPercent}%");
-
-                if (totalNetGold < 0)
-                    EditorGUILayout.HelpBox("서비스 기간 전체 기준으로 유지비가 매출보다 큽니다.", MessageType.Warning);
+                EditorGUILayout.LabelField($"총 판매량: {summary.TotalSales:N0}");
+                EditorGUILayout.LabelField($"총 매출: {summary.TotalGold:N0}G");
+                EditorGUILayout.LabelField($"총 유지비: {summary.TotalCost:N0}G");
+                EditorGUILayout.LabelField($"순수익: {summary.TotalNetGold:N0}G");
+                EditorGUILayout.LabelField($"예상 평판 증가: +{PerkPolicy.CalcReputationGainFromSales(summary.TotalSales):N0}");
+                EditorGUILayout.LabelField($"마지막 유지력: {summary.FinalRetentionFactor:P0}");
+                EditorGUILayout.LabelField($"누적 적자 전환: {FormatDay(summary.FirstCumulativeDeficitDay)}");
+                EditorGUILayout.LabelField($"유지력 0 도달: {FormatDay(summary.RetentionZeroDay)}");
+                EditorGUILayout.LabelField($"최고 일일 매출: {summary.PeakDailyGold:N0}G / 마지막 일일 매출: {summary.LastDailyGold:N0}G");
+                EditorGUILayout.LabelField($"유지비 대비 매출: {summary.CostCoverage:0.##}배");
             }
+        }
+
+        private void DrawRiskPanel(RevenueSummary summary)
+        {
+            using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
+            {
+                EditorGUILayout.LabelField("위험 신호", EditorStyles.boldLabel);
+
+                bool hasRisk = false;
+
+                if (summary.PeakDailyGold >= _burstDailyGoldLimit)
+                {
+                    DrawRisk("매출 과폭발", $"최고 일일 매출이 {_burstDailyGoldLimit:N0}G 이상입니다. 회사 인기/규모 계수/점수 가중치가 과할 수 있습니다.");
+                    hasRisk = true;
+                }
+
+                if (summary.FirstDayGold <= _lowDailyGoldLimit)
+                {
+                    DrawRisk("출시 직후 저매출", $"1일차 매출이 {_lowDailyGoldLimit:N0}G 이하입니다. 낮은 점수 프로젝트의 보상이 너무 약할 수 있습니다.");
+                    hasRisk = true;
+                }
+
+                if (summary.TotalNetGold < 0)
+                {
+                    DrawRisk("서비스 기간 전체 적자", "총 순수익이 음수입니다. 유지비 대비 매출 구조를 확인해야 합니다.");
+                    hasRisk = true;
+                }
+
+                if (summary.RetentionZeroDay > 0 && summary.RetentionZeroDay <= 20)
+                {
+                    DrawRisk("유지력 급락", $"유지력이 {summary.RetentionZeroDay}일차에 0에 도달합니다. 서비스 종료 판단이 너무 빨리 올 수 있습니다.");
+                    hasRisk = true;
+                }
+
+                if (_projectSize == ProjectSize.Large && summary.CostCoverage < 2f)
+                {
+                    DrawRisk("대형 프로젝트 보상 약함", "대형 프로젝트인데 유지비 대비 매출이 낮습니다. 대형 프로젝트를 할 이유가 약해질 수 있습니다.");
+                    hasRisk = true;
+                }
+
+                if (_projectSize == ProjectSize.Small && summary.CostCoverage > 20f)
+                {
+                    DrawRisk("소형 프로젝트 효율 과다", "소형 프로젝트가 유지비 대비 지나치게 효율적입니다. 중형/대형으로 넘어갈 이유가 약해질 수 있습니다.");
+                    hasRisk = true;
+                }
+
+                if (!hasRisk)
+                    EditorGUILayout.LabelField("현재 기준으로 뚜렷한 위험 신호는 없습니다.", EditorStyles.miniLabel);
+            }
+        }
+
+        private static void DrawRisk(string title, string description)
+        {
+            EditorGUILayout.HelpBox($"{title}: {description}", MessageType.Warning);
+        }
+
+        private void DrawScenarioMatrix()
+        {
+            EditorGUILayout.Space(4f);
+            _showScenarioMatrix = EditorGUILayout.Foldout(_showScenarioMatrix, "대표 매출 케이스 매트릭스", true);
+            if (!_showScenarioMatrix)
+                return;
+
+            using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
+            {
+                EditorGUILayout.LabelField(
+                    "대표 등급별 매출/순수익을 한 번에 비교합니다. 목표 범위는 현재 입력된 값을 기준으로 판정합니다.",
+                    EditorStyles.wordWrappedMiniLabel);
+                EditorGUILayout.LabelField("케이스 / 총 매출 / 순수익 / 유지비 대비 / 적자 전환 / 판정", EditorStyles.miniLabel);
+
+                DrawMatrixRow("소형 B급", ProjectSize.Small, 55f, 55f, 55f, 0, 1f, 8);
+                DrawMatrixRow("소형 A급", ProjectSize.Small, 75f, 75f, 75f, 20, 1f, 8);
+                DrawMatrixRow("중형 B급", ProjectSize.Medium, 60f, 60f, 60f, 30, 1f, 10);
+                DrawMatrixRow("중형 A급", ProjectSize.Medium, 78f, 78f, 78f, 50, 1f, 10);
+                DrawMatrixRow("대형 A급", ProjectSize.Large, 82f, 82f, 82f, 80, 1f, 12);
+                DrawMatrixRow("대형 S급", ProjectSize.Large, 95f, 95f, 95f, 120, 1f, 16);
+            }
+        }
+
+        private void DrawMatrixRow(
+            string label,
+            ProjectSize size,
+            float quality,
+            float stability,
+            float charm,
+            int popularity,
+            float retention,
+            int weeks)
+        {
+            RevenueSummary summary = SimulateSummary(size, quality, stability, charm, popularity, retention, weeks);
+            bool passed = IsInTargetRange(summary);
+
+            EditorGUILayout.LabelField(
+                $"{label} / {summary.TotalGold:N0}G / {summary.TotalNetGold:N0}G / {summary.CostCoverage:0.##}배 / {FormatDay(summary.FirstCumulativeDeficitDay)} / {(passed ? "OK" : "NG")}",
+                passed ? EditorStyles.miniLabel : EditorStyles.boldLabel);
         }
 
         private void DrawTimeline()
@@ -135,22 +403,165 @@ namespace GameDevTycoon.EditorQA
         private void Simulate()
         {
             _days.Clear();
+            SimulateInto(_days, _projectSize, _quality, _stability, _charm, _companyPopularity, _startRetention, _serviceWeeks);
+        }
 
-            float retention = Mathf.Clamp01(_startRetention);
-            int totalDays = Mathf.Max(1, _serviceWeeks) * 5;
+        private RevenueSummary SimulateSummary(
+            ProjectSize size,
+            float quality,
+            float stability,
+            float charm,
+            int companyPopularity,
+            float startRetention,
+            int serviceWeeks)
+        {
+            var days = new List<RevenueDaySnapshot>();
+            SimulateInto(days, size, quality, stability, charm, companyPopularity, startRetention, serviceWeeks);
+            return BuildSummary(days);
+        }
+
+        private void SimulateInto(
+            List<RevenueDaySnapshot> days,
+            ProjectSize size,
+            float quality,
+            float stability,
+            float charm,
+            int companyPopularity,
+            float startRetention,
+            int serviceWeeks)
+        {
+            days.Clear();
+
+            float retention = Mathf.Clamp01(startRetention);
+            int totalDays = Mathf.Max(1, serviceWeeks) * 5;
 
             for (int day = 1; day <= totalDays; day++)
             {
-                int dailySales = PerkPolicy.CalcDailySales(_projectSize, _quality, _stability, _charm, retention, _companyPopularity);
-                int dailyGold = PerkPolicy.CalcDailyGold(_projectSize, dailySales);
+                int dailySales = PerkPolicy.CalcDailySales(size, quality, stability, charm, retention, companyPopularity);
+                int dailyGold = PerkPolicy.CalcDailyGold(size, dailySales);
                 bool isWeeklySettlementDay = day % 5 == 0;
-                int weeklyCost = _chargeWeeklyCost && isWeeklySettlementDay ? PerkPolicy.CalcWeeklyCost(_projectSize) : 0;
+                int weeklyCost = _chargeWeeklyCost && isWeeklySettlementDay ? PerkPolicy.CalcWeeklyCost(size) : 0;
                 int netGold = dailyGold - weeklyCost;
 
-                _days.Add(new RevenueDaySnapshot(day, retention, dailySales, dailyGold, weeklyCost, netGold));
+                days.Add(new RevenueDaySnapshot(day, retention, dailySales, dailyGold, weeklyCost, netGold));
 
                 if (_decayRetentionWeekly && isWeeklySettlementDay)
                     retention = Mathf.Clamp01(retention - PerkPolicy.RETENTION_DECAY);
+            }
+        }
+
+        private static RevenueSummary BuildSummary(List<RevenueDaySnapshot> days)
+        {
+            int totalSales = 0;
+            int totalGold = 0;
+            int totalCost = 0;
+            int totalNetGold = 0;
+            int cumulativeNet = 0;
+            int firstCumulativeDeficitDay = 0;
+            int retentionZeroDay = 0;
+            int peakDailyGold = 0;
+            int firstDayGold = days.Count > 0 ? days[0].DailyGold : 0;
+            int lastDailyGold = days.Count > 0 ? days[days.Count - 1].DailyGold : 0;
+            float finalRetentionFactor = days.Count > 0 ? days[days.Count - 1].RetentionFactor : 0f;
+
+            foreach (RevenueDaySnapshot day in days)
+            {
+                totalSales += day.DailySales;
+                totalGold += day.DailyGold;
+                totalCost += day.WeeklyCost;
+                totalNetGold += day.NetGold;
+                cumulativeNet += day.NetGold;
+                peakDailyGold = Mathf.Max(peakDailyGold, day.DailyGold);
+
+                if (firstCumulativeDeficitDay == 0 && cumulativeNet < 0)
+                    firstCumulativeDeficitDay = day.Day;
+
+                if (retentionZeroDay == 0 && day.RetentionFactor <= 0.001f)
+                    retentionZeroDay = day.Day;
+            }
+
+            float costCoverage = totalCost > 0 ? totalGold / (float)totalCost : 0f;
+
+            return new RevenueSummary(
+                totalSales,
+                totalGold,
+                totalCost,
+                totalNetGold,
+                finalRetentionFactor,
+                firstCumulativeDeficitDay,
+                retentionZeroDay,
+                peakDailyGold,
+                firstDayGold,
+                lastDailyGold,
+                costCoverage);
+        }
+
+        private bool IsInTargetRange(RevenueSummary summary)
+        {
+            if (summary.TotalSales < _targetTotalSalesMin || summary.TotalSales > _targetTotalSalesMax)
+                return false;
+
+            if (summary.TotalGold < _targetTotalGoldMin || summary.TotalGold > _targetTotalGoldMax)
+                return false;
+
+            if (summary.TotalNetGold < _targetNetGoldMin || summary.TotalNetGold > _targetNetGoldMax)
+                return false;
+
+            if (summary.CostCoverage < _targetCostCoverageMin || summary.CostCoverage > _targetCostCoverageMax)
+                return false;
+
+            if (_targetFirstDeficitDayMin > 0 && summary.FirstCumulativeDeficitDay > 0 && summary.FirstCumulativeDeficitDay < _targetFirstDeficitDayMin)
+                return false;
+
+            if (_targetRetentionZeroDayMin > 0 && summary.RetentionZeroDay > 0 && summary.RetentionZeroDay < _targetRetentionZeroDayMin)
+                return false;
+
+            return true;
+        }
+
+        private static string FormatDay(int day)
+        {
+            return day > 0 ? $"{day}일차" : "없음";
+        }
+
+        private readonly struct RevenueSummary
+        {
+            public int TotalSales { get; }
+            public int TotalGold { get; }
+            public int TotalCost { get; }
+            public int TotalNetGold { get; }
+            public float FinalRetentionFactor { get; }
+            public int FirstCumulativeDeficitDay { get; }
+            public int RetentionZeroDay { get; }
+            public int PeakDailyGold { get; }
+            public int FirstDayGold { get; }
+            public int LastDailyGold { get; }
+            public float CostCoverage { get; }
+
+            public RevenueSummary(
+                int totalSales,
+                int totalGold,
+                int totalCost,
+                int totalNetGold,
+                float finalRetentionFactor,
+                int firstCumulativeDeficitDay,
+                int retentionZeroDay,
+                int peakDailyGold,
+                int firstDayGold,
+                int lastDailyGold,
+                float costCoverage)
+            {
+                TotalSales = totalSales;
+                TotalGold = totalGold;
+                TotalCost = totalCost;
+                TotalNetGold = totalNetGold;
+                FinalRetentionFactor = finalRetentionFactor;
+                FirstCumulativeDeficitDay = firstCumulativeDeficitDay;
+                RetentionZeroDay = retentionZeroDay;
+                PeakDailyGold = peakDailyGold;
+                FirstDayGold = firstDayGold;
+                LastDailyGold = lastDailyGold;
+                CostCoverage = costCoverage;
             }
         }
 
