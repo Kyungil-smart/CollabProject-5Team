@@ -1,27 +1,26 @@
 using UnityEngine;
 using System.Collections.Generic;
+using GameDevTycoon.UI.Ingame;
 
 public class CommentListManager : MonoBehaviour
 {
     [Header("UI 설정")]
     [SerializeField] private GameObject _uiPrefab;
-    [SerializeField] private Transform  _contentTransform;
+    [SerializeField] private Transform _contentTransform;
 
     [SerializeField] private List<EmployeeCommentData> _commentSheetDatas = new List<EmployeeCommentData>();
 
     private int _maxPoolCount = 30;
-    private List<EmployeeComment> _uiPoolList = new List<EmployeeComment>();
-
-    private List<Employee> _haveEmployeeList;
+    private List<EmployeeCommentItemView> _uiPoolList = new List<EmployeeCommentItemView>();
 
     private void Awake()
     {
         for (int i = 0; i < _maxPoolCount; i++)
         {
-            GameObject employee = Instantiate(_uiPrefab, _contentTransform, false);
-            employee.SetActive(false);
+            GameObject go = Instantiate(_uiPrefab, _contentTransform, false);
+            go.SetActive(false);
 
-            _uiPoolList.Add(employee.GetComponent<EmployeeComment>());
+            _uiPoolList.Add(go.GetComponent<EmployeeCommentItemView>());
         }
     }
 
@@ -33,27 +32,22 @@ public class CommentListManager : MonoBehaviour
             return;
         }
 
-        List<Employee> currentEmployees = _EmployeeManager.Instance.haveEmployees.haveEmployeeList;
-
-        RefreshCommentList(currentEmployees, _commentSheetDatas);
+        RefreshCommentList(_EmployeeManager.Instance.haveEmployees.haveEmployeeList, _commentSheetDatas);
     }
 
     public void RefreshCommentList(List<Employee> currentEmployees, List<EmployeeCommentData> commentSheetData)
     {
-        int activeCount = currentEmployees.Count;
-        if (activeCount >= _uiPoolList.Count)
-            activeCount = _uiPoolList.Count;
+        int activeCount = Mathf.Min(currentEmployees.Count, _uiPoolList.Count);
 
         for (int i = 0; i < _uiPoolList.Count; i++)
         {
             if (i < activeCount)
             {
                 Employee employee = currentEmployees[i];
-
-                string matchingComment = FindMatchingComment(employee, commentSheetData);
+                string commentText = FindMatchingComment(employee, commentSheetData);
 
                 _uiPoolList[i].gameObject.SetActive(true);
-                _uiPoolList[i].SetUpCommentUI(employee, matchingComment);
+                _uiPoolList[i].Bind(employee, commentText);
             }
             else
             {
@@ -64,34 +58,26 @@ public class CommentListManager : MonoBehaviour
 
     private string FindMatchingComment(Employee employee, List<EmployeeCommentData> sheetData)
     {
-        string defaultComment = "문제없습니다.";
-
         foreach (var data in sheetData)
         {
             if (data.target_role != employee.so.role) continue;
 
-            if (!CheckSection(employee.MutableData.desire,  data.trigger_desire )) continue;
+            if (!CheckSection(employee.MutableData.desire, data.trigger_desire)) continue;
             if (!CheckSection(employee.MutableData.fatigue, data.trigger_fatigue)) continue;
             if (!CheckSection(employee.MutableData.loyalty, data.trigger_loyalty)) continue;
 
             return data.comment_text;
         }
 
-        return defaultComment;
+        return null;
     }
 
     private bool CheckSection(int actualValue, int sheetValue)
     {
         if (sheetValue == 50)
-        {
-            // 50 이상 100 이하
             return actualValue >= 50 && actualValue <= 100;
-        }
         else if (sheetValue == 0)
-        {
-            // 0 이상 50 미만
             return actualValue >= 0 && actualValue < 50;
-        }
 
         return actualValue >= sheetValue;
     }

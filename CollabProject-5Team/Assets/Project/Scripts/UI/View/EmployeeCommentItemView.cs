@@ -13,13 +13,14 @@ namespace GameDevTycoon.UI.Ingame
         [SerializeField] private Image _profileIcon;
         [SerializeField] private TextMeshProUGUI _nameLabel;
 
-        [Header("태그 앵커")]
-        [SerializeField] private Transform _departmentTagAnchor;
+        [Header("태그")]
+        [SerializeField] private Image _tagBG;
+        [SerializeField] private TextMeshProUGUI _tagLabel;
 
-        [Header("태그 프리팹")]
-        [SerializeField] private DepartmentTagView _departmentTagPrefab;
-
-        private DepartmentTagView _departmentTag;
+        [Header("직군별 색상")]
+        [SerializeField] private Color _plannerColor;
+        [SerializeField] private Color _programmerColor;
+        [SerializeField] private Color _artistColor;
 
         [Header("충성도 변화")]
         [SerializeField] private TextMeshProUGUI _loyaltyChangeTitleLabel;
@@ -35,19 +36,25 @@ namespace GameDevTycoon.UI.Ingame
 
         public void Bind(Employee employee)
         {
+            Bind(employee, null);
+        }
+
+        /// <summary>
+        /// commentText가 null이면 fallback 코멘트 사용.
+        /// </summary>
+        public void Bind(Employee employee, string commentText)
+        {
             var so = employee.so;
             var mutable = employee.MutableData;
 
             _profileIcon.sprite = GetProfileSprite(so, mutable);
             _nameLabel.text = so.Name;
 
-            if (_departmentTag == null)
-                _departmentTag = Instantiate(_departmentTagPrefab, _departmentTagAnchor);
-            _departmentTag.Bind(so.role);
+            _tagLabel.text = RoleToString(so.role);
+            _tagBG.color = RoleToColor(so.role);
 
-            // [TODO: 주차별 충성도 변화량 데이터 구조 확정 후 실제 값 연결]
-            SetLoyaltyChange(0);
-            SetComment(employee);
+            SetLoyaltyChange(mutable.loyalty - mutable.preLoyalty);
+            SetComment(employee, commentText);
         }
 
         private void SetLoyaltyChange(int delta)
@@ -74,7 +81,7 @@ namespace GameDevTycoon.UI.Ingame
             }
         }
 
-        private void SetComment(Employee employee)
+        private void SetComment(Employee employee, string commentText)
         {
             if (!employee.hasTalkedThisWeek)
             {
@@ -84,8 +91,7 @@ namespace GameDevTycoon.UI.Ingame
             }
 
             // [TODO: 대화 시스템 연결 후 실제 코멘트 데이터 바인딩]
-            var mutable = employee.MutableData;
-            _commentLabel.text = GetFallbackComment(mutable);
+            _commentLabel.text = commentText ?? GetFallbackComment(employee.MutableData);
             _commentLabel.color = Color.white;
         }
 
@@ -106,5 +112,20 @@ namespace GameDevTycoon.UI.Ingame
             return so.iconNormal;
         }
 
+        private static string RoleToString(Role role) => role switch
+        {
+            Role.PLANNER => "기획",
+            Role.PROGRAMMER => "개발",
+            Role.ARTIST => "아트",
+            _ => string.Empty
+        };
+
+        private Color RoleToColor(Role role) => role switch
+        {
+            Role.PLANNER => _plannerColor,
+            Role.PROGRAMMER => _programmerColor,
+            Role.ARTIST => _artistColor,
+            _ => Color.white
+        };
     }
 }
