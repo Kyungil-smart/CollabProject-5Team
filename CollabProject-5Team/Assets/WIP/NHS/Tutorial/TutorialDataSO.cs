@@ -7,7 +7,7 @@ public class TutorialDataSO : ScriptableObject
 {
     public string tutorialObjectId;
 
-    public ShowMode   showMode;
+    public ShowMode         showMode;
     public GameObject activateObject;
-    public string     tutorialText;
+    public string       tutorialText;
 }
