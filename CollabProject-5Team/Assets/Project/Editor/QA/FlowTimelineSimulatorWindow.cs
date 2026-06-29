@@ -234,9 +234,9 @@ namespace GameDevTycoon.EditorQA
             float quality = 0f;
             float stability = 0f;
             float charm = 0f;
-            float desire = team.Average(e => e.desire);
-            float fatigue = team.Average(e => e.fatigue);
-            float loyalty = team.Average(e => e.loyalty);
+            float desire = (float)team.Average(e => e.desire);
+            float fatigue = (float)team.Average(e => e.fatigue);
+            float loyalty = (float)team.Average(e => e.loyalty);
             float retention = 1f;
             bool launched = false;
             bool launchNextMonday = false;
