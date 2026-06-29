@@ -5591,7 +5591,7 @@ RectTransform:
   m_Father: {fileID: 1738475534526314385}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 1, y: 1}
+  m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -11674,7 +11674,7 @@ RectTransform:
   m_Father: {fileID: 3116844087154896848}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 1, y: 1}
+  m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -18786,8 +18786,6 @@ MonoBehaviour:
   _hrPopup: {fileID: 3049071595645160721}
   _employeeManageTabButton: {fileID: 344654403500805841}
   _hireTabButton: {fileID: 5270191383844431386}
-  _fireTabButton: {fileID: 0}
-  _educationTabButton: {fileID: 0}
   _tabActiveSprite: {fileID: 21300000, guid: 8d06b36a9c175f049bcafe1aaca19741, type: 3}
   _tabInactiveSprite: {fileID: 21300000, guid: 235a32a96f215e04bbd645d387b846ce, type: 3}
   _tabActiveLabelColor: {r: 0.3372549, g: 0.24705882, b: 0.0627451, a: 1}
@@ -18802,6 +18800,23 @@ MonoBehaviour:
   _employeeManageEducationButton: {fileID: 2648989184728255760}
   _employeeManageFireButton: {fileID: 5244308408232425905}
   _employeeManageBackButton: {fileID: 3267011814966741643}
+  _panelEducationCourse: {fileID: 1188413019511421833}
+  _educationCourseConfirmButton: {fileID: 8684622173180216244}
+  _educationCourseBackButton: {fileID: 1127960763325302146}
+  _confirmActiveSprite: {fileID: 21300000, guid: 20b85dfc2b5150648b89dfc8080e11a2, type: 3}
+  _confirmInactiveSprite: {fileID: 21300000, guid: bb8cdeb367da9a043aa2c08d82ce79bd, type: 3}
+  _courseButton0: {fileID: 1033688040916753747}
+  _courseButton1: {fileID: 4041281446216296327}
+  _courseButton2: {fileID: 3678300074055601125}
+  _courseSelectImg0: {fileID: 8020710980678272910}
+  _courseSelectImg1: {fileID: 8756398972500949755}
+  _courseSelectImg2: {fileID: 735435359670594444}
+  _courseEducationOverlay0: {fileID: 3105590227071184222}
+  _courseEducationOverlay1: {fileID: 4235524582986862945}
+  _courseEducationOverlay2: {fileID: 5749650498188056517}
+  _courseCostValue0: {fileID: 2613528701696455553}
+  _courseCostValue1: {fileID: 8114560653345940625}
+  _courseCostValue2: {fileID: 5796197679356283377}
   _tabHire: {fileID: 5124943996959143373}
   _panelHireMain: {fileID: 2840960193975512131}
   _recruitButton: {fileID: 5053098338434427037}
@@ -18826,41 +18841,6 @@ MonoBehaviour:
   _applicantDetailContent: {fileID: 2286486569997888372}
   HireButton: {fileID: 6815136768966562265}
   _applicantDetailBackButton: {fileID: 3375875540586201416}
-  _tabFire: {fileID: 0}
-  _fireCountLabel: {fileID: 0}
-  _fireSortDropdown: {fileID: 0}
-  _fireListContent: {fileID: 0}
-  _firePanelList: {fileID: 0}
-  _firePanelDetail: {fileID: 0}
-  _fireDetailContent: {fileID: 0}
-  _fireConfirmButton: {fileID: 0}
-  _fireBackButton: {fileID: 0}
-  _tabEducation: {fileID: 0}
-  _educationCountLabel: {fileID: 0}
-  _educationSortDropdown: {fileID: 0}
-  _educationListContent: {fileID: 0}
-  _educationPanelList: {fileID: 0}
-  _educationPanelDetail: {fileID: 0}
-  _educationDetailContent: {fileID: 0}
-  _educationButton: {fileID: 0}
-  _educationDetailBackButton: {fileID: 0}
-  _panelEducationCourse: {fileID: 1188413019511421833}
-  _educationCourseConfirmButton: {fileID: 8684622173180216244}
-  _educationCourseBackButton: {fileID: 1127960763325302146}
-  _confirmActiveSprite: {fileID: 21300000, guid: 20b85dfc2b5150648b89dfc8080e11a2, type: 3}
-  _confirmInactiveSprite: {fileID: 21300000, guid: bb8cdeb367da9a043aa2c08d82ce79bd, type: 3}
-  _courseButton0: {fileID: 1033688040916753747}
-  _courseButton1: {fileID: 4041281446216296327}
-  _courseButton2: {fileID: 3678300074055601125}
-  _courseSelectImg0: {fileID: 8020710980678272910}
-  _courseSelectImg1: {fileID: 8756398972500949755}
-  _courseSelectImg2: {fileID: 735435359670594444}
-  _courseEducationOverlay0: {fileID: 3105590227071184222}
-  _courseEducationOverlay1: {fileID: 4235524582986862945}
-  _courseEducationOverlay2: {fileID: 5749650498188056517}
-  _courseCostValue0: {fileID: 2613528701696455553}
-  _courseCostValue1: {fileID: 8114560653345940625}
-  _courseCostValue2: {fileID: 5796197679356283377}
 --- !u!114 &6189357922265161955
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -33626,7 +33606,7 @@ MonoBehaviour:
   m_fontColor32:
     serializedVersion: 2
     rgba: 4281479730
-  m_fontColor: {r: 0.19607843, g: 0.19607843, b: 0.19607843, a: 1}
+  m_fontColor: {r: 1, g: 1, b: 1, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -33643,8 +33623,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 24
-  m_fontSizeBase: 24
+  m_fontSize: 50
+  m_fontSizeBase: 50
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -36935,7 +36915,7 @@ RectTransform:
   m_Father: {fileID: 5515977654470814222}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 1, y: 1}
+  m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -55753,7 +55733,7 @@ RectTransform:
   m_Father: {fileID: 8620597490679743653}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 1, y: 1}
+  m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -56040,7 +56020,7 @@ RectTransform:
   m_Father: {fileID: 3373383879032060848}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 1, y: 1}
+  m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}

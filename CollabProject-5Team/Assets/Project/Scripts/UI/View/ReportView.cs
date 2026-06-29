@@ -131,7 +131,8 @@ namespace GameDevTycoon.UI.Ingame
         public void Hide()
         {
             // [DoTween Bottom Sheet 아웃 연출 추가 예정]
-            //_canvasReport.SetActive(false); // 현재 이 오브젝트가 비활성화 되면 두번(3주차)이후 보고서가 뜨지 않는 버그가 있음.
+            _canvasReport.SetActive(false);
+            SetSlideVisible(false);
         }
 
         public void ShowPanel(ReportPanel panel)
