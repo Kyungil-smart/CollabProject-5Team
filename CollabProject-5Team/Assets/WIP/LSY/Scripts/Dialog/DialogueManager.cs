@@ -26,6 +26,8 @@ namespace Dialogue
 
         private DialogueBaseView _currentView;
 
+        private NPCController _currentNpcController;
+
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         public static void Init() => Instance = null;
 
@@ -54,6 +56,13 @@ namespace Dialogue
         public void StartDialogue(int employeeId, EmployeeDialogueState state)
         {
             if (_isDialogueRunning) return;
+
+            Employee emp = _EmployeeManager.Instance.haveEmployees.haveEmployeeList.Find(e => e.so.id == employeeId);
+            if (emp != null)
+            {
+                _currentNpcController = emp.GetComponent<NPCController>();
+                _currentNpcController?.StartConversation();
+            }
 
             DialoguePoolEntrySO poolEntry = DialogueDataManager.Instance.GetPoolEntry(employeeId, state);
             if (poolEntry == null)
@@ -177,6 +186,12 @@ namespace Dialogue
             DateTimeManager.Instance.CompleteSpecialDialogue(_currentEmployeeId.ToString());
             DialogueEvents.NotifyDialogueEnded(_currentEmployeeId);
 
+            if (_currentNpcController != null)
+            {
+                _currentNpcController.EndConversation();
+                _currentNpcController = null;
+            }
+
             _isDialogueRunning = false;
             _currentPoolEntry  = null;
         }
@@ -265,6 +280,12 @@ namespace Dialogue
 
         void HideAll()
         {
+            if (_currentNpcController != null)
+            {
+                _currentNpcController.EndConversation();
+                _currentNpcController = null;
+            }
+            
             if (_playerView   != null) _playerView.gameObject.SetActive(false);
             if (_employeeView != null) _employeeView.gameObject.SetActive(false);
             _currentView   = null;

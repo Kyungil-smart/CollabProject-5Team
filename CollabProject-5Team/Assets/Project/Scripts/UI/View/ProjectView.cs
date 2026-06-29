@@ -24,10 +24,17 @@ namespace GameDevTycoon.UI.Ingame
         [SerializeField] private Button _inProgressTabButton;
         [SerializeField] private Button _completedTabButton;
 
+        [Header("TabButton Sprites")]
+        [SerializeField] private Sprite _tabActiveSprite;
+        [SerializeField] private Sprite _tabInactiveSprite;
+        [SerializeField] private Color _tabActiveLabelColor;
+        [SerializeField] private Color _tabInactiveLabelColor;
+
         [Header("Tab_NewProject")]
         [SerializeField] private GameObject _tabNewProject;
-        [SerializeField] private GameObject _contentFrame;         // Panel_StaffAssign 활성 시 비활성
-        [SerializeField] private TextMeshProUGUI _activeProjectLabel;   // 진행 중 프로젝트 존재 시만 활성
+        [SerializeField] private CanvasGroup _tabNewProjectCanvasGroup;
+        [SerializeField] private GameObject _contentFrame;
+        [SerializeField] private TextMeshProUGUI _activeProjectLabel;
 
         [Header("Tab_NewProject — Panel_ProjectSetup")]
         [SerializeField] private GameObject _panelProjectSetup;
@@ -35,9 +42,11 @@ namespace GameDevTycoon.UI.Ingame
         [SerializeField] private Button _scaleCardSmall;
         [SerializeField] private Button _scaleCardMedium;
         [SerializeField] private Button _scaleCardLarge;
+        [SerializeField] private GameObject _scaleCardSmallSelectImg;
+        [SerializeField] private GameObject _scaleCardMediumSelectImg;
+        [SerializeField] private GameObject _scaleCardLargeSelectImg;
         [SerializeField] private GameObject _scaleCardMediumLock;
         [SerializeField] private GameObject _scaleCardLargeLock;
-        [SerializeField] private Button _projectSetupBackButton;
         [SerializeField] private Button _projectSetupNextButton;
 
         [Header("Tab_NewProject — Panel_StaffAssign")]
@@ -48,6 +57,10 @@ namespace GameDevTycoon.UI.Ingame
         [SerializeField] private Transform _staffGridContent;
         [SerializeField] private Button _staffAssignBackButton;
         [SerializeField] private Button _staffAssignConfirmButton;
+
+        [Header("Tab_NewProject — Panel_StaffAssign — ConfirmButton Sprites")]
+        [SerializeField] private Sprite _confirmActiveSprite;
+        [SerializeField] private Sprite _confirmInactiveSprite;
 
         [Header("Tab_InProgress")]
         [SerializeField] private GameObject _tabInProgress;
@@ -67,8 +80,6 @@ namespace GameDevTycoon.UI.Ingame
         [SerializeField] private TextMeshProUGUI _progressValueLabel;
         [SerializeField] private GameObject _operationGroup;
         [SerializeField] private GameObject _operationEmptyLabel;
-        [SerializeField] private GameObject _statusGroup;
-        [SerializeField] private TextMeshProUGUI _statusValue;
         [SerializeField] private GameObject _userCountGroup;
         [SerializeField] private TextMeshProUGUI _userCountValue;
         [SerializeField] private GameObject _salesGroup;
@@ -87,11 +98,18 @@ namespace GameDevTycoon.UI.Ingame
         [SerializeField] private Button _updateItem_Plan;
         [SerializeField] private Button _updateItem_Art;
         [SerializeField] private Button _updateItem_Dev;
+        [SerializeField] private GameObject _selectImg_Plan;
+        [SerializeField] private GameObject _selectImg_Art;
+        [SerializeField] private GameObject _selectImg_Dev;
         [SerializeField] private GameObject _completedOverlay_Plan;
         [SerializeField] private GameObject _completedOverlay_Art;
         [SerializeField] private GameObject _completedOverlay_Dev;
         [SerializeField] private Button _updateBackButton;
         [SerializeField] private Button _updateConfirmButton;
+
+        [Header("Tab_InProgress — Panel_UpdateManagement — ConfirmButton Sprites")]
+        [SerializeField] private Sprite _updateConfirmActiveSprite;
+        [SerializeField] private Sprite _updateConfirmInactiveSprite;
 
         [Header("Tab_Completed")]
         [SerializeField] private GameObject _tabCompleted;
@@ -111,8 +129,6 @@ namespace GameDevTycoon.UI.Ingame
         [SerializeField] private TextMeshProUGUI _completedProgressValueLabel;
         [SerializeField] private GameObject _completedOperationGroup;
         [SerializeField] private GameObject _completedOperationEmptyLabel;
-        [SerializeField] private GameObject _completedStatusGroup;
-        [SerializeField] private TextMeshProUGUI _completedStatusValue;
         [SerializeField] private GameObject _completedUserCountGroup;
         [SerializeField] private TextMeshProUGUI _completedUserCountValue;
         [SerializeField] private GameObject _completedSalesGroup;
@@ -134,7 +150,6 @@ namespace GameDevTycoon.UI.Ingame
         public Observable<Unit> OnCompletedTabClicked => _completedTabButton.OnClickAsObservable();
 
         // Tab_NewProject 이벤트
-        public Observable<Unit> OnProjectSetupBackClicked => _projectSetupBackButton.OnClickAsObservable();
         public Observable<Unit> OnProjectSetupNextClicked => _projectSetupNextButton.OnClickAsObservable();
         public Observable<Unit> OnScaleCardSmallClicked => _scaleCardSmall.OnClickAsObservable();
         public Observable<Unit> OnScaleCardMediumClicked => _scaleCardMedium.OnClickAsObservable();
@@ -191,6 +206,12 @@ namespace GameDevTycoon.UI.Ingame
 
             _scaleCardMediumLock.SetActive(true);
             _scaleCardLargeLock.SetActive(true);
+            _scaleCardMedium.interactable = false;
+            _scaleCardLarge.interactable = false;
+
+            _scaleCardSmallSelectImg.SetActive(false);
+            _scaleCardMediumSelectImg.SetActive(false);
+            _scaleCardLargeSelectImg.SetActive(false);
 
             _projectSetupNextButton.interactable = false;
             _staffAssignConfirmButton.interactable = false;
@@ -217,6 +238,16 @@ namespace GameDevTycoon.UI.Ingame
 
             _tabCompleted.SetActive(tab == ProjectTab.Completed);
             _completedPanelProjectDetail.SetActive(false);
+
+            SetTabButtonState(_newProjectTabButton, tab == ProjectTab.NewProject);
+            SetTabButtonState(_inProgressTabButton, tab == ProjectTab.InProgress);
+            SetTabButtonState(_completedTabButton, tab == ProjectTab.Completed);
+        }
+
+        private void SetTabButtonState(Button button, bool isActive)
+        {
+            button.image.sprite = isActive ? _tabActiveSprite : _tabInactiveSprite;
+            button.GetComponentInChildren<TextMeshProUGUI>().color = isActive ? _tabActiveLabelColor : _tabInactiveLabelColor;
         }
 
         // Tab_NewProject 패널 전환
@@ -240,6 +271,23 @@ namespace GameDevTycoon.UI.Ingame
         {
             _activeProjectLabel.gameObject.SetActive(hasActiveProject);
             _panelProjectSetup.SetActive(!hasActiveProject);
+        }
+
+        /// <summary>
+        /// 선택된 규모 카드 SelectIMG 토글.
+        /// </summary>
+        public void SetScaleCardSelectImg(ProjectSize selectedScale)
+        {
+            _scaleCardSmallSelectImg.SetActive(selectedScale == ProjectSize.Small);
+            _scaleCardMediumSelectImg.SetActive(selectedScale == ProjectSize.Medium);
+            _scaleCardLargeSelectImg.SetActive(selectedScale == ProjectSize.Large);
+        }
+
+        public void ClearScaleCardSelectImg()
+        {
+            _scaleCardSmallSelectImg.SetActive(false);
+            _scaleCardMediumSelectImg.SetActive(false);
+            _scaleCardLargeSelectImg.SetActive(false);
         }
 
         // Tab_InProgress 패널 전환
@@ -279,12 +327,32 @@ namespace GameDevTycoon.UI.Ingame
             _completedPanelProjectDetail.SetActive(true);
         }
 
-        public void ShowStaffDetailPopup() => _panelStaffDetailPopup.SetActive(true);
-        public void HideStaffDetailPopup() => _panelStaffDetailPopup.SetActive(false);
+        public void ShowStaffDetailPopup()
+        {
+            _tabNewProjectCanvasGroup.interactable = false;
+            _tabNewProjectCanvasGroup.blocksRaycasts = false;
+            _panelStaffDetailPopup.SetActive(true);
+        }
+
+        public void HideStaffDetailPopup()
+        {
+            _panelStaffDetailPopup.SetActive(false);
+            _tabNewProjectCanvasGroup.interactable = true;
+            _tabNewProjectCanvasGroup.blocksRaycasts = true;
+        }
 
         // 규모 카드 잠금
-        public void SetScaleMediumLocked(bool locked) => _scaleCardMediumLock.SetActive(locked);
-        public void SetScaleLargeLocked(bool locked) => _scaleCardLargeLock.SetActive(locked);
+        public void SetScaleMediumLocked(bool locked)
+        {
+            _scaleCardMediumLock.SetActive(locked);
+            _scaleCardMedium.interactable = !locked;
+        }
+
+        public void SetScaleLargeLocked(bool locked)
+        {
+            _scaleCardLargeLock.SetActive(locked);
+            _scaleCardLarge.interactable = !locked;
+        }
 
         public void SetMinStaffLabel(int planning, int planningMax,
             int art, int artMax, int dev, int devMax)
@@ -316,7 +384,6 @@ namespace GameDevTycoon.UI.Ingame
         {
             _operationGroup.SetActive(true);
             _operationEmptyLabel.SetActive(!isInService);
-            _statusGroup.SetActive(isInService);
             _userCountGroup.SetActive(isInService);
             _salesGroup.SetActive(isInService);
             _maintenanceGroup.SetActive(isInService);
@@ -324,7 +391,6 @@ namespace GameDevTycoon.UI.Ingame
             _revenueGraph.SetActive(isInService);
         }
 
-        public void SetStatusValue(string status) => _statusValue.text = status;
         public void SetUserCountValue(string value, bool isUp) => SetColoredValue(_userCountValue, value, isUp);
         public void SetUserCountValue(string value, bool isUp, bool highlight)
         {
@@ -384,7 +450,10 @@ namespace GameDevTycoon.UI.Ingame
             => _projectSetupNextButton.interactable = interactable;
 
         public void SetStaffAssignConfirmInteractable(bool interactable)
-            => _staffAssignConfirmButton.interactable = interactable;
+        {
+            _staffAssignConfirmButton.interactable = interactable;
+            _staffAssignConfirmButton.image.sprite = interactable ? _confirmActiveSprite : _confirmInactiveSprite;
+        }
 
         public void SetServiceStopInteractable(bool interactable)
             => _serviceStopButton.interactable = interactable;
@@ -393,7 +462,10 @@ namespace GameDevTycoon.UI.Ingame
             => _updateButton.interactable = interactable;
 
         public void SetUpdateConfirmInteractable(bool interactable)
-            => _updateConfirmButton.interactable = interactable;
+        {
+            _updateConfirmButton.interactable = interactable;
+            _updateConfirmButton.image.sprite = interactable ? _updateConfirmActiveSprite : _updateConfirmInactiveSprite;
+        }
 
         /// <summary>
         /// 지난주 완료된 업데이트 항목 오버레이 표시.
@@ -415,6 +487,16 @@ namespace GameDevTycoon.UI.Ingame
                 _ => _updateItem_Dev,
             };
             button.interactable = !completed;
+        }
+
+        /// <summary>
+        /// 업데이트 항목 선택 상태 SelectIMG 토글.
+        /// </summary>
+        public void SetUpdateItemSelectImg(UpdatePart? selectedPart)
+        {
+            _selectImg_Plan.SetActive(selectedPart == UpdatePart.Plan);
+            _selectImg_Art.SetActive(selectedPart == UpdatePart.Art);
+            _selectImg_Dev.SetActive(selectedPart == UpdatePart.Dev);
         }
 
         // Tab_Completed 수치 표시
@@ -442,7 +524,6 @@ namespace GameDevTycoon.UI.Ingame
         {
             _completedOperationGroup.SetActive(true);
             _completedOperationEmptyLabel.SetActive(!isServiceEnded);
-            _completedStatusGroup.SetActive(isServiceEnded);
             _completedUserCountGroup.SetActive(isServiceEnded);
             _completedSalesGroup.SetActive(isServiceEnded);
             _completedMaintenanceGroup.SetActive(isServiceEnded);
@@ -450,7 +531,6 @@ namespace GameDevTycoon.UI.Ingame
             _completedRevenueGraph.SetActive(isServiceEnded);
         }
 
-        public void SetCompletedStatusValue(string status) => _completedStatusValue.text = status;
         public void SetCompletedUserCountValue(string value) => _completedUserCountValue.text = value;
         public void SetCompletedSalesValue(string value) => _completedSalesValue.text = value;
         public void SetCompletedMaintenanceValue(string value) => _completedMaintenanceValue.text = value;

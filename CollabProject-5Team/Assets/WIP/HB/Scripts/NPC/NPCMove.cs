@@ -20,11 +20,16 @@ public class NPCMove : INPCState
 
     public void Update(NPCController npc)
     {
+        if (npc.IsInteracting) return;
+
         if (npc.CurrentTarget == null || (npc.CurrentTarget as MonoBehaviour) == null)
         {
             npc.ChangeState(new NPCIdle());
             return;
         }
+
+        // 비활성화상태라면 하단 로직을 스킵
+        if (!npc.Agent.enabled || !npc.Agent.isOnNavMesh) return;
 
         // 도착지점에 가까이 도착하면 업무상태로 변경
         if (!npc.Agent.pathPending && npc.Agent.remainingDistance <= 0.5f)

@@ -1,214 +1,260 @@
-using UnityEngine;
+using System.Collections;
 using System.Collections.Generic;
 using TMPro;
-using System;
+using UnityEngine;
+using UnityEngine.UI;
 
 public class TutorialManager : MonoBehaviour
 {
-    public static TutorialManager Instance { get; private set; }
-
-    public enum TutorialType
+    public enum ShowMode
     {
-        TextOnly,       
-        ButtonTrigger,  
-        DialogueWait    
+        TextOnly,
+        ButtonActivated,
+        HighlightSqureTouchAnywhere,
+        HighLightSqureTouchSomewhere
     }
 
-    [System.Serializable]
-    public struct TutorialStep
-    {
-        public TutorialType type;
-        public string targetButtonId;
-        public string targetActionName;
-        [TextArea(4, 5)]
-        public string tutorialText;
-    }
+    // 싱글톤
+    public  static TutorialManager  Instance => _instance;
+    private static TutorialManager _instance;
 
-    [Header("UI 연결 요소")]
-    [SerializeField] private GameObject _dimOverlay;
-    [SerializeField] private TextMeshProUGUI _tutorialTextUI;
-    [SerializeField] private GameObject _tutorialWindowObj;
+    // UI 요소들
+    [Header("UI")]
+    [SerializeField] private GameObject      _guideBox;
+    [SerializeField] private TextMeshProUGUI _tutorialText;
+    [SerializeField] private GameObject      _tutorialPanel;
 
-    [Header("튜토리얼 시퀀스")]
-    [SerializeField] private List<TutorialStep> _steps = new();
-    private int _currentStepIndex = 0;
+    // 튜토리얼 진행
+    [SerializeField] private List<TutorialDataSO> _tutorialSteps = new List<TutorialDataSO>();
+    private int _curIndex = -1;
 
-    private bool _isTutorialStarted = false;
-    private Dictionary<string, GameObject> _activeDynamicButtons = new();
+    private bool _isWaitingPlayerInput = false;
 
-    public static Action<string> OnTutorialActionCompleted;
+    // 오브젝트 ID 등록
+    private Dictionary<string, GameObject> _registeredObjects = new Dictionary<string, GameObject>();
 
+    // 외부 신호를 받기 위한 Action
+    public static System.Action OnSomewhereTutorialCompleted;
+
+    // 현재 진행 중인 단계의 안전한 추적을 위한 상태 변수들
+    private GameObject       _currentActiveObject;
+    private bool          _isCanvasAddedByManager;
+    private bool       _isRaycasterAddedByManager;
+
+    /////////////////// - 라이프사이클 - ///////////////////
     private void Awake()
     {
-        if (Instance != null && Instance != this) { Destroy(gameObject); return; }
-        Instance = this;
-
-        if (_dimOverlay != null) _dimOverlay.SetActive(false);
-        if (_tutorialWindowObj != null) _tutorialWindowObj.SetActive(false);
-
-        OnTutorialActionCompleted += CheckInGameAction;
+        if (_instance == null) _instance = this;
+        else Destroy(gameObject);
     }
 
-    private void Start()
+    private IEnumerator Start()
     {
-        StartFirstTutorial();
+        yield return null;
+
+        StartTutorial();
+    }
+
+    private void Update()
+    {
+        if(_isWaitingPlayerInput && Input.GetMouseButtonDown(0))
+        {
+            _isWaitingPlayerInput = false;
+
+            if (_tutorialSteps[_curIndex].showMode == ShowMode.HighlightSqureTouchAnywhere)
+            {
+                CleanUpActiveObjectComponents();
+            }
+
+            ProceedTutorial();
+        }
     }
 
     private void OnDestroy()
     {
-        OnTutorialActionCompleted -= CheckInGameAction;
+        OnSomewhereTutorialCompleted -= OnSomewhereConditionMet;
+        OnSomewhereTutorialCompleted = null;
     }
 
-    public void StartFirstTutorial()
+    /////////////////// - 실행 - ///////////////////
+    private void StartTutorial()
     {
-        if (_isTutorialStarted || _steps.Count == 0) return;
-        _isTutorialStarted = true;
-        _currentStepIndex = 0;
-        ExecuteStep(_steps[0]);
+        ProceedTutorial();
     }
 
-    public void RegisterDynamicButton(string buttonId, GameObject buttonObj)
+    public void RegisterObject(string id, GameObject tutorialObject)
     {
-        if (string.IsNullOrEmpty(buttonId) || buttonObj == null) return;
+        if (string.IsNullOrEmpty(id)) return;
 
-        _activeDynamicButtons[buttonId] = buttonObj;
+        if (_registeredObjects.ContainsKey(id))
+            _registeredObjects[id] = tutorialObject;
 
-        if (!_isTutorialStarted || _currentStepIndex >= _steps.Count) return;
-        TutorialStep currentStep = _steps[_currentStepIndex];
-
-        if (currentStep.type == TutorialType.ButtonTrigger && currentStep.targetButtonId == buttonId)
-        {
-            LockAndHighlightButton(buttonObj, OnTargetButtonClicked);
-        }
+        else
+            _registeredObjects.Add(id, tutorialObject);
     }
 
-    private void CheckInGameAction(string actionName)
+    private void ExecuteTutorial()
     {
-        if (!_isTutorialStarted || _currentStepIndex >= _steps.Count) return;
+        _tutorialPanel.SetActive(true);
 
-        TutorialStep currentStep = _steps[_currentStepIndex];
-        if (!string.IsNullOrEmpty(currentStep.targetActionName) && currentStep.targetActionName == actionName)
+        if (string.IsNullOrEmpty(_tutorialSteps[_curIndex].tutorialText))
+            _guideBox.SetActive(false);
+        else
         {
-            AdvanceStep();
-        }
-    }
-
-    private void ExecuteStep(TutorialStep step)
-    {
-        if (step.type != TutorialType.DialogueWait)
-        {
-            if (_dimOverlay != null) _dimOverlay.SetActive(true);
-            if (_tutorialWindowObj != null) _tutorialWindowObj.SetActive(true);
-            if (_tutorialTextUI != null) _tutorialTextUI.text = step.tutorialText;
+            _guideBox.SetActive(true);
+            _tutorialText.text = _tutorialSteps[_curIndex].tutorialText;
         }
 
-        if (step.type == TutorialType.TextOnly)
-        {
-            SetupDimAsNextButton();
-        }
-        else if (step.type == TutorialType.ButtonTrigger)
-        {
-            RemoveDimButtonListener();
+        SetupActiveObjectContext();
 
-            if (_activeDynamicButtons.TryGetValue(step.targetButtonId, out GameObject btnObj))
-            {
-                LockAndHighlightButton(btnObj, OnTargetButtonClicked);
-            }
-        }
-        else if (step.type == TutorialType.DialogueWait)
+        switch (_tutorialSteps[_curIndex].showMode)
         {
-            if (_dimOverlay != null) _dimOverlay.SetActive(false);
-            if (_tutorialWindowObj != null) _tutorialWindowObj.SetActive(false);
-
-            Debug.Log("[Tutorial] 중간 NPC 대화 단계 진입. 대화 종료 신호를 대기합니다.");
+            case ShowMode.TextOnly:
+                TutorialTextOnly();
+                break;
+            case ShowMode.ButtonActivated:
+                TutorialButtonActivated();
+                break;
+            case ShowMode.HighlightSqureTouchAnywhere:
+                TutorialHighlightSqureTouchAnywhere();
+                break;
+            case ShowMode.HighLightSqureTouchSomewhere:
+                TutorialHighLightSqureTouchSomewhere();
+                break;
         }
     }
 
-    private void LockAndHighlightButton(GameObject buttonObj, UnityEngine.Events.UnityAction action)
+    private void ProceedTutorial()
     {
-        if (buttonObj == null) return;
+        _curIndex++;
 
-        Canvas targetCanvas = buttonObj.GetComponent<Canvas>();
-        if (targetCanvas == null) targetCanvas = buttonObj.AddComponent<Canvas>();
-
-        if (targetCanvas != null)
+        if(_curIndex >= _tutorialSteps.Count)
         {
-            targetCanvas.overrideSorting = true;
-            targetCanvas.sortingOrder = 999;
-        }
-
-        if (buttonObj.GetComponent<UnityEngine.UI.GraphicRaycaster>() == null)
-        {
-            buttonObj.AddComponent<UnityEngine.UI.GraphicRaycaster>();
-        }
-
-        UnityEngine.UI.Button btn = buttonObj.GetComponent<UnityEngine.UI.Button>();
-        if (btn != null)
-        {
-            btn.onClick.RemoveListener(action);
-            btn.onClick.AddListener(action);
-        }
-    }
-
-    private void OnTargetButtonClicked() => AdvanceStep();
-
-    private void ResetButtonComponent(GameObject targetObj)
-    {
-        if (targetObj == null) return;
-        var raycaster = targetObj.GetComponent<UnityEngine.UI.GraphicRaycaster>();
-        if (raycaster != null) raycaster.enabled = false;
-
-        var canvas = targetObj.GetComponent<Canvas>();
-        if (canvas != null)
-        {
-            canvas.overrideSorting = false;
-            canvas.sortingOrder = 0;
-        }
-    }
-
-    public void AdvanceStep()
-    {
-        if (_currentStepIndex < _steps.Count && _steps[_currentStepIndex].type == TutorialType.ButtonTrigger)
-        {
-            string targetId = _steps[_currentStepIndex].targetButtonId;
-            if (_activeDynamicButtons.TryGetValue(targetId, out GameObject btnObj) && btnObj != null)
-            {
-                ResetButtonComponent(btnObj);
-                var btn = btnObj.GetComponent<UnityEngine.UI.Button>();
-                if (btn != null) btn.onClick.RemoveListener(OnTargetButtonClicked);
-            }
-        }
-
-        _currentStepIndex++;
-
-        if (_currentStepIndex >= _steps.Count)
-        {
-            Debug.Log("[Tutorial] 모든 튜토리얼 시퀀스 최종 종료.");
-            _isTutorialStarted = false;
-            if (_dimOverlay != null) _dimOverlay.SetActive(false);
-            if (_tutorialWindowObj != null) _tutorialWindowObj.SetActive(false);
+            _tutorialPanel.SetActive(false);
             return;
         }
 
-        ExecuteStep(_steps[_currentStepIndex]);
+        ExecuteTutorial();
     }
 
-    #region Dim Logic
-    private void SetupDimAsNextButton()
+    /////////////////// - 필요한 요소 추가, 삭제 - ///////////////////
+    private void SetupActiveObjectContext()
     {
-        if (_dimOverlay == null) return;
-        UnityEngine.UI.Button dimBtn = _dimOverlay.GetComponent<UnityEngine.UI.Button>() ?? _dimOverlay.AddComponent<UnityEngine.UI.Button>();
-        dimBtn.onClick.RemoveListener(OnTextOnlyClicked);
-        dimBtn.onClick.AddListener(OnTextOnlyClicked);
+              _currentActiveObject = null;
+           _isCanvasAddedByManager = false;
+        _isRaycasterAddedByManager = false;
+
+        string targetId = _tutorialSteps[_curIndex].tutorialObjectId;
+
+        if (string.IsNullOrEmpty(targetId)) return;
+
+        if (_registeredObjects.TryGetValue(targetId, out GameObject targetObj))
+        {
+            _currentActiveObject = targetObj;
+
+            // Canvas 체크
+            Canvas targetCanvas = _currentActiveObject.GetComponent<Canvas>();
+            if (targetCanvas == null)
+            {
+                targetCanvas = _currentActiveObject.AddComponent<Canvas>();
+                _isCanvasAddedByManager = true;
+            }
+
+            targetCanvas.overrideSorting = true;
+            targetCanvas.sortingOrder    = 1001;
+
+            var showMode = _tutorialSteps[_curIndex].showMode;
+            if (showMode == ShowMode.ButtonActivated || showMode == ShowMode.HighLightSqureTouchSomewhere)
+            {
+                if (_currentActiveObject.GetComponent<GraphicRaycaster>() == null)
+                {
+                    _currentActiveObject.AddComponent<GraphicRaycaster>();
+                    _isRaycasterAddedByManager = true;
+                }
+            }
+        }
     }
 
-    private void RemoveDimButtonListener()
+    private void CleanUpActiveObjectComponents()
     {
-        if (_dimOverlay == null) return;
-        UnityEngine.UI.Button dimBtn = _dimOverlay.GetComponent<UnityEngine.UI.Button>();
-        if (dimBtn != null) dimBtn.onClick.RemoveListener(OnTextOnlyClicked);
+        if (_currentActiveObject == null) return;
+
+        if (_isRaycasterAddedByManager)
+        {
+            var raycaster = _currentActiveObject.GetComponent<GraphicRaycaster>();
+            if (raycaster != null) Destroy(raycaster);
+        }
+
+        Canvas targetCanvas = _currentActiveObject.GetComponent<Canvas>();
+        if (targetCanvas != null)
+        {
+            if (_isCanvasAddedByManager)
+            {
+                Destroy(targetCanvas);
+            }
+            else
+            {
+                targetCanvas.overrideSorting = false;
+                targetCanvas.sortingOrder    = 0;
+            }
+        }
+
+        _currentActiveObject = null;
     }
 
-    private void OnTextOnlyClicked() => AdvanceStep();
-    #endregion
+    /////////////////// - TextOnly - ///////////////////
+    private void TutorialTextOnly()
+    {
+        // 터치 입력
+        _isWaitingPlayerInput = true;
+    }
+
+    /////////////////// - ButtonActivated - ///////////////////
+    private void TutorialButtonActivated()
+    {
+        if (_currentActiveObject == null) return;
+
+        Button button = _currentActiveObject.GetComponent<Button>();
+        if(button != null)
+        {
+            button.onClick.RemoveListener(OnTutorialButtonClicked);
+            button.onClick.   AddListener(OnTutorialButtonClicked);
+        }
+    }
+
+    private void OnTutorialButtonClicked()
+    {
+        if(_currentActiveObject != null)
+        {
+            Button button = _currentActiveObject.GetComponent<Button>();
+            if (button != null)
+                button.onClick.RemoveListener(OnTutorialButtonClicked);
+        }
+
+        CleanUpActiveObjectComponents();
+
+        ProceedTutorial();
+    }
+
+    /////////////////// - HighlightSqureTouchAnywhere - ///////////////////
+    private void TutorialHighlightSqureTouchAnywhere()
+    {
+        _isWaitingPlayerInput = true;
+    }
+
+    /////////////////// - HighLightSqureTouchSomewhere - ///////////////////
+    private void TutorialHighLightSqureTouchSomewhere()
+    {
+        OnSomewhereTutorialCompleted -= OnSomewhereConditionMet;
+        OnSomewhereTutorialCompleted += OnSomewhereConditionMet;
+    }
+
+    private void OnSomewhereConditionMet()
+    {
+        OnSomewhereTutorialCompleted -= OnSomewhereConditionMet;
+
+        CleanUpActiveObjectComponents();
+
+        ProceedTutorial();
+    }
 }

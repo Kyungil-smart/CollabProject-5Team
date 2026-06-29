@@ -126,11 +126,9 @@ namespace GameDevTycoon.UI.Ingame
                 .Subscribe(_ =>
                 {
                     foreach (var slider in _view.AllSliders)
-                    {
                         slider.ResetSelection();
-                    }
-                    RefreshRecruitCost();
 
+                    RefreshRecruitCost();
                     _view.ShowRecruit();
                     InitRecruitSliders();
                 })
@@ -167,10 +165,6 @@ namespace GameDevTycoon.UI.Ingame
 
             _view.OnHireClicked
                 .Subscribe(_ => OnHireClicked())
-                .AddTo(this);
-
-            _view.OnCancelHireClicked
-                .Subscribe(_ => OnCancelHireClicked())
                 .AddTo(this);
 
             _view.OnApplicantDetailBackClicked
@@ -213,16 +207,32 @@ namespace GameDevTycoon.UI.Ingame
                 .Subscribe(_ =>
                 {
                     if (_selectedEmployee == null) return;
-                    _view.ShowEducationCourse();
+
+                    // 현재 교육 중인 직원이면 해당 과정 인덱스를 넘겨 EducationOverlay 표시
+                    var training = _EmployeeManager.Instance.GetTraining(_selectedEmployee);
+                    int inTrainingIndex = -1;
+                    if (training != null)
+                    {
+                        var courses = _EmployeeManager.Instance.trainingCourses;
+                        inTrainingIndex = courses.FindIndex(c => c.courseName == training.course.courseName);
+                    }
+
                     _selectedCourseIndex = -1;
                     _view.SetEducationCourseConfirmInteractable(false);
+                    _view.ShowEducationCourse(inTrainingIndex);
+                    InitCourseCostValues();
                 })
                 .AddTo(this);
 
             _view.OnCourseSelected
                 .Subscribe(index =>
                 {
+                    // 이전 SelectIMG 해제 후 새 선택 반영
+                    if (_selectedCourseIndex >= 0)
+                        _view.SetCourseSelectImg(_selectedCourseIndex, false);
+
                     _selectedCourseIndex = index;
+                    _view.SetCourseSelectImg(index, true);
                     _view.SetEducationCourseConfirmInteractable(true);
                 })
                 .AddTo(this);
@@ -242,6 +252,25 @@ namespace GameDevTycoon.UI.Ingame
             _view.OnEducationCourseBackClicked
                 .Subscribe(_ => _view.ShowEducationDetail())
                 .AddTo(this);
+        }
+
+        /// <summary>
+        /// trainingCourses 데이터 기반으로 CourseCostValue 텍스트 세팅.
+        /// </summary>
+        private void InitCourseCostValues()
+        {
+            var courses = _EmployeeManager.Instance.trainingCourses;
+            _view.SetCourseCostValues(
+                FormatCourseCost(courses, 0),
+                FormatCourseCost(courses, 1),
+                FormatCourseCost(courses, 2)
+            );
+        }
+
+        private static string FormatCourseCost(System.Collections.Generic.List<EmployeeTrainingCourse> courses, int index)
+        {
+            if (index >= courses.Count) return string.Empty;
+            return $"{courses[index].cost:N0}G";
         }
 
         private void InitRecruitSliders()
@@ -307,14 +336,14 @@ namespace GameDevTycoon.UI.Ingame
             var applicants = _EmployeeManager.Instance.GetCurrentApplicantEmployees();
 
             // 0:이름순 1:직군순 2:능력치순
-            var SortedApplicants = _view.ApplicantSortIndex switch
+            var sortedApplicants = _view.ApplicantSortIndex switch
             {
                 1 => applicants.OrderBy(e => GetRoleOrder(e.so.role)).ThenBy(e => e.so.Name),
                 2 => applicants.OrderByDescending(e => e.so.ability),
                 _ => applicants.OrderBy(e => e.so.Name),
             };
 
-            foreach (var applicant in SortedApplicants.ToList())
+            foreach (var applicant in sortedApplicants.ToList())
             {
                 var card = Instantiate(_applicantCardPrefab, _view.ApplicantScrollContent);
                 card.GetComponent<IBindable<Employee>>().Bind(applicant);
@@ -335,9 +364,7 @@ namespace GameDevTycoon.UI.Ingame
                     _selectedApplicant = captured;
                     RefreshApplicantDetail(captured);
                     _view.ShowApplicantDetail();
-
                     _view.SetHireButtonInteractable(true);
-                    _view.SetCancelHireButtonInteractable(false);
                 });
             }
         }
@@ -430,9 +457,8 @@ namespace GameDevTycoon.UI.Ingame
                 return;
             }
 
-            // RecruitRequest 리스트 생성
             List<RecruitRequest> requests = _view.AllSliders
-                .Where(s => s.Count > 0) // 요청 인원이 0보다 큰 것만
+                .Where(s => s.Count > 0)
                 .Select(s => new RecruitRequest(s.Role, s.Count))
                 .ToList();
 
@@ -467,7 +493,6 @@ namespace GameDevTycoon.UI.Ingame
                 return;
             }
 
-            // 자금 체크
             int cost = applicant.so.hiringCost;
             if (Company.Instance.gold.Value < cost)
             {
@@ -475,14 +500,14 @@ namespace GameDevTycoon.UI.Ingame
                 return;
             }
 
-            // 금액 차감
             Company.Instance.gold.Value -= cost;
             Company.Instance.curManagementStatus.laborCost += cost;
             Company.Instance.cumulativeManagementStatus.laborCost += cost;
             Company.Instance.curManagementStatus.Recalculate();
             Company.Instance.cumulativeManagementStatus.Recalculate();
 
-            _EmployeeManager.Instance.HireEmployee(applicant);
+            Employee hiredEmployee = _EmployeeManager.Instance.HireEmployee(applicant);
+            _EmployeeManager.Instance.lastHiredEmployee = hiredEmployee;
             _EmployeeManager.Instance.currentApplicants.Remove(applicant);
             _hudPresenter.RefreshHUD();
 
@@ -497,15 +522,6 @@ namespace GameDevTycoon.UI.Ingame
         {
             if (_selectedApplicant == null) return;
             _view.SetHireButtonInteractable(false);
-            _view.SetCancelHireButtonInteractable(true);
-            //_view.SetFinalHireInteractable(true);
-        }
-
-        private void OnCancelHireClicked()
-        {
-            _view.SetHireButtonInteractable(true);
-            _view.SetCancelHireButtonInteractable(false);
-            //_view.SetFinalHireInteractable(false);
         }
 
         private void OnFireButtonClicked(Employee employee)
@@ -559,6 +575,8 @@ namespace GameDevTycoon.UI.Ingame
                 return;
             }
 
+            // 결정 완료 후 선택 상태 초기화
+            _view.ResetCourseSelection();
             _selectedEmployee = null;
             _selectedCourseIndex = -1;
             _view.ShowEducationList();

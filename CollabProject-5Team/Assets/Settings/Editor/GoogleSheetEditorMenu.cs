@@ -30,4 +30,20 @@ public static class GoogleSheetEditorMenu
     {
         EditorUtility.OpenPropertyEditor(DataRequestSet.Get(5));
     }
+
+    [MenuItem("구글시트/일일 퀘스트")]
+    static void LoadSheet6()
+    {
+        EditorUtility.OpenPropertyEditor(DataRequestSet.Get(6));
+    }
+    [MenuItem("구글시트/스토리 퀘스트 Node")]
+    static void LoadSheet7()
+    {
+        EditorUtility.OpenPropertyEditor(DataRequestSet.Get(7));
+    }
+    [MenuItem("구글시트/스토리 퀘스트 Pool")]
+    static void LoadSheet8()
+    {
+        EditorUtility.OpenPropertyEditor(DataRequestSet.Get(8));
+    }
 }

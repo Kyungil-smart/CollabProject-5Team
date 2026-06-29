@@ -14,6 +14,10 @@ public class StoryDialoguePlayer : MonoBehaviour
     private DialogueBaseView _currentView;
     private Action _onComplete;
     private Dictionary<string, Employee> _speakerEmployees; // NPC1/NPC2/SPY/UCSPY -> 실제 배정된 직원
+    private bool _isDialogueRunning;
+    private int _currentNodeId;
+
+    public bool IsDialogueRunning => _isDialogueRunning;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     public static void Init() => Instance = null;
@@ -22,14 +26,44 @@ public class StoryDialoguePlayer : MonoBehaviour
     {
         if (Instance != null && Instance != this) { Destroy(gameObject); return; }
         Instance = this;
+
+        EnsureViews();
+    }
+
+    private void EnsureViews()
+    {
+        if (_playerView == null)
+            _playerView = FindFirstObjectByType<PlayerDialogueView>(FindObjectsInactive.Include);
+
+        if (_employeeView == null)
+            _employeeView = FindFirstObjectByType<EmployeeDialogueView>(FindObjectsInactive.Include);
     }
 
     /// <param name="speakerEmployees">"NPC1"/"NPC2"/"SPY"/"UCSPY" 토큰과 실제 배정된 직원 매핑</param>
     public void StartStoryDialogue(int startNodeId, Dictionary<string, Employee> speakerEmployees, Action onComplete)
     {
+        EnsureViews();
+
+        if (_playerView == null || _employeeView == null)
+        {
+            Debug.LogWarning("[StoryDialoguePlayer] 대화 View 참조가 없습니다.");
+            return;
+        }
+
         _speakerEmployees = speakerEmployees ?? new Dictionary<string, Employee>();
         _onComplete       = onComplete;
+        _isDialogueRunning = true;
         ShowNode(startNodeId);
+    }
+
+    public void AdvanceDialogue()
+    {
+        if (!_isDialogueRunning) return;
+
+        StoryQuestNodeSO node = StoryQuestDataManager.Instance.GetNode(_currentNodeId);
+        if (node == null) { EndDialogue(); return; }
+
+        ShowNode(node.nextId);
     }
 
     private void ShowNode(int nodeId)
@@ -38,6 +72,7 @@ public class StoryDialoguePlayer : MonoBehaviour
 
         StoryQuestNodeSO node = StoryQuestDataManager.Instance.GetNode(nodeId);
         if (node == null) { EndDialogue(); return; }
+        _currentNodeId = nodeId;
 
         if (_currentView != null)
         {
@@ -50,19 +85,19 @@ public class StoryDialoguePlayer : MonoBehaviour
         if (node.isUser)
         {
             _currentView = _playerView;
-            _playerView.OnNextAction = () => ShowNode(node.nextId);
             _playerView.Bind(Company.Instance.playerName, resolvedText);
+            _playerView.OnNextAction = AdvanceDialogue;
         }
         else
         {
             _currentView = _employeeView;
-            _employeeView.OnNextAction = () => ShowNode(node.nextId);
             _employeeView.Bind(new EmployeeDialogueViewData
             {
                 desc     = node.isBlank ? "" : ResolveSpeakerName(node.speaker),
                 text     = resolvedText,
                 portrait = node.isBlank ? null : ResolvePortrait(node.speaker),
             });
+            _employeeView.OnNextAction = AdvanceDialogue;
         }
     }
 
@@ -96,6 +131,8 @@ public class StoryDialoguePlayer : MonoBehaviour
             _currentView.OnNextAction     = null;
         }
         _currentView = null;
+        _isDialogueRunning = false;
+        _currentNodeId = 0;
 
         if (_playerView   != null) _playerView.gameObject.SetActive(false);
         if (_employeeView != null) _employeeView.gameObject.SetActive(false);

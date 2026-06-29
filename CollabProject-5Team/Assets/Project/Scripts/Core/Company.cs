@@ -1,11 +1,16 @@
 using R3;
 using System.Collections.Generic;
 using UnityEngine;
-
+#if UNITY_EDITOR
+public enum TestProjectStartSize{None,small,normal,large}
+#endif
 public class Company : MonoBehaviour
 {
     public static Company Instance;
-
+#if UNITY_EDITOR
+    [Header("테스트용 시작 프로젝트")]
+    [SerializeField] TestProjectStartSize _testProjectStartSize = TestProjectStartSize.None;
+#endif
     [Header("프리펩 참조")]
     public GameObject[] projectPrefab; // 소형, 중형, 대형 순서 (Project 컴포넌트 포함)
 
@@ -46,6 +51,142 @@ public class Company : MonoBehaviour
         Instance = this;
     #endregion
     }
+
+    #region 테스트 코드
+#if UNITY_EDITOR
+    private void Start() // Start 전체가 에디터용으로 들어가 있으니 주의.
+    {
+        TryCreateTestStartProject();
+    }
+    void TryCreateTestStartProject()
+    {
+        if (_testProjectStartSize == TestProjectStartSize.None) return;
+        if (SaveLoadSystem.Instance.pendingLoadSlot.HasValue) return;
+
+        ProjectSize projectSize = GetTestProjectSize();
+        int perRoleCount = GetTestEmployeeCountPerRole();
+        level = GetTestCompanyLevel();
+
+        bool hasEmployees = EnsureTestEmployees(Role.PLANNER, perRoleCount)
+                         && EnsureTestEmployees(Role.ARTIST, perRoleCount)
+                         && EnsureTestEmployees(Role.PROGRAMMER, perRoleCount);
+
+        selectedProjectEmployees.Clear();
+        bool selectedEmployees = SelectTestProjectEmployees(Role.PLANNER, perRoleCount)
+                              && SelectTestProjectEmployees(Role.ARTIST, perRoleCount)
+                              && SelectTestProjectEmployees(Role.PROGRAMMER, perRoleCount);
+
+        Project project = CreateProject(projectSize, GetTestProjectName(projectSize));
+
+        int goldBeforeStart = gold.Value;
+        if (gold.Value <= project.RequiredCost)
+            gold.Value = project.RequiredCost + goldBeforeStart;
+
+        StartNewProject(project);
+        selectedProjectEmployees.Clear();
+    }
+    bool EnsureTestEmployees(Role role, int targetCount)
+    {
+        while (CountHiredEmployees(role) < targetCount)
+        {
+            int employeeId = GetRandomLeftEmployeeId(role);
+            Employee employee = _EmployeeManager.Instance.HireEmployee(employeeId);
+        }
+
+        return true;
+    }
+    int CountHiredEmployees(Role role)
+    {
+        int count = 0;
+        foreach (Employee employee in _EmployeeManager.Instance.haveEmployees.haveEmployeeList)
+        {
+            if (employee != null && employee.so.role == role)
+                count++;
+        }
+
+        return count;
+    }
+    int GetRandomLeftEmployeeId(Role role)
+    {
+        var candidates = new List<int>();
+        foreach (var pair in _EmployeeManager.Instance.employeeList.leftEmployees)
+        {
+            Employee employee = pair.Value.GetComponent<Employee>();
+            if (employee != null && employee.so.role == role)
+                candidates.Add(pair.Key);
+        }
+
+        if (candidates.Count == 0) return -1;
+        return candidates[Random.Range(0, candidates.Count)];
+    }
+    bool SelectTestProjectEmployees(Role role, int count)
+    {
+        var candidates = new List<Employee>();
+        foreach (Employee employee in _EmployeeManager.Instance.haveEmployees.haveEmployeeList)
+        {
+            if (employee != null && employee.so.role == role && employee.WorkStatus == EmployeeWorkStatus.Standby)
+                candidates.Add(employee);
+        }
+
+        for (int i = 0; i < count; i++)
+        {
+            int index = Random.Range(0, candidates.Count);
+            selectedProjectEmployees.Add(candidates[index]);
+            candidates.RemoveAt(index);
+        }
+
+        return true;
+    }
+    ProjectSize GetTestProjectSize()
+    {
+        switch (_testProjectStartSize)
+        {
+            case TestProjectStartSize.normal:
+                return ProjectSize.Medium;
+            case TestProjectStartSize.large:
+                return ProjectSize.Large;
+            default:
+                return ProjectSize.Small;
+        }
+    }
+    int GetTestEmployeeCountPerRole()
+    {
+        switch (_testProjectStartSize)
+        {
+            case TestProjectStartSize.normal:
+                return 2;
+            case TestProjectStartSize.large:
+                return 3;
+            default:
+                return 1;
+        }
+    }
+    int GetTestCompanyLevel()
+    {
+        switch (_testProjectStartSize)
+        {
+            case TestProjectStartSize.normal:
+                return 2;
+            case TestProjectStartSize.large:
+                return 3;
+            default:
+                return 1;
+        }
+    }
+    string GetTestProjectName(ProjectSize projectSize)
+    {
+        switch (projectSize)
+        {
+            case ProjectSize.Medium:
+                return "테스트 중형 프로젝트";
+            case ProjectSize.Large:
+                return "테스트 대형 프로젝트";
+            default:
+                return "테스트 소형 프로젝트";
+        }
+    }
+#endif
+    #endregion
 
     #region 프로젝트 시작 관리
     public Project CreateProject(ProjectSize scale, string projectName)
@@ -424,6 +565,7 @@ public class Company : MonoBehaviour
                 prevWeekUsers   = p.prevWeekUsers,
                 prevWeekGold    = p.prevWeekGold,
                 isServiceOver   = p.isServiceOver,
+                isUpdatePending = p.isUpdatePending,
 
                 weeklyGoldHistoryList = new List<int>(p.weeklyGoldHistory)
             };
@@ -486,7 +628,8 @@ public class Company : MonoBehaviour
                     weeklyGoldAccum = pData.weeklyGoldAccum,
                     prevWeekUsers   = pData.prevWeekUsers,
                     prevWeekGold    = pData.prevWeekGold,
-                    isServiceOver   = pData.isServiceOver
+                    isServiceOver   = pData.isServiceOver,
+                    isUpdatePending = pData.isUpdatePending,
                 };
 
                 p.weeklyGoldHistory = new Queue<int>();

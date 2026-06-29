@@ -69,6 +69,7 @@ public class DateTimeManager : MonoBehaviour
 
         // 상태만 Ready로 초기화 - 실제 시작은 WorkStart 버튼 클릭 시 HUDPresenter에서 호출
         QuestManager.Instance.dailyQuestState.Value = QuestState.Ready;
+        StoryQuestManager.Instance?.ResetForNewDay();
         EventQuestManager.Instance?.ResetForNewDay();
     }
 
@@ -87,10 +88,10 @@ public class DateTimeManager : MonoBehaviour
     /// <summary>
     /// NPC가 대화가 가능한 상태인지
     /// </sumary>
-    public int GetDialogueState(string npcName, bool isStoryQuest = false)
+    public int GetDialogueState(string npcName, bool isDialogueQuest = false)
     {
-        // 스토리 퀘스트 대화라면, 업무 완료 여부와 상관없이 대화 가능
-        if (isStoryQuest)
+        // 일반 대화 퀘스트는 대화가 업무임.
+        if (isDialogueQuest)
         {
             if (talkedNpcsToday.Contains(npcName))
                 return 2;

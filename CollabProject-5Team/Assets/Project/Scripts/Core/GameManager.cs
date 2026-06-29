@@ -224,11 +224,15 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    // 활성 NPC 중 아무나 한 명의 Transform을 랜덤으로 반환 (퀘스트 말풍선 표시용)
     public Transform GetRandomActiveNpcTransform()
     {
+        Employee employee = GetRandomActiveEmployee();
+        return employee.transform;
+    }
+    public Employee GetRandomActiveEmployee()
+    {
         if (_activeEmployees.Count == 0) return null;
-        return _activeEmployees[Random.Range(0, _activeEmployees.Count)].transform;
+        return _activeEmployees[Random.Range(0, _activeEmployees.Count)];
     }
 
     // 퇴근 명령 SpawnPoint로 이동 후 비활성화

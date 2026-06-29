@@ -645,7 +645,7 @@ GameObject:
   - component: {fileID: 4140198702519715781}
   m_Layer: 7
   m_Name: "\uCFE0\uB0D0"
-  m_TagString: Untagged
+  m_TagString: Employee
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -708,7 +708,7 @@ CapsuleCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Radius: 0.6
+  m_Radius: 0.7
   m_Height: 1.8
   m_Direction: 1
   m_Center: {x: 0, y: 0.9, z: 0}
@@ -751,6 +751,7 @@ MonoBehaviour:
     _preLoyalty: 0
     _preFatigue: 0
   hasTalkedThisWeek: 0
+  completedProjectNames: []
   WorkStatus: 0
 --- !u!195 &4943471625799646293
 NavMeshAgent:
@@ -788,7 +789,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Agent: {fileID: 0}
   Anim: {fileID: 0}
-  TargetDesk: {fileID: 0}
+  MyDesk: {fileID: 0}
+  IsFirstTask: 1
+  IsMoveToRest: 0
+  IsInteracting: 0
 --- !u!1 &2357839527366335992
 GameObject:
   m_ObjectHideFlags: 0

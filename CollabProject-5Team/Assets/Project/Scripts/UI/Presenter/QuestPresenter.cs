@@ -70,21 +70,38 @@ namespace GameDevTycoon.UI.Ingame
                 })
                 .AddTo(this);
 
-            if (EventQuestManager.Instance == null) return;
+            if (StoryQuestManager.Instance != null)
+            {
+                StoryQuestManager.Instance.storyQuestState
+                    .Subscribe(OnStoryQuestStateChanged)
+                    .AddTo(this);
 
-            EventQuestManager.Instance.eventQuestState
-                .Subscribe(OnEventQuestStateChanged)
-                .AddTo(this);
+                StoryQuestManager.Instance.storyQuestProgress
+                    .Subscribe(progress =>
+                    {
+                        StoryQuest quest = StoryQuestManager.Instance.curStoryQuest;
+                        if (quest == null) return;
 
-            EventQuestManager.Instance.eventQuestProgress
-                .Subscribe(progress =>
-                {
-                    EventQuest quest = EventQuestManager.Instance.curEventQuest;
-                    if (quest == null) return;
+                        UpdateStoryQuestProgress(progress, quest.TargetCount);
+                    })
+                    .AddTo(this);
+            }
+            if (EventQuestManager.Instance != null)
+            {
+                EventQuestManager.Instance.eventQuestState
+                    .Subscribe(OnEventQuestStateChanged)
+                    .AddTo(this);
 
-                    UpdateEventQuestProgress(progress, quest.TargetCount);
-                })
-                .AddTo(this);
+                EventQuestManager.Instance.eventQuestProgress
+                    .Subscribe(progress =>
+                    {
+                        EventQuest quest = EventQuestManager.Instance.curEventQuest;
+                        if (quest == null) return;
+
+                        UpdateEventQuestProgress(progress, quest.TargetCount);
+                    })
+                    .AddTo(this);
+            }
         }
 
         private void OnDailyQuestStateChanged(QuestState state)
@@ -107,8 +124,25 @@ namespace GameDevTycoon.UI.Ingame
         // 완료한 퀘스트의 직군에 맞는 스탯 UP 아이콘만 표시 (Project.cs의 직군별 스탯 매핑과 동일)
         private void ShowClearPopupForCurrentQuest()
         {
-            Role role = QuestManager.Instance.curDailyQuest.so.role;
+            ShowRewardPopup(QuestManager.Instance.curDailyQuest.Reward);
+        }
 
+        private void ShowRewardPopup(QuestReward reward)
+        {
+            switch (reward.type)
+            {
+                case QuestRewardType.ProjectScore:
+                    ShowProjectScoreClearPopup(reward.role);
+                    break;
+
+                case QuestRewardType.Gold:
+                    ShowGoldClearPopup(reward.amount);
+                    break;
+            }
+        }
+
+        private void ShowProjectScoreClearPopup(Role role)
+        {
             ShowClearPopup(
                 completionUp: role == Role.PLANNER,
                 stabilityUp: role == Role.PROGRAMMER,
@@ -156,11 +190,22 @@ namespace GameDevTycoon.UI.Ingame
         public void ShowEventQuestAlert()
         {
             EventQuest quest = EventQuestManager.Instance.curEventQuest;
-            if (quest == null) return;
 
             _view.ShowQuestAlert(
                 questType: EventQuest.QuestTypeName,
                 questName: EventQuest.QuestName,
+                current: quest.curCount,
+                total: quest.TargetCount
+            );
+        }
+
+        public void ShowStoryQuestAlert()
+        {
+            StoryQuest quest = StoryQuestManager.Instance.curStoryQuest;
+
+            _view.ShowQuestAlert(
+                questType: "스토리 퀘스트",
+                questName: quest.so.questName,
                 current: quest.curCount,
                 total: quest.TargetCount
             );
@@ -176,12 +221,23 @@ namespace GameDevTycoon.UI.Ingame
             AutoHideClearPopupAsync().Forget();
         }
 
+        public void ShowGoldClearPopup(int goldAmount)
+        {
+            _view.ShowGoldClearPopup(goldAmount);
+            AutoHideClearPopupAsync().Forget();
+        }
+
         public void UpdateDailyQuestProgress(int current, int total)
         {
             _view.SetAlertProgress(current, total);
         }
 
         public void UpdateEventQuestProgress(int current, int total)
+        {
+            _view.SetAlertProgress(current, total);
+        }
+
+        public void UpdateStoryQuestProgress(int current, int total)
         {
             _view.SetAlertProgress(current, total);
         }
@@ -199,6 +255,25 @@ namespace GameDevTycoon.UI.Ingame
 
                 case QuestState.End:
                     UpdateEventQuestProgress(quest.curCount, quest.TargetCount);
+                    ShowRewardPopup(quest.Reward);
+                    break;
+            }
+        }
+
+        private void OnStoryQuestStateChanged(QuestState state)
+        {
+            StoryQuest quest = StoryQuestManager.Instance.curStoryQuest;
+            if (quest == null) return;
+
+            switch (state)
+            {
+                case QuestState.Playing:
+                    ShowStoryQuestAlert();
+                    break;
+
+                case QuestState.End:
+                    UpdateStoryQuestProgress(quest.curCount, quest.TargetCount);
+                    ShowRewardPopup(quest.Reward);
                     break;
             }
         }
@@ -264,8 +339,24 @@ namespace GameDevTycoon.UI.Ingame
             };
         }
 
-        // [TODO: 스토리/이벤트 퀘스트 시스템 구현 후 연결]
-        private static List<QuestItemData> GetStoryQuests() => new();
+        private static List<QuestItemData> GetStoryQuests()
+        {
+            StoryQuest quest = StoryQuestManager.Instance != null
+                ? StoryQuestManager.Instance.curStoryQuest
+                : null;
+
+            if (quest == null) return new();
+
+            return new()
+            {
+                new QuestItemData
+                {
+                    questName = quest.so.questName,
+                    isCompleted = quest.state == QuestState.End
+                }
+            };
+        }
+
         private static List<QuestItemData> GetEventQuests()
         {
             EventQuest quest = EventQuestManager.Instance != null
