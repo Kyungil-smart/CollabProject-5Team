@@ -17,6 +17,10 @@ public class CameraManager : MonoBehaviour
     [SerializeField] private float _minSize = 5f;                            // 최대 줌
     [SerializeField] private float _maxSize = 13f;                           // 최소 줌
 
+    [Header("대화 시 카메라 배율")]
+    [SerializeField] private float _talkZoomSize = 5f;
+    [SerializeField] private float _transitionDuration = 0.5f;
+
     private MapInfo currentMapInfo;
     private Camera _cam;
     private Tweener _inertiaTweener;                                         // 관성 이동 제어
@@ -350,6 +354,49 @@ public class CameraManager : MonoBehaviour
         EventSystem.current.RaycastAll(eventData, _uiRaycastResults);
 
         return _uiRaycastResults.Count > 0;
+    }
+
+    /// <summary>
+    /// 대화 시 카메라 줌인 호출
+    /// </summary>
+    public void FocusOnTarget(Vector3 targetPosition, float zoomSize = 5f)
+    {
+        // 카메라 이동 관성이 있다면 종료
+        _inertiaTweener?.Kill();
+
+        // 카메라가 바닥에서 얼마나 떨어져 있는지
+        Vector3 cameraOffset = transform.position - GetCenterPosition();
+
+        // 타겟 위치에서 오프셋만큼 떨어진 곳으로 카메라 이동
+        Vector3 targetCamPos = targetPosition + cameraOffset;
+
+        transform.DOMove(targetCamPos, _transitionDuration).SetEase(Ease.InOutCubic);
+
+        // 줌인
+        DOTween.To(() => _cam.orthographicSize, x => _cam.orthographicSize = x, zoomSize, _transitionDuration)
+            .SetEase(Ease.InOutCubic);
+    }
+
+    // 카메라 중앙의 바닥 좌표를 구하는 함수
+    private Vector3 GetCenterPosition()
+    {
+        Ray ray = _cam.ScreenPointToRay(new Vector3(Screen.width * 0.5f, Screen.height * 0.5f, 0));
+        Plane groundPlane = new Plane(Vector3.up, Vector3.zero);
+        if (groundPlane.Raycast(ray, out float enter))
+        {
+            return ray.GetPoint(enter);
+        }
+        
+        return Vector3.zero;
+    }
+
+    // 대화 종료 시 카메라 원복
+    public void ResetCamera()
+    {
+        transform.DOMove(GetClampedCameraPosition(transform.position), _transitionDuration).SetEase(Ease.InOutCubic);
+
+        DOTween.To(() => _cam.orthographicSize, x => _cam.orthographicSize = x, _defaultSize, _transitionDuration)
+            .SetEase(Ease.InOutCubic);
     }
 
     public void MapSettings(MapInfo mapInfo)
