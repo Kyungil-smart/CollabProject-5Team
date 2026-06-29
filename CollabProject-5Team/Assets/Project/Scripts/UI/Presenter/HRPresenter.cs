@@ -37,8 +37,6 @@ namespace GameDevTycoon.UI.Ingame
             BindTabs();
             BindEmployeeManage();
             BindHire();
-            BindFire();
-            BindEducation();
 
             DateTimeManager.OnWeekStarted += ResetOnMondayUI;
         }
@@ -74,22 +72,6 @@ namespace GameDevTycoon.UI.Ingame
                     _view.ShowHireMain();
                 })
                 .AddTo(this);
-
-            _view.OnFireTabClicked
-                .Subscribe(_ =>
-                {
-                    _view.ShowTab(HRTab.Fire);
-                    RefreshFireList();
-                })
-                .AddTo(this);
-
-            _view.OnEducationTabClicked
-                .Subscribe(_ =>
-                {
-                    _view.ShowTab(HRTab.Education);
-                    RefreshEducationList();
-                })
-                .AddTo(this);
         }
 
         private void BindEmployeeManage()
@@ -102,8 +84,21 @@ namespace GameDevTycoon.UI.Ingame
             _view.OnEmployeeManageEducationClicked
                 .Subscribe(_ =>
                 {
-                    _view.ShowTab(HRTab.Education);
-                    RefreshEducationList();
+                    if (_selectedEmployee == null) return;
+
+                    // 현재 교육 중인 직원이면 해당 과정 인덱스를 넘겨 EducationOverlay 표시
+                    var training = _EmployeeManager.Instance.GetTraining(_selectedEmployee);
+                    int inTrainingIndex = -1;
+                    if (training != null)
+                    {
+                        var courses = _EmployeeManager.Instance.trainingCourses;
+                        inTrainingIndex = courses.FindIndex(c => c.courseName == training.course.courseName);
+                    }
+
+                    _selectedCourseIndex = -1;
+                    _view.SetEducationCourseConfirmInteractable(false);
+                    _view.ShowEducationCourse(inTrainingIndex);
+                    InitCourseCostValues();
                 })
                 .AddTo(this);
 
@@ -116,6 +111,32 @@ namespace GameDevTycoon.UI.Ingame
                 {
                     _selectedEmployee = null;
                     _view.ShowEmployeeManageList();
+                })
+                .AddTo(this);
+
+            _view.OnCourseSelected
+                .Subscribe(index =>
+                {
+                    // 이전 SelectIMG 해제 후 새 선택 반영
+                    if (_selectedCourseIndex >= 0)
+                        _view.SetCourseSelectImg(_selectedCourseIndex, false);
+
+                    _selectedCourseIndex = index;
+                    _view.SetCourseSelectImg(index, true);
+                    _view.SetEducationCourseConfirmInteractable(true);
+                })
+                .AddTo(this);
+
+            _view.OnEducationCourseConfirmClicked
+                .Subscribe(_ => OnEducationCourseConfirmClicked())
+                .AddTo(this);
+
+            _view.OnEducationCourseBackClicked
+                .Subscribe(_ =>
+                {
+                    _view.ResetCourseSelection();
+                    _selectedCourseIndex = -1;
+                    _view.ShowEmployeeManageDetail();
                 })
                 .AddTo(this);
         }
@@ -173,84 +194,6 @@ namespace GameDevTycoon.UI.Ingame
                     _selectedApplicant = null;
                     _view.ShowApplicantList();
                 })
-                .AddTo(this);
-        }
-
-        private void BindFire()
-        {
-            _view.OnFireSortChanged
-                .Skip(1)
-                .Subscribe(_ => RefreshFireList())
-                .AddTo(this);
-
-            _view.OnFireConfirmClicked
-                .Subscribe(_ => OnFireButtonClicked(_selectedEmployee))
-                .AddTo(this);
-
-            _view.OnFireBackClicked
-                .Subscribe(_ =>
-                {
-                    _selectedEmployee = null;
-                    _view.ShowFireList();
-                })
-                .AddTo(this);
-        }
-
-        private void BindEducation()
-        {
-            _view.OnEducationSortChanged
-                .Skip(1)
-                .Subscribe(_ => RefreshEducationList())
-                .AddTo(this);
-
-            _view.OnEducationClicked
-                .Subscribe(_ =>
-                {
-                    if (_selectedEmployee == null) return;
-
-                    // 현재 교육 중인 직원이면 해당 과정 인덱스를 넘겨 EducationOverlay 표시
-                    var training = _EmployeeManager.Instance.GetTraining(_selectedEmployee);
-                    int inTrainingIndex = -1;
-                    if (training != null)
-                    {
-                        var courses = _EmployeeManager.Instance.trainingCourses;
-                        inTrainingIndex = courses.FindIndex(c => c.courseName == training.course.courseName);
-                    }
-
-                    _selectedCourseIndex = -1;
-                    _view.SetEducationCourseConfirmInteractable(false);
-                    _view.ShowEducationCourse(inTrainingIndex);
-                    InitCourseCostValues();
-                })
-                .AddTo(this);
-
-            _view.OnCourseSelected
-                .Subscribe(index =>
-                {
-                    // 이전 SelectIMG 해제 후 새 선택 반영
-                    if (_selectedCourseIndex >= 0)
-                        _view.SetCourseSelectImg(_selectedCourseIndex, false);
-
-                    _selectedCourseIndex = index;
-                    _view.SetCourseSelectImg(index, true);
-                    _view.SetEducationCourseConfirmInteractable(true);
-                })
-                .AddTo(this);
-
-            _view.OnEducationDetailBackClicked
-                .Subscribe(_ =>
-                {
-                    _selectedEmployee = null;
-                    _view.ShowEducationList();
-                })
-                .AddTo(this);
-
-            _view.OnEducationCourseConfirmClicked
-                .Subscribe(_ => OnEducationCourseConfirmClicked())
-                .AddTo(this);
-
-            _view.OnEducationCourseBackClicked
-                .Subscribe(_ => _view.ShowEducationDetail())
                 .AddTo(this);
         }
 
@@ -319,7 +262,7 @@ namespace GameDevTycoon.UI.Ingame
                 card.GetComponent<UnityEngine.UI.Button>()?.onClick.AddListener(() =>
                 {
                     _selectedEmployee = captured;
-                    RefreshEmployeeDetail(captured, _view.EmployeeManageDetailContent, isEducationContext: false);
+                    RefreshEmployeeDetail(captured, _view.EmployeeManageDetailContent);
                     _view.ShowEmployeeManageDetail();
 
                     bool isBusy = IsEmployeeBusy(captured);
@@ -369,58 +312,7 @@ namespace GameDevTycoon.UI.Ingame
             }
         }
 
-        private void RefreshFireList()
-        {
-            var employees = GetSortedEmployees(_view.FireSortIndex);
-
-            foreach (Transform child in _view.FireListContent)
-                Destroy(child.gameObject);
-
-            _view.SetFireCountLabel(employees.Count);
-
-            foreach (var employee in employees)
-            {
-                var card = Instantiate(_employeeCardPrefab, _view.FireListContent);
-                card.GetComponent<IBindable<Employee>>().Bind(employee);
-
-                var captured = employee;
-                card.GetComponent<UnityEngine.UI.Button>()?.onClick.AddListener(() =>
-                {
-                    _selectedEmployee = captured;
-                    RefreshEmployeeDetail(captured, _view.FireDetailContent, isEducationContext: false);
-                    _view.ShowFireDetail();
-                });
-            }
-        }
-
-        private void RefreshEducationList()
-        {
-            var employees = GetSortedEmployees(_view.EducationSortIndex)
-                .Where(e => !IsEmployeeBusy(e))
-                .ToList();
-
-            foreach (Transform child in _view.EducationListContent)
-                Destroy(child.gameObject);
-
-            _view.SetEducationCountLabel(employees.Count);
-
-            foreach (var employee in employees)
-            {
-                var card = Instantiate(_employeeCardPrefab, _view.EducationListContent);
-                card.GetComponent<IBindable<Employee>>().Bind(employee);
-
-                var captured = employee;
-                card.GetComponent<UnityEngine.UI.Button>()?.onClick.AddListener(() =>
-                {
-                    _selectedEmployee = captured;
-                    RefreshEmployeeDetail(captured, _view.EducationDetailContent, isEducationContext: true);
-                    _view.ShowEducationDetail();
-                    _view.SetEducationButtonInteractable(true);
-                });
-            }
-        }
-
-        private void RefreshEmployeeDetail(Employee employee, Transform content, bool isEducationContext)
+        private void RefreshEmployeeDetail(Employee employee, Transform content)
         {
             foreach (Transform child in content)
                 Destroy(child.gameObject);
@@ -554,8 +446,8 @@ namespace GameDevTycoon.UI.Ingame
                     );
 
                     _selectedEmployee = null;
-                    _view.ShowFireList();
-                    RefreshFireList();
+                    _view.ShowEmployeeManageList();
+                    RefreshEmployeeManageList();
                 }
             );
         }
@@ -579,8 +471,8 @@ namespace GameDevTycoon.UI.Ingame
             _view.ResetCourseSelection();
             _selectedEmployee = null;
             _selectedCourseIndex = -1;
-            _view.ShowEducationList();
-            RefreshEducationList();
+            _view.ShowEmployeeManageList();
+            RefreshEmployeeManageList();
         }
 
         /// <summary>
