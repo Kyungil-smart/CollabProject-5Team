@@ -50,6 +50,12 @@ namespace GameDevTycoon.EditorQA
                 "대화, 보고서 채택, 교육, 프로젝트 완료 보상이 직원 성장/피로/퇴사 위험에 미치는 영향을 확인합니다.",
                 "직원 생애주기 열기",
                 EmployeeLifecycleSimulatorWindow.Open);
+
+            DrawSection(
+                "6. 주차/일자 지표 흐름",
+                "월~금 낮 업무, 금요일 밤 보고서, 출시 후 매출까지 직원/프로젝트/재화 지표가 일자별로 어떻게 변하는지 추적합니다.",
+                "지표 흐름 시뮬레이터 열기",
+                FlowTimelineSimulatorWindow.Open);
         }
 
         private static void DrawSection(string title, string description, string buttonLabel, System.Action onClick)
