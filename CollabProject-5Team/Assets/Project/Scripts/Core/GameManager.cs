@@ -186,6 +186,25 @@ public class GameManager : MonoBehaviour
         MapInfo newOffice = Instantiate(_offices[_currentOfficeIndex], Vector3.zero, Quaternion.identity);
         _currentMapTransform = newOffice.transform;
 
+        if (player != null && newOffice.PlayerSpawn != null)
+        {
+            var agent = player.GetComponent<UnityEngine.AI.NavMeshAgent>();
+            if (agent != null)
+            {
+                agent.enabled = false;
+                player.transform.position = newOffice.PlayerSpawn.position;
+
+                agent.Warp(newOffice.PlayerSpawn.position);
+
+                agent.enabled = true;
+            }
+
+            else
+            {
+                player.transform.position = newOffice.PlayerSpawn.position;
+            }
+        }
+
         // 잠시 대기 후 카메라 조정
         await UniTask.Yield();
 
