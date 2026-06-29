@@ -50,6 +50,8 @@ public sealed class DebugUIPresenter : MonoBehaviour
             {
                 DateTimeManager.Instance.OnClickEndDayButton().Forget();
                 QuestManager.Instance.ResetForNewDay();
+
+                TutorialManager.OnSomewhereTutorialCompleted?.Invoke();
             }).AddTo(this);
 
         _bonusQuestScoreButton.OnClickAsObservable()
