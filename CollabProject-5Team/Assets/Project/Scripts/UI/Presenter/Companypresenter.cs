@@ -16,9 +16,6 @@ namespace GameDevTycoon.UI.Ingame
         [SerializeField] private AlertView _alertView;
         [SerializeField] private HUDPresenter _hudPresenter;
 
-        [Header("프리팹")]
-        [SerializeField] private RankingItemView _rankingItemPrefab;
-
         private ManagementFilter _currentFilter = ManagementFilter.Monthly;
 
         // 현재 선택된 카드 인덱스 (1~3), 미선택 시 -1
@@ -51,14 +48,6 @@ namespace GameDevTycoon.UI.Ingame
                 {
                     _view.ShowTab(CompanyTab.CompanyInfo);
                     RefreshCompanyInfo();
-                })
-                .AddTo(this);
-
-            _view.OnRankingTabClicked
-                .Subscribe(_ =>
-                {
-                    _view.ShowTab(CompanyTab.Ranking);
-                    RefreshRankingList();
                 })
                 .AddTo(this);
 
@@ -117,7 +106,6 @@ namespace GameDevTycoon.UI.Ingame
             // [TODO: CompanyManager 연결 후 실제 데이터 바인딩]
             var company = Company.Instance;
 
-            _view.SetCompanyInfoLogo(null);
             _view.SetCompanyInfoLabels(
                 companyName: company.CompanyName,
                 officeLevel: company.level,
@@ -126,32 +114,9 @@ namespace GameDevTycoon.UI.Ingame
                 releasedGameCount: company.completedProjects.Count,
                 reputation: company.reputation,
                 popularity: company.popularity,
-                cohesion: "좋음",   // [TODO: 내부결속력 단계 문자열 연결]
                 gold: company.gold.Value,
                 totalRevenue: company.totalRevenue
             );
-        }
-
-        private void RefreshRankingList()
-        {
-            foreach (Transform child in _view.RankingListContent)
-                Destroy(child.gameObject);
-
-            // [TODO: RankingManager 연결 후 실제 경쟁사 목록 바인딩]
-            var playerData = new RankingItemData
-            {
-                rank = 1,
-                companyName = Company.Instance.CompanyName,
-                reputation = Company.Instance.reputation,
-                popularity = 0,
-                totalRevenue = 0,
-                isPlayer = true,
-            };
-
-            var item = Instantiate(_rankingItemPrefab, _view.RankingListContent);
-            item.Bind(playerData);
-
-            _view.SetRankingUpdateNote("• 매년 첫번째 주에 업데이트");
         }
 
         private void RefreshManagementStatus()
