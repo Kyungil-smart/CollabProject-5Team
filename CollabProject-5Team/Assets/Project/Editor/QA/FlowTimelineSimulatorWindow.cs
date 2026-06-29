@@ -16,6 +16,7 @@ namespace GameDevTycoon.EditorQA
         private readonly List<AssetEntry<ProjectSO>> _projects = new();
         private readonly List<AssetEntry<ReportSO>> _reports = new();
         private readonly List<FlowDaySnapshot> _timeline = new();
+        private readonly List<FlowDaySnapshot> _comparisonTimeline = new();
 
         private Vector2 _scrollPosition;
         private ProjectSize _projectSize = ProjectSize.Small;
@@ -32,6 +33,10 @@ namespace GameDevTycoon.EditorQA
         private bool _showDailyRows = true;
         private bool _showDevelopment = true;
         private bool _showLaunch = true;
+        private bool _showGraph = true;
+        private bool _focusGraph;
+        private GraphMode _graphMode = GraphMode.Project;
+        private string _comparisonLabel = "비교 기준 없음";
 
         [MenuItem("Tools/Balance/7. Flow Timeline", false, 207)]
         public static void Open()
@@ -54,7 +59,12 @@ namespace GameDevTycoon.EditorQA
             _scrollPosition = EditorGUILayout.BeginScrollView(_scrollPosition);
             DrawInputPanel();
             DrawSummaryPanel();
-            DrawTimeline();
+            DrawComparisonPanel();
+            DrawGraphPanel();
+            if (!_focusGraph)
+                DrawTimeline();
+            else
+                EditorGUILayout.HelpBox("그래프 집중 모드입니다. 표를 다시 보려면 상단의 집중 토글을 끄세요.", MessageType.Info);
             EditorGUILayout.EndScrollView();
         }
 
@@ -72,6 +82,9 @@ namespace GameDevTycoon.EditorQA
                     Simulate();
 
                 GUILayout.FlexibleSpace();
+                _showGraph = GUILayout.Toggle(_showGraph, "그래프", EditorStyles.toolbarButton, GUILayout.Width(70f));
+                using (new EditorGUI.DisabledScope(!_showGraph))
+                    _focusGraph = GUILayout.Toggle(_focusGraph, "집중", EditorStyles.toolbarButton, GUILayout.Width(60f));
                 _showDailyRows = GUILayout.Toggle(_showDailyRows, "일자 행", EditorStyles.toolbarButton, GUILayout.Width(70f));
                 _showDevelopment = GUILayout.Toggle(_showDevelopment, "개발", EditorStyles.toolbarButton, GUILayout.Width(60f));
                 _showLaunch = GUILayout.Toggle(_showLaunch, "출시", EditorStyles.toolbarButton, GUILayout.Width(60f));
@@ -88,6 +101,8 @@ namespace GameDevTycoon.EditorQA
 
             using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
             {
+                DrawPresetButtons();
+                EditorGUILayout.Space(5f);
                 EditorGUI.BeginChangeCheck();
                 _projectSize = (ProjectSize)EditorGUILayout.EnumPopup("프로젝트 규모", _projectSize);
                 _pickMode = (PickMode)EditorGUILayout.EnumPopup("대표 팀 구성", _pickMode);
@@ -107,6 +122,55 @@ namespace GameDevTycoon.EditorQA
                 if (EditorGUI.EndChangeCheck())
                     Simulate();
             }
+        }
+
+
+        private void DrawPresetButtons()
+        {
+            EditorGUILayout.LabelField("빠른 프리셋", EditorStyles.boldLabel);
+            using (new EditorGUILayout.HorizontalScope())
+            {
+                if (GUILayout.Button("소형 안전", GUILayout.Height(24f)))
+                    ApplyPreset(ProjectSize.Small, PickMode.Strong, 8, 15000, 20, 500, 3, 1, 0, 10, 5);
+
+                if (GUILayout.Button("소형 평균", GUILayout.Height(24f)))
+                    ApplyPreset(ProjectSize.Small, PickMode.Average, 8, 10000, 0, 500, 2, 2, 1, 5, 2);
+
+                if (GUILayout.Button("중형 공격", GUILayout.Height(24f)))
+                    ApplyPreset(ProjectSize.Medium, PickMode.Strong, 10, 25000, 40, 1500, 4, 3, 1, 4, 2);
+
+                if (GUILayout.Button("대형 고위험", GUILayout.Height(24f)))
+                    ApplyPreset(ProjectSize.Large, PickMode.Low, 16, 45000, 80, 4000, 5, 5, 2, 2, 1);
+            }
+            EditorGUILayout.LabelField("프리셋은 비교용 시작값입니다. 실제 밸런스 확정값이 아니라 빠른 검증 기준으로 사용합니다.", EditorStyles.wordWrappedMiniLabel);
+        }
+
+        private void ApplyPreset(
+            ProjectSize projectSize,
+            PickMode pickMode,
+            int weeks,
+            int initialGold,
+            int popularity,
+            int officeCost,
+            int questScore,
+            int fatigueGain,
+            int desireDecay,
+            int restFatigue,
+            int restDesire)
+        {
+            _projectSize = projectSize;
+            _pickMode = pickMode;
+            _simulationWeeks = weeks;
+            _initialGold = initialGold;
+            _companyPopularity = popularity;
+            _officeWeeklyCost = officeCost;
+            _dailyQuestScore = questScore;
+            _dailyFatigueGain = fatigueGain;
+            _dailyDesireDecay = desireDecay;
+            _fridayRestFatigueRecovery = restFatigue;
+            _fridayRestDesireRecovery = restDesire;
+            Simulate();
+            Repaint();
         }
 
         private void DrawSummaryPanel()
@@ -148,6 +212,299 @@ namespace GameDevTycoon.EditorQA
             string text = isRisk ? $"위험: {label}" : $"정상: {label}";
             MessageType type = isRisk ? MessageType.Warning : MessageType.None;
             EditorGUILayout.HelpBox(text, type);
+        }
+
+
+
+        private void DrawComparisonPanel()
+        {
+            if (_timeline.Count == 0)
+                return;
+
+            using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
+            {
+                using (new EditorGUILayout.HorizontalScope())
+                {
+                    EditorGUILayout.LabelField("비교 모드", EditorStyles.boldLabel, GUILayout.Width(80f));
+                    if (GUILayout.Button("현재 결과를 기준 A로 저장", GUILayout.Width(170f)))
+                    {
+                        _comparisonTimeline.Clear();
+                        _comparisonTimeline.AddRange(_timeline);
+                        _comparisonLabel = BuildCurrentSettingLabel();
+                    }
+
+                    using (new EditorGUI.DisabledScope(_comparisonTimeline.Count == 0))
+                    {
+                        if (GUILayout.Button("기준 지우기", GUILayout.Width(90f)))
+                        {
+                            _comparisonTimeline.Clear();
+                            _comparisonLabel = "비교 기준 없음";
+                        }
+                    }
+
+                    GUILayout.FlexibleSpace();
+                    EditorGUILayout.LabelField(_comparisonLabel, EditorStyles.miniLabel, GUILayout.Width(360f));
+                }
+
+                if (_comparisonTimeline.Count == 0)
+                {
+                    EditorGUILayout.LabelField("현재 결과를 기준 A로 저장한 뒤 값을 바꾸면 A/B 차이를 볼 수 있습니다.", EditorStyles.wordWrappedMiniLabel);
+                    return;
+                }
+
+                FlowSummary baseline = BuildSummary(_comparisonTimeline);
+                FlowSummary current = BuildSummary(_timeline);
+                DrawComparisonLine("최종 자금", baseline.FinalGold, current.FinalGold, "G", true);
+                DrawComparisonLine("최저 자금", baseline.MinGold, current.MinGold, "G", true);
+                DrawComparisonLine("누적 순이익", baseline.TotalNet, current.TotalNet, "G", true);
+                DrawComparisonLine("완성도", baseline.Quality, current.Quality, "", true);
+                DrawComparisonLine("안정성", baseline.Stability, current.Stability, "", true);
+                DrawComparisonLine("매력도", baseline.Charm, current.Charm, "", true);
+                DrawComparisonLine("평균 피로도", baseline.Fatigue, current.Fatigue, "", false);
+                DrawComparisonLine("평균 의욕", baseline.Desire, current.Desire, "", true);
+            }
+        }
+
+        private string BuildCurrentSettingLabel()
+        {
+            return $"A: {_projectSize}/{_pickMode}, {_simulationWeeks}주, 자금 {_initialGold:N0}G, 인기 {_companyPopularity}";
+        }
+
+        private static FlowSummary BuildSummary(List<FlowDaySnapshot> rows)
+        {
+            if (rows.Count == 0)
+                return FlowSummary.Empty;
+
+            FlowDaySnapshot final = rows[rows.Count - 1];
+            int totalIncome = rows.Sum(t => t.Income);
+            int totalExpense = rows.Sum(t => t.Expense);
+            return new FlowSummary(
+                final.EndGold,
+                rows.Min(t => t.EndGold),
+                totalIncome - totalExpense,
+                final.Quality,
+                final.Stability,
+                final.Charm,
+                final.Desire,
+                final.Fatigue);
+        }
+
+        private static void DrawComparisonLine(string label, float baseline, float current, string suffix, bool higherIsBetter)
+        {
+            float delta = current - baseline;
+            bool isBetter = Mathf.Approximately(delta, 0f) || (higherIsBetter ? delta > 0f : delta < 0f);
+            Color previous = GUI.color;
+            GUI.color = Mathf.Approximately(delta, 0f) ? Color.white : isBetter ? new Color(0.62f, 0.9f, 0.62f) : new Color(1f, 0.62f, 0.52f);
+
+            using (new EditorGUILayout.HorizontalScope())
+            {
+                GUILayout.Label(label, GUILayout.Width(90f));
+                GUILayout.Label($"A {FormatCompareValue(baseline, suffix)}", GUILayout.Width(130f));
+                GUILayout.Label($"현재 {FormatCompareValue(current, suffix)}", GUILayout.Width(150f));
+                GUILayout.Label($"변화 {FormatSignedDelta(delta, suffix)}", EditorStyles.boldLabel);
+            }
+
+            GUI.color = previous;
+        }
+
+        private static string FormatCompareValue(float value, string suffix)
+        {
+            return string.IsNullOrEmpty(suffix) ? value.ToString("0.#") : $"{value:N0}{suffix}";
+        }
+
+        private static string FormatSignedDelta(float value, string suffix)
+        {
+            string sign = value > 0f ? "+" : string.Empty;
+            return string.IsNullOrEmpty(suffix) ? $"{sign}{value:0.#}" : $"{sign}{value:N0}{suffix}";
+        }
+
+        private void DrawGraphPanel()
+        {
+            if (!_showGraph || _timeline.Count == 0)
+                return;
+
+            using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
+            {
+                using (new EditorGUILayout.HorizontalScope())
+                {
+                    EditorGUILayout.LabelField(_focusGraph ? "그래프 집중 모드" : "그래프", EditorStyles.boldLabel, GUILayout.Width(_focusGraph ? 120f : 60f));
+                    _graphMode = (GraphMode)EditorGUILayout.EnumPopup(_graphMode, GUILayout.Width(180f));
+                    GUILayout.FlexibleSpace();
+                    EditorGUILayout.LabelField("주차선과 위험 기준선을 같이 표시합니다.", EditorStyles.miniLabel, GUILayout.Width(260f));
+                }
+
+                GraphSeries[] series = GetGraphSeries(_graphMode);
+                Rect rect = GUILayoutUtility.GetRect(10f, _focusGraph ? 430f : 250f, GUILayout.ExpandWidth(true));
+                DrawLineGraph(rect, series);
+                DrawGraphLegend(series);
+            }
+        }
+
+        private GraphSeries[] GetGraphSeries(GraphMode mode)
+        {
+            return mode switch
+            {
+                GraphMode.Money => new[]
+                {
+                    new GraphSeries("자금", new Color(0.95f, 0.72f, 0.24f), r => r.EndGold),
+                    new GraphSeries("수입", new Color(0.38f, 0.78f, 0.48f), r => r.Income),
+                    new GraphSeries("지출", new Color(0.9f, 0.42f, 0.36f), r => r.Expense)
+                },
+                GraphMode.Staff => new[]
+                {
+                    new GraphSeries("의욕", new Color(0.38f, 0.72f, 1f), r => r.Desire, 0f, 100f),
+                    new GraphSeries("피로도", new Color(1f, 0.52f, 0.42f), r => r.Fatigue, 0f, 100f),
+                    new GraphSeries("충성도", new Color(0.66f, 0.86f, 0.42f), r => r.Loyalty, 0f, 100f)
+                },
+                _ => new[]
+                {
+                    new GraphSeries("진척도", new Color(0.55f, 0.72f, 1f), r => r.Progress, 0f, 100f),
+                    new GraphSeries("완성도", new Color(0.62f, 0.88f, 0.45f), r => r.Quality, 0f, 100f),
+                    new GraphSeries("안정성", new Color(0.48f, 0.82f, 0.86f), r => r.Stability, 0f, 100f),
+                    new GraphSeries("매력도", new Color(1f, 0.64f, 0.78f), r => r.Charm, 0f, 100f)
+                }
+            };
+        }
+
+        private void DrawLineGraph(Rect rect, GraphSeries[] series)
+        {
+            Rect plotRect = new Rect(rect.x + 52f, rect.y + 18f, rect.width - 78f, rect.height - 46f);
+            EditorGUI.DrawRect(rect, new Color(0.15f, 0.15f, 0.15f));
+            EditorGUI.DrawRect(plotRect, new Color(0.08f, 0.08f, 0.08f));
+
+            float min = series.Any(s => s.HasFixedRange) ? series.Min(s => s.Min) : Mathf.Min(0f, series.SelectMany(s => _timeline.Select(r => s.ValueSelector(r))).Min());
+            float max = series.Any(s => s.HasFixedRange) ? series.Max(s => s.Max) : Mathf.Max(1f, series.SelectMany(s => _timeline.Select(r => s.ValueSelector(r))).Max());
+            if (Mathf.Approximately(min, max))
+                max = min + 1f;
+
+            float padding = Mathf.Max(1f, (max - min) * 0.08f);
+            if (!series.Any(s => s.HasFixedRange))
+            {
+                min -= padding;
+                max += padding;
+            }
+
+            Handles.BeginGUI();
+            DrawGrid(plotRect, min, max);
+            DrawRiskGuides(plotRect, min, max);
+            DrawTimelineMarkers(plotRect);
+
+            foreach (GraphSeries item in series)
+                DrawSeriesLine(plotRect, item, min, max);
+
+            Handles.EndGUI();
+
+            GUI.Label(new Rect(rect.x + 8f, plotRect.y - 4f, 42f, 18f), max.ToString("0.#"), EditorStyles.miniLabel);
+            GUI.Label(new Rect(rect.x + 8f, plotRect.yMax - 14f, 42f, 18f), min.ToString("0.#"), EditorStyles.miniLabel);
+            GUI.Label(new Rect(plotRect.x, plotRect.yMax + 4f, 140f, 18f), "시작", EditorStyles.miniLabel);
+            GUI.Label(new Rect(plotRect.xMax - 60f, plotRect.yMax + 4f, 80f, 18f), "마지막", EditorStyles.miniLabel);
+        }
+
+        private static void DrawGrid(Rect plotRect, float min, float max)
+        {
+            Handles.color = new Color(1f, 1f, 1f, 0.12f);
+            for (int i = 0; i <= 4; i++)
+            {
+                float y = Mathf.Lerp(plotRect.yMax, plotRect.y, i / 4f);
+                Handles.DrawLine(new Vector3(plotRect.x, y), new Vector3(plotRect.xMax, y));
+            }
+
+            Handles.color = new Color(1f, 1f, 1f, 0.18f);
+            Handles.DrawAAPolyLine(1.5f,
+                new Vector3(plotRect.x, plotRect.y),
+                new Vector3(plotRect.xMax, plotRect.y),
+                new Vector3(plotRect.xMax, plotRect.yMax),
+                new Vector3(plotRect.x, plotRect.yMax),
+                new Vector3(plotRect.x, plotRect.y));
+        }
+
+
+        private void DrawRiskGuides(Rect plotRect, float min, float max)
+        {
+            switch (_graphMode)
+            {
+                case GraphMode.Project:
+                    DrawHorizontalGuide(plotRect, min, max, 45f, "주의 45", new Color(1f, 0.78f, 0.24f, 0.85f));
+                    DrawHorizontalGuide(plotRect, min, max, 70f, "양호 70", new Color(0.38f, 0.82f, 0.44f, 0.85f));
+                    break;
+                case GraphMode.Staff:
+                    DrawHorizontalGuide(plotRect, min, max, 40f, "의욕 위험 40", new Color(1f, 0.78f, 0.24f, 0.85f));
+                    DrawHorizontalGuide(plotRect, min, max, 80f, "피로 위험 80", new Color(1f, 0.36f, 0.28f, 0.85f));
+                    break;
+                case GraphMode.Money:
+                    DrawHorizontalGuide(plotRect, min, max, 0f, "적자선 0", new Color(1f, 0.36f, 0.28f, 0.9f));
+                    break;
+            }
+        }
+
+        private static void DrawHorizontalGuide(Rect plotRect, float min, float max, float value, string label, Color color)
+        {
+            if (value < min || value > max)
+                return;
+
+            float normalized = Mathf.InverseLerp(min, max, value);
+            float y = Mathf.Lerp(plotRect.yMax, plotRect.y, normalized);
+            Handles.color = color;
+            Handles.DrawDottedLine(new Vector3(plotRect.x, y), new Vector3(plotRect.xMax, y), 5f);
+            GUI.color = color;
+            GUI.Label(new Rect(plotRect.xMax - 88f, y - 16f, 86f, 18f), label, EditorStyles.miniLabel);
+            GUI.color = Color.white;
+        }
+
+        private void DrawTimelineMarkers(Rect plotRect)
+        {
+            if (_timeline.Count < 2)
+                return;
+
+            for (int i = 0; i < _timeline.Count; i++)
+            {
+                FlowDaySnapshot row = _timeline[i];
+                float x = Mathf.Lerp(plotRect.x, plotRect.xMax, i / (float)(_timeline.Count - 1));
+
+                if (row.DayOfWeek == 1 && row.EventType == FlowEventType.DayWork)
+                {
+                    Handles.color = new Color(1f, 1f, 1f, 0.18f);
+                    Handles.DrawLine(new Vector3(x, plotRect.y), new Vector3(x, plotRect.yMax));
+                    GUI.Label(new Rect(x + 3f, plotRect.y + 2f, 48f, 18f), $"{row.Week}주", EditorStyles.miniLabel);
+                }
+
+                if (row.EventType == FlowEventType.FridayReport || row.EventType == FlowEventType.WeeklySettlement)
+                {
+                    Handles.color = new Color(1f, 0.62f, 0.22f, 0.42f);
+                    Handles.DrawAAPolyLine(2f, new Vector3(x, plotRect.y), new Vector3(x, plotRect.yMax));
+                }
+            }
+        }
+
+        private void DrawSeriesLine(Rect plotRect, GraphSeries series, float min, float max)
+        {
+            if (_timeline.Count < 2)
+                return;
+
+            var points = new Vector3[_timeline.Count];
+            for (int i = 0; i < _timeline.Count; i++)
+            {
+                float x = Mathf.Lerp(plotRect.x, plotRect.xMax, i / (float)(_timeline.Count - 1));
+                float normalized = Mathf.InverseLerp(min, max, series.ValueSelector(_timeline[i]));
+                float y = Mathf.Lerp(plotRect.yMax, plotRect.y, normalized);
+                points[i] = new Vector3(x, y);
+            }
+
+            Handles.color = series.Color;
+            Handles.DrawAAPolyLine(2.5f, points);
+        }
+
+        private static void DrawGraphLegend(GraphSeries[] series)
+        {
+            using (new EditorGUILayout.HorizontalScope())
+            {
+                foreach (GraphSeries item in series)
+                {
+                    Rect colorRect = GUILayoutUtility.GetRect(14f, 14f, GUILayout.Width(14f), GUILayout.Height(14f));
+                    EditorGUI.DrawRect(colorRect, item.Color);
+                    GUILayout.Label(item.Label, EditorStyles.miniLabel, GUILayout.Width(62f));
+                }
+            }
         }
 
         private void DrawTimeline()
@@ -579,6 +936,13 @@ namespace GameDevTycoon.EditorQA
             Strong
         }
 
+        private enum GraphMode
+        {
+            Project,
+            Staff,
+            Money
+        }
+
         private enum FlowPhase
         {
             Development,
@@ -591,6 +955,62 @@ namespace GameDevTycoon.EditorQA
             FridayReport,
             Sales,
             WeeklySettlement
+        }
+
+        private readonly struct FlowSummary
+        {
+            public static FlowSummary Empty { get; } = new FlowSummary(0, 0, 0, 0f, 0f, 0f, 0f, 0f);
+
+            public int FinalGold { get; }
+            public int MinGold { get; }
+            public int TotalNet { get; }
+            public float Quality { get; }
+            public float Stability { get; }
+            public float Charm { get; }
+            public float Desire { get; }
+            public float Fatigue { get; }
+
+            public FlowSummary(int finalGold, int minGold, int totalNet, float quality, float stability, float charm, float desire, float fatigue)
+            {
+                FinalGold = finalGold;
+                MinGold = minGold;
+                TotalNet = totalNet;
+                Quality = quality;
+                Stability = stability;
+                Charm = charm;
+                Desire = desire;
+                Fatigue = fatigue;
+            }
+        }
+
+        private readonly struct GraphSeries
+        {
+            public string Label { get; }
+            public Color Color { get; }
+            public Func<FlowDaySnapshot, float> ValueSelector { get; }
+            public float Min { get; }
+            public float Max { get; }
+            public bool HasFixedRange { get; }
+
+            public GraphSeries(string label, Color color, Func<FlowDaySnapshot, float> valueSelector)
+            {
+                Label = label;
+                Color = color;
+                ValueSelector = valueSelector;
+                Min = 0f;
+                Max = 0f;
+                HasFixedRange = false;
+            }
+
+            public GraphSeries(string label, Color color, Func<FlowDaySnapshot, float> valueSelector, float min, float max)
+            {
+                Label = label;
+                Color = color;
+                ValueSelector = valueSelector;
+                Min = min;
+                Max = max;
+                HasFixedRange = true;
+            }
         }
 
         private readonly struct FlowDaySnapshot
