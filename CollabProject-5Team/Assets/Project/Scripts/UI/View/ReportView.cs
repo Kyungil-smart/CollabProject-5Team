@@ -195,6 +195,8 @@ namespace GameDevTycoon.UI.Ingame
 
                 if (active)
                 {
+                    // 고정 GO 방식 전환으로 Awake 재호출 없음 — 매 바인딩마다 상태 초기화
+                    cards[i].SetDisabled(false);
                     cards[i].Bind(reports[i]);
                     int captured = i;
                     cards[i].OnCardClicked
