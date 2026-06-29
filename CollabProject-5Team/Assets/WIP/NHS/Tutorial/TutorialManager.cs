@@ -24,6 +24,10 @@ public class TutorialManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI _tutorialText;
     [SerializeField] private GameObject      _tutorialPanel;
 
+    [Header("Pointer Settings")]
+    [SerializeField] private Image _tutorialPointer; // 인스펙터에서 할당
+    [SerializeField] private Vector2 _pointerOffset = new Vector2(30, -30);
+
     // 튜토리얼 진행
     [SerializeField] private List<TutorialDataSO> _tutorialSteps = new List<TutorialDataSO>();
     private int _curIndex = -1;
@@ -96,6 +100,8 @@ public class TutorialManager : MonoBehaviour
     private void ExecuteTutorial()
     {
         _tutorialPanel.SetActive(true);
+
+        _tutorialPointer.gameObject.SetActive(false);
 
         if (string.IsNullOrEmpty(_tutorialSteps[_curIndex].tutorialText))
             _guideBox.SetActive(false);
@@ -202,6 +208,51 @@ public class TutorialManager : MonoBehaviour
         _currentActiveObject = null;
     }
 
+    /////////////////// - PingerPointer - ///////////////////
+
+    private void SetPointerPosition()
+    {
+        if (_tutorialPointer == null || _currentActiveObject == null) return;
+
+        RectTransform targetRect = _currentActiveObject.GetComponent<RectTransform>();
+        if (targetRect == null) return;
+
+        // 1. Pointer를 TutorialPanel의 자식으로 확실히 넣기
+        if (_tutorialPointer.transform.parent != _tutorialPanel.transform)
+        {
+            _tutorialPointer.transform.SetParent(_tutorialPanel.transform, false);
+        }
+
+        _tutorialPointer.transform.SetAsLastSibling();
+        _tutorialPointer.gameObject.SetActive(true);
+
+        // 2. UI 전용 정확한 위치 계산 (가장 안정적)
+        RectTransform pointerRect = _tutorialPointer.rectTransform;
+
+        // 타겟의 World Corners → Screen Point → Canvas Local Position
+        Vector3[] worldCorners = new Vector3[4];
+        targetRect.GetWorldCorners(worldCorners);
+
+        // 우측 하단 기준 (corners[3])
+        Vector3 targetWorldPos = worldCorners[3];
+
+        // Screen Space → Canvas Local Position 변환
+        Vector2 screenPoint = RectTransformUtility.WorldToScreenPoint(null, targetWorldPos);
+
+        RectTransform canvasRect = _tutorialPanel.GetComponent<RectTransform>() ??
+                                   _tutorialPointer.canvas.GetComponent<RectTransform>();
+
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(
+            canvasRect,
+            screenPoint,
+            null,
+            out Vector2 localPoint
+        );
+
+        // 최종 위치 = 타겟 우측 하단 + Offset
+        pointerRect.anchoredPosition = localPoint + _pointerOffset;
+    }
+
     /////////////////// - TextOnly - ///////////////////
     private void TutorialTextOnly()
     {
@@ -220,6 +271,8 @@ public class TutorialManager : MonoBehaviour
             button.onClick.RemoveListener(OnTutorialButtonClicked);
             button.onClick.   AddListener(OnTutorialButtonClicked);
         }
+
+        SetPointerPosition();
     }
 
     private void OnTutorialButtonClicked()
@@ -240,6 +293,8 @@ public class TutorialManager : MonoBehaviour
     private void TutorialHighlightSqureTouchAnywhere()
     {
         _isWaitingPlayerInput = true;
+
+        SetPointerPosition();
     }
 
     /////////////////// - HighLightSqureTouchSomewhere - ///////////////////
@@ -247,6 +302,8 @@ public class TutorialManager : MonoBehaviour
     {
         OnSomewhereTutorialCompleted -= OnSomewhereConditionMet;
         OnSomewhereTutorialCompleted += OnSomewhereConditionMet;
+
+        SetPointerPosition();
     }
 
     private void OnSomewhereConditionMet()
