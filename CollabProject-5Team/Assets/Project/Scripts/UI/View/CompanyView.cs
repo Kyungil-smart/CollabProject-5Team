@@ -17,13 +17,17 @@ namespace GameDevTycoon.UI.Ingame
 
         [Header("TabButtons")]
         [SerializeField] private Button _companyInfoTabButton;
-        [SerializeField] private Button _rankingTabButton;
         [SerializeField] private Button _managementStatusTabButton;
         [SerializeField] private Button _expansionTabButton;
 
+        [Header("TabButton Sprites")]
+        [SerializeField] private Sprite _tabActiveSprite;
+        [SerializeField] private Sprite _tabInactiveSprite;
+        [SerializeField] private Color _tabActiveLabelColor;
+        [SerializeField] private Color _tabInactiveLabelColor;
+
         [Header("Tab_CompanyInfo")]
         [SerializeField] private GameObject _tabCompanyInfo;
-        [SerializeField] private Image _logoIcon;
         [SerializeField] private TextMeshProUGUI _companyNameLabel;
         [SerializeField] private TextMeshProUGUI _officeLevelValue;
         [SerializeField] private TextMeshProUGUI _gameRankingValue;
@@ -31,14 +35,8 @@ namespace GameDevTycoon.UI.Ingame
         [SerializeField] private TextMeshProUGUI _releasedGameCountValue;
         [SerializeField] private TextMeshProUGUI _reputationValue;
         [SerializeField] private TextMeshProUGUI _popularityValue;
-        [SerializeField] private TextMeshProUGUI _cohesionValue;
         [SerializeField] private TextMeshProUGUI _goldValue;
         [SerializeField] private TextMeshProUGUI _totalRevenueValue;
-
-        [Header("Tab_Ranking")]
-        [SerializeField] private GameObject _tabRanking;
-        [SerializeField] private Transform _rankingListContent;
-        [SerializeField] private TextMeshProUGUI _rankingUpdateNoteLabel;
 
         [Header("Tab_ManagementStatus")]
         [SerializeField] private GameObject _tabManagementStatus;
@@ -46,6 +44,7 @@ namespace GameDevTycoon.UI.Ingame
         [SerializeField] private TextMeshProUGUI _periodLabel;
         [SerializeField] private TextMeshProUGUI _currentColumnHeader;
         [SerializeField] private TextMeshProUGUI _previousColumnHeader;
+        [SerializeField] private GameObject _columnDivider;
 
         // 수입 항목
         [SerializeField] private TextMeshProUGUI _totalIncomeCurrentLabel;
@@ -89,15 +88,17 @@ namespace GameDevTycoon.UI.Ingame
         [SerializeField] private GameObject _lockOverlayLv2;
         [SerializeField] private GameObject _lockOverlayLv3;
 
-        [Header("증축 카드 스프라이트")]
-        [SerializeField] private Sprite _spriteCurrentOrOwned;
-        [SerializeField] private Sprite _spriteUnlocked;
-        [SerializeField] private Sprite _spriteSelected;
-        [SerializeField] private Sprite _spriteLocked;
+        // 카드별 SelectIMG
+        [SerializeField] private GameObject _selectImgLv1;
+        [SerializeField] private GameObject _selectImgLv2;
+        [SerializeField] private GameObject _selectImgLv3;
+
+        [Header("ConfirmButton 스프라이트")]
+        [SerializeField] private Sprite _confirmActiveSprite;
+        [SerializeField] private Sprite _confirmInactiveSprite;
 
         // Tab 이벤트
         public Observable<Unit> OnCompanyInfoTabClicked => _companyInfoTabButton.OnClickAsObservable();
-        public Observable<Unit> OnRankingTabClicked => _rankingTabButton.OnClickAsObservable();
         public Observable<Unit> OnManagementStatusTabClicked => _managementStatusTabButton.OnClickAsObservable();
         public Observable<Unit> OnExpansionTabClicked => _expansionTabButton.OnClickAsObservable();
 
@@ -110,13 +111,16 @@ namespace GameDevTycoon.UI.Ingame
         public Observable<int> OnExpansionCardLv2Clicked => _expansionCardLv2.OnClickAsObservable().Select(_ => 2);
         public Observable<int> OnExpansionCardLv3Clicked => _expansionCardLv3.OnClickAsObservable().Select(_ => 3);
 
-        public Transform RankingListContent => _rankingListContent;
-
         public bool IsVisible => _companyPopup.activeSelf;
 
         private void Awake()
         {
             _expansionConfirmButton.interactable = false;
+            _expansionConfirmButton.image.sprite = _confirmInactiveSprite;
+
+            _selectImgLv1.SetActive(false);
+            _selectImgLv2.SetActive(false);
+            _selectImgLv3.SetActive(false);
         }
 
         public void Show()
@@ -131,22 +135,25 @@ namespace GameDevTycoon.UI.Ingame
         public void ShowTab(CompanyTab tab)
         {
             _tabCompanyInfo.SetActive(tab == CompanyTab.CompanyInfo);
-            _tabRanking.SetActive(tab == CompanyTab.Ranking);
             _tabManagementStatus.SetActive(tab == CompanyTab.ManagementStatus);
             _tabExpansion.SetActive(tab == CompanyTab.Expansion);
+
+            SetTabButtonState(_companyInfoTabButton, tab == CompanyTab.CompanyInfo);
+            SetTabButtonState(_managementStatusTabButton, tab == CompanyTab.ManagementStatus);
+            SetTabButtonState(_expansionTabButton, tab == CompanyTab.Expansion);
+        }
+
+        private void SetTabButtonState(Button button, bool isActive)
+        {
+            button.image.sprite = isActive ? _tabActiveSprite : _tabInactiveSprite;
+            button.GetComponentInChildren<TextMeshProUGUI>().color = isActive ? _tabActiveLabelColor : _tabInactiveLabelColor;
         }
 
         // Tab_CompanyInfo 수치 표시
-        public void SetCompanyInfoLogo(Sprite logo)
-        {
-            if (_logoIcon != null)
-                _logoIcon.sprite = logo;
-        }
-
         public void SetCompanyInfoLabels(
             string companyName, int officeLevel, int ranking,
             int employeeCount, int releasedGameCount,
-            int reputation, int popularity, string cohesion,
+            int reputation, int popularity,
             int gold, int totalRevenue)
         {
             _companyNameLabel.text = companyName;
@@ -156,13 +163,9 @@ namespace GameDevTycoon.UI.Ingame
             _releasedGameCountValue.text = $"{releasedGameCount} 개";
             _reputationValue.text = FormatK(reputation);
             _popularityValue.text = FormatK(popularity);
-            _cohesionValue.text = cohesion;
             _goldValue.text = FormatK(gold);
             _totalRevenueValue.text = FormatK(totalRevenue);
         }
-
-        // Tab_Ranking
-        public void SetRankingUpdateNote(string note) => _rankingUpdateNoteLabel.text = note;
 
         /// <summary>
         /// 누적 모드에서는 PreviousLabel 전체 비활성. 월간은 이번/지난 비교 표시.
@@ -179,6 +182,7 @@ namespace GameDevTycoon.UI.Ingame
             _currentColumnHeader.text = isCumulative ? "누적" : "이번 달";
             _previousColumnHeader.gameObject.SetActive(!isCumulative);
             _previousColumnHeader.text = "지난 달";
+            _columnDivider.SetActive(!isCumulative);
         }
 
         public void SetManagementStatusValues(ManagementStatusData current, ManagementStatusData previous)
@@ -199,10 +203,11 @@ namespace GameDevTycoon.UI.Ingame
         public void SetExpansionConfirmInteractable(bool interactable)
         {
             _expansionConfirmButton.interactable = interactable;
+            _expansionConfirmButton.image.sprite = interactable ? _confirmActiveSprite : _confirmInactiveSprite;
         }
 
         /// <summary>
-        /// 카드 스프라이트 교체 및 interactable 설정.
+        /// SelectIMG 토글 및 interactable 설정.
         /// cardIndex: 1~3
         /// </summary>
         public void SetExpansionCardState(int cardIndex, ExpansionCardState state)
@@ -215,17 +220,18 @@ namespace GameDevTycoon.UI.Ingame
                 _ => null,
             };
 
+            var selectImg = cardIndex switch
+            {
+                1 => _selectImgLv1,
+                2 => _selectImgLv2,
+                3 => _selectImgLv3,
+                _ => null,
+            };
+
             if (button == null) return;
 
-            button.image.sprite = state switch
-            {
-                ExpansionCardState.Current => _spriteCurrentOrOwned,
-                ExpansionCardState.Owned => _spriteCurrentOrOwned,
-                ExpansionCardState.Unlocked => _spriteUnlocked,
-                ExpansionCardState.Selected => _spriteSelected,
-                ExpansionCardState.Locked => _spriteLocked,
-                _ => _spriteLocked,
-            };
+            if (selectImg != null)
+                selectImg.SetActive(state == ExpansionCardState.Selected);
 
             button.interactable = state == ExpansionCardState.Unlocked || state == ExpansionCardState.Selected;
         }
@@ -303,7 +309,6 @@ namespace GameDevTycoon.UI.Ingame
     public enum CompanyTab
     {
         CompanyInfo,
-        Ranking,
         ManagementStatus,
         Expansion
     }

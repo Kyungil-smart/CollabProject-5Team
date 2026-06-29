@@ -10,40 +10,34 @@ namespace GameDevTycoon.UI.Ingame
     /// </summary>
     public sealed class DepartmentTagView : MonoBehaviour, IBindable<Role>
     {
-        [SerializeField] private Image           _tagBG;
+        [SerializeField] private Image _tagBG;
         [SerializeField] private TextMeshProUGUI _tagLabel;
 
         [Header("직군별 색상")]
         [SerializeField] private Color _plannerColor;
         [SerializeField] private Color _programmerColor;
         [SerializeField] private Color _artistColor;
-        [SerializeField] private Color _marketingColor;
-        [SerializeField] private Color _qaColor;
 
         public void Bind(Role role)
         {
             _tagLabel.text = RoleToString(role);
-            _tagBG.color   = RoleToColor(role);
+            _tagBG.color = RoleToColor(role);
         }
 
         private static string RoleToString(Role role) => role switch
         {
-            Role.PLANNER    => "기획",
+            Role.PLANNER => "기획",
             Role.PROGRAMMER => "개발",
-            Role.ARTIST     => "아트",
-            Role.MARKETING  => "마케팅",
-            Role.QA         => "QA",
-            _               => string.Empty
+            Role.ARTIST => "아트",
+            _ => string.Empty
         };
 
         private Color RoleToColor(Role role) => role switch
         {
-            Role.PLANNER    => _plannerColor,
+            Role.PLANNER => _plannerColor,
             Role.PROGRAMMER => _programmerColor,
-            Role.ARTIST     => _artistColor,
-            Role.MARKETING  => _marketingColor,
-            Role.QA         => _qaColor,
-            _               => Color.white
+            Role.ARTIST => _artistColor,
+            _ => Color.white
         };
     }
 }
