@@ -18,8 +18,8 @@ public class CameraManager : MonoBehaviour
     [SerializeField] private float _maxSize = 13f;                           // 최소 줌
 
     [Header("대화 시 카메라 배율")]
-    [SerializeField] private float _talkZoomSize = 5f;
-    [SerializeField] private float _transitionDuration = 0.5f;
+    [SerializeField] private float _talkZoomSize = 5f;                       // 대화 시 줌인 비율
+    [SerializeField] private float _transitionDuration = 1f;               // 줌인 속도
 
     private MapInfo currentMapInfo;
     private Camera _cam;

@@ -2886,6 +2886,37 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: -0.00000043213387, y: 0.061206225, z: -0.010394302}
+--- !u!1 &5219090267506973714
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 9013594800673014993}
+  m_Layer: 0
+  m_Name: PlayerSpawnPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &9013594800673014993
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5219090267506973714}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -21.529999, y: -16.5, z: -34.289997}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1066886320542888783}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &5274818777774583880
 GameObject:
   m_ObjectHideFlags: 0
@@ -4406,7 +4437,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 16e609355dfef8043a8b9bfbce610fd3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  PlayerSpawn: {fileID: 2903172354520126027}
+  PlayerSpawn: {fileID: 9013594800673014993}
   NpcSpawn: {fileID: 2903172354520126027}
   DiamondLength: 25
   DiamondWidth: 20
@@ -8814,6 +8845,10 @@ PrefabInstance:
       value: 2147483647
       objectReference: {fileID: 0}
     - target: {fileID: 3061502796968854574, guid: 387a34684bb041b4d996acbf26757bb3, type: 3}
+      propertyPath: m_Name
+      value: NPCSpawnPoint
+      objectReference: {fileID: 0}
+    - target: {fileID: 3061502796968854574, guid: 387a34684bb041b4d996acbf26757bb3, type: 3}
       propertyPath: m_StaticEditorFlags
       value: 2147483647
       objectReference: {fileID: 0}
@@ -10963,7 +10998,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
-    m_AddedGameObjects: []
+    m_AddedGameObjects:
+    - targetCorrespondingSourceObject: {fileID: 4709152325469287631, guid: 387a34684bb041b4d996acbf26757bb3, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 9013594800673014993}
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 387a34684bb041b4d996acbf26757bb3, type: 3}
 --- !u!4 &1066886320542888783 stripped
