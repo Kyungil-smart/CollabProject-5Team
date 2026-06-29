@@ -36,11 +36,9 @@ public class PointManager : MonoBehaviour
         _allPoints = mapRoot.GetComponentsInChildren<ActionPoint>().ToList();
         foreach (var p in _allPoints)
         {
-            Debug.Log($"[PointManager] 등록된 포인트: {p.name}, ID: {p.GetInstanceID()}");
             p.IsOccupied = false;
             p.Owner = null;
         }
-        Debug.Log($"[PointManager] 리스트 갱신 완료. 총 {_allPoints.Count}개");
     }
 
     // 지정한 PointType만 필터링해서 반환
