@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
@@ -32,6 +33,44 @@ namespace GameDevTycoon.EditorQA
         private int _oneTimeOfficeUpgradeCost;
         private int _weeklyOfficeMaintainCost = 500;
 
+        private bool _useLevelBalanceOverrides;
+        private bool _showLevelBalanceKnobs = true;
+        private bool _useSequentialRoute;
+        private int _routeSmallProjects = 3;
+        private int _routeMediumProjects = 2;
+        private int _routeLargeProjects = 2;
+        private int _smallDurationWeeks = 4;
+        private int _mediumDurationWeeks = 6;
+        private int _largeDurationWeeks = 8;
+        private int _smallProjectCost = 15000;
+        private int _mediumProjectCost = 50000;
+        private int _largeProjectCost = 200000;
+        private int _smallUpdateCost = 10000;
+        private int _mediumUpdateCost = 35000;
+        private int _largeUpdateCost = 100000;
+        private int _weeklySmallUpdateCount;
+        private int _weeklyMediumUpdateCount;
+        private int _weeklyLargeUpdateCount;
+        private int _recruitCost = 10000;
+        private int _basicTrainingCost = 3000;
+        private int _professionalTrainingCost = 10000;
+        private int _intensiveTrainingCost = 30000;
+        private int _officeLevel = 1;
+        private int _level1WeeklyRent = 2000;
+        private int _level2WeeklyRent = 4000;
+        private int _level3WeeklyRent = 6000;
+        private int _level2ExpansionCost = 200000;
+        private int _level3ExpansionCost = 600000;
+        private int _smallUnitPrice = 150;
+        private int _mediumUnitPrice = 200;
+        private int _largeUnitPrice = 300;
+        private int _smallBaseSales = 300;
+        private int _mediumBaseSales = 500;
+        private int _largeBaseSales = 800;
+        private float _simulatedCompletionScore = 70f;
+        private float _retentionDecayPerDay = 0.05f;
+        private float _minimumPurchaseWeight = 0.1f;
+
         private int _targetSurviveWeeks = 12;
         private int _targetMinGold;
         private int _targetCumulativeNetMin;
@@ -42,6 +81,14 @@ namespace GameDevTycoon.EditorQA
         private float _targetProjectCostRatioMax = 0.55f;
 
         private bool _hasBaseline;
+        private bool _showGraph = true;
+        private bool _showTuningChecklist = true;
+        private bool _checkedStartMoney;
+        private bool _checkedFixedCost;
+        private bool _checkedProjectRoute;
+        private bool _checkedRevenueRecovery;
+        private bool _checkedGrowthCost;
+        private EconomyGraphMode _graphMode = EconomyGraphMode.Gold;
         private EconomySummary _baselineSummary;
 
         [MenuItem("Tools/Balance/5. Economy Balance", false, 205)]
@@ -65,6 +112,8 @@ namespace GameDevTycoon.EditorQA
             _scrollPosition = EditorGUILayout.BeginScrollView(_scrollPosition);
             DrawInputPanel();
             DrawSummary();
+            DrawTuningChecklist();
+            DrawEconomyGraph();
             DrawTargetValidation();
             DrawBaselineCompare();
             DrawRiskPanel();
@@ -87,6 +136,8 @@ namespace GameDevTycoon.EditorQA
                     Simulate();
 
                 GUILayout.FlexibleSpace();
+                _showTuningChecklist = GUILayout.Toggle(_showTuningChecklist, "체크리스트", EditorStyles.toolbarButton, GUILayout.Width(90f));
+                _showGraph = GUILayout.Toggle(_showGraph, "그래프", EditorStyles.toolbarButton, GUILayout.Width(70f));
 
                 using (new EditorGUI.DisabledScope(!Application.isPlaying || Company.Instance == null))
                 {
@@ -114,7 +165,12 @@ namespace GameDevTycoon.EditorQA
                 EditorGUI.BeginChangeCheck();
 
                 _initialGold = EditorGUILayout.IntField("초기 자금", _initialGold);
-                _simulationWeeks = EditorGUILayout.IntSlider("시뮬레이션 주차", _simulationWeeks, 1, 52);
+                _simulationWeeks = EditorGUILayout.IntSlider("시뮬레이션 주차", _simulationWeeks, 1, 80);
+                _useLevelBalanceOverrides = EditorGUILayout.Toggle("Level v0.2 조절값 사용", _useLevelBalanceOverrides);
+                _useSequentialRoute = EditorGUILayout.Toggle("소형3/중형2/대형2 순차 루트", _useSequentialRoute);
+
+                if (_useLevelBalanceOverrides)
+                    DrawLevelBalanceTuningPanel();
 
                 EditorGUILayout.Space(4f);
                 EditorGUILayout.LabelField("인건비", EditorStyles.boldLabel);
@@ -125,15 +181,21 @@ namespace GameDevTycoon.EditorQA
 
                 EditorGUILayout.Space(4f);
                 EditorGUILayout.LabelField("1주차 프로젝트 시작비", EditorStyles.boldLabel);
-                _startSmallProjects = EditorGUILayout.IntSlider("소형 시작 수", _startSmallProjects, 0, 5);
-                _startMediumProjects = EditorGUILayout.IntSlider("중형 시작 수", _startMediumProjects, 0, 5);
-                _startLargeProjects = EditorGUILayout.IntSlider("대형 시작 수", _startLargeProjects, 0, 5);
+                using (new EditorGUI.DisabledScope(_useSequentialRoute))
+                {
+                    _startSmallProjects = EditorGUILayout.IntSlider("소형 시작 수", _startSmallProjects, 0, 5);
+                    _startMediumProjects = EditorGUILayout.IntSlider("중형 시작 수", _startMediumProjects, 0, 5);
+                    _startLargeProjects = EditorGUILayout.IntSlider("대형 시작 수", _startLargeProjects, 0, 5);
+                }
 
                 EditorGUILayout.Space(4f);
                 EditorGUILayout.LabelField("서비스 중인 완료 프로젝트 매출", EditorStyles.boldLabel);
-                _completedSmallProjects = EditorGUILayout.IntSlider("소형 서비스 수", _completedSmallProjects, 0, 10);
-                _completedMediumProjects = EditorGUILayout.IntSlider("중형 서비스 수", _completedMediumProjects, 0, 10);
-                _completedLargeProjects = EditorGUILayout.IntSlider("대형 서비스 수", _completedLargeProjects, 0, 10);
+                using (new EditorGUI.DisabledScope(_useSequentialRoute))
+                {
+                    _completedSmallProjects = EditorGUILayout.IntSlider("소형 서비스 수", _completedSmallProjects, 0, 10);
+                    _completedMediumProjects = EditorGUILayout.IntSlider("중형 서비스 수", _completedMediumProjects, 0, 10);
+                    _completedLargeProjects = EditorGUILayout.IntSlider("대형 서비스 수", _completedLargeProjects, 0, 10);
+                }
 
                 EditorGUILayout.Space(4f);
                 EditorGUILayout.LabelField("반복 비용", EditorStyles.boldLabel);
@@ -183,6 +245,148 @@ namespace GameDevTycoon.EditorQA
                     DrawScenarioButton("교육 성장", 22000, 16, 6, 1, 0, 0, 1, 1, 0, 0, TrainingPlan.Intensive, 3, 1500, 3000);
                 }
             }
+        }
+
+        private void DrawLevelBalanceTuningPanel()
+        {
+            using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
+            {
+                using (new EditorGUILayout.HorizontalScope())
+                {
+                    _showLevelBalanceKnobs = EditorGUILayout.Foldout(_showLevelBalanceKnobs, "Level_밸런싱_v0.2 조절값", true);
+                    GUILayout.FlexibleSpace();
+                    if (GUILayout.Button("v0.2 기본값 불러오기", GUILayout.Width(140f)))
+                        ApplyLevelBalanceV02Defaults();
+                }
+
+                if (!_showLevelBalanceKnobs)
+                    return;
+
+                EditorGUILayout.LabelField("기본값 버튼은 빠른 시작용입니다. 실제 밸런싱은 아래 입력칸을 하나씩 조정하고 체크리스트/그래프를 보며 확인하는 흐름을 권장합니다.", EditorStyles.wordWrappedMiniLabel);
+
+                EditorGUILayout.Space(3f);
+                EditorGUILayout.LabelField("프로젝트 루트", EditorStyles.boldLabel);
+                using (new EditorGUILayout.HorizontalScope())
+                {
+                    _routeSmallProjects = EditorGUILayout.IntField("소형 개수", Mathf.Max(0, _routeSmallProjects));
+                    _routeMediumProjects = EditorGUILayout.IntField("중형 개수", Mathf.Max(0, _routeMediumProjects));
+                    _routeLargeProjects = EditorGUILayout.IntField("대형 개수", Mathf.Max(0, _routeLargeProjects));
+                }
+                using (new EditorGUILayout.HorizontalScope())
+                {
+                    _smallDurationWeeks = EditorGUILayout.IntField("소형 기간(주)", Mathf.Max(1, _smallDurationWeeks));
+                    _mediumDurationWeeks = EditorGUILayout.IntField("중형 기간(주)", Mathf.Max(1, _mediumDurationWeeks));
+                    _largeDurationWeeks = EditorGUILayout.IntField("대형 기간(주)", Mathf.Max(1, _largeDurationWeeks));
+                }
+
+                EditorGUILayout.Space(3f);
+                EditorGUILayout.LabelField("프로젝트 비용", EditorStyles.boldLabel);
+                using (new EditorGUILayout.HorizontalScope())
+                {
+                    _smallProjectCost = EditorGUILayout.IntField("소형 개발비", Mathf.Max(0, _smallProjectCost));
+                    _mediumProjectCost = EditorGUILayout.IntField("중형 개발비", Mathf.Max(0, _mediumProjectCost));
+                    _largeProjectCost = EditorGUILayout.IntField("대형 개발비", Mathf.Max(0, _largeProjectCost));
+                }
+                using (new EditorGUILayout.HorizontalScope())
+                {
+                    _smallUpdateCost = EditorGUILayout.IntField("소형 업데이트비", Mathf.Max(0, _smallUpdateCost));
+                    _mediumUpdateCost = EditorGUILayout.IntField("중형 업데이트비", Mathf.Max(0, _mediumUpdateCost));
+                    _largeUpdateCost = EditorGUILayout.IntField("대형 업데이트비", Mathf.Max(0, _largeUpdateCost));
+                }
+                using (new EditorGUILayout.HorizontalScope())
+                {
+                    _weeklySmallUpdateCount = EditorGUILayout.IntField("주간 소형 업데이트", Mathf.Max(0, _weeklySmallUpdateCount));
+                    _weeklyMediumUpdateCount = EditorGUILayout.IntField("주간 중형 업데이트", Mathf.Max(0, _weeklyMediumUpdateCount));
+                    _weeklyLargeUpdateCount = EditorGUILayout.IntField("주간 대형 업데이트", Mathf.Max(0, _weeklyLargeUpdateCount));
+                }
+
+                EditorGUILayout.Space(3f);
+                EditorGUILayout.LabelField("채용/교육/사무실", EditorStyles.boldLabel);
+                _recruitCost = EditorGUILayout.IntField("모집 1회 비용", Mathf.Max(0, _recruitCost));
+                using (new EditorGUILayout.HorizontalScope())
+                {
+                    _basicTrainingCost = EditorGUILayout.IntField("기초 교육", Mathf.Max(0, _basicTrainingCost));
+                    _professionalTrainingCost = EditorGUILayout.IntField("전문 교육", Mathf.Max(0, _professionalTrainingCost));
+                    _intensiveTrainingCost = EditorGUILayout.IntField("집중 교육", Mathf.Max(0, _intensiveTrainingCost));
+                }
+                _officeLevel = EditorGUILayout.IntSlider("사무실 레벨", _officeLevel, 1, 3);
+                using (new EditorGUILayout.HorizontalScope())
+                {
+                    _level1WeeklyRent = EditorGUILayout.IntField("Lv1 주세", Mathf.Max(0, _level1WeeklyRent));
+                    _level2WeeklyRent = EditorGUILayout.IntField("Lv2 주세", Mathf.Max(0, _level2WeeklyRent));
+                    _level3WeeklyRent = EditorGUILayout.IntField("Lv3 주세", Mathf.Max(0, _level3WeeklyRent));
+                }
+                using (new EditorGUILayout.HorizontalScope())
+                {
+                    _level2ExpansionCost = EditorGUILayout.IntField("Lv2 증축비", Mathf.Max(0, _level2ExpansionCost));
+                    _level3ExpansionCost = EditorGUILayout.IntField("Lv3 증축비", Mathf.Max(0, _level3ExpansionCost));
+                }
+
+                EditorGUILayout.Space(3f);
+                EditorGUILayout.LabelField("매출 가정", EditorStyles.boldLabel);
+                _simulatedCompletionScore = EditorGUILayout.Slider("가정 완성도", _simulatedCompletionScore, 0f, 100f);
+                _minimumPurchaseWeight = EditorGUILayout.Slider("최소 구매 가중치", _minimumPurchaseWeight, 0f, 1f);
+                _retentionDecayPerDay = EditorGUILayout.Slider("일일 유지력 감소", _retentionDecayPerDay, 0f, 0.2f);
+                using (new EditorGUILayout.HorizontalScope())
+                {
+                    _smallUnitPrice = EditorGUILayout.IntField("소형 단가", Mathf.Max(0, _smallUnitPrice));
+                    _mediumUnitPrice = EditorGUILayout.IntField("중형 단가", Mathf.Max(0, _mediumUnitPrice));
+                    _largeUnitPrice = EditorGUILayout.IntField("대형 단가", Mathf.Max(0, _largeUnitPrice));
+                }
+                using (new EditorGUILayout.HorizontalScope())
+                {
+                    _smallBaseSales = EditorGUILayout.IntField("소형 기본판매", Mathf.Max(0, _smallBaseSales));
+                    _mediumBaseSales = EditorGUILayout.IntField("중형 기본판매", Mathf.Max(0, _mediumBaseSales));
+                    _largeBaseSales = EditorGUILayout.IntField("대형 기본판매", Mathf.Max(0, _largeBaseSales));
+                }
+
+                int routeWeeks = _routeSmallProjects * _smallDurationWeeks + _routeMediumProjects * _mediumDurationWeeks + _routeLargeProjects * _largeDurationWeeks;
+                EditorGUILayout.HelpBox($"현재 루트 개발 기간 합계: {routeWeeks}주. 문서의 최소 41주 기준과 비교할 때 1주 차이가 나면 튜토리얼/준비 주차 포함 여부를 확인하세요.", MessageType.Info);
+            }
+        }
+
+        private void ApplyLevelBalanceV02Defaults()
+        {
+            _initialGold = 10000;
+            _simulationWeeks = 52;
+            _useLevelBalanceOverrides = true;
+            _useSequentialRoute = true;
+            _routeSmallProjects = 3;
+            _routeMediumProjects = 2;
+            _routeLargeProjects = 2;
+            _smallDurationWeeks = 4;
+            _mediumDurationWeeks = 6;
+            _largeDurationWeeks = 8;
+            _smallProjectCost = 15000;
+            _mediumProjectCost = 50000;
+            _largeProjectCost = 200000;
+            _smallUpdateCost = 10000;
+            _mediumUpdateCost = 35000;
+            _largeUpdateCost = 100000;
+            _weeklySmallUpdateCount = 0;
+            _weeklyMediumUpdateCount = 0;
+            _weeklyLargeUpdateCount = 0;
+            _recruitCost = 10000;
+            _basicTrainingCost = 3000;
+            _professionalTrainingCost = 10000;
+            _intensiveTrainingCost = 30000;
+            _officeLevel = 1;
+            _level1WeeklyRent = 2000;
+            _level2WeeklyRent = 4000;
+            _level3WeeklyRent = 6000;
+            _level2ExpansionCost = 200000;
+            _level3ExpansionCost = 600000;
+            _smallUnitPrice = 150;
+            _mediumUnitPrice = 200;
+            _largeUnitPrice = 300;
+            _smallBaseSales = 300;
+            _mediumBaseSales = 500;
+            _largeBaseSales = 800;
+            _simulatedCompletionScore = 70f;
+            _minimumPurchaseWeight = 0.1f;
+            _retentionDecayPerDay = 0.05f;
+            _weeklyOfficeMaintainCost = GetOfficeWeeklyRent();
+            Simulate();
         }
 
         private void DrawScenarioButton(
@@ -245,6 +449,209 @@ namespace GameDevTycoon.EditorQA
                     EditorGUILayout.HelpBox($"{summary.FirstDeficitWeek}주차에 자금이 음수가 됩니다.", MessageType.Warning);
                 else
                     EditorGUILayout.HelpBox("현재 조건에서는 시뮬레이션 기간 동안 자금이 음수가 되지 않습니다.", MessageType.Info);
+            }
+        }
+
+        private void DrawTuningChecklist()
+        {
+            if (!_showTuningChecklist || _weeks.Count == 0)
+                return;
+
+            EconomySummary summary = BuildSummary(_weeks);
+            int firstProjectCost = _useSequentialRoute || _startSmallProjects > 0
+                ? GetProjectRequiredCost(ProjectSize.Small)
+                : _startMediumProjects > 0
+                    ? GetProjectRequiredCost(ProjectSize.Medium)
+                    : _startLargeProjects > 0
+                        ? GetProjectRequiredCost(ProjectSize.Large)
+                        : 0;
+            int weeklyFixedCost = _employeeCount * GetWeeklySalaryPerEmployee() + (_useLevelBalanceOverrides ? GetOfficeWeeklyRent() : _weeklyOfficeMaintainCost);
+            int routeWeeks = _routeSmallProjects * _smallDurationWeeks + _routeMediumProjects * _mediumDurationWeeks + _routeLargeProjects * _largeDurationWeeks;
+
+            using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
+            {
+                EditorGUILayout.LabelField("수동 밸런싱 체크리스트", EditorStyles.boldLabel);
+                EditorGUILayout.LabelField("왼쪽 체크는 사용자가 직접 확인 완료 표시를 하는 용도입니다. 통과 여부는 현재 시뮬레이션 값 기준으로 자동 판정됩니다.", EditorStyles.wordWrappedMiniLabel);
+
+                DrawChecklistLine(ref _checkedStartMoney, "1. 첫 프로젝트 시작 가능", _initialGold >= firstProjectCost, $"초기 자금 {_initialGold:N0}G / 첫 개발비 {firstProjectCost:N0}G", "초기 자금, 첫 프로젝트 개발비, 튜토리얼 지원금");
+                DrawChecklistLine(ref _checkedFixedCost, "2. 주간 고정비 감당 가능", summary.FirstDeficitWeek == 0 || summary.FirstDeficitWeek > 4, $"주간 급여+주세 {weeklyFixedCost:N0}G / 첫 적자 {FormatDeficitWeek(summary.FirstDeficitWeek)}", "직원 수, 주급, 사무실 주세, 초반 매출");
+                DrawChecklistLine(ref _checkedProjectRoute, "3. 목표 루트 기간 확인", !_useSequentialRoute || routeWeeks <= _simulationWeeks, $"루트 {routeWeeks}주 / 시뮬레이션 {_simulationWeeks}주", "프로젝트 개수, 규모별 개발 기간, 시뮬레이션 주차");
+                DrawChecklistLine(ref _checkedRevenueRecovery, "4. 매출 회수력 확인", summary.Coverage >= _targetCoverageMin && summary.Coverage <= _targetCoverageMax, $"수입/지출 {summary.Coverage:0.##}배 / 목표 {_targetCoverageMin:0.##}~{_targetCoverageMax:0.##}배", "기본 판매량, 단가, 완성도 가정, 유지력 감소");
+                DrawChecklistLine(ref _checkedGrowthCost, "5. 성장 비용 압박 확인", summary.TrainingExpenseRatio <= _targetTrainingRatioMax && summary.HiringExpenseRatio <= _targetHiringRatioMax, $"채용 {summary.HiringExpenseRatio:P0}, 교육 {summary.TrainingExpenseRatio:P0}", "모집 비용, 교육 비용, 주간 모집/교육 횟수");
+            }
+        }
+
+        private static void DrawChecklistLine(ref bool checkedByUser, string title, bool autoPassed, string current, string knobs)
+        {
+            using (new EditorGUILayout.HorizontalScope(EditorStyles.helpBox))
+            {
+                checkedByUser = EditorGUILayout.Toggle(checkedByUser, GUILayout.Width(18f));
+                GUILayout.Label(autoPassed ? "OK" : "확인", autoPassed ? EditorStyles.miniLabel : EditorStyles.boldLabel, GUILayout.Width(36f));
+                using (new EditorGUILayout.VerticalScope())
+                {
+                    EditorGUILayout.LabelField(title, EditorStyles.boldLabel);
+                    EditorGUILayout.LabelField(current, EditorStyles.miniLabel);
+                    EditorGUILayout.LabelField($"조정 후보: {knobs}", EditorStyles.wordWrappedMiniLabel);
+                }
+            }
+        }
+
+        private static string FormatDeficitWeek(int firstDeficitWeek)
+        {
+            return firstDeficitWeek > 0 ? $"{firstDeficitWeek}주차" : "없음";
+        }
+
+        private void DrawEconomyGraph()
+        {
+            if (!_showGraph || _weeks.Count == 0)
+                return;
+
+            using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
+            {
+                using (new EditorGUILayout.HorizontalScope())
+                {
+                    EditorGUILayout.LabelField("재화 흐름 그래프", EditorStyles.boldLabel, GUILayout.Width(110f));
+                    _graphMode = (EconomyGraphMode)EditorGUILayout.EnumPopup(_graphMode, GUILayout.Width(170f));
+                    GUILayout.FlexibleSpace();
+                    EditorGUILayout.LabelField("선이 급격히 꺾이는 주차가 조정 우선 구간입니다.", EditorStyles.miniLabel, GUILayout.Width(280f));
+                }
+
+                EconomyGraphSeries[] series = GetEconomyGraphSeries(_graphMode);
+                Rect rect = GUILayoutUtility.GetRect(10f, 260f, GUILayout.ExpandWidth(true));
+                DrawEconomyLineGraph(rect, series);
+                DrawEconomyGraphLegend(series);
+            }
+        }
+
+        private EconomyGraphSeries[] GetEconomyGraphSeries(EconomyGraphMode mode)
+        {
+            return mode switch
+            {
+                EconomyGraphMode.ExpenseBreakdown => new[]
+                {
+                    new EconomyGraphSeries("급여", new Color(0.88f, 0.48f, 0.38f), w => w.SalaryExpense),
+                    new EconomyGraphSeries("개발비", new Color(0.95f, 0.68f, 0.26f), w => w.ProjectStartExpense),
+                    new EconomyGraphSeries("채용", new Color(0.72f, 0.55f, 0.92f), w => w.RecruitExpense),
+                    new EconomyGraphSeries("교육", new Color(0.45f, 0.72f, 0.95f), w => w.TrainingExpense),
+                    new EconomyGraphSeries("사무실", new Color(0.62f, 0.82f, 0.48f), w => w.OfficeExpense + w.OneTimeExpense)
+                },
+                EconomyGraphMode.Net => new[]
+                {
+                    new EconomyGraphSeries("순이익", new Color(0.4f, 0.78f, 1f), w => w.NetGold),
+                    new EconomyGraphSeries("종료 자금", new Color(0.95f, 0.78f, 0.32f), w => w.EndGold)
+                },
+                _ => new[]
+                {
+                    new EconomyGraphSeries("종료 자금", new Color(0.95f, 0.78f, 0.32f), w => w.EndGold),
+                    new EconomyGraphSeries("수입", new Color(0.42f, 0.82f, 0.48f), w => w.Income),
+                    new EconomyGraphSeries("지출", new Color(0.92f, 0.42f, 0.36f), w => w.Expense)
+                }
+            };
+        }
+
+        private void DrawEconomyLineGraph(Rect rect, EconomyGraphSeries[] series)
+        {
+            Rect plotRect = new Rect(rect.x + 56f, rect.y + 18f, rect.width - 82f, rect.height - 48f);
+            EditorGUI.DrawRect(rect, new Color(0.15f, 0.15f, 0.15f));
+            EditorGUI.DrawRect(plotRect, new Color(0.08f, 0.08f, 0.08f));
+
+            float min = Mathf.Min(0f, series.SelectMany(s => _weeks.Select(w => s.ValueSelector(w))).DefaultIfEmpty(0f).Min());
+            float max = Mathf.Max(1f, series.SelectMany(s => _weeks.Select(w => s.ValueSelector(w))).DefaultIfEmpty(1f).Max());
+            float padding = Mathf.Max(1f, (max - min) * 0.08f);
+            min -= padding;
+            max += padding;
+
+            Handles.BeginGUI();
+            DrawEconomyGrid(plotRect);
+            DrawEconomyZeroGuide(plotRect, min, max);
+            DrawEconomyWeekMarkers(plotRect);
+            foreach (EconomyGraphSeries item in series)
+                DrawEconomySeriesLine(plotRect, item, min, max);
+            Handles.EndGUI();
+
+            GUI.Label(new Rect(rect.x + 8f, plotRect.y - 4f, 46f, 18f), max.ToString("N0"), EditorStyles.miniLabel);
+            GUI.Label(new Rect(rect.x + 8f, plotRect.yMax - 14f, 46f, 18f), min.ToString("N0"), EditorStyles.miniLabel);
+            GUI.Label(new Rect(plotRect.x, plotRect.yMax + 4f, 80f, 18f), "1주", EditorStyles.miniLabel);
+            GUI.Label(new Rect(plotRect.xMax - 70f, plotRect.yMax + 4f, 90f, 18f), $"{_weeks.Count}주", EditorStyles.miniLabel);
+        }
+
+        private static void DrawEconomyGrid(Rect plotRect)
+        {
+            Handles.color = new Color(1f, 1f, 1f, 0.12f);
+            for (int i = 0; i <= 4; i++)
+            {
+                float y = Mathf.Lerp(plotRect.yMax, plotRect.y, i / 4f);
+                Handles.DrawLine(new Vector3(plotRect.x, y), new Vector3(plotRect.xMax, y));
+            }
+
+            Handles.color = new Color(1f, 1f, 1f, 0.18f);
+            Handles.DrawAAPolyLine(1.5f,
+                new Vector3(plotRect.x, plotRect.y),
+                new Vector3(plotRect.xMax, plotRect.y),
+                new Vector3(plotRect.xMax, plotRect.yMax),
+                new Vector3(plotRect.x, plotRect.yMax),
+                new Vector3(plotRect.x, plotRect.y));
+        }
+
+        private static void DrawEconomyZeroGuide(Rect plotRect, float min, float max)
+        {
+            if (0f < min || 0f > max)
+                return;
+
+            float normalized = Mathf.InverseLerp(min, max, 0f);
+            float y = Mathf.Lerp(plotRect.yMax, plotRect.y, normalized);
+            Handles.color = new Color(1f, 0.35f, 0.28f, 0.9f);
+            Handles.DrawDottedLine(new Vector3(plotRect.x, y), new Vector3(plotRect.xMax, y), 5f);
+            GUI.color = new Color(1f, 0.5f, 0.42f);
+            GUI.Label(new Rect(plotRect.xMax - 56f, y - 16f, 54f, 18f), "0G", EditorStyles.miniLabel);
+            GUI.color = Color.white;
+        }
+
+        private void DrawEconomyWeekMarkers(Rect plotRect)
+        {
+            if (_weeks.Count < 2)
+                return;
+
+            for (int i = 0; i < _weeks.Count; i++)
+            {
+                EconomyWeekSnapshot row = _weeks[i];
+                if (row.ProjectStartExpense <= 0 && row.EndGold >= 0)
+                    continue;
+
+                float x = Mathf.Lerp(plotRect.x, plotRect.xMax, i / (float)(_weeks.Count - 1));
+                Handles.color = row.EndGold < 0 ? new Color(1f, 0.28f, 0.22f, 0.5f) : new Color(1f, 0.72f, 0.22f, 0.35f);
+                Handles.DrawAAPolyLine(2f, new Vector3(x, plotRect.y), new Vector3(x, plotRect.yMax));
+            }
+        }
+
+        private void DrawEconomySeriesLine(Rect plotRect, EconomyGraphSeries series, float min, float max)
+        {
+            if (_weeks.Count < 2)
+                return;
+
+            var points = new Vector3[_weeks.Count];
+            for (int i = 0; i < _weeks.Count; i++)
+            {
+                float x = Mathf.Lerp(plotRect.x, plotRect.xMax, i / (float)(_weeks.Count - 1));
+                float normalized = Mathf.InverseLerp(min, max, series.ValueSelector(_weeks[i]));
+                float y = Mathf.Lerp(plotRect.yMax, plotRect.y, normalized);
+                points[i] = new Vector3(x, y);
+            }
+
+            Handles.color = series.Color;
+            Handles.DrawAAPolyLine(2.5f, points);
+        }
+
+        private static void DrawEconomyGraphLegend(EconomyGraphSeries[] series)
+        {
+            using (new EditorGUILayout.HorizontalScope())
+            {
+                foreach (EconomyGraphSeries item in series)
+                {
+                    Rect colorRect = GUILayoutUtility.GetRect(14f, 14f, GUILayout.Width(14f), GUILayout.Height(14f));
+                    EditorGUI.DrawRect(colorRect, item.Color);
+                    GUILayout.Label(item.Label, EditorStyles.miniLabel, GUILayout.Width(70f));
+                }
             }
         }
 
@@ -386,6 +793,13 @@ namespace GameDevTycoon.EditorQA
             if (_startLargeProjects > 0 && summary.FirstDeficitWeek > 0)
                 risks.Add("대형 프로젝트 시작 후 적자가 발생합니다. 대형 도전 비용이나 완료 보상을 함께 확인하는 것이 좋습니다.");
 
+            if (_useLevelBalanceOverrides && _useSequentialRoute && _initialGold < _smallProjectCost)
+                risks.Add("Level v0.2 기준으로 초기 자금이 소형 개발비보다 낮습니다. 첫 프로젝트 지원금, 개발비 분할, 초기 자금 상향 중 하나가 필요할 수 있습니다.");
+
+            int routeWeeks = _routeSmallProjects * _smallDurationWeeks + _routeMediumProjects * _mediumDurationWeeks + _routeLargeProjects * _largeDurationWeeks;
+            if (_useSequentialRoute && routeWeeks > _simulationWeeks)
+                risks.Add($"순차 루트 개발 기간({routeWeeks}주)이 시뮬레이션 기간({_simulationWeeks}주)보다 깁니다. 전체 완주 흐름을 보려면 시뮬레이션 주차를 늘리세요.");
+
             return risks;
         }
 
@@ -460,6 +874,9 @@ namespace GameDevTycoon.EditorQA
 
         private List<EconomyWeekSnapshot> SimulateScenario(EconomyScenario scenario)
         {
+            if (_useSequentialRoute)
+                return SimulateSequentialRoute(scenario);
+
             List<EconomyWeekSnapshot> weeks = new();
             int gold = scenario.InitialGold;
             float smallRetention = 1f;
@@ -476,10 +893,11 @@ namespace GameDevTycoon.EditorQA
                 int salaryExpense = scenario.EmployeeCount * GetWeeklySalaryPerEmployee();
                 int serviceExpense = scenario.CompletedSmallProjects * PerkPolicy.CalcWeeklyCost(ProjectSize.Small)
                                    + scenario.CompletedMediumProjects * PerkPolicy.CalcWeeklyCost(ProjectSize.Medium)
-                                   + scenario.CompletedLargeProjects * PerkPolicy.CalcWeeklyCost(ProjectSize.Large);
-                int recruitExpense = scenario.WeeklyRecruitCount * 1000;
+                                   + scenario.CompletedLargeProjects * PerkPolicy.CalcWeeklyCost(ProjectSize.Large)
+                                   + CalcWeeklyUpdateExpense();
+                int recruitExpense = scenario.WeeklyRecruitCount * GetRecruitCost();
                 int trainingExpense = scenario.WeeklyTrainingCount * GetTrainingCost(scenario.TrainingPlan);
-                int officeExpense = Mathf.Max(0, scenario.WeeklyOfficeMaintainCost);
+                int officeExpense = _useLevelBalanceOverrides ? GetOfficeWeeklyRent() : Mathf.Max(0, scenario.WeeklyOfficeMaintainCost);
                 int projectStartExpense = 0;
                 int oneTimeExpense = 0;
 
@@ -510,12 +928,96 @@ namespace GameDevTycoon.EditorQA
                     officeExpense,
                     oneTimeExpense));
 
-                smallRetention = Mathf.Clamp01(smallRetention - PerkPolicy.RETENTION_DECAY * 5f);
-                mediumRetention = Mathf.Clamp01(mediumRetention - PerkPolicy.RETENTION_DECAY * 5f);
-                largeRetention = Mathf.Clamp01(largeRetention - PerkPolicy.RETENTION_DECAY * 5f);
+                float weeklyRetentionDecay = GetRetentionDecayPerDay() * 5f;
+                smallRetention = Mathf.Clamp01(smallRetention - weeklyRetentionDecay);
+                mediumRetention = Mathf.Clamp01(mediumRetention - weeklyRetentionDecay);
+                largeRetention = Mathf.Clamp01(largeRetention - weeklyRetentionDecay);
             }
 
             return weeks;
+        }
+
+        private List<EconomyWeekSnapshot> SimulateSequentialRoute(EconomyScenario scenario)
+        {
+            List<EconomyWeekSnapshot> weeks = new();
+            Queue<ProjectSize> plan = BuildSequentialProjectPlan();
+            List<LiveProjectState> liveProjects = new();
+            int gold = scenario.InitialGold;
+            ProjectSize? activeProject = null;
+            int remainingDevelopmentWeeks = 0;
+
+            for (int week = 1; week <= scenario.Weeks; week++)
+            {
+                int startGold = gold;
+                int income = 0;
+                for (int i = 0; i < liveProjects.Count; i++)
+                {
+                    LiveProjectState live = liveProjects[i];
+                    income += CalcWeeklyCompletedProjectIncome(live.Size, 1, live.Retention);
+                    live.Retention = Mathf.Clamp01(live.Retention - GetRetentionDecayPerDay() * 5f);
+                    liveProjects[i] = live;
+                }
+
+                int salaryExpense = scenario.EmployeeCount * GetWeeklySalaryPerEmployee();
+                int serviceExpense = (_useLevelBalanceOverrides
+                    ? 0
+                    : liveProjects.Sum(p => PerkPolicy.CalcWeeklyCost(p.Size))) + CalcWeeklyUpdateExpense();
+                int recruitExpense = scenario.WeeklyRecruitCount * GetRecruitCost();
+                int trainingExpense = scenario.WeeklyTrainingCount * GetTrainingCost(scenario.TrainingPlan);
+                int officeExpense = _useLevelBalanceOverrides ? GetOfficeWeeklyRent() : Mathf.Max(0, scenario.WeeklyOfficeMaintainCost);
+                int projectStartExpense = 0;
+                int oneTimeExpense = week == 1 ? Mathf.Max(0, scenario.OneTimeOfficeUpgradeCost) : 0;
+
+                if (activeProject == null && plan.Count > 0)
+                {
+                    activeProject = plan.Dequeue();
+                    remainingDevelopmentWeeks = GetLevelProjectDurationWeeks(activeProject.Value);
+                    projectStartExpense = GetProjectRequiredCost(activeProject.Value);
+                }
+
+                int expense = salaryExpense + serviceExpense + recruitExpense + trainingExpense + officeExpense + projectStartExpense + oneTimeExpense;
+                int netGold = income - expense;
+                gold += netGold;
+
+                weeks.Add(new EconomyWeekSnapshot(
+                    week,
+                    startGold,
+                    income,
+                    expense,
+                    netGold,
+                    gold,
+                    salaryExpense,
+                    serviceExpense,
+                    projectStartExpense,
+                    recruitExpense,
+                    trainingExpense,
+                    officeExpense,
+                    oneTimeExpense));
+
+                if (activeProject != null)
+                {
+                    remainingDevelopmentWeeks--;
+                    if (remainingDevelopmentWeeks <= 0)
+                    {
+                        liveProjects.Add(new LiveProjectState(activeProject.Value, 1f));
+                        activeProject = null;
+                    }
+                }
+            }
+
+            return weeks;
+        }
+
+        private Queue<ProjectSize> BuildSequentialProjectPlan()
+        {
+            var plan = new Queue<ProjectSize>();
+            for (int i = 0; i < Mathf.Max(0, _routeSmallProjects); i++)
+                plan.Enqueue(ProjectSize.Small);
+            for (int i = 0; i < Mathf.Max(0, _routeMediumProjects); i++)
+                plan.Enqueue(ProjectSize.Medium);
+            for (int i = 0; i < Mathf.Max(0, _routeLargeProjects); i++)
+                plan.Enqueue(ProjectSize.Large);
+            return plan;
         }
 
         private EconomySummary BuildSummary(IReadOnlyList<EconomyWeekSnapshot> weeks)
@@ -576,7 +1078,7 @@ namespace GameDevTycoon.EditorQA
             return Mathf.RoundToInt((float)_employees.Average(e => e.Asset.weekSalary));
         }
 
-        private static int CalcWeeklyCompletedProjectIncome(ProjectSize size, int count, float retention)
+        private int CalcWeeklyCompletedProjectIncome(ProjectSize size, int count, float retention)
         {
             if (count <= 0)
                 return 0;
@@ -586,9 +1088,11 @@ namespace GameDevTycoon.EditorQA
 
             for (int day = 0; day < 5; day++)
             {
-                int dailySales = PerkPolicy.CalcDailySales(size, 70f, 70f, 70f, currentRetention, 0);
-                weeklyGold += PerkPolicy.CalcDailyGold(size, dailySales);
-                currentRetention = Mathf.Clamp01(currentRetention - PerkPolicy.RETENTION_DECAY);
+                int dailyGold = _useLevelBalanceOverrides
+                    ? CalcLevelBalanceDailyGold(size, currentRetention)
+                    : PerkPolicy.CalcDailyGold(size, PerkPolicy.CalcDailySales(size, 70f, 70f, 70f, currentRetention, 0));
+                weeklyGold += dailyGold;
+                currentRetention = Mathf.Clamp01(currentRetention - GetRetentionDecayPerDay());
             }
 
             return weeklyGold * count;
@@ -596,6 +1100,9 @@ namespace GameDevTycoon.EditorQA
 
         private int GetProjectRequiredCost(ProjectSize size)
         {
+            if (_useLevelBalanceOverrides)
+                return GetLevelProjectCost(size);
+
             ProjectSO project = _projects
                 .Select(e => e.Asset)
                 .FirstOrDefault(p => p != null && p.scale == size);
@@ -611,8 +1118,19 @@ namespace GameDevTycoon.EditorQA
             };
         }
 
-        private static int GetTrainingCost(TrainingPlan plan)
+        private int GetTrainingCost(TrainingPlan plan)
         {
+            if (_useLevelBalanceOverrides)
+            {
+                return plan switch
+                {
+                    TrainingPlan.Basic => _basicTrainingCost,
+                    TrainingPlan.Professional => _professionalTrainingCost,
+                    TrainingPlan.Intensive => _intensiveTrainingCost,
+                    _ => 0
+                };
+            }
+
             return plan switch
             {
                 TrainingPlan.Basic => 1000,
@@ -620,6 +1138,109 @@ namespace GameDevTycoon.EditorQA
                 TrainingPlan.Intensive => 5000,
                 _ => 0
             };
+        }
+
+        private int CalcWeeklyUpdateExpense()
+        {
+            if (!_useLevelBalanceOverrides)
+                return 0;
+
+            return Mathf.Max(0, _weeklySmallUpdateCount) * Mathf.Max(0, _smallUpdateCost)
+                 + Mathf.Max(0, _weeklyMediumUpdateCount) * Mathf.Max(0, _mediumUpdateCost)
+                 + Mathf.Max(0, _weeklyLargeUpdateCount) * Mathf.Max(0, _largeUpdateCost);
+        }
+
+        private int GetRecruitCost()
+        {
+            return _useLevelBalanceOverrides ? Mathf.Max(0, _recruitCost) : 1000;
+        }
+
+        private int GetOfficeWeeklyRent()
+        {
+            return _officeLevel switch
+            {
+                2 => Mathf.Max(0, _level2WeeklyRent),
+                3 => Mathf.Max(0, _level3WeeklyRent),
+                _ => Mathf.Max(0, _level1WeeklyRent)
+            };
+        }
+
+        private int GetLevelProjectCost(ProjectSize size)
+        {
+            return size switch
+            {
+                ProjectSize.Medium => Mathf.Max(0, _mediumProjectCost),
+                ProjectSize.Large => Mathf.Max(0, _largeProjectCost),
+                _ => Mathf.Max(0, _smallProjectCost)
+            };
+        }
+
+        private int GetLevelProjectDurationWeeks(ProjectSize size)
+        {
+            return size switch
+            {
+                ProjectSize.Medium => Mathf.Max(1, _mediumDurationWeeks),
+                ProjectSize.Large => Mathf.Max(1, _largeDurationWeeks),
+                _ => Mathf.Max(1, _smallDurationWeeks)
+            };
+        }
+
+        private int GetUnitPrice(ProjectSize size)
+        {
+            return size switch
+            {
+                ProjectSize.Medium => Mathf.Max(0, _mediumUnitPrice),
+                ProjectSize.Large => Mathf.Max(0, _largeUnitPrice),
+                _ => Mathf.Max(0, _smallUnitPrice)
+            };
+        }
+
+        private int GetBaseSales(ProjectSize size)
+        {
+            return size switch
+            {
+                ProjectSize.Medium => Mathf.Max(0, _mediumBaseSales),
+                ProjectSize.Large => Mathf.Max(0, _largeBaseSales),
+                _ => Mathf.Max(0, _smallBaseSales)
+            };
+        }
+
+        private float GetRetentionDecayPerDay()
+        {
+            return _useLevelBalanceOverrides ? Mathf.Max(0f, _retentionDecayPerDay) : PerkPolicy.RETENTION_DECAY;
+        }
+
+        private int CalcLevelBalanceDailyGold(ProjectSize size, float retention)
+        {
+            float purchaseWeight = Mathf.Max(_minimumPurchaseWeight, (_simulatedCompletionScore - 40f) / 100f);
+            float sales = GetBaseSales(size) * purchaseWeight * Mathf.Clamp01(retention);
+            return Mathf.RoundToInt(sales * GetUnitPrice(size));
+        }
+
+        private readonly struct EconomyGraphSeries
+        {
+            public string Label { get; }
+            public Color Color { get; }
+            public Func<EconomyWeekSnapshot, float> ValueSelector { get; }
+
+            public EconomyGraphSeries(string label, Color color, Func<EconomyWeekSnapshot, float> valueSelector)
+            {
+                Label = label;
+                Color = color;
+                ValueSelector = valueSelector;
+            }
+        }
+
+        private struct LiveProjectState
+        {
+            public ProjectSize Size { get; }
+            public float Retention { get; set; }
+
+            public LiveProjectState(ProjectSize size, float retention)
+            {
+                Size = size;
+                Retention = retention;
+            }
         }
 
         private readonly struct EconomyScenario
@@ -766,6 +1387,13 @@ namespace GameDevTycoon.EditorQA
                 TrainingExpenseRatio = trainingExpenseRatio;
                 ProjectStartExpenseRatio = projectStartExpenseRatio;
             }
+        }
+
+        private enum EconomyGraphMode
+        {
+            Gold,
+            Net,
+            ExpenseBreakdown
         }
 
         private enum TrainingPlan
