@@ -11,7 +11,8 @@ public class TutorialManager : MonoBehaviour
         TextOnly,
         ButtonActivated,
         HighlightSqureTouchAnywhere,
-        HighLightSqureTouchSomewhere
+        HighLightSqureTouchSomewhere,
+        PunchHole
     }
 
     // 싱글톤
@@ -127,6 +128,9 @@ public class TutorialManager : MonoBehaviour
             case ShowMode.HighLightSqureTouchSomewhere:
                 TutorialHighLightSqureTouchSomewhere();
                 break;
+            case ShowMode.PunchHole:
+                TutorialPunchHole();
+                break;
         }
     }
 
@@ -158,24 +162,36 @@ public class TutorialManager : MonoBehaviour
         {
             _currentActiveObject = targetObj;
 
-            // Canvas 체크
+            var showMode = _tutorialSteps[_curIndex].showMode;
+
+            if (showMode == ShowMode.PunchHole) return;
+
+            // 1. 캔버스 설정
             Canvas targetCanvas = _currentActiveObject.GetComponent<Canvas>();
             if (targetCanvas == null)
             {
                 targetCanvas = _currentActiveObject.AddComponent<Canvas>();
                 _isCanvasAddedByManager = true;
             }
+            else
+            {
+                _isCanvasAddedByManager = false;
+            }
 
             targetCanvas.overrideSorting = true;
-            targetCanvas.sortingOrder    = 1001;
+            targetCanvas.sortingOrder = 1001;
 
-            var showMode = _tutorialSteps[_curIndex].showMode;
+            // 2. GraphicRaycaster 설정
             if (showMode == ShowMode.ButtonActivated || showMode == ShowMode.HighLightSqureTouchSomewhere)
             {
                 if (_currentActiveObject.GetComponent<GraphicRaycaster>() == null)
                 {
                     _currentActiveObject.AddComponent<GraphicRaycaster>();
                     _isRaycasterAddedByManager = true;
+                }
+                else
+                {
+                    _isRaycasterAddedByManager = false;
                 }
             }
         }
@@ -312,6 +328,65 @@ public class TutorialManager : MonoBehaviour
 
         CleanUpActiveObjectComponents();
 
+        ProceedTutorial();
+    }
+
+    /////////////////// - TutorialPunchHole - ///////////////////
+    private void TutorialPunchHole()
+    {
+        if (_currentActiveObject == null) return;
+
+        // 1. 패널에 필터 스크립트 추가 (클릭 차단용)
+        var filter = _tutorialPanel.GetComponent<PunchHoleFilter>()
+                     ?? _tutorialPanel.AddComponent<PunchHoleFilter>();
+
+        RectTransform targetRect = _currentActiveObject.GetComponent<RectTransform>();
+        filter.SetHole(targetRect);
+
+        // 2. 튜토리얼 패널 이미지의 머티리얼에 구멍 좌표 전달 (시각적 구멍 뚫기)
+        var panelImage = _tutorialPanel.GetComponent<Image>();
+        if (panelImage != null)
+        {
+            panelImage.raycastTarget = true;
+
+            // 타겟 오브젝트의 월드 기준 네 모서리 가져오기
+            Vector3[] corners = new Vector3[4];
+            targetRect.GetWorldCorners(corners);
+            // corners[0] : 좌하단, corners[2] : 우상단
+
+            // 쉐이더 내부의 _HoleRect 변수에 (MinX, MinY, MaxX, MaxY) 주입
+            Vector4 holeVector = new Vector4(corners[0].x, corners[0].y, corners[2].x, corners[2].y);
+            panelImage.material.SetVector("_HoleRect", holeVector);
+        }
+
+        // 3. 버튼인 경우 다음 단계를 위한 클릭 이벤트 바인딩
+        Button button = _currentActiveObject.GetComponent<Button>();
+        if (button != null)
+        {
+            button.onClick.RemoveListener(OnPunchHoleButtonClicked);
+            button.onClick.AddListener(OnPunchHoleButtonClicked);
+        }
+
+        SetPointerPosition();
+    }
+
+    private void OnPunchHoleButtonClicked()
+    {
+        if (_currentActiveObject != null)
+        {
+            Button button = _currentActiveObject.GetComponent<Button>();
+            if (button != null)
+                button.onClick.RemoveListener(OnPunchHoleButtonClicked);
+        }
+
+        // 초기화: 다음 단계를 위해 패널의 구멍 영역을 초기화 (안 뚫린 상태로)
+        var panelImage = _tutorialPanel.GetComponent<Image>();
+        if (panelImage != null && panelImage.material != null)
+        {
+            panelImage.material.SetVector("_HoleRect", Vector4.zero);
+        }
+
+        CleanUpActiveObjectComponents();
         ProceedTutorial();
     }
 }
