@@ -9,8 +9,10 @@ public class StoryQuestManager : MonoBehaviour
     const int FirstStoryQuestId = 1001;
     const int FirstHireQuestId  = 1002;
     const int SpyQuestStartId = 1003;
+    const int LargeProjectSpyQuestId = 1004;
     const int SelectSpyQuestId = 1041; // 스파이 퀘스트중 선형적 진행이 끝나고 스파이 결정 선택지가 나오는 퀘스트
-    const string StoryBubbleMessage = "<b>...</b>";
+
+    [SerializeField] Sprite StoryBookBubbleSprite;
 
     public ReactiveProperty<QuestState> storyQuestState = new(QuestState.Ready);
     public ReactiveProperty<int> storyQuestProgress = new(0);
@@ -19,9 +21,15 @@ public class StoryQuestManager : MonoBehaviour
     public int curSpyQuestID;
     public List<int> completedStoryQuestIds = new();
 
-    private Employee _currentSpeaker;
-    private SpeechBubble _currentBubble;
+    private Employee _currentSpeaker;  // NPC1
+    private Employee _currentSpeaker2; // NPC2
 
+    const string FlowerTag = "Flower";
+    const string DeskTag = "Desk";
+    private SpeechBubble _currentBubble;
+    const string StoryBubbleMessage = "<b>...</b>";
+
+    #region Init
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     public static void Init() => Instance = null;
 
@@ -40,9 +48,11 @@ public class StoryQuestManager : MonoBehaviour
 
         curStoryQuest = null;
         _currentSpeaker = null;
+        _currentSpeaker2 = null;
         storyQuestProgress.Value = 0;
         storyQuestState.Value = QuestState.Ready;
     }
+    #endregion
 
     public bool TryStartStoryQuestForToday()
     {
@@ -52,23 +62,42 @@ public class StoryQuestManager : MonoBehaviour
 
     StoryQuestPoolSO SelectStartableQuest()
     {
-        if (curSpyQuestID != 0) // 스파이 퀘스트 분기 점검
-        {
-            if (curSpyQuestID > SelectSpyQuestId) return null;
+        if (curSpyQuestID != 0)
+            return SelectCurrentSpyQuest();
 
-            StoryQuestPoolSO spyQuest = StoryQuestDataManager.Instance.GetPoolEntry(curSpyQuestID);
-            return IsConditionSatisfied(spyQuest) ? spyQuest : null;
-        }
+        StoryQuestPoolSO normalQuest = SelectNormalStoryQuest();
+        if (normalQuest != null) return normalQuest;
 
+        return SelectSpyStartQuest();
+    }
+
+    StoryQuestPoolSO SelectCurrentSpyQuest()
+    {
+        if (curSpyQuestID > SelectSpyQuestId) return null;
+
+        StoryQuestPoolSO spyQuest = StoryQuestDataManager.Instance.GetPoolEntry(curSpyQuestID);
+        return IsSpyQuestConditionSatisfied(spyQuest) ? spyQuest : null;
+    }
+
+    StoryQuestPoolSO SelectNormalStoryQuest()
+    {
         foreach (StoryQuestPoolSO questSO in StoryQuestDataManager.Instance.GetAllPoolEntries())
         {
             if (questSO.isSpyQuest) continue;
             if (completedStoryQuestIds.Contains(questSO.id)) continue;
-            if (!IsConditionSatisfied(questSO)) continue;
+            if (!IsNormalStoryConditionSatisfied(questSO)) continue;
 
             return questSO;
         }
         return null;
+    }
+
+    StoryQuestPoolSO SelectSpyStartQuest()
+    {
+        if (completedStoryQuestIds.Contains(SpyQuestStartId)) return null;
+
+        StoryQuestPoolSO spyStartQuest = StoryQuestDataManager.Instance.GetPoolEntry(SpyQuestStartId);
+        return IsSpyQuestConditionSatisfied(spyStartQuest) ? spyStartQuest : null;
     }
 
     bool StartStoryQuest(StoryQuestPoolSO questSO)
@@ -76,7 +105,7 @@ public class StoryQuestManager : MonoBehaviour
         Transform bubbleTarget = ResolveBubbleTarget(questSO.id);
         if (bubbleTarget == null) return false;
 
-        if (questSO.isSpyQuest)
+        if (questSO.isSpyQuest || questSO.id == SpyQuestStartId)
             curSpyQuestID = questSO.id;
 
         curStoryQuest = new StoryQuest();
@@ -84,10 +113,9 @@ public class StoryQuestManager : MonoBehaviour
         curStoryQuest.state = QuestState.Playing;
         storyQuestState.Value = QuestState.Playing;
 
-        _currentBubble = QuestManager.Instance.ShowClickableSpeechBubble(
-            bubbleTarget,
-            StoryBubbleMessage,
-            StartCurrentStoryDialogue);
+        _currentBubble = IsStoryBookBubbleQuest(questSO.id)
+            ? QuestManager.Instance.ShowClickableSpeechBubble(bubbleTarget, StoryBookBubbleSprite, StartCurrentStoryDialogue)
+            : QuestManager.Instance.ShowClickableSpeechBubble(bubbleTarget, StoryBubbleMessage, StartCurrentStoryDialogue);
 
         return true;
     }
@@ -96,26 +124,61 @@ public class StoryQuestManager : MonoBehaviour
     private Transform ResolveBubbleTarget(int questId)
     {
         _currentSpeaker = null;
+        _currentSpeaker2 = null;
 
         if (questId == FirstHireQuestId)
         {
             _currentSpeaker = _EmployeeManager.Instance.lastHiredEmployee;
+            _currentSpeaker2 = GameManager.Instance.GetRandomActiveEmployee();
             return _currentSpeaker.transform;
         }
 
+        if (questId == SpyQuestStartId)
+        {
+            _currentSpeaker = GameManager.Instance.GetRandomActiveEmployee();
+            _currentSpeaker2 = GameManager.Instance.GetRandomActiveEmployee();
+
+            return GameObject.FindWithTag(FlowerTag).transform;
+        }
+
+        if (questId == SelectSpyQuestId)
+        {
+            _currentSpeaker = GameManager.Instance.GetRandomActiveEmployee();
+            _currentSpeaker2 = GameManager.Instance.GetRandomActiveEmployee();
+
+            return GameObject.FindWithTag(DeskTag).transform;
+        }
+
         _currentSpeaker = GameManager.Instance.GetRandomActiveEmployee();
+        _currentSpeaker2 = GameManager.Instance.GetRandomActiveEmployee();
         return _currentSpeaker.transform;
     }
 
-    // 일반 스토리 퀘스트 조건 체크
-    bool IsConditionSatisfied(StoryQuestPoolSO questSO)
+    bool IsStoryBookBubbleQuest(int questId)
+    {
+        return questId == SpyQuestStartId || questId == SelectSpyQuestId;
+    }
+
+    bool IsNormalStoryConditionSatisfied(StoryQuestPoolSO questSO)
     {
         return questSO.id switch
         {
             FirstStoryQuestId => Company.Instance.completedProjects.Count > 0,
             FirstHireQuestId => _EmployeeManager.Instance.lastHiredEmployee != null,
-            SpyQuestStartId => Company.Instance.level < questSO.conditionCompanyLv,
             _ => false
+        };
+    }
+
+    bool IsSpyQuestConditionSatisfied(StoryQuestPoolSO questSO)
+    {
+        if (Company.Instance.level < questSO.conditionCompanyLv) return false;
+
+        return questSO.id switch
+        {
+            SpyQuestStartId => true,
+            LargeProjectSpyQuestId => Company.Instance.activeProjectCount.Value > 0 &&
+                                      Company.Instance.curProject.Scale == ProjectSize.Large,
+            _ => true
         };
     }
 
@@ -126,7 +189,8 @@ public class StoryQuestManager : MonoBehaviour
 
         var speakers = new Dictionary<string, Employee>
         {
-            ["NPC1"] = _currentSpeaker
+            ["NPC1"] = _currentSpeaker,
+            ["NPC2"] = _currentSpeaker2
         };
 
         StoryDialoguePlayer.Instance.StartStoryDialogue(

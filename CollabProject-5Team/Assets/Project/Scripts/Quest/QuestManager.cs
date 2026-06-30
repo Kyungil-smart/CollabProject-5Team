@@ -19,6 +19,7 @@ public class QuestManager : MonoBehaviour
 
     // 동적 말풍선 버튼 생성용
     private static readonly Vector2 StoryBubbleSize = new(123f, 65f);
+    private static readonly Vector2 StoryImageBubbleSize = new(123f, 123f);
     private const float StoryBubbleFontSize = 56f;
 
     public RectTransform QuestCanvas => questCanvas;
@@ -320,12 +321,45 @@ public class QuestManager : MonoBehaviour
 
         return bubble;
     }
+
+    public SpeechBubble ShowClickableSpeechBubble(Transform target, Sprite bubbleSprite, UnityAction onClick)
+    {
+        SpeechBubble bubble = Instantiate(speechBubblePrefab, questCanvas).GetComponent<SpeechBubble>();
+
+        bubble.transform.SetAsFirstSibling();
+        ResizeStoryImageSpeechBubble(bubble, bubbleSprite);
+        bubble.Show(target, bubbleWorldOffset, "", 0f);
+
+        Button button = bubble.gameObject.AddComponent<Button>();
+
+        button.transition = Selectable.Transition.None;
+        button.onClick.AddListener(() =>
+        {
+            onClick.Invoke();
+            Destroy(bubble.gameObject);
+        });
+
+        return bubble;
+    }
+
     private void ResizeStorySpeechBubble(SpeechBubble bubble)
     {
         ((RectTransform)bubble.transform).sizeDelta = StoryBubbleSize;
         TextMeshProUGUI bubbleText = bubble.GetComponentInChildren<TextMeshProUGUI>();
         bubbleText.rectTransform.anchoredPosition = new Vector2(bubbleText.rectTransform.anchoredPosition.x, 10f);
         bubbleText.fontSize = StoryBubbleFontSize;
+    }
+
+    private void ResizeStoryImageSpeechBubble(SpeechBubble bubble, Sprite bubbleSprite)
+    {
+        ((RectTransform)bubble.transform).sizeDelta = StoryImageBubbleSize;
+
+        Image bubbleImage = bubble.GetComponent<Image>();
+        bubbleImage.sprite = bubbleSprite;
+        bubbleImage.preserveAspect = true;
+
+        TextMeshProUGUI bubbleText = bubble.GetComponentInChildren<TextMeshProUGUI>();
+        bubbleText.gameObject.SetActive(false);
     }
 
     private QuestObject FindQuestObject(string name)
