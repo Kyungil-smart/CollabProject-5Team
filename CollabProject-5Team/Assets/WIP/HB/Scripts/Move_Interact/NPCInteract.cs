@@ -31,6 +31,11 @@ public class NPCInteract : MonoBehaviour, IInteractable
 
     public void OnInteract()
     {
+        if (TutorialManager.Instance != null)
+        {
+            TutorialManager.Instance.StartWaitingForDialogue();
+        }
+
         var controller = GetComponent<NPCController>();
         var player = GameManager.Instance.player;
 

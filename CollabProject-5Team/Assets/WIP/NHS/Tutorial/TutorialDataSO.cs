@@ -10,4 +10,5 @@ public class TutorialDataSO : ScriptableObject
     public ShowMode         showMode;
     public GameObject activateObject;
     public string       tutorialText;
+    public string    tutorialExplain;
 }

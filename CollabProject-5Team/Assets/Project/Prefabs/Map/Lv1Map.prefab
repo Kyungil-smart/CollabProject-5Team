@@ -3824,6 +3824,7 @@ GameObject:
   - component: {fileID: 7059649534828322960}
   - component: {fileID: 5673504170394065841}
   - component: {fileID: 7104873475026427179}
+  - component: {fileID: 8485542151157964792}
   m_Layer: 0
   m_Name: Police_Documents_1 Variant
   m_TagString: Untagged
@@ -3899,6 +3900,19 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!114 &8485542151157964792
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5018199333959123061}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: af080b7816cde7f4d9bdc649f2e26d05, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _tutorialObjectId: TutorialObject_9
 --- !u!1 &5144599135639470592
 GameObject:
   m_ObjectHideFlags: 0
@@ -7409,13 +7423,34 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 3212880452690648271, guid: c708cf805fd07524fa025915620428de, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 4237059456096310564}
   m_SourcePrefab: {fileID: 100100000, guid: c708cf805fd07524fa025915620428de, type: 3}
 --- !u!4 &1471272959136058542 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 1943645777384899275, guid: c708cf805fd07524fa025915620428de, type: 3}
   m_PrefabInstance: {fileID: 1049960484633464421}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &2451159691752526506 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 3212880452690648271, guid: c708cf805fd07524fa025915620428de, type: 3}
+  m_PrefabInstance: {fileID: 1049960484633464421}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &4237059456096310564
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2451159691752526506}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: af080b7816cde7f4d9bdc649f2e26d05, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _tutorialObjectId: TutorialObject_8
 --- !u!65 &3959788997962681712 stripped
 BoxCollider:
   m_CorrespondingSourceObject: {fileID: 4062750862527070997, guid: c708cf805fd07524fa025915620428de, type: 3}

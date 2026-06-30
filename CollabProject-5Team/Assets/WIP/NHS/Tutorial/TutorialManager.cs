@@ -12,7 +12,8 @@ public class TutorialManager : MonoBehaviour
         ButtonActivated,
         HighlightSqureTouchAnywhere,
         HighLightSqureTouchSomewhere,
-        PunchHole
+        PunchHole,
+        WaitPlayer
     }
 
     // 싱글톤
@@ -133,6 +134,18 @@ public class TutorialManager : MonoBehaviour
 
     private void ExecuteTutorial()
     {
+        if (_tutorialSteps == null || _curIndex < 0 || _curIndex >= _tutorialSteps.Count)
+        {
+            Debug.LogError($"[TutorialManager] 인덱스 오류: _curIndex={_curIndex}, 리스트 크기={(_tutorialSteps != null ? _tutorialSteps.Count : 0)}");
+            return;
+        }
+
+        if (_tutorialSteps[_curIndex] == null)
+        {
+            Debug.LogError($"[TutorialManager] _tutorialSteps[{_curIndex}] 데이터가 null입니다!");
+            return;
+        }
+
         _tutorialPanel.SetActive(true);
 
         _tutorialPointer.gameObject.SetActive(false);
@@ -468,6 +481,32 @@ public class TutorialManager : MonoBehaviour
         {
             CleanUpPunchHole();
             CleanUpActiveObjectComponents();
+            ProceedTutorial();
+        }
+    }
+
+    /////////////////////////////
+    
+    public bool IsWaitingDialogue = false; // 대화 중인지 체크하는 변수
+
+    public void StartWaitingForDialogue()
+    {
+        IsWaitingDialogue = true;
+        _tutorialPanel.SetActive(false); 
+    }
+
+    public void FinishDialogueAndProceed()
+    {
+        if (IsWaitingDialogue)
+        {
+            IsWaitingDialogue = false;
+            _tutorialPanel.SetActive(true);
+
+            if (_tutorialSteps[_curIndex].showMode == ShowMode.PunchHole)
+                CleanUpPunchHole();
+
+            CleanUpActiveObjectComponents();
+
             ProceedTutorial();
         }
     }
