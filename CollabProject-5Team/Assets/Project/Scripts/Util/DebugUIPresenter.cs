@@ -87,7 +87,10 @@ public sealed class DebugUIPresenter : MonoBehaviour
             .AddTo(this);
         
         _upgradeOfficeButton.OnClickAsObservable()
-            .Subscribe(_ => GameManager.Instance.UpgradeOfficeAsync().Forget())
-            .AddTo(this);
+            .Subscribe(_ =>
+            {
+                Company.Instance.level++;
+                GameManager.Instance.UpgradeOfficeAsync().Forget();
+            }).AddTo(this);
     }
 }
