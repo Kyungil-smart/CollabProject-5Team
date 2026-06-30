@@ -44,8 +44,8 @@ namespace Dialogue
                 .Subscribe(_ => HideAll())
                 .AddTo(this);
 
-            HideAll();
         }
+        private void Start() => HideAll();
 
         public void StartDialogueById(Employee emp)
         {

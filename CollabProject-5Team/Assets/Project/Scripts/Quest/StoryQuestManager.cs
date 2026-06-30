@@ -131,7 +131,7 @@ public class StoryQuestManager : MonoBehaviour
         switch (questSO.id)
         {
             case FirstStoryQuestId: // 1001
-                return Company.Instance.activeProjectCount.Value > 0;
+                return Company.Instance.completedProjects.Count > 0;
             case FirstHireQuestId:  // 1002
                 return _EmployeeManager.Instance.lastHiredEmployee != null;
 
