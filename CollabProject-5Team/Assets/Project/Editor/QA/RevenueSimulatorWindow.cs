@@ -136,21 +136,22 @@ namespace GameDevTycoon.EditorQA
             EditorGUILayout.LabelField(
                 "출시된 게임의 점수와 시장 조건을 바꿔 일일 판매량, 총매출, 순수익, 유지력 감소 흐름을 확인합니다.",
                 EditorStyles.wordWrappedMiniLabel);
-
-            BalanceGuideUI.DrawSourceLegend();
-            BalanceGuideUI.DrawImpactMap("완성도/안정성/매력도 -> 구매율과 총 판매량\n회사 인기 -> 기본 판매량 가중\n유지력/서비스 기간 -> 매출 감소 속도와 순수익");
+            BalanceGuideUI.DrawDataFlow(
+                "완성도, 안정성, 매력도, 회사 인기, 유지력, 서비스 기간은 출시 결과를 가정하기 위한 시뮬레이션 값입니다.",
+                "이 창에서 조절한 값은 실제 프로젝트 데이터나 매출 데이터를 수정하지 않습니다.",
+                "프로젝트 점수 -> 구매율 -> 판매량 -> 규모별 단가 -> 일일 매출/순수익 -> 유지력 감소 흐름");
 
             using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
             {
                 EditorGUI.BeginChangeCheck();
 
                 EditorGUILayout.LabelField("1. 프로젝트 결과값", EditorStyles.boldLabel);
-                _projectSize = (ProjectSize)EditorGUILayout.EnumPopup(BalanceGuideUI.WithSource(BalanceGuideUI.WindowSource, "개발 규모"), _projectSize);
+                _projectSize = (ProjectSize)EditorGUILayout.EnumPopup("개발 규모", _projectSize);
                 using (new EditorGUILayout.HorizontalScope())
                 {
-                    _quality = EditorGUILayout.Slider(BalanceGuideUI.WithSource(BalanceGuideUI.WindowSource, "완성도"), _quality, 0f, 150f);
-                    _stability = EditorGUILayout.Slider(BalanceGuideUI.WithSource(BalanceGuideUI.WindowSource, "안정성"), _stability, 0f, 150f);
-                    _charm = EditorGUILayout.Slider(BalanceGuideUI.WithSource(BalanceGuideUI.WindowSource, "매력도"), _charm, 0f, 150f);
+                    _quality = EditorGUILayout.Slider("완성도", _quality, 0f, 150f);
+                    _stability = EditorGUILayout.Slider("안정성", _stability, 0f, 150f);
+                    _charm = EditorGUILayout.Slider("매력도", _charm, 0f, 150f);
                 }
                 EditorGUILayout.LabelField("세 점수는 각각 구매율 계산에 들어가며, 합산되어 최종 판매량을 만듭니다.", EditorStyles.wordWrappedMiniLabel);
 
@@ -158,9 +159,9 @@ namespace GameDevTycoon.EditorQA
                 EditorGUILayout.LabelField("2. 시장/서비스 조건", EditorStyles.boldLabel);
                 using (new EditorGUILayout.HorizontalScope())
                 {
-                    _companyPopularity = EditorGUILayout.IntSlider(BalanceGuideUI.WithSource(BalanceGuideUI.WindowSource, "회사 인기"), _companyPopularity, 0, 300);
-                    _startRetention = EditorGUILayout.Slider(BalanceGuideUI.WithSource(BalanceGuideUI.WindowSource, "초기 유지력"), _startRetention, 0f, 1f);
-                    _serviceWeeks = EditorGUILayout.IntSlider(BalanceGuideUI.WithSource(BalanceGuideUI.WindowSource, "서비스 기간(주)"), _serviceWeeks, 1, 52);
+                    _companyPopularity = EditorGUILayout.IntSlider("회사 인기", _companyPopularity, 0, 300);
+                    _startRetention = EditorGUILayout.Slider("초기 유지력", _startRetention, 0f, 1f);
+                    _serviceWeeks = EditorGUILayout.IntSlider("서비스 기간(주)", _serviceWeeks, 1, 52);
                 }
                 EditorGUILayout.LabelField("인기는 기본 판매량을 키우고, 유지력은 시간이 지날수록 판매가 줄어드는 흐름을 만듭니다.", EditorStyles.wordWrappedMiniLabel);
 
@@ -168,8 +169,8 @@ namespace GameDevTycoon.EditorQA
                 EditorGUILayout.LabelField("3. 운영 비용/감소 규칙", EditorStyles.boldLabel);
                 using (new EditorGUILayout.HorizontalScope())
                 {
-                    _chargeWeeklyCost = EditorGUILayout.Toggle(BalanceGuideUI.WithSource(BalanceGuideUI.WindowSource, "주간 유지비 차감"), _chargeWeeklyCost);
-                    _decayRetentionWeekly = EditorGUILayout.Toggle(BalanceGuideUI.WithSource(BalanceGuideUI.WindowSource, "주간 유지력 감소"), _decayRetentionWeekly);
+                    _chargeWeeklyCost = EditorGUILayout.Toggle("주간 유지비 차감", _chargeWeeklyCost);
+                    _decayRetentionWeekly = EditorGUILayout.Toggle("주간 유지력 감소", _decayRetentionWeekly);
                 }
                 EditorGUILayout.LabelField("순수익과 장기 서비스 곡선을 볼 때 켜고 끄는 검증용 규칙입니다.", EditorStyles.wordWrappedMiniLabel);
 

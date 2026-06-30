@@ -149,9 +149,10 @@ namespace GameDevTycoon.EditorQA
             EditorGUILayout.LabelField(
                 "월~금 낮 업무, 금요일 밤 보고서, 출시 후 매출까지 한 번에 이어 보며 프로젝트/직원/재화 흐름을 확인합니다.",
                 EditorStyles.wordWrappedMiniLabel);
-
-            BalanceGuideUI.DrawSourceLegend();
-            BalanceGuideUI.DrawImpactMap("프로젝트/팀 조건 -> 출시 시점과 프로젝트 점수\n자금/고정비 -> 적자 발생 시점\n낮 업무/금요일 회복값 -> 직원 피로, 의욕, 장기 지속성");
+            BalanceGuideUI.DrawDataFlow(
+                "프로젝트 규모, 대표 팀 구성, 자금, 고정비, 낮 업무 변화값은 전체 루프를 보기 위한 시뮬레이션 조건입니다.",
+                "이 창의 입력값은 원본 데이터가 아니라 통합 흐름 검증용 임시값입니다.",
+                "낮 업무 -> 금요일 밤 보고서 -> 프로젝트 점수/직원 상태 -> 출시 후 매출 -> 자금 흐름");
 
             using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
             {
@@ -160,9 +161,9 @@ namespace GameDevTycoon.EditorQA
                 EditorGUILayout.LabelField("1. 프로젝트/팀 조건", EditorStyles.boldLabel);
                 using (new EditorGUILayout.HorizontalScope())
                 {
-                    _projectSize = (ProjectSize)EditorGUILayout.EnumPopup(BalanceGuideUI.WithSource(BalanceGuideUI.WindowSource, "개발 규모"), _projectSize);
-                    _pickMode = (PickMode)EditorGUILayout.EnumPopup(BalanceGuideUI.WithSource(BalanceGuideUI.WindowSource, "대표 팀 구성"), _pickMode);
-                    _simulationWeeks = EditorGUILayout.IntSlider(BalanceGuideUI.WithSource(BalanceGuideUI.WindowSource, "관찰 기간(주)"), _simulationWeeks, 1, 24);
+                    _projectSize = (ProjectSize)EditorGUILayout.EnumPopup("개발 규모", _projectSize);
+                    _pickMode = (PickMode)EditorGUILayout.EnumPopup("대표 팀 구성", _pickMode);
+                    _simulationWeeks = EditorGUILayout.IntSlider("관찰 기간(주)", _simulationWeeks, 1, 24);
                 }
                 EditorGUILayout.LabelField("규모와 팀 구성에 따라 주차별 진척도, 세부 점수, 출시 시점이 달라집니다.", EditorStyles.wordWrappedMiniLabel);
 
@@ -170,9 +171,9 @@ namespace GameDevTycoon.EditorQA
                 EditorGUILayout.LabelField("2. 재화/시장 조건", EditorStyles.boldLabel);
                 using (new EditorGUILayout.HorizontalScope())
                 {
-                    _initialGold = EditorGUILayout.IntField(BalanceGuideUI.WithSource(BalanceGuideUI.WindowSource, "초기 자금"), _initialGold);
-                    _companyPopularity = EditorGUILayout.IntSlider(BalanceGuideUI.WithSource(BalanceGuideUI.WindowSource, "회사 인기"), _companyPopularity, 0, 300);
-                    _officeWeeklyCost = EditorGUILayout.IntField(BalanceGuideUI.WithSource(BalanceGuideUI.WindowSource, "주간 사무실 유지비"), _officeWeeklyCost);
+                    _initialGold = EditorGUILayout.IntField("초기 자금", _initialGold);
+                    _companyPopularity = EditorGUILayout.IntSlider("회사 인기", _companyPopularity, 0, 300);
+                    _officeWeeklyCost = EditorGUILayout.IntField("주간 사무실 유지비", _officeWeeklyCost);
                 }
                 EditorGUILayout.LabelField("자금 흐름, 출시 전 적자 여부, 출시 후 매출 회복 가능성을 확인하는 조건입니다.", EditorStyles.wordWrappedMiniLabel);
 
@@ -180,9 +181,9 @@ namespace GameDevTycoon.EditorQA
                 EditorGUILayout.LabelField("3. 낮 업무 변화값", EditorStyles.boldLabel);
                 using (new EditorGUILayout.HorizontalScope())
                 {
-                    _dailyQuestScore = EditorGUILayout.IntSlider(BalanceGuideUI.WithSource(BalanceGuideUI.WindowSource, "일일 업무 보너스"), _dailyQuestScore, 0, 10);
-                    _dailyFatigueGain = EditorGUILayout.IntSlider(BalanceGuideUI.WithSource(BalanceGuideUI.WindowSource, "피로 증가"), _dailyFatigueGain, 0, 10);
-                    _dailyDesireDecay = EditorGUILayout.IntSlider(BalanceGuideUI.WithSource(BalanceGuideUI.WindowSource, "의욕 감소"), _dailyDesireDecay, 0, 10);
+                    _dailyQuestScore = EditorGUILayout.IntSlider("일일 업무 보너스", _dailyQuestScore, 0, 10);
+                    _dailyFatigueGain = EditorGUILayout.IntSlider("피로 증가", _dailyFatigueGain, 0, 10);
+                    _dailyDesireDecay = EditorGUILayout.IntSlider("의욕 감소", _dailyDesireDecay, 0, 10);
                 }
                 EditorGUILayout.LabelField("낮 업무가 프로젝트 점수와 직원 상태에 주는 임시 밸런스값입니다.", EditorStyles.wordWrappedMiniLabel);
 
@@ -190,8 +191,8 @@ namespace GameDevTycoon.EditorQA
                 EditorGUILayout.LabelField("4. 금요일 밤 회복값", EditorStyles.boldLabel);
                 using (new EditorGUILayout.HorizontalScope())
                 {
-                    _fridayRestFatigueRecovery = EditorGUILayout.IntSlider(BalanceGuideUI.WithSource(BalanceGuideUI.WindowSource, "피로 회복"), _fridayRestFatigueRecovery, 0, 30);
-                    _fridayRestDesireRecovery = EditorGUILayout.IntSlider(BalanceGuideUI.WithSource(BalanceGuideUI.WindowSource, "의욕 회복"), _fridayRestDesireRecovery, 0, 30);
+                    _fridayRestFatigueRecovery = EditorGUILayout.IntSlider("피로 회복", _fridayRestFatigueRecovery, 0, 30);
+                    _fridayRestDesireRecovery = EditorGUILayout.IntSlider("의욕 회복", _fridayRestDesireRecovery, 0, 30);
                 }
                 EditorGUILayout.LabelField("밤 경영 이후 다음 주로 넘어갈 때 직원 상태가 얼마나 회복되는지 보는 값입니다.", EditorStyles.wordWrappedMiniLabel);
 

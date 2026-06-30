@@ -98,16 +98,17 @@ namespace GameDevTycoon.EditorQA
             EditorGUILayout.LabelField(
                 "직원 데이터와 보고서 테이블 조건을 맞춰 보고서 후보가 어떻게 생성되는지 확인합니다. 수식 자체가 아니라 생성 조건을 검증하는 탭입니다.",
                 EditorStyles.wordWrappedMiniLabel);
-
-            BalanceGuideUI.DrawSourceLegend();
-            BalanceGuideUI.DrawImpactMap("작성자 직군/특성 -> 조회되는 보고서 후보\n작성자 능력/의욕 -> 보고서 점수와 등급\n보고서 시점 -> 1주차 보고서 또는 진행 중 랜덤 보고서 후보");
+            BalanceGuideUI.DrawDataFlow(
+                "작성자 직군과 보고서 시점은 이 창에서 선택합니다. 직원 능력치/특성은 Employee SO, 보고서 후보는 Report SO에서 조회합니다.",
+                "의욕 임시 변경은 계산에만 적용되고 원본 직원 데이터는 바뀌지 않습니다.",
+                "작성자 능력/의욕/특성 -> 보고서 점수/등급 -> 조건에 맞는 보고서 후보 조회 -> 주차 결과값 미리보기");
 
             using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
             {
                 EditorGUI.BeginChangeCheck();
 
                 EditorGUILayout.LabelField("1. 작성자 조건", EditorStyles.boldLabel);
-                _roleFilter = (Role)EditorGUILayout.EnumPopup(BalanceGuideUI.WithSource(BalanceGuideUI.WindowSource, "작성자 직군"), _roleFilter);
+                _roleFilter = (Role)EditorGUILayout.EnumPopup("작성자 직군", _roleFilter);
 
                 List<EmployeeSnapshot> filteredEmployees = GetFilteredEmployees();
                 if (filteredEmployees.Count == 0)
@@ -124,18 +125,18 @@ namespace GameDevTycoon.EditorQA
                 string[] employeeOptions = filteredEmployees
                     .Select(e => $"{e.So.id} / {e.So.Name} / 능력 {e.StatAbility} / 의욕 {e.Desire}")
                     .ToArray();
-                _selectedEmployeeIndex = EditorGUILayout.Popup(BalanceGuideUI.WithSource(BalanceGuideUI.DataSource, "작성자"), _selectedEmployeeIndex, employeeOptions);
+                _selectedEmployeeIndex = EditorGUILayout.Popup("작성자", _selectedEmployeeIndex, employeeOptions);
                 EditorGUILayout.LabelField("작성자의 직군, 특성, 능력, 의욕으로 조회 가능한 보고서 후보가 결정됩니다.", EditorStyles.wordWrappedMiniLabel);
 
                 EditorGUILayout.Space(6f);
                 EditorGUILayout.LabelField("2. 보고서 테이블 조건", EditorStyles.boldLabel);
                 using (new EditorGUILayout.HorizontalScope())
                 {
-                    _startRepo = EditorGUILayout.Popup(BalanceGuideUI.WithSource(BalanceGuideUI.WindowSource, "보고서 시점"), _startRepo == 1 ? 0 : 1, new[] { "프로젝트 1주차", "진행 중 랜덤" }) == 0 ? 1 : 0;
-                    _overrideDesire = EditorGUILayout.Toggle(BalanceGuideUI.WithSource(BalanceGuideUI.WindowSource, "의욕 임시 변경"), _overrideDesire, GUILayout.Width(150f));
+                    _startRepo = EditorGUILayout.Popup("보고서 시점", _startRepo == 1 ? 0 : 1, new[] { "프로젝트 1주차", "진행 중 랜덤" }) == 0 ? 1 : 0;
+                    _overrideDesire = EditorGUILayout.Toggle("의욕 임시 변경", _overrideDesire, GUILayout.Width(150f));
                 }
                 using (new EditorGUI.DisabledScope(!_overrideDesire))
-                    _desireOverride = EditorGUILayout.IntSlider(BalanceGuideUI.WithSource(BalanceGuideUI.WindowSource, "임시 의욕"), _desireOverride, 0, 100);
+                    _desireOverride = EditorGUILayout.IntSlider("임시 의욕", _desireOverride, 0, 100);
                 EditorGUILayout.LabelField("의욕은 보고서 점수/등급 보정에만 임시 적용됩니다. 원본 직원 데이터는 수정하지 않습니다.", EditorStyles.wordWrappedMiniLabel);
 
                 EditorGUILayout.Space(6f);

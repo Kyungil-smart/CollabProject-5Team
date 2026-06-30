@@ -100,16 +100,17 @@ namespace GameDevTycoon.EditorQA
             EditorGUILayout.LabelField(
                 "대화, 보고서 채택, 교육, 프로젝트 완료 보상이 몇 주 뒤 능력/의욕/피로/충성도에 어떤 영향을 주는지 확인합니다.",
                 EditorStyles.wordWrappedMiniLabel);
-
-            BalanceGuideUI.DrawSourceLegend();
-            BalanceGuideUI.DrawImpactMap("프로젝트 투입/보고서 채택 -> 피로도와 의욕 변화\n대화 여부 -> 의욕/충성도 유지\n교육/완료 보상 -> 능력 성장과 장기 안정성");
+            BalanceGuideUI.DrawDataFlow(
+                "기준 직원은 Employee SO 또는 Play Mode 상태에서 가져옵니다. 대화/보고서/교육/보상 조건은 이 창에서 가정합니다.",
+                "행동 조건은 시뮬레이션에만 반영되며 실제 직원 데이터는 수정하지 않습니다.",
+                "주간 행동 조건 -> 능력/의욕/피로/충성 변화 -> 위험 주차/퇴사 후보 여부");
 
             using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
             {
                 EditorGUI.BeginChangeCheck();
 
                 EditorGUILayout.LabelField("1. 기준 직원", EditorStyles.boldLabel);
-                _roleFilter = (Role)EditorGUILayout.EnumPopup(BalanceGuideUI.WithSource(BalanceGuideUI.WindowSource, "직군"), _roleFilter);
+                _roleFilter = (Role)EditorGUILayout.EnumPopup("직군", _roleFilter);
 
                 List<EmployeeSnapshot> filteredEmployees = GetFilteredEmployees();
                 if (filteredEmployees.Count == 0)
@@ -123,31 +124,31 @@ namespace GameDevTycoon.EditorQA
                 string[] employeeOptions = filteredEmployees
                     .Select(e => $"{e.So.id} / {e.So.Name} / 능력 {e.Ability} / 의욕 {e.Desire} / 피로 {e.Fatigue} / 충성 {e.Loyalty}")
                     .ToArray();
-                _selectedEmployeeIndex = EditorGUILayout.Popup(BalanceGuideUI.WithSource(BalanceGuideUI.DataSource, "직원"), _selectedEmployeeIndex, employeeOptions);
-                _weeks = EditorGUILayout.IntSlider(BalanceGuideUI.WithSource(BalanceGuideUI.WindowSource, "관찰 기간(주)"), _weeks, 1, 24);
+                _selectedEmployeeIndex = EditorGUILayout.Popup("직원", _selectedEmployeeIndex, employeeOptions);
+                _weeks = EditorGUILayout.IntSlider("관찰 기간(주)", _weeks, 1, 24);
 
                 EditorGUILayout.Space(6f);
                 EditorGUILayout.LabelField("2. 주간 행동 조건", EditorStyles.boldLabel);
                 using (new EditorGUILayout.HorizontalScope())
                 {
-                    _inProject = EditorGUILayout.Toggle(BalanceGuideUI.WithSource(BalanceGuideUI.WindowSource, "프로젝트 투입"), _inProject);
-                    _talkEveryWeek = EditorGUILayout.Toggle(BalanceGuideUI.WithSource(BalanceGuideUI.WindowSource, "매주 대화"), _talkEveryWeek);
-                    _acceptReportEveryWeek = EditorGUILayout.Toggle(BalanceGuideUI.WithSource(BalanceGuideUI.WindowSource, "보고서 채택"), _acceptReportEveryWeek);
+                    _inProject = EditorGUILayout.Toggle("프로젝트 투입", _inProject);
+                    _talkEveryWeek = EditorGUILayout.Toggle("매주 대화", _talkEveryWeek);
+                    _acceptReportEveryWeek = EditorGUILayout.Toggle("보고서 채택", _acceptReportEveryWeek);
                 }
                 using (new EditorGUI.DisabledScope(!_acceptReportEveryWeek))
-                    _acceptedReportGrade = EditorGUILayout.IntSlider(BalanceGuideUI.WithSource(BalanceGuideUI.WindowSource, "채택 보고서 등급"), _acceptedReportGrade, 1, 3);
+                    _acceptedReportGrade = EditorGUILayout.IntSlider("채택 보고서 등급", _acceptedReportGrade, 1, 3);
                 EditorGUILayout.LabelField("고피로 상태에서 보고서를 계속 채택하면 의욕/충성 하락과 퇴사 후보 전환을 확인할 수 있습니다.", EditorStyles.wordWrappedMiniLabel);
 
                 EditorGUILayout.Space(6f);
                 EditorGUILayout.LabelField("3. 성장/보상 조건", EditorStyles.boldLabel);
-                _trainingPlan = (TrainingPlan)EditorGUILayout.EnumPopup(BalanceGuideUI.WithSource(BalanceGuideUI.WindowSource, "교육 계획"), _trainingPlan);
-                _applyCompletionReward = EditorGUILayout.Toggle(BalanceGuideUI.WithSource(BalanceGuideUI.WindowSource, "마지막 주 프로젝트 완료 보상"), _applyCompletionReward);
+                _trainingPlan = (TrainingPlan)EditorGUILayout.EnumPopup("교육 계획", _trainingPlan);
+                _applyCompletionReward = EditorGUILayout.Toggle("마지막 주 프로젝트 완료 보상", _applyCompletionReward);
                 using (new EditorGUI.DisabledScope(!_applyCompletionReward))
                 {
                     using (new EditorGUILayout.HorizontalScope())
                     {
-                        _completionProjectSize = (ProjectSize)EditorGUILayout.EnumPopup(BalanceGuideUI.WithSource(BalanceGuideUI.WindowSource, "완료 프로젝트 규모"), _completionProjectSize);
-                        _completionGrade = (ProjectGradeOption)EditorGUILayout.EnumPopup(BalanceGuideUI.WithSource(BalanceGuideUI.WindowSource, "완료 프로젝트 등급"), _completionGrade);
+                        _completionProjectSize = (ProjectSize)EditorGUILayout.EnumPopup("완료 프로젝트 규모", _completionProjectSize);
+                        _completionGrade = (ProjectGradeOption)EditorGUILayout.EnumPopup("완료 프로젝트 등급", _completionGrade);
                     }
                 }
 

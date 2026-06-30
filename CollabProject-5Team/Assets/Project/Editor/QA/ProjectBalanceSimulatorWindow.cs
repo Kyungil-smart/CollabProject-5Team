@@ -111,9 +111,10 @@ namespace GameDevTycoon.EditorQA
             EditorGUILayout.LabelField(
                 "프로젝트 시작/진행 문서의 핵심 조건만 먼저 조정합니다. 팀 배치는 아래 직군별 슬롯에서 따로 선택합니다.",
                 EditorStyles.wordWrappedMiniLabel);
-
-            BalanceGuideUI.DrawSourceLegend();
-            BalanceGuideUI.DrawImpactMap("개발 규모 -> 직군별 배치 인원/판매량/매출\n회사 인기, 유지력 -> 예상 판매량/일일 매출\n일일 업무 보너스 -> 완성도/안정성/매력도 해당 축 점수");
+            BalanceGuideUI.DrawDataFlow(
+                "개발 규모, 회사 인기, 유지력, 일일 업무 보너스는 이 창에서만 바꾸는 시뮬레이션 값입니다. 직원 능력치/특성은 Employee SO, 보고서 후보는 Report SO에서 불러옵니다.",
+                "이 창의 입력값은 원본 SO/테이블을 수정하지 않습니다. 팀 배치와 보너스를 바꿔 결과만 미리 봅니다.",
+                "직원/보고서 점수 + 일일 업무 보너스 -> 완성도/안정성/매력도 -> 평균 점수/등급 -> 예상 판매량/매출");
 
             using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
             {
@@ -122,8 +123,8 @@ namespace GameDevTycoon.EditorQA
                 EditorGUILayout.LabelField("1. 프로젝트 기본 조건", EditorStyles.boldLabel);
                 using (new EditorGUILayout.HorizontalScope())
                 {
-                    _projectSize = (ProjectSize)EditorGUILayout.EnumPopup(BalanceGuideUI.WithSource(BalanceGuideUI.WindowSource, "개발 규모"), _projectSize);
-                    _startRepo = EditorGUILayout.Popup(BalanceGuideUI.WithSource(BalanceGuideUI.WindowSource, "보고서 시점"), _startRepo == 1 ? 0 : 1, new[] { "프로젝트 1주차", "진행 중 랜덤" }) == 0 ? 1 : 0;
+                    _projectSize = (ProjectSize)EditorGUILayout.EnumPopup("개발 규모", _projectSize);
+                    _startRepo = EditorGUILayout.Popup("보고서 시점", _startRepo == 1 ? 0 : 1, new[] { "프로젝트 1주차", "진행 중 랜덤" }) == 0 ? 1 : 0;
                 }
                 EditorGUILayout.LabelField("규모는 직군별 최대 배치 인원과 기본 판매량 계산에 영향을 줍니다.", EditorStyles.wordWrappedMiniLabel);
 
@@ -131,8 +132,8 @@ namespace GameDevTycoon.EditorQA
                 EditorGUILayout.LabelField("2. 출시/시장 가정", EditorStyles.boldLabel);
                 using (new EditorGUILayout.HorizontalScope())
                 {
-                    _companyPopularity = EditorGUILayout.IntSlider(BalanceGuideUI.WithSource(BalanceGuideUI.WindowSource, "회사 인기"), _companyPopularity, 0, 300);
-                    _retentionFactor = EditorGUILayout.Slider(BalanceGuideUI.WithSource(BalanceGuideUI.WindowSource, "유지력 계수"), _retentionFactor, 0f, 1f);
+                    _companyPopularity = EditorGUILayout.IntSlider("회사 인기", _companyPopularity, 0, 300);
+                    _retentionFactor = EditorGUILayout.Slider("유지력 계수", _retentionFactor, 0f, 1f);
                 }
                 EditorGUILayout.LabelField("인기와 유지력은 예상 일일 판매량/매출을 보는 임시 시장 조건입니다.", EditorStyles.wordWrappedMiniLabel);
 
@@ -140,9 +141,9 @@ namespace GameDevTycoon.EditorQA
                 EditorGUILayout.LabelField("3. 일일 업무 보너스", EditorStyles.boldLabel);
                 using (new EditorGUILayout.HorizontalScope())
                 {
-                    _plannerQuestBonus = EditorGUILayout.IntSlider(BalanceGuideUI.WithSource(BalanceGuideUI.WindowSource, "기획"), _plannerQuestBonus, 0, 100);
-                    _artistQuestBonus = EditorGUILayout.IntSlider(BalanceGuideUI.WithSource(BalanceGuideUI.WindowSource, "아트"), _artistQuestBonus, 0, 100);
-                    _programmerQuestBonus = EditorGUILayout.IntSlider(BalanceGuideUI.WithSource(BalanceGuideUI.WindowSource, "개발"), _programmerQuestBonus, 0, 100);
+                    _plannerQuestBonus = EditorGUILayout.IntSlider("기획", _plannerQuestBonus, 0, 100);
+                    _artistQuestBonus = EditorGUILayout.IntSlider("아트", _artistQuestBonus, 0, 100);
+                    _programmerQuestBonus = EditorGUILayout.IntSlider("개발", _programmerQuestBonus, 0, 100);
                 }
                 EditorGUILayout.LabelField("일일 업무/퀘스트가 해당 주차 직군 점수에 더해지는 보정값입니다.", EditorStyles.wordWrappedMiniLabel);
 

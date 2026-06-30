@@ -170,9 +170,10 @@ namespace GameDevTycoon.EditorQA
             EditorGUILayout.LabelField(
                 "처음에는 이 영역의 핵심값만 바꾸고, 결과는 위의 그래프/체크리스트로 확인합니다. 더 세밀한 값은 접힌 상세 설정에서 조정합니다.",
                 EditorStyles.wordWrappedMiniLabel);
-
-            BalanceGuideUI.DrawSourceLegend();
-            BalanceGuideUI.DrawImpactMap("초기 자금/직원 수/주급 -> 생존 주차와 첫 적자 시점\n프로젝트 루트/개발비 -> 출시 전 자금 압박\n판매량/단가/유지력 -> 출시 후 회수 속도");
+            BalanceGuideUI.DrawDataFlow(
+                "초기 자금, 직원 수, 프로젝트 루트, 개발비, 판매량, 단가는 운영 흐름을 보기 위한 시뮬레이션 값입니다. DB 평균 급여를 켜면 직원 SO 급여를 참조합니다.",
+                "이 창의 조절값은 원본 데이터에 저장되지 않습니다. 운영 루트를 바꿔 자금 흐름만 비교합니다.",
+                "초기 자금/고정비/개발비 -> 주차별 수입·지출 -> 첫 적자 시점/최저 자금/누적 순이익");
 
             using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
             {
@@ -180,19 +181,19 @@ namespace GameDevTycoon.EditorQA
 
                 using (new EditorGUILayout.HorizontalScope())
                 {
-                    _initialGold = EditorGUILayout.IntField(BalanceGuideUI.WithSource(BalanceGuideUI.WindowSource, "초기 자금"), _initialGold);
-                    _simulationWeeks = EditorGUILayout.IntSlider(BalanceGuideUI.WithSource(BalanceGuideUI.WindowSource, "관찰 기간(주)"), _simulationWeeks, 1, 80);
-                    _employeeCount = EditorGUILayout.IntSlider(BalanceGuideUI.WithSource(BalanceGuideUI.WindowSource, "직원 수"), _employeeCount, 0, 50);
+                    _initialGold = EditorGUILayout.IntField("초기 자금", _initialGold);
+                    _simulationWeeks = EditorGUILayout.IntSlider("관찰 기간(주)", _simulationWeeks, 1, 80);
+                    _employeeCount = EditorGUILayout.IntSlider("직원 수", _employeeCount, 0, 50);
                 }
 
                 using (new EditorGUILayout.HorizontalScope())
                 {
-                    _useAverageSalary = EditorGUILayout.Toggle(BalanceGuideUI.WithSource(BalanceGuideUI.DataSource, "DB 평균 급여"), _useAverageSalary, GUILayout.Width(150f));
+                    _useAverageSalary = EditorGUILayout.Toggle("DB 평균 급여", _useAverageSalary, GUILayout.Width(150f));
                     using (new EditorGUI.DisabledScope(_useAverageSalary))
-                        _manualWeeklySalary = EditorGUILayout.IntField(BalanceGuideUI.WithSource(BalanceGuideUI.WindowSource, "1인 주급"), _manualWeeklySalary);
+                        _manualWeeklySalary = EditorGUILayout.IntField("1인 주급", _manualWeeklySalary);
                 }
 
-                _useSequentialRoute = EditorGUILayout.Toggle(BalanceGuideUI.WithSource(BalanceGuideUI.WindowSource, "프로젝트 순차 진행"), _useSequentialRoute);
+                _useSequentialRoute = EditorGUILayout.Toggle("프로젝트 순차 진행", _useSequentialRoute);
                 DrawLevelQuickKnobs();
 
                 if (EditorGUI.EndChangeCheck())
