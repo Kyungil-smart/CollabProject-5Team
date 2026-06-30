@@ -6,15 +6,18 @@ public class StoryQuestManager : MonoBehaviour
 {
     public static StoryQuestManager Instance { get; private set; }
 
-    private const int FirstStoryQuestId = 1001;
-    private const int FirstHireQuestId = 1002;
-    private const string StoryBubbleMessage = "<b>...</b>";
+    const int FirstStoryQuestId = 1001;
+    const int FirstHireQuestId  = 1002;
+    const int SpyQuestStartId = 1003;
+    const int SelectSpyQuestId = 1041; // 스파이 퀘스트중 선형적 진행이 끝나고 스파이 결정 선택지가 나오는 퀘스트
+    const string StoryBubbleMessage = "<b>...</b>";
 
     public ReactiveProperty<QuestState> storyQuestState = new(QuestState.Ready);
     public ReactiveProperty<int> storyQuestProgress = new(0);
 
     public StoryQuest curStoryQuest;
-    public int curQuestId = FirstStoryQuestId;
+    public List<int> completedStoryQuestIds = new();
+    public int curSpyQuestID;
 
     private Employee _currentSpeaker;
     private SpeechBubble _currentBubble;
@@ -27,16 +30,6 @@ public class StoryQuestManager : MonoBehaviour
         if (Instance != null && Instance != this) { Destroy(gameObject); return; }
         Instance = this;
     }
-
-    public bool TryStartStoryQuestForToday()
-    {
-        StoryQuestPoolSO questSO = StoryQuestDataManager.Instance.GetPoolEntry(curQuestId);
-        if (questSO == null) return false;
-        if (!IsConditionSatisfied(questSO)) return false;
-
-        return StartStoryQuest(questSO);
-    }
-
     public void ResetForNewDay()
     {
         if (_currentBubble != null)
@@ -51,9 +44,46 @@ public class StoryQuestManager : MonoBehaviour
         storyQuestState.Value = QuestState.Ready;
     }
 
+    public bool TryStartStoryQuestForToday()
+    {
+        StoryQuestPoolSO questSO = SelectStartableQuest();
+        return questSO != null && StartStoryQuest(questSO);
+    }
+
+    private StoryQuestPoolSO SelectStartableQuest()
+    {
+        if (curSpyQuestID != 0) // 스파이 퀘스트 분기 점검
+        {
+            if (curSpyQuestID > SelectSpyQuestId) return null;
+
+            StoryQuestPoolSO spyQuest = StoryQuestDataManager.Instance.GetPoolEntry(curSpyQuestID);
+            return spyQuest != null && spyQuest.isSpyQuest && IsConditionSatisfied(spyQuest)
+                ? spyQuest
+                : null;
+        }
+
+        StoryQuestPoolSO selectedQuest = null;
+        foreach (StoryQuestPoolSO questSO in StoryQuestDataManager.Instance.GetAllPoolEntries())
+        {
+            if (questSO == null) continue;
+            if (questSO.isSpyQuest && questSO.id != SpyQuestStartId) continue;
+            if (completedStoryQuestIds.Contains(questSO.id)) continue;
+            if (!IsConditionSatisfied(questSO)) continue;
+
+            if (selectedQuest == null || questSO.id < selectedQuest.id)
+                selectedQuest = questSO;
+        }
+
+        return selectedQuest;
+    }
+
     private bool StartStoryQuest(StoryQuestPoolSO questSO)
     {
         Transform bubbleTarget = ResolveBubbleTarget(questSO.id);
+        if (bubbleTarget == null) return false;
+
+        if (questSO.isSpyQuest && curSpyQuestID == 0)
+            curSpyQuestID = questSO.id;
 
         curStoryQuest = new StoryQuest();
         curStoryQuest.Init(questSO);
@@ -86,6 +116,20 @@ public class StoryQuestManager : MonoBehaviour
         return _currentSpeaker.transform;
     }
 
+    // 일반 스토리 퀘스트 조건 체크
+    bool IsConditionSatisfied(StoryQuestPoolSO questSO)
+    {
+        if (Company.Instance.level < questSO.conditionCompanyLv) return false;
+
+        return questSO.id switch
+        {
+            FirstStoryQuestId => Company.Instance.completedProjects.Count > 0,
+            FirstHireQuestId => _EmployeeManager.Instance.lastHiredEmployee != null,
+            _ => true
+        };
+    }
+
+
     private void StartCurrentStoryDialogue()
     {
         if (curStoryQuest.state != QuestState.Playing) return;
@@ -108,36 +152,20 @@ public class StoryQuestManager : MonoBehaviour
         if (curStoryQuest.state != QuestState.Playing) return;
 
         int completedQuestId = curStoryQuest.so.id;
+        bool completedSpyQuest = curStoryQuest.so.isSpyQuest;
         curStoryQuest.Complete();
         ApplyReward(curStoryQuest.Reward);
 
         storyQuestProgress.Value = curStoryQuest.curCount;
         storyQuestState.Value = curStoryQuest.state;
 
-        curQuestId = completedQuestId + 1;
-        if (completedQuestId == FirstHireQuestId)
-            _EmployeeManager.Instance.lastHiredEmployee = null;
+        if (!completedStoryQuestIds.Contains(completedQuestId))
+            completedStoryQuestIds.Add(completedQuestId);
+
+        if (completedSpyQuest)
+            curSpyQuestID = completedQuestId < SelectSpyQuestId ? completedQuestId + 1 : 0;
 
         DateTimeManager.Instance.CompleteDayWork();
-    }
-
-    // 스토리 퀘스트 조건 체크
-    bool IsConditionSatisfied(StoryQuestPoolSO questSO)
-    {
-        if (Company.Instance.level < questSO.conditionCompanyLv) return false;
-        if (Company.Instance.gold.Value < questSO.conditionGold) return false;
-        if (Company.Instance.reputation < questSO.conditionReputation) return false;
-
-        switch (questSO.id)
-        {
-            case FirstStoryQuestId: // 1001
-                return Company.Instance.activeProjectCount.Value > 0;
-            case FirstHireQuestId:  // 1002
-                return _EmployeeManager.Instance.lastHiredEmployee != null;
-
-            default:
-                return false;
-        }
     }
 
     private void ApplyReward(QuestReward reward)
@@ -157,12 +185,32 @@ public class StoryQuestManager : MonoBehaviour
     #region Save/Load
     public void ExportStoryQuestData(SaveData data)
     {
-        data.storyQuestId = curQuestId <= 0 ? FirstStoryQuestId : curQuestId;
+        data.completedStoryQuestIds = new List<int>(completedStoryQuestIds);
+        data.curSpyQuestID = curSpyQuestID;
+        data.storyQuestId = curSpyQuestID == 0 ? FirstStoryQuestId : curSpyQuestID;
     }
 
     public void ImportStoryQuestData(SaveData data)
     {
-        curQuestId = data.storyQuestId <= 0 ? FirstStoryQuestId : data.storyQuestId;
+        completedStoryQuestIds.Clear();
+
+        if (data.completedStoryQuestIds != null && data.completedStoryQuestIds.Count > 0)
+        {
+            completedStoryQuestIds.AddRange(data.completedStoryQuestIds);
+        }
+        else
+        {
+            int legacyQuestId = data.storyQuestId <= 0 ? FirstStoryQuestId : data.storyQuestId;
+            for (int questId = FirstStoryQuestId; questId < legacyQuestId; questId++)
+                completedStoryQuestIds.Add(questId);
+        }
+
+        curSpyQuestID = data.curSpyQuestID;
+        if (curSpyQuestID == 0 && data.storyQuestId >= SpyQuestStartId && data.storyQuestId <= SelectSpyQuestId)
+            curSpyQuestID = data.storyQuestId;
+        if (curSpyQuestID > SelectSpyQuestId)
+            curSpyQuestID = 0;
+
         ResetForNewDay();
     }
     #endregion

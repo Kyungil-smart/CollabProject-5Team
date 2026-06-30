@@ -226,9 +226,10 @@ namespace GameDevTycoon.UI.Ingame
         public void ShowTab(ProjectTab tab)
         {
             _tabNewProject.SetActive(tab == ProjectTab.NewProject);
+            // ContentFrame과 ActiveProjectLabel을 동시에 켜고, RefreshNewProject에서 조건 분기
             _contentFrame.SetActive(tab == ProjectTab.NewProject);
+            _activeProjectLabel.gameObject.SetActive(tab == ProjectTab.NewProject);
             _panelProjectSetup.SetActive(tab == ProjectTab.NewProject);
-            _activeProjectLabel.gameObject.SetActive(false);
             _panelStaffAssign.SetActive(false);
 
             _tabInProgress.SetActive(tab == ProjectTab.InProgress);
@@ -253,7 +254,6 @@ namespace GameDevTycoon.UI.Ingame
         public void ShowProjectSetup()
         {
             _contentFrame.SetActive(true);
-            _activeProjectLabel.gameObject.SetActive(false);
             _panelProjectSetup.SetActive(true);
             _panelStaffAssign.SetActive(false);
         }
@@ -266,8 +266,13 @@ namespace GameDevTycoon.UI.Ingame
             _panelStaffAssign.SetActive(true);
         }
 
+        /// <summary>
+        /// 진행 중인 프로젝트 존재 여부에 따라 ContentFrame / ActiveProjectLabel 전환.
+        /// hasActiveProject = true 면 ContentFrame OFF, ActiveProjectLabel ON.
+        /// </summary>
         public void SetActiveProjectWarningVisible(bool hasActiveProject)
         {
+            _contentFrame.SetActive(!hasActiveProject);
             _activeProjectLabel.gameObject.SetActive(hasActiveProject);
             _panelProjectSetup.SetActive(!hasActiveProject);
         }

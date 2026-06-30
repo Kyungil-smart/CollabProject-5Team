@@ -44,8 +44,8 @@ namespace Dialogue
                 .Subscribe(_ => HideAll())
                 .AddTo(this);
 
-            HideAll();
         }
+        private void Start() => HideAll();
 
         public void StartDialogueById(Employee emp)
         {
@@ -62,6 +62,9 @@ namespace Dialogue
             {
                 _currentNpcController = emp.GetComponent<NPCController>();
                 _currentNpcController?.StartConversation();
+
+                CameraManager.Instance.IsUIOpen.Value = true;
+                CameraManager.Instance.FocusOnTarget(emp.transform.position);
             }
 
             DialoguePoolEntrySO poolEntry = DialogueDataManager.Instance.GetPoolEntry(employeeId, state);
@@ -113,6 +116,10 @@ namespace Dialogue
         /// </summary>
         public void ShowBusyMessage(Employee emp, string message = "지금은 좀 바빠 보인다...")
         {
+
+            CameraManager.Instance.IsUIOpen.Value = true;
+            CameraManager.Instance.FocusOnTarget(emp.transform.position);
+
             Sprite portrait = emp?.so.iconNormal;
 
             _currentView = _employeeView;
@@ -185,6 +192,9 @@ namespace Dialogue
 
             DateTimeManager.Instance.CompleteSpecialDialogue(_currentEmployeeId.ToString());
             DialogueEvents.NotifyDialogueEnded(_currentEmployeeId);
+
+            CameraManager.Instance.ResetCamera();
+            CameraManager.Instance.IsUIOpen.Value = false;
 
             if (_currentNpcController != null)
             {
@@ -280,6 +290,9 @@ namespace Dialogue
 
         void HideAll()
         {
+            CameraManager.Instance.ResetCamera();
+            CameraManager.Instance.IsUIOpen.Value = false;
+
             if (_currentNpcController != null)
             {
                 _currentNpcController.EndConversation();
