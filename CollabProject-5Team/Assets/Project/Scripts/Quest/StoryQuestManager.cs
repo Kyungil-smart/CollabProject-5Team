@@ -6,9 +6,11 @@ public class StoryQuestManager : MonoBehaviour
 {
     public static StoryQuestManager Instance { get; private set; }
 
-    private const int FirstStoryQuestId = 1001;
-    private const int FirstHireQuestId = 1002;
-    private const string StoryBubbleMessage = "<b>...</b>";
+    const int FirstStoryQuestId = 1001;
+    const int FirstHireQuestId  = 1002;
+    const int SPYQuestStartId = 1003;
+    const int SPYQuestEndId   = 1044;
+    const string StoryBubbleMessage = "<b>...</b>";
 
     public ReactiveProperty<QuestState> storyQuestState = new(QuestState.Ready);
     public ReactiveProperty<int> storyQuestProgress = new(0);
@@ -27,16 +29,6 @@ public class StoryQuestManager : MonoBehaviour
         if (Instance != null && Instance != this) { Destroy(gameObject); return; }
         Instance = this;
     }
-
-    public bool TryStartStoryQuestForToday()
-    {
-        StoryQuestPoolSO questSO = StoryQuestDataManager.Instance.GetPoolEntry(curQuestId);
-        if (questSO == null) return false;
-        if (!IsConditionSatisfied(questSO)) return false;
-
-        return StartStoryQuest(questSO);
-    }
-
     public void ResetForNewDay()
     {
         if (_currentBubble != null)
@@ -51,6 +43,14 @@ public class StoryQuestManager : MonoBehaviour
         storyQuestState.Value = QuestState.Ready;
     }
 
+    public bool TryStartStoryQuestForToday()
+    {
+        StoryQuestPoolSO questSO = StoryQuestDataManager.Instance.GetPoolEntry(curQuestId);
+        if (questSO == null) return false;
+        if (!IsConditionSatisfied(questSO)) return false;
+
+        return StartStoryQuest(questSO);
+    }
     private bool StartStoryQuest(StoryQuestPoolSO questSO)
     {
         Transform bubbleTarget = ResolveBubbleTarget(questSO.id);
@@ -86,6 +86,24 @@ public class StoryQuestManager : MonoBehaviour
         return _currentSpeaker.transform;
     }
 
+    // 스토리 퀘스트 조건 체크
+    bool IsConditionSatisfied(StoryQuestPoolSO questSO)
+    {
+        if (Company.Instance.level < questSO.conditionCompanyLv) return false;
+
+        switch (questSO.id)
+        {
+            case FirstStoryQuestId: // 1001
+                return Company.Instance.completedProjects.Count > 0;
+            case FirstHireQuestId:  // 1002
+                return _EmployeeManager.Instance.lastHiredEmployee != null;
+
+            default:
+                return false;
+        }
+    }
+
+
     private void StartCurrentStoryDialogue()
     {
         if (curStoryQuest.state != QuestState.Playing) return;
@@ -115,29 +133,8 @@ public class StoryQuestManager : MonoBehaviour
         storyQuestState.Value = curStoryQuest.state;
 
         curQuestId = completedQuestId + 1;
-        if (completedQuestId == FirstHireQuestId)
-            _EmployeeManager.Instance.lastHiredEmployee = null;
 
         DateTimeManager.Instance.CompleteDayWork();
-    }
-
-    // 스토리 퀘스트 조건 체크
-    bool IsConditionSatisfied(StoryQuestPoolSO questSO)
-    {
-        if (Company.Instance.level < questSO.conditionCompanyLv) return false;
-        if (Company.Instance.gold.Value < questSO.conditionGold) return false;
-        if (Company.Instance.reputation < questSO.conditionReputation) return false;
-
-        switch (questSO.id)
-        {
-            case FirstStoryQuestId: // 1001
-                return Company.Instance.completedProjects.Count > 0;
-            case FirstHireQuestId:  // 1002
-                return _EmployeeManager.Instance.lastHiredEmployee != null;
-
-            default:
-                return false;
-        }
     }
 
     private void ApplyReward(QuestReward reward)
