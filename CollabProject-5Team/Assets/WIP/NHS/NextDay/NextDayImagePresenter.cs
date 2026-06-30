@@ -58,15 +58,11 @@ public class NextDayImagePresenter : MonoBehaviour
 
     private void OnEnable()
     {
-        DateTimeManager.OnDateChangedVisual = PlayDateDirectionAsync;
         DateTimeManager.OnTimeChangedVisual = PlayNightDirectionAsync;
     }
 
     private void OnDisable()
     {
-        if (DateTimeManager.OnDateChangedVisual == PlayDateDirectionAsync)
-            DateTimeManager.OnDateChangedVisual = null;
-
         if (DateTimeManager.OnTimeChangedVisual == PlayNightDirectionAsync)
             DateTimeManager.OnTimeChangedVisual = null;
     }

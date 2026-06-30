@@ -2,15 +2,52 @@ using UnityEngine;
 
 public class PunchHoleFilter : MonoBehaviour, ICanvasRaycastFilter
 {
-    private RectTransform _holeRect; // 뚫을 영역의 RectTransform
+    private RectTransform _targetRect;
+    private Camera _canvasCamera;
 
-    public void SetHole(RectTransform hole) => _holeRect = hole;
+    private Vector4 _customScreenRect = Vector4.zero;
+    private bool _useCustomRect = false;
+
+    // 1. 기존 UI 요소 세팅용
+    public void SetTarget(RectTransform targetRect)
+    {
+        _targetRect = targetRect;
+        _useCustomRect = false;
+
+        Canvas canvas = targetRect.GetComponentInParent<Canvas>();
+        if (canvas != null)
+        {
+            _canvasCamera = canvas.worldCamera;
+        }
+    }
+
+    public void SetCustomScreenRect(Vector4 screenRect)
+    {
+        _targetRect = null;
+        _customScreenRect = screenRect;
+        _useCustomRect = true;
+    }
+
+    public void ClearTarget()
+    {
+        _targetRect = null;
+        _useCustomRect = false;
+        _customScreenRect = Vector4.zero;
+    }
 
     public bool IsRaycastLocationValid(Vector2 sp, Camera eventCamera)
     {
-        if (_holeRect == null) return true; // 구멍이 없으면 전체 클릭 막음
+        if (_useCustomRect)
+        {
+            bool isInsideCustom = sp.x >= _customScreenRect.x && sp.x <= _customScreenRect.z &&
+                                  sp.y >= _customScreenRect.y && sp.y <= _customScreenRect.w;
 
-        // 클릭한 위치가 구멍 영역 안인지 확인
-        return !RectTransformUtility.RectangleContainsScreenPoint(_holeRect, sp, eventCamera);
+            return !isInsideCustom;
+        }
+
+        if (_targetRect == null) return true;
+
+        bool isInside = RectTransformUtility.RectangleContainsScreenPoint(_targetRect, sp, _canvasCamera ?? eventCamera);
+        return !isInside;
     }
 }

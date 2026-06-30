@@ -104,6 +104,8 @@ public class QuestInteract : MonoBehaviour, IPointerClickHandler, IPointerDownHa
     {
         TutorialManager.OnSomewhereTutorialCompleted?.Invoke();
 
+        TutorialManager.Instance.CompletePunchHoleStep();
+
         DailyQuest quest = QuestManager.Instance.curDailyQuest;
         if (quest == null || QuestManager.Instance.EffectiveControlType != ControlType.TAP) return;
 
