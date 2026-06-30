@@ -135,14 +135,78 @@ public class NextDayImagePresenter : MonoBehaviour
     {
         HideAllGroups();
 
+        /*
+        float duration = Mathf.Max(0f, fadeDurationSeconds);
+        float elapsed = 0f;
+
+        // 1. 화면 가리기 연출
+        if (visualMode == DirectionMode.FadeInOut)
+        {
+            if (_fadeGroupObj == null || _fadeCanvasGroup == null) return;
+            _fadeGroupObj.SetActive(true);
+
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                _fadeCanvasGroup.alpha = Mathf.Clamp01(elapsed / duration);
+                await UniTask.Yield(PlayerLoopTiming.Update);
+            }
+            _fadeCanvasGroup.alpha = 1f;
+        }
+        else if (visualMode == DirectionMode.ClockFill)
+        {
+            if (_clockGroupObj == null || _clockFillImage == null) return;
+            _clockGroupObj.SetActive(true);
+
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                _clockFillImage.fillAmount = Mathf.Clamp01(elapsed / duration);
+                await UniTask.Yield(PlayerLoopTiming.Update);
+            }
+            _clockFillImage.fillAmount = 1f;
+        }
+        */
+
+        // 2. 데이터 및 텍스트 미리 세팅
         if (DateTimeManager.Instance != null)
         {
             await DateTimeManager.Instance.ProcessDateLogic();
             DateTimeManager.OnDateUIChanged?.Invoke();
         }
-        
+
+        /*
+        await UniTask.Delay(TimeSpan.FromSeconds(Mathf.Max(0f, visibleDurationSeconds)));
+
+        // 3. 화면 다시 원래대로 돌리기
+        elapsed = 0f;
+        if (visualMode == DirectionMode.FadeInOut)
+        {
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                _fadeCanvasGroup.alpha = Mathf.Clamp01(1f - (elapsed / duration));
+                await UniTask.Yield(PlayerLoopTiming.Update);
+            }
+            _fadeCanvasGroup.alpha = 0f;
+            _fadeGroupObj.SetActive(false);
+        }
+        else if (visualMode == DirectionMode.ClockFill)
+        {
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                _clockFillImage.fillAmount = Mathf.Clamp01(1f - (elapsed / duration));
+                await UniTask.Yield(PlayerLoopTiming.Update);
+            }
+            _clockFillImage.fillAmount = 0f;
+            _clockGroupObj.SetActive(false);
+        }
+        */
+
         SetRandomMessage();
 
+        // 4. 화면이 완전히 원래대로 돌아오면 왼쪽 슬라이드 UI 연출 시작
         await PlayLeftSlideAnimationAsync();
 
         HideAllGroups();
