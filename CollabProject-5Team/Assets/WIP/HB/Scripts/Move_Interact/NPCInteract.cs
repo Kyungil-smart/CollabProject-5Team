@@ -33,6 +33,8 @@ public class NPCInteract : MonoBehaviour, IInteractable
     {
         var controller = GetComponent<NPCController>();
         var player = GameManager.Instance.player;
+
+        if (controller != null && controller.IsInteracting) return;
         
         
         if (controller != null)
