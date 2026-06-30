@@ -4,6 +4,7 @@ using System;
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
+using TMPro;
 
 public class NextDayImagePresenter : MonoBehaviour
 {
@@ -13,10 +14,11 @@ public class NextDayImagePresenter : MonoBehaviour
         ClockFill
     }
 
-    public struct Week
+    [System.Serializable]
+    public class DayMessageData
     {
         public DayOfWeek dayOfWeek;
-        public List<string> randomMessage;
+        [TextArea(2, 4)] public List<string> randomMessage; // 변수명 일치 (randomMessage)
     }
 
 
@@ -50,7 +52,9 @@ public class NextDayImagePresenter : MonoBehaviour
     [SerializeField] private float startXPosition       = -250; // 시작 위치 (화면 왼쪽 밖 X 좌표)
     [SerializeField] private float targetXPosition      = +250; // 도달 위치 (화면 안쪽 X 좌표)
 
-    [SerializeField] List<>
+    [Header("요일 별 멘트")]
+    [SerializeField] private TextMeshProUGUI _dailyComment;
+    [SerializeField] private List<DayMessageData> _dayMessageDatas = new List<DayMessageData>();
 
     private void OnEnable()
     {
@@ -122,8 +126,6 @@ public class NextDayImagePresenter : MonoBehaviour
         }
         _nightFillImage.fillAmount = 0f;
         _nightGroupObj.SetActive(false);
-
-        await PlayLeftSlideAnimationAsync();
 
         HideAllGroups();
     }
@@ -197,6 +199,8 @@ public class NextDayImagePresenter : MonoBehaviour
             _clockGroupObj.SetActive(false);
         }
 
+        SetRandomMessage();
+
         // 4. 화면이 완전히 원래대로 돌아오면 왼쪽 슬라이드 UI 연출 시작
         await PlayLeftSlideAnimationAsync();
 
@@ -246,5 +250,29 @@ public class NextDayImagePresenter : MonoBehaviour
         }
         _slidePopupRect.anchoredPosition = new Vector2(startXPosition, anchoredPos.y);
         if (_slidePopupCanvasGroup != null) _slidePopupCanvasGroup.alpha = 0f;
+    }
+
+    private void SetRandomMessage()
+    {
+        if (_dailyComment == null) return;
+
+        DayOfWeek currentDay = DayOfWeek.Monday;
+        
+        if(DateTimeManager.Instance != null)
+            currentDay = DateTimeManager.Instance.currentDay;
+
+        Debug.Log($"[디버그] 현재 매니저의 요일: {currentDay}");
+
+        DayMessageData targetData = _dayMessageDatas.Find(data => data.dayOfWeek == currentDay);
+
+        string dailyText = "";
+
+        if (targetData != null && targetData.randomMessage != null && targetData.randomMessage.Count > 0)
+        {
+            int randomIndex = UnityEngine.Random.Range(0, targetData.randomMessage.Count);
+            dailyText = targetData.randomMessage[randomIndex];
+        }
+
+        _dailyComment.text = dailyText;
     }
 }
