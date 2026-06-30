@@ -17,7 +17,7 @@ namespace GameDevTycoon.EditorQA
 
         private Vector2 _scrollPosition;
         private int _initialGold = 10000;
-        private int _simulationWeeks = 12;
+        private int _simulationWeeks = 52;
         private int _employeeCount = 4;
         private int _manualWeeklySalary;
         private bool _useAverageSalary = true;
@@ -33,9 +33,9 @@ namespace GameDevTycoon.EditorQA
         private int _oneTimeOfficeUpgradeCost;
         private int _weeklyOfficeMaintainCost = 500;
 
-        private bool _useLevelBalanceOverrides;
+        private bool _useLevelBalanceOverrides = true;
         private bool _showLevelBalanceKnobs = true;
-        private bool _useSequentialRoute;
+        private bool _useSequentialRoute = true;
         private int _routeSmallProjects = 3;
         private int _routeMediumProjects = 2;
         private int _routeLargeProjects = 2;
@@ -83,6 +83,10 @@ namespace GameDevTycoon.EditorQA
         private bool _hasBaseline;
         private bool _showGraph = true;
         private bool _showTuningChecklist = true;
+        private bool _showPresetSettings;
+        private bool _showDetailedSettings;
+        private bool _showAdvancedAnalysis;
+        private bool _showTimelineDetails;
         private bool _checkedStartMoney;
         private bool _checkedFixedCost;
         private bool _checkedProjectRoute;
@@ -101,6 +105,8 @@ namespace GameDevTycoon.EditorQA
 
         private void OnEnable()
         {
+            _useLevelBalanceOverrides = true;
+            _useSequentialRoute = true;
             RefreshAssets();
             Simulate();
         }
@@ -110,16 +116,23 @@ namespace GameDevTycoon.EditorQA
             DrawToolbar();
 
             _scrollPosition = EditorGUILayout.BeginScrollView(_scrollPosition);
-            DrawInputPanel();
             DrawSummary();
-            DrawTuningChecklist();
             DrawEconomyGraph();
-            DrawTargetValidation();
-            DrawBaselineCompare();
-            DrawRiskPanel();
-            DrawScenarioMatrix();
-            DrawTimeline();
+            DrawTuningChecklist();
+            DrawEconomyGuide();
+            DrawInputPanel();
+            DrawAdvancedAnalysisPanel();
             EditorGUILayout.EndScrollView();
+        }
+
+
+        private static void DrawEconomyGuide()
+        {
+            BalanceGuideUI.Draw(
+                "재화 밸런싱 가이드",
+                "초기 자금\n직원 수/급여\n프로젝트 개발비\n기본 판매량/단가\n유지력 감소",
+                "최종 자금/최저 자금\n첫 적자 주차\n수입/지출 배율\n지출 항목별 그래프",
+                "첫 프로젝트 비용이 초기 자금 초과\n4주 안에 적자\n급여/개발비가 지출 대부분 차지");
         }
 
         private void DrawToolbar()
@@ -153,74 +166,134 @@ namespace GameDevTycoon.EditorQA
         private void DrawInputPanel()
         {
             EditorGUILayout.Space(8f);
-            EditorGUILayout.LabelField("재화 밸런스 시뮬레이터", EditorStyles.boldLabel);
+            EditorGUILayout.LabelField("재화 수치 조절", EditorStyles.boldLabel);
             EditorGUILayout.LabelField(
-                "초기 자금, 급여, 프로젝트 개발비, 채용비, 교육비, 사무실 유지비, 서비스 매출을 주차 단위로 합산해 회사가 몇 주 버티는지 확인합니다.",
+                "처음에는 이 영역의 핵심값만 바꾸고, 결과는 위의 그래프/체크리스트로 확인합니다. 더 세밀한 값은 접힌 상세 설정에서 조정합니다.",
                 EditorStyles.wordWrappedMiniLabel);
 
-            DrawPresetPanel();
+            BalanceGuideUI.DrawSourceLegend();
+            BalanceGuideUI.DrawImpactMap("초기 자금/직원 수/주급 -> 생존 주차와 첫 적자 시점\n프로젝트 루트/개발비 -> 출시 전 자금 압박\n판매량/단가/유지력 -> 출시 후 회수 속도");
 
             using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
             {
                 EditorGUI.BeginChangeCheck();
 
-                _initialGold = EditorGUILayout.IntField("초기 자금", _initialGold);
-                _simulationWeeks = EditorGUILayout.IntSlider("시뮬레이션 주차", _simulationWeeks, 1, 80);
-                _useLevelBalanceOverrides = EditorGUILayout.Toggle("Level v0.2 조절값 사용", _useLevelBalanceOverrides);
-                _useSequentialRoute = EditorGUILayout.Toggle("소형3/중형2/대형2 순차 루트", _useSequentialRoute);
-
-                if (_useLevelBalanceOverrides)
-                    DrawLevelBalanceTuningPanel();
-
-                EditorGUILayout.Space(4f);
-                EditorGUILayout.LabelField("인건비", EditorStyles.boldLabel);
-                _employeeCount = EditorGUILayout.IntSlider("직원 수", _employeeCount, 0, 50);
-                _useAverageSalary = EditorGUILayout.Toggle("직원 DB 평균 급여 사용", _useAverageSalary);
-                using (new EditorGUI.DisabledScope(_useAverageSalary))
-                    _manualWeeklySalary = EditorGUILayout.IntField("직원 1인 주급", _manualWeeklySalary);
-
-                EditorGUILayout.Space(4f);
-                EditorGUILayout.LabelField("1주차 프로젝트 시작비", EditorStyles.boldLabel);
-                using (new EditorGUI.DisabledScope(_useSequentialRoute))
+                using (new EditorGUILayout.HorizontalScope())
                 {
-                    _startSmallProjects = EditorGUILayout.IntSlider("소형 시작 수", _startSmallProjects, 0, 5);
-                    _startMediumProjects = EditorGUILayout.IntSlider("중형 시작 수", _startMediumProjects, 0, 5);
-                    _startLargeProjects = EditorGUILayout.IntSlider("대형 시작 수", _startLargeProjects, 0, 5);
+                    _initialGold = EditorGUILayout.IntField(BalanceGuideUI.WithSource(BalanceGuideUI.WindowSource, "초기 자금"), _initialGold);
+                    _simulationWeeks = EditorGUILayout.IntSlider(BalanceGuideUI.WithSource(BalanceGuideUI.WindowSource, "관찰 기간(주)"), _simulationWeeks, 1, 80);
+                    _employeeCount = EditorGUILayout.IntSlider(BalanceGuideUI.WithSource(BalanceGuideUI.WindowSource, "직원 수"), _employeeCount, 0, 50);
                 }
 
-                EditorGUILayout.Space(4f);
-                EditorGUILayout.LabelField("서비스 중인 완료 프로젝트 매출", EditorStyles.boldLabel);
-                using (new EditorGUI.DisabledScope(_useSequentialRoute))
+                using (new EditorGUILayout.HorizontalScope())
                 {
-                    _completedSmallProjects = EditorGUILayout.IntSlider("소형 서비스 수", _completedSmallProjects, 0, 10);
-                    _completedMediumProjects = EditorGUILayout.IntSlider("중형 서비스 수", _completedMediumProjects, 0, 10);
-                    _completedLargeProjects = EditorGUILayout.IntSlider("대형 서비스 수", _completedLargeProjects, 0, 10);
+                    _useAverageSalary = EditorGUILayout.Toggle(BalanceGuideUI.WithSource(BalanceGuideUI.DataSource, "DB 평균 급여"), _useAverageSalary, GUILayout.Width(150f));
+                    using (new EditorGUI.DisabledScope(_useAverageSalary))
+                        _manualWeeklySalary = EditorGUILayout.IntField(BalanceGuideUI.WithSource(BalanceGuideUI.WindowSource, "1인 주급"), _manualWeeklySalary);
                 }
 
-                EditorGUILayout.Space(4f);
-                EditorGUILayout.LabelField("반복 비용", EditorStyles.boldLabel);
-                _weeklyRecruitCount = EditorGUILayout.IntSlider("주간 모집 인원", _weeklyRecruitCount, 0, 20);
-                _trainingPlan = (TrainingPlan)EditorGUILayout.EnumPopup("교육 종류", _trainingPlan);
-                _weeklyTrainingCount = EditorGUILayout.IntSlider("주간 교육 인원", _weeklyTrainingCount, 0, 20);
-                _weeklyOfficeMaintainCost = EditorGUILayout.IntField("주간 사무실 유지비", _weeklyOfficeMaintainCost);
-
-                EditorGUILayout.Space(4f);
-                EditorGUILayout.LabelField("1주차 일회성 비용", EditorStyles.boldLabel);
-                _oneTimeOfficeUpgradeCost = EditorGUILayout.IntField("사무실 증축비", _oneTimeOfficeUpgradeCost);
-
-                EditorGUILayout.Space(4f);
-                EditorGUILayout.LabelField("목표 범위", EditorStyles.boldLabel);
-                _targetSurviveWeeks = EditorGUILayout.IntSlider("최소 생존 주차", _targetSurviveWeeks, 1, 52);
-                _targetMinGold = EditorGUILayout.IntField("최소 보유 자금", _targetMinGold);
-                _targetCumulativeNetMin = EditorGUILayout.IntField("최소 누적 순이익", _targetCumulativeNetMin);
-                _targetCoverageMin = EditorGUILayout.FloatField("수입/지출 최소 배율", _targetCoverageMin);
-                _targetCoverageMax = EditorGUILayout.FloatField("수입/지출 최대 배율", _targetCoverageMax);
-                _targetHiringRatioMax = EditorGUILayout.Slider("채용비 최대 비중", _targetHiringRatioMax, 0f, 1f);
-                _targetTrainingRatioMax = EditorGUILayout.Slider("교육비 최대 비중", _targetTrainingRatioMax, 0f, 1f);
-                _targetProjectCostRatioMax = EditorGUILayout.Slider("프로젝트 시작비 최대 비중", _targetProjectCostRatioMax, 0f, 1f);
+                _useSequentialRoute = EditorGUILayout.Toggle(BalanceGuideUI.WithSource(BalanceGuideUI.WindowSource, "프로젝트 순차 진행"), _useSequentialRoute);
+                DrawLevelQuickKnobs();
 
                 if (EditorGUI.EndChangeCheck())
                     Simulate();
+            }
+
+            DrawFoldoutSection(ref _showPresetSettings, "프리셋", DrawPresetPanel);
+            DrawFoldoutSection(ref _showDetailedSettings, "상세 수치 설정", DrawDetailedSettingsPanel);
+        }
+
+        private void DrawLevelQuickKnobs()
+        {
+            EditorGUILayout.Space(4f);
+            EditorGUILayout.LabelField("프로젝트 제작 루트", EditorStyles.boldLabel);
+            using (new EditorGUILayout.HorizontalScope())
+            {
+                _routeSmallProjects = EditorGUILayout.IntField("제작할 소형 수", Mathf.Max(0, _routeSmallProjects));
+                _routeMediumProjects = EditorGUILayout.IntField("제작할 중형 수", Mathf.Max(0, _routeMediumProjects));
+                _routeLargeProjects = EditorGUILayout.IntField("제작할 대형 수", Mathf.Max(0, _routeLargeProjects));
+            }
+            using (new EditorGUILayout.HorizontalScope())
+            {
+                _smallDurationWeeks = EditorGUILayout.IntField("소형 기간(주)", Mathf.Max(1, _smallDurationWeeks));
+                _mediumDurationWeeks = EditorGUILayout.IntField("중형 기간(주)", Mathf.Max(1, _mediumDurationWeeks));
+                _largeDurationWeeks = EditorGUILayout.IntField("대형 기간(주)", Mathf.Max(1, _largeDurationWeeks));
+            }
+
+            EditorGUILayout.Space(4f);
+            EditorGUILayout.LabelField("프로젝트 시작 비용", EditorStyles.boldLabel);
+            using (new EditorGUILayout.HorizontalScope())
+            {
+                _smallProjectCost = EditorGUILayout.IntField("소형 개발비", Mathf.Max(0, _smallProjectCost));
+                _mediumProjectCost = EditorGUILayout.IntField("중형 개발비", Mathf.Max(0, _mediumProjectCost));
+                _largeProjectCost = EditorGUILayout.IntField("대형 개발비", Mathf.Max(0, _largeProjectCost));
+            }
+
+            EditorGUILayout.Space(4f);
+            EditorGUILayout.LabelField("출시 후 매출 가정", EditorStyles.boldLabel);
+            using (new EditorGUILayout.HorizontalScope())
+            {
+                _smallBaseSales = EditorGUILayout.IntField("소형 기본판매", Mathf.Max(0, _smallBaseSales));
+                _mediumBaseSales = EditorGUILayout.IntField("중형 기본판매", Mathf.Max(0, _mediumBaseSales));
+                _largeBaseSales = EditorGUILayout.IntField("대형 기본판매", Mathf.Max(0, _largeBaseSales));
+            }
+
+            using (new EditorGUILayout.HorizontalScope())
+            {
+                _smallUnitPrice = EditorGUILayout.IntField("소형 단가", Mathf.Max(0, _smallUnitPrice));
+                _mediumUnitPrice = EditorGUILayout.IntField("중형 단가", Mathf.Max(0, _mediumUnitPrice));
+                _largeUnitPrice = EditorGUILayout.IntField("대형 단가", Mathf.Max(0, _largeUnitPrice));
+            }
+
+            using (new EditorGUILayout.HorizontalScope())
+            {
+                _simulatedCompletionScore = EditorGUILayout.Slider("가정 완성도", _simulatedCompletionScore, 0f, 100f);
+                _retentionDecayPerDay = EditorGUILayout.Slider("일일 유지력 감소", _retentionDecayPerDay, 0f, 0.2f);
+            }
+        }
+
+        private void DrawDetailedSettingsPanel()
+        {
+            EditorGUI.BeginChangeCheck();
+            DrawLevelBalanceTuningPanel();
+            if (EditorGUI.EndChangeCheck())
+                Simulate();
+        }
+
+        private static void DrawFoldoutSection(ref bool show, string title, Action drawContent)
+        {
+            using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
+            {
+                show = EditorGUILayout.Foldout(show, title, true);
+                if (show)
+                    drawContent();
+            }
+        }
+
+        private void DrawAdvancedAnalysisPanel()
+        {
+            using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
+            {
+                _showAdvancedAnalysis = EditorGUILayout.Foldout(_showAdvancedAnalysis, "고급 분석", true);
+                if (!_showAdvancedAnalysis)
+                {
+                    EditorGUILayout.LabelField("목표 범위, 기준값 비교, 리스크 신호, 시나리오 매트릭스는 필요할 때만 펼쳐서 봅니다.", EditorStyles.wordWrappedMiniLabel);
+                    return;
+                }
+
+                DrawTargetValidation();
+                DrawBaselineCompare();
+                DrawRiskPanel();
+                DrawScenarioMatrix();
+            }
+
+            using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
+            {
+                _showTimelineDetails = EditorGUILayout.Foldout(_showTimelineDetails, "주차별 상세 표", true);
+                if (_showTimelineDetails)
+                    DrawTimeline();
+                else
+                    EditorGUILayout.LabelField("그래프에서 이상한 구간을 발견했을 때 펼쳐서 주차별 상세 수치를 확인합니다.", EditorStyles.wordWrappedMiniLabel);
             }
         }
 
@@ -253,16 +326,14 @@ namespace GameDevTycoon.EditorQA
             {
                 using (new EditorGUILayout.HorizontalScope())
                 {
-                    _showLevelBalanceKnobs = EditorGUILayout.Foldout(_showLevelBalanceKnobs, "Level_밸런싱_v0.2 조절값", true);
+                    _showLevelBalanceKnobs = EditorGUILayout.Foldout(_showLevelBalanceKnobs, "상세 조절값", true);
                     GUILayout.FlexibleSpace();
-                    if (GUILayout.Button("v0.2 기본값 불러오기", GUILayout.Width(140f)))
-                        ApplyLevelBalanceV02Defaults();
                 }
 
                 if (!_showLevelBalanceKnobs)
                     return;
 
-                EditorGUILayout.LabelField("기본값 버튼은 빠른 시작용입니다. 실제 밸런싱은 아래 입력칸을 하나씩 조정하고 체크리스트/그래프를 보며 확인하는 흐름을 권장합니다.", EditorStyles.wordWrappedMiniLabel);
+                EditorGUILayout.LabelField("기획서의 재화 밸런싱 표에 있는 세부값을 조정하는 영역입니다. 자주 보는 핵심값은 위의 주요 조절값에도 노출되어 있습니다.", EditorStyles.wordWrappedMiniLabel);
 
                 EditorGUILayout.Space(3f);
                 EditorGUILayout.LabelField("프로젝트 루트", EditorStyles.boldLabel);
@@ -444,12 +515,87 @@ namespace GameDevTycoon.EditorQA
                 EditorGUILayout.LabelField($"수입/지출 배율: {summary.Coverage:0.##}배");
                 EditorGUILayout.LabelField($"주간 평균 순이익: {summary.AverageNetGold:N0}G");
                 EditorGUILayout.LabelField($"직원 1인 주급 기준: {GetWeeklySalaryPerEmployee():N0}G");
+                BalanceGuideUI.DrawFormulaNotice("자금 흐름은 현재 재화 시뮬레이션 공식과 입력된 운영 루트로 계산됩니다.");
+                DrawSummaryBaselineControls(summary);
+                DrawEconomyAutoChecks(summary);
+                DrawEconomyInterpretation(summary);
 
                 if (summary.FirstDeficitWeek > 0)
                     EditorGUILayout.HelpBox($"{summary.FirstDeficitWeek}주차에 자금이 음수가 됩니다.", MessageType.Warning);
                 else
                     EditorGUILayout.HelpBox("현재 조건에서는 시뮬레이션 기간 동안 자금이 음수가 되지 않습니다.", MessageType.Info);
             }
+        }
+
+        private void DrawSummaryBaselineControls(EconomySummary summary)
+        {
+            using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
+            {
+                EditorGUILayout.LabelField("변경 전후 비교", EditorStyles.boldLabel);
+                using (new EditorGUILayout.HorizontalScope())
+                {
+                    if (GUILayout.Button("현재 결과를 기준값으로 저장", GUILayout.Height(24f)))
+                    {
+                        _baselineSummary = summary;
+                        _hasBaseline = true;
+                    }
+
+                    using (new EditorGUI.DisabledScope(!_hasBaseline))
+                    {
+                        if (GUILayout.Button("기준값 지우기", GUILayout.Width(110f), GUILayout.Height(24f)))
+                            _hasBaseline = false;
+                    }
+                }
+
+                BalanceGuideUI.DrawBaselineHint(_hasBaseline);
+                if (_hasBaseline)
+                {
+                    EditorGUILayout.LabelField(BuildDeltaText("마지막 자금", summary.FinalGold, _baselineSummary.FinalGold), EditorStyles.miniLabel);
+                    EditorGUILayout.LabelField(BuildDeltaText("누적 순이익", summary.TotalNetGold, _baselineSummary.TotalNetGold), EditorStyles.miniLabel);
+                    EditorGUILayout.LabelField(BuildDeltaText("수입/지출 배율", summary.Coverage, _baselineSummary.Coverage), EditorStyles.miniLabel);
+                    EditorGUILayout.LabelField(BuildDeltaText("첫 적자 주차", summary.FirstDeficitWeek, _baselineSummary.FirstDeficitWeek), EditorStyles.miniLabel);
+                }
+            }
+        }
+
+        private void DrawEconomyAutoChecks(EconomySummary summary)
+        {
+            int firstProjectCost = _useSequentialRoute || _startSmallProjects > 0
+                ? GetProjectRequiredCost(ProjectSize.Small)
+                : _startMediumProjects > 0
+                    ? GetProjectRequiredCost(ProjectSize.Medium)
+                    : _startLargeProjects > 0
+                        ? GetProjectRequiredCost(ProjectSize.Large)
+                        : 0;
+            int weeklyFixedCost = GetWeeklySalaryPerEmployee() * _employeeCount + (_useLevelBalanceOverrides ? GetOfficeWeeklyRent() : _weeklyOfficeMaintainCost);
+
+            using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
+            {
+                EditorGUILayout.LabelField("자동 감지", EditorStyles.boldLabel);
+                BalanceGuideUI.DrawAutoCheck("첫 프로젝트 시작 가능", _initialGold < firstProjectCost, _initialGold < firstProjectCost ? $"초기 자금 {_initialGold:N0}G < 첫 프로젝트 비용 {firstProjectCost:N0}G" : "초기 자금이 첫 프로젝트 비용 이상입니다.");
+                BalanceGuideUI.DrawAutoCheck("초반 적자", summary.FirstDeficitWeek > 0 && summary.FirstDeficitWeek <= Mathf.Min(4, _simulationWeeks), summary.FirstDeficitWeek > 0 ? $"{summary.FirstDeficitWeek}주차에 적자입니다." : "관찰 기간 동안 적자가 없습니다.");
+                BalanceGuideUI.DrawAutoCheck("주간 고정비", weeklyFixedCost > Mathf.Max(1, _initialGold / 2), $"주간 고정비 {weeklyFixedCost:N0}G / 초기 자금 {_initialGold:N0}G");
+            }
+        }
+
+        private static void DrawEconomyInterpretation(EconomySummary summary)
+        {
+            if (summary.FirstDeficitWeek > 0)
+            {
+                BalanceGuideUI.DrawInterpretation("운영 중 자금이 음수로 내려갑니다. 초기 자금, 프로젝트 개발비, 주간 고정비를 먼저 확인하세요.", MessageType.Warning);
+                return;
+            }
+
+            if (summary.Coverage > 8f && summary.TotalIncome > 0)
+            {
+                BalanceGuideUI.DrawInterpretation("수입/지출 배율이 매우 높습니다. 보상이 과하게 넉넉한지 확인하세요.", MessageType.Warning);
+                return;
+            }
+
+            if (summary.TotalNetGold >= 0)
+                BalanceGuideUI.DrawInterpretation("현재 운영 루트에서는 시뮬레이션 기간 동안 자금 흐름이 안정권입니다.");
+            else
+                BalanceGuideUI.DrawInterpretation("최종 순이익이 음수입니다. 수입보다 반복 비용이 큰 구조입니다.", MessageType.Warning);
         }
 
         private void DrawTuningChecklist()
@@ -794,7 +940,7 @@ namespace GameDevTycoon.EditorQA
                 risks.Add("대형 프로젝트 시작 후 적자가 발생합니다. 대형 도전 비용이나 완료 보상을 함께 확인하는 것이 좋습니다.");
 
             if (_useLevelBalanceOverrides && _useSequentialRoute && _initialGold < _smallProjectCost)
-                risks.Add("Level v0.2 기준으로 초기 자금이 소형 개발비보다 낮습니다. 첫 프로젝트 지원금, 개발비 분할, 초기 자금 상향 중 하나가 필요할 수 있습니다.");
+                risks.Add("현재 입력값 기준으로 초기 자금이 소형 개발비보다 낮습니다. 첫 프로젝트 지원금, 개발비 분할, 초기 자금 상향 중 하나가 필요할 수 있습니다.");
 
             int routeWeeks = _routeSmallProjects * _smallDurationWeeks + _routeMediumProjects * _mediumDurationWeeks + _routeLargeProjects * _largeDurationWeeks;
             if (_useSequentialRoute && routeWeeks > _simulationWeeks)

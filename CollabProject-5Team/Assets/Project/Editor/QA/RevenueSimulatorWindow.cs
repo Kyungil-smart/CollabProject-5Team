@@ -18,7 +18,10 @@ namespace GameDevTycoon.EditorQA
         private int _serviceWeeks = 8;
         private bool _chargeWeeklyCost = true;
         private bool _decayRetentionWeekly = true;
-        private bool _showScenarioMatrix = true;
+        private bool _showScenarioMatrix;
+        private bool _showPresetPanel;
+        private bool _showAdvancedAnalysis;
+        private bool _showTimelineDetails;
         private bool _hasBaseline;
         private RevenueSummary _baselineSummary;
         private int _targetTotalSalesMin;
@@ -52,16 +55,24 @@ namespace GameDevTycoon.EditorQA
             DrawToolbar();
 
             _scrollPosition = EditorGUILayout.BeginScrollView(_scrollPosition);
-            DrawInputPanel();
-            DrawPresetPanel();
-
             RevenueSummary summary = BuildSummary(_days);
-            DrawTargetCheck(summary);
             DrawSummary(summary);
-            DrawRiskPanel(summary);
-            DrawScenarioMatrix();
-            DrawTimeline();
+            DrawRevenueGuide();
+            DrawInputPanel();
+            DrawFoldoutSection(ref _showPresetPanel, "대표 출시 케이스", DrawPresetPanel);
+            DrawAdvancedAnalysisPanel(summary);
+            DrawTimelineDetailsPanel();
             EditorGUILayout.EndScrollView();
+        }
+
+
+        private static void DrawRevenueGuide()
+        {
+            BalanceGuideUI.Draw(
+                "매출 밸런싱 가이드",
+                "프로젝트 규모\n완성도/안정성/매력도\n회사 인기\n초기 유지력\n서비스 기간",
+                "총 판매량\n총 매출/순수익\n유지비 대비 매출\n유지력 0 도달 시점",
+                "초반 매출 폭발\n유지력이 너무 빨리 0 도달\n낮은 등급도 수익이 과하게 높음");
         }
 
         private void DrawToolbar()
@@ -75,27 +86,92 @@ namespace GameDevTycoon.EditorQA
             }
         }
 
+
+        private static void DrawFoldoutSection(ref bool show, string title, System.Action drawContent)
+        {
+            using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
+            {
+                show = EditorGUILayout.Foldout(show, title, true);
+                if (show)
+                    drawContent();
+                else
+                    EditorGUILayout.LabelField("필요할 때만 펼쳐서 확인합니다.", EditorStyles.wordWrappedMiniLabel);
+            }
+        }
+
+        private void DrawAdvancedAnalysisPanel(RevenueSummary summary)
+        {
+            using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
+            {
+                _showAdvancedAnalysis = EditorGUILayout.Foldout(_showAdvancedAnalysis, "고급 분석", true);
+                if (!_showAdvancedAnalysis)
+                {
+                    EditorGUILayout.LabelField("목표 범위, 리스크 신호, 대표 케이스 매트릭스는 필요할 때만 펼쳐서 봅니다.", EditorStyles.wordWrappedMiniLabel);
+                    return;
+                }
+
+                DrawTargetCheck(summary);
+                DrawRiskPanel(summary);
+                DrawScenarioMatrix();
+            }
+        }
+
+        private void DrawTimelineDetailsPanel()
+        {
+            using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
+            {
+                _showTimelineDetails = EditorGUILayout.Foldout(_showTimelineDetails, "일자별 상세 표", true);
+                if (_showTimelineDetails)
+                    DrawTimeline();
+                else
+                    EditorGUILayout.LabelField("매출 곡선에서 이상한 구간을 발견했을 때 펼쳐서 일자별 수치를 확인합니다.", EditorStyles.wordWrappedMiniLabel);
+            }
+        }
+
+
         private void DrawInputPanel()
         {
             EditorGUILayout.Space(8f);
-            EditorGUILayout.LabelField("매출 밸런스 시뮬레이터", EditorStyles.boldLabel);
+            EditorGUILayout.LabelField("출시 매출 수치 조절", EditorStyles.boldLabel);
             EditorGUILayout.LabelField(
-                "출시 후 서비스 기간 동안 완성도, 안정성, 매력도, 회사 인기, 유지력 계수가 일일 판매량과 매출에 미치는 영향을 확인합니다.",
+                "출시된 게임의 점수와 시장 조건을 바꿔 일일 판매량, 총매출, 순수익, 유지력 감소 흐름을 확인합니다.",
                 EditorStyles.wordWrappedMiniLabel);
+
+            BalanceGuideUI.DrawSourceLegend();
+            BalanceGuideUI.DrawImpactMap("완성도/안정성/매력도 -> 구매율과 총 판매량\n회사 인기 -> 기본 판매량 가중\n유지력/서비스 기간 -> 매출 감소 속도와 순수익");
 
             using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
             {
                 EditorGUI.BeginChangeCheck();
 
-                _projectSize = (ProjectSize)EditorGUILayout.EnumPopup("프로젝트 규모", _projectSize);
-                _quality = EditorGUILayout.Slider("완성도", _quality, 0f, 150f);
-                _stability = EditorGUILayout.Slider("안정성", _stability, 0f, 150f);
-                _charm = EditorGUILayout.Slider("매력도", _charm, 0f, 150f);
-                _companyPopularity = EditorGUILayout.IntSlider("회사 인기", _companyPopularity, 0, 300);
-                _startRetention = EditorGUILayout.Slider("초기 유지력 계수", _startRetention, 0f, 1f);
-                _serviceWeeks = EditorGUILayout.IntSlider("서비스 기간(주)", _serviceWeeks, 1, 52);
-                _chargeWeeklyCost = EditorGUILayout.Toggle("주간 유지비 차감", _chargeWeeklyCost);
-                _decayRetentionWeekly = EditorGUILayout.Toggle("주간 유지력 감소", _decayRetentionWeekly);
+                EditorGUILayout.LabelField("1. 프로젝트 결과값", EditorStyles.boldLabel);
+                _projectSize = (ProjectSize)EditorGUILayout.EnumPopup(BalanceGuideUI.WithSource(BalanceGuideUI.WindowSource, "개발 규모"), _projectSize);
+                using (new EditorGUILayout.HorizontalScope())
+                {
+                    _quality = EditorGUILayout.Slider(BalanceGuideUI.WithSource(BalanceGuideUI.WindowSource, "완성도"), _quality, 0f, 150f);
+                    _stability = EditorGUILayout.Slider(BalanceGuideUI.WithSource(BalanceGuideUI.WindowSource, "안정성"), _stability, 0f, 150f);
+                    _charm = EditorGUILayout.Slider(BalanceGuideUI.WithSource(BalanceGuideUI.WindowSource, "매력도"), _charm, 0f, 150f);
+                }
+                EditorGUILayout.LabelField("세 점수는 각각 구매율 계산에 들어가며, 합산되어 최종 판매량을 만듭니다.", EditorStyles.wordWrappedMiniLabel);
+
+                EditorGUILayout.Space(6f);
+                EditorGUILayout.LabelField("2. 시장/서비스 조건", EditorStyles.boldLabel);
+                using (new EditorGUILayout.HorizontalScope())
+                {
+                    _companyPopularity = EditorGUILayout.IntSlider(BalanceGuideUI.WithSource(BalanceGuideUI.WindowSource, "회사 인기"), _companyPopularity, 0, 300);
+                    _startRetention = EditorGUILayout.Slider(BalanceGuideUI.WithSource(BalanceGuideUI.WindowSource, "초기 유지력"), _startRetention, 0f, 1f);
+                    _serviceWeeks = EditorGUILayout.IntSlider(BalanceGuideUI.WithSource(BalanceGuideUI.WindowSource, "서비스 기간(주)"), _serviceWeeks, 1, 52);
+                }
+                EditorGUILayout.LabelField("인기는 기본 판매량을 키우고, 유지력은 시간이 지날수록 판매가 줄어드는 흐름을 만듭니다.", EditorStyles.wordWrappedMiniLabel);
+
+                EditorGUILayout.Space(6f);
+                EditorGUILayout.LabelField("3. 운영 비용/감소 규칙", EditorStyles.boldLabel);
+                using (new EditorGUILayout.HorizontalScope())
+                {
+                    _chargeWeeklyCost = EditorGUILayout.Toggle(BalanceGuideUI.WithSource(BalanceGuideUI.WindowSource, "주간 유지비 차감"), _chargeWeeklyCost);
+                    _decayRetentionWeekly = EditorGUILayout.Toggle(BalanceGuideUI.WithSource(BalanceGuideUI.WindowSource, "주간 유지력 감소"), _decayRetentionWeekly);
+                }
+                EditorGUILayout.LabelField("순수익과 장기 서비스 곡선을 볼 때 켜고 끄는 검증용 규칙입니다.", EditorStyles.wordWrappedMiniLabel);
 
                 if (EditorGUI.EndChangeCheck())
                     Simulate();
@@ -285,7 +361,67 @@ namespace GameDevTycoon.EditorQA
                 EditorGUILayout.LabelField($"유지력 0 도달: {FormatDay(summary.RetentionZeroDay)}");
                 EditorGUILayout.LabelField($"최고 일일 매출: {summary.PeakDailyGold:N0}G / 마지막 일일 매출: {summary.LastDailyGold:N0}G");
                 EditorGUILayout.LabelField($"유지비 대비 매출: {summary.CostCoverage:0.##}배");
+                BalanceGuideUI.DrawFormulaNotice("판매량, 매출, 순수익은 현재 매출 공식으로 계산된 예상값입니다.");
+                DrawSummaryBaselineControls(summary);
+                DrawRevenueAutoChecks(summary);
+                DrawRevenueInterpretation(summary);
             }
+        }
+
+        private void DrawSummaryBaselineControls(RevenueSummary summary)
+        {
+            using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
+            {
+                EditorGUILayout.LabelField("변경 전후 비교", EditorStyles.boldLabel);
+                using (new EditorGUILayout.HorizontalScope())
+                {
+                    if (GUILayout.Button("현재 결과를 기준값으로 저장", GUILayout.Height(24f)))
+                    {
+                        _baselineSummary = summary;
+                        _hasBaseline = true;
+                    }
+
+                    using (new EditorGUI.DisabledScope(!_hasBaseline))
+                    {
+                        if (GUILayout.Button("기준값 지우기", GUILayout.Width(110f), GUILayout.Height(24f)))
+                            _hasBaseline = false;
+                    }
+                }
+
+                BalanceGuideUI.DrawBaselineHint(_hasBaseline);
+                DrawBaselineCompare(summary);
+            }
+        }
+
+        private void DrawRevenueAutoChecks(RevenueSummary summary)
+        {
+            using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
+            {
+                EditorGUILayout.LabelField("자동 감지", EditorStyles.boldLabel);
+                BalanceGuideUI.DrawAutoCheck("누적 적자 전환", summary.FirstCumulativeDeficitDay > 0, summary.FirstCumulativeDeficitDay > 0 ? $"{summary.FirstCumulativeDeficitDay}일차에 누적 순수익이 음수입니다." : "서비스 기간 동안 누적 적자가 없습니다.");
+                BalanceGuideUI.DrawAutoCheck("유지력 0 도달", summary.RetentionZeroDay > 0, summary.RetentionZeroDay > 0 ? $"{summary.RetentionZeroDay}일차에 유지력이 0에 도달합니다." : "서비스 기간 동안 유지력이 0까지 떨어지지 않습니다.");
+                BalanceGuideUI.DrawAutoCheck("최고 일일 매출", summary.PeakDailyGold >= _burstDailyGoldLimit, summary.PeakDailyGold >= _burstDailyGoldLimit ? $"최고 일일 매출 {summary.PeakDailyGold:N0}G로 과폭발 기준 이상입니다." : $"최고 일일 매출 {summary.PeakDailyGold:N0}G입니다.");
+            }
+        }
+
+        private static void DrawRevenueInterpretation(RevenueSummary summary)
+        {
+            if (summary.TotalNetGold < 0)
+            {
+                BalanceGuideUI.DrawInterpretation("서비스 기간 전체로 보면 적자입니다. 유지비, 단가, 기본 판매량을 먼저 확인하세요.", MessageType.Warning);
+                return;
+            }
+
+            if (summary.RetentionZeroDay > 0 && summary.RetentionZeroDay <= 20)
+            {
+                BalanceGuideUI.DrawInterpretation("유지력이 빠르게 0에 도달합니다. 유지력 감소값이나 서비스 기간 가정을 확인하세요.", MessageType.Warning);
+                return;
+            }
+
+            if (summary.CostCoverage >= 1f)
+                BalanceGuideUI.DrawInterpretation("현재 조건에서는 서비스 기간 동안 유지비를 회수하는 구조입니다.");
+            else
+                BalanceGuideUI.DrawInterpretation("매출이 유지비를 충분히 덮지 못합니다. 규모별 기본 판매량/단가를 확인하세요.", MessageType.Warning);
         }
 
         private void DrawRiskPanel(RevenueSummary summary)

@@ -24,6 +24,11 @@ namespace GameDevTycoon.EditorQA
         private string _searchText = string.Empty;
         private bool _showContent = true;
         private bool _usePlayModeEmployees;
+        private bool _showCandidates = true;
+        private bool _hasBaseline;
+        private float _baselineReportScore;
+        private int _baselineGrade;
+        private int _baselineCandidateCount;
 
         [MenuItem("Tools/Balance/3. Report Generation", false, 203)]
         public static void Open()
@@ -44,10 +49,21 @@ namespace GameDevTycoon.EditorQA
             DrawToolbar();
 
             _scrollPosition = EditorGUILayout.BeginScrollView(_scrollPosition);
-            DrawInputPanel();
             DrawSummary();
-            DrawCandidates();
+            DrawReportGuide();
+            DrawInputPanel();
+            DrawCandidatesPanel();
             EditorGUILayout.EndScrollView();
+        }
+
+
+        private static void DrawReportGuide()
+        {
+            BalanceGuideUI.Draw(
+                "보고서 생성 가이드",
+                "직군 필터\n직원 선택\n보고서 구분\n의욕 임시 변경",
+                "보고서 점수/등급\n후보 보고서 개수\n대표/보조/리스크 특성 매칭\n스탯 반영 미리보기",
+                "후보 보고서 0개\n특정 특성만 후보가 과하게 많음\n의욕 변화에도 등급 변화가 없음");
         }
 
         private void DrawToolbar()
@@ -74,19 +90,24 @@ namespace GameDevTycoon.EditorQA
             }
         }
 
+
         private void DrawInputPanel()
         {
             EditorGUILayout.Space(8f);
-            EditorGUILayout.LabelField("보고서 생성 시뮬레이터", EditorStyles.boldLabel);
+            EditorGUILayout.LabelField("보고서 생성 조건", EditorStyles.boldLabel);
             EditorGUILayout.LabelField(
-                "직원을 선택하면 현재 코드 기준으로 보고서 점수, 등급, 후보 보고서, 주차 스탯 반영값을 미리 확인합니다.",
+                "직원 데이터와 보고서 테이블 조건을 맞춰 보고서 후보가 어떻게 생성되는지 확인합니다. 수식 자체가 아니라 생성 조건을 검증하는 탭입니다.",
                 EditorStyles.wordWrappedMiniLabel);
+
+            BalanceGuideUI.DrawSourceLegend();
+            BalanceGuideUI.DrawImpactMap("작성자 직군/특성 -> 조회되는 보고서 후보\n작성자 능력/의욕 -> 보고서 점수와 등급\n보고서 시점 -> 1주차 보고서 또는 진행 중 랜덤 보고서 후보");
 
             using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
             {
                 EditorGUI.BeginChangeCheck();
 
-                _roleFilter = (Role)EditorGUILayout.EnumPopup("직군 필터", _roleFilter);
+                EditorGUILayout.LabelField("1. 작성자 조건", EditorStyles.boldLabel);
+                _roleFilter = (Role)EditorGUILayout.EnumPopup(BalanceGuideUI.WithSource(BalanceGuideUI.WindowSource, "작성자 직군"), _roleFilter);
 
                 List<EmployeeSnapshot> filteredEmployees = GetFilteredEmployees();
                 if (filteredEmployees.Count == 0)
@@ -103,30 +124,38 @@ namespace GameDevTycoon.EditorQA
                 string[] employeeOptions = filteredEmployees
                     .Select(e => $"{e.So.id} / {e.So.Name} / 능력 {e.StatAbility} / 의욕 {e.Desire}")
                     .ToArray();
-                _selectedEmployeeIndex = EditorGUILayout.Popup("직원", _selectedEmployeeIndex, employeeOptions);
+                _selectedEmployeeIndex = EditorGUILayout.Popup(BalanceGuideUI.WithSource(BalanceGuideUI.DataSource, "작성자"), _selectedEmployeeIndex, employeeOptions);
+                EditorGUILayout.LabelField("작성자의 직군, 특성, 능력, 의욕으로 조회 가능한 보고서 후보가 결정됩니다.", EditorStyles.wordWrappedMiniLabel);
 
-                _startRepo = EditorGUILayout.Popup("보고서 구분", _startRepo == 1 ? 0 : 1, new[] { "1주차 보고서(startRepo=1)", "랜덤 보고서(startRepo=0)" }) == 0 ? 1 : 0;
-
-                _overrideDesire = EditorGUILayout.Toggle("의욕 임시 변경", _overrideDesire);
-                using (new EditorGUI.DisabledScope(!_overrideDesire))
-                    _desireOverride = EditorGUILayout.IntSlider("시뮬레이션 의욕", _desireOverride, 0, 100);
-
-                if (_usePlayModeEmployees)
-                {
-                    EditorGUILayout.HelpBox(
-                        "Play Mode 직원 사용 중입니다. 의욕/피로도/충성도/성장 능력치는 현재 플레이 상태에서 읽습니다.",
-                        MessageType.Info);
-                }
-
+                EditorGUILayout.Space(6f);
+                EditorGUILayout.LabelField("2. 보고서 테이블 조건", EditorStyles.boldLabel);
                 using (new EditorGUILayout.HorizontalScope())
                 {
-                    EditorGUILayout.LabelField("검색", GUILayout.Width(42f));
+                    _startRepo = EditorGUILayout.Popup(BalanceGuideUI.WithSource(BalanceGuideUI.WindowSource, "보고서 시점"), _startRepo == 1 ? 0 : 1, new[] { "프로젝트 1주차", "진행 중 랜덤" }) == 0 ? 1 : 0;
+                    _overrideDesire = EditorGUILayout.Toggle(BalanceGuideUI.WithSource(BalanceGuideUI.WindowSource, "의욕 임시 변경"), _overrideDesire, GUILayout.Width(150f));
+                }
+                using (new EditorGUI.DisabledScope(!_overrideDesire))
+                    _desireOverride = EditorGUILayout.IntSlider(BalanceGuideUI.WithSource(BalanceGuideUI.WindowSource, "임시 의욕"), _desireOverride, 0, 100);
+                EditorGUILayout.LabelField("의욕은 보고서 점수/등급 보정에만 임시 적용됩니다. 원본 직원 데이터는 수정하지 않습니다.", EditorStyles.wordWrappedMiniLabel);
+
+                EditorGUILayout.Space(6f);
+                EditorGUILayout.LabelField("3. 후보 필터", EditorStyles.boldLabel);
+                using (new EditorGUILayout.HorizontalScope())
+                {
+                    EditorGUILayout.LabelField("제목/본문 검색", GUILayout.Width(90f));
                     _searchText = EditorGUILayout.TextField(_searchText);
                     using (new EditorGUI.DisabledScope(string.IsNullOrEmpty(_searchText)))
                     {
                         if (GUILayout.Button("Clear", GUILayout.Width(54f)))
                             _searchText = string.Empty;
                     }
+                }
+
+                if (_usePlayModeEmployees)
+                {
+                    EditorGUILayout.HelpBox(
+                        "Play Mode 직원 사용 중입니다. 의욕/피로도/충성도/성장 능력치는 현재 플레이 상태에서 읽습니다.",
+                        MessageType.Info);
                 }
 
                 if (EditorGUI.EndChangeCheck())
@@ -155,8 +184,89 @@ namespace GameDevTycoon.EditorQA
                 EditorGUILayout.Space(4f);
                 EditorGUILayout.LabelField($"보고서 점수: {baseScore:0.#} + 의욕 보정 {motivationBonus:+0.#;-0.#;0} = {reportScore:0.#}");
                 EditorGUILayout.LabelField($"보고서 등급: {grade}등급 ({GetGradeName(grade)})");
+                BalanceGuideUI.DrawFormulaNotice("보고서 점수와 등급은 작성자 능력/의욕과 현재 코드 공식으로 계산됩니다.");
+                DrawReportBaselineControls(reportScore, grade, _candidates.Count);
+                DrawReportAutoChecks(grade, _candidates.Count);
+                DrawReportInterpretation(reportScore, grade, _candidates.Count);
 
                 DrawStatPreview(employee, grade);
+            }
+        }
+
+
+        private void DrawReportBaselineControls(float reportScore, int grade, int candidateCount)
+        {
+            using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
+            {
+                EditorGUILayout.LabelField("변경 전후 비교", EditorStyles.boldLabel);
+                using (new EditorGUILayout.HorizontalScope())
+                {
+                    if (GUILayout.Button("현재 결과를 기준값으로 저장", GUILayout.Height(24f)))
+                    {
+                        _baselineReportScore = reportScore;
+                        _baselineGrade = grade;
+                        _baselineCandidateCount = candidateCount;
+                        _hasBaseline = true;
+                    }
+
+                    using (new EditorGUI.DisabledScope(!_hasBaseline))
+                    {
+                        if (GUILayout.Button("기준값 지우기", GUILayout.Width(110f), GUILayout.Height(24f)))
+                            _hasBaseline = false;
+                    }
+                }
+
+                BalanceGuideUI.DrawBaselineHint(_hasBaseline);
+                if (_hasBaseline)
+                {
+                    EditorGUILayout.LabelField(BuildDeltaText("보고서 점수", reportScore, _baselineReportScore), EditorStyles.miniLabel);
+                    EditorGUILayout.LabelField($"보고서 등급: 현재 {grade}등급 / 기준 {_baselineGrade}등급 / 차이 {_baselineGrade - grade:+0;-0;0}", EditorStyles.miniLabel);
+                    EditorGUILayout.LabelField($"후보 개수: 현재 {candidateCount}개 / 기준 {_baselineCandidateCount}개 / 차이 {candidateCount - _baselineCandidateCount:+0;-0;0}", EditorStyles.miniLabel);
+                }
+            }
+        }
+
+        private static void DrawReportAutoChecks(int grade, int candidateCount)
+        {
+            using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
+            {
+                EditorGUILayout.LabelField("자동 감지", EditorStyles.boldLabel);
+                BalanceGuideUI.DrawAutoCheck("후보 보고서", candidateCount == 0, candidateCount == 0 ? "현재 조건으로 조회되는 보고서가 없습니다." : $"후보 {candidateCount}개가 조회됩니다.");
+                BalanceGuideUI.DrawAutoCheck("보고서 등급", grade >= 3, grade >= 3 ? "낮은 등급입니다. 능력/의욕/특성 조건을 확인하세요." : $"{grade}등급 보고서입니다.");
+            }
+        }
+
+        private static string BuildDeltaText(string label, float current, float baseline)
+        {
+            float delta = current - baseline;
+            return $"{label}: 현재 {current:0.#} / 기준 {baseline:0.#} / 차이 {delta:+0.#;-0.#;0}";
+        }
+
+        private static void DrawReportInterpretation(float reportScore, int grade, int candidateCount)
+        {
+            if (candidateCount == 0)
+            {
+                BalanceGuideUI.DrawInterpretation("현재 조건으로 조회되는 보고서 후보가 없습니다. 보고서 테이블의 직군/특성/시점/등급 조건을 확인하세요.", MessageType.Warning);
+                return;
+            }
+
+            if (grade == 1)
+                BalanceGuideUI.DrawInterpretation("상위 보고서가 생성되는 조건입니다. 후보 수가 과하게 적거나 특정 특성에 몰리는지만 확인하세요.");
+            else if (grade == 2)
+                BalanceGuideUI.DrawInterpretation("표준 보고서 조건입니다. 의욕 보정이나 능력치 변화에 따른 등급 변화가 자연스러운지 확인하세요.");
+            else
+                BalanceGuideUI.DrawInterpretation($"보고서 점수 {reportScore:0.#}로 낮은 등급입니다. 낮은 의욕/능력치 구간의 리스크 표현을 확인하세요.", MessageType.Warning);
+        }
+
+        private void DrawCandidatesPanel()
+        {
+            using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
+            {
+                _showCandidates = EditorGUILayout.Foldout(_showCandidates, $"후보 보고서 {_candidates.Count}개", true);
+                if (_showCandidates)
+                    DrawCandidates();
+                else
+                    EditorGUILayout.LabelField("후보 내용은 필요할 때 펼쳐서 확인합니다.", EditorStyles.wordWrappedMiniLabel);
             }
         }
 

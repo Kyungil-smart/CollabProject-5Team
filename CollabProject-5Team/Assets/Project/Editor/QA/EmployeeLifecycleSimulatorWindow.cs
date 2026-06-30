@@ -28,6 +28,9 @@ namespace GameDevTycoon.EditorQA
         private bool _applyCompletionReward;
         private ProjectSize _completionProjectSize = ProjectSize.Small;
         private ProjectGradeOption _completionGrade = ProjectGradeOption.B;
+        private bool _showTimelineDetails;
+        private bool _hasBaseline;
+        private WeekSnapshot _baselineLast;
 
         [MenuItem("Tools/Balance/6. Employee Lifecycle", false, 206)]
         public static void Open()
@@ -48,10 +51,21 @@ namespace GameDevTycoon.EditorQA
             DrawToolbar();
 
             _scrollPosition = EditorGUILayout.BeginScrollView(_scrollPosition);
-            DrawInputPanel();
             DrawSummary();
-            DrawTimeline();
+            DrawEmployeeGuide();
+            DrawInputPanel();
+            DrawTimelineDetailsPanel();
             EditorGUILayout.EndScrollView();
+        }
+
+
+        private static void DrawEmployeeGuide()
+        {
+            BalanceGuideUI.Draw(
+                "직원 상태 밸런싱 가이드",
+                "대화 여부\n보고서 채택 여부/등급\n교육 계획\n프로젝트 완료 보상",
+                "능력/의욕/피로/충성 변화\n퇴사 후보 여부\n몇 주 뒤 위험해지는지",
+                "대화 1회 차이로 변화가 너무 큼\n교육 효율이 너무 높거나 낮음\n피로가 쉽게 80 이상 고정됨");
         }
 
         private void DrawToolbar()
@@ -78,19 +92,24 @@ namespace GameDevTycoon.EditorQA
             }
         }
 
+
         private void DrawInputPanel()
         {
             EditorGUILayout.Space(8f);
-            EditorGUILayout.LabelField("직원 생애주기 밸런스 시뮬레이터", EditorStyles.boldLabel);
+            EditorGUILayout.LabelField("직원 상태 수치 조절", EditorStyles.boldLabel);
             EditorGUILayout.LabelField(
-                "프로젝트 투입, 대화 여부, 보고서 승인, 교육, 완료 보상이 몇 주 뒤 직원 상태와 퇴사 위험에 어떤 영향을 주는지 확인합니다.",
+                "대화, 보고서 채택, 교육, 프로젝트 완료 보상이 몇 주 뒤 능력/의욕/피로/충성도에 어떤 영향을 주는지 확인합니다.",
                 EditorStyles.wordWrappedMiniLabel);
+
+            BalanceGuideUI.DrawSourceLegend();
+            BalanceGuideUI.DrawImpactMap("프로젝트 투입/보고서 채택 -> 피로도와 의욕 변화\n대화 여부 -> 의욕/충성도 유지\n교육/완료 보상 -> 능력 성장과 장기 안정성");
 
             using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
             {
                 EditorGUI.BeginChangeCheck();
 
-                _roleFilter = (Role)EditorGUILayout.EnumPopup("직군 필터", _roleFilter);
+                EditorGUILayout.LabelField("1. 기준 직원", EditorStyles.boldLabel);
+                _roleFilter = (Role)EditorGUILayout.EnumPopup(BalanceGuideUI.WithSource(BalanceGuideUI.WindowSource, "직군"), _roleFilter);
 
                 List<EmployeeSnapshot> filteredEmployees = GetFilteredEmployees();
                 if (filteredEmployees.Count == 0)
@@ -104,23 +123,32 @@ namespace GameDevTycoon.EditorQA
                 string[] employeeOptions = filteredEmployees
                     .Select(e => $"{e.So.id} / {e.So.Name} / 능력 {e.Ability} / 의욕 {e.Desire} / 피로 {e.Fatigue} / 충성 {e.Loyalty}")
                     .ToArray();
-                _selectedEmployeeIndex = EditorGUILayout.Popup("직원", _selectedEmployeeIndex, employeeOptions);
+                _selectedEmployeeIndex = EditorGUILayout.Popup(BalanceGuideUI.WithSource(BalanceGuideUI.DataSource, "직원"), _selectedEmployeeIndex, employeeOptions);
+                _weeks = EditorGUILayout.IntSlider(BalanceGuideUI.WithSource(BalanceGuideUI.WindowSource, "관찰 기간(주)"), _weeks, 1, 24);
 
-                _weeks = EditorGUILayout.IntSlider("시뮬레이션 주차", _weeks, 1, 24);
-                _inProject = EditorGUILayout.Toggle("프로젝트 투입 상태", _inProject);
-                _talkEveryWeek = EditorGUILayout.Toggle("매주 대화함", _talkEveryWeek);
-                _acceptReportEveryWeek = EditorGUILayout.Toggle("매주 보고서 채택", _acceptReportEveryWeek);
-
+                EditorGUILayout.Space(6f);
+                EditorGUILayout.LabelField("2. 주간 행동 조건", EditorStyles.boldLabel);
+                using (new EditorGUILayout.HorizontalScope())
+                {
+                    _inProject = EditorGUILayout.Toggle(BalanceGuideUI.WithSource(BalanceGuideUI.WindowSource, "프로젝트 투입"), _inProject);
+                    _talkEveryWeek = EditorGUILayout.Toggle(BalanceGuideUI.WithSource(BalanceGuideUI.WindowSource, "매주 대화"), _talkEveryWeek);
+                    _acceptReportEveryWeek = EditorGUILayout.Toggle(BalanceGuideUI.WithSource(BalanceGuideUI.WindowSource, "보고서 채택"), _acceptReportEveryWeek);
+                }
                 using (new EditorGUI.DisabledScope(!_acceptReportEveryWeek))
-                    _acceptedReportGrade = EditorGUILayout.IntSlider("채택 보고서 등급", _acceptedReportGrade, 1, 3);
+                    _acceptedReportGrade = EditorGUILayout.IntSlider(BalanceGuideUI.WithSource(BalanceGuideUI.WindowSource, "채택 보고서 등급"), _acceptedReportGrade, 1, 3);
+                EditorGUILayout.LabelField("고피로 상태에서 보고서를 계속 채택하면 의욕/충성 하락과 퇴사 후보 전환을 확인할 수 있습니다.", EditorStyles.wordWrappedMiniLabel);
 
-                _trainingPlan = (TrainingPlan)EditorGUILayout.EnumPopup("교육 계획", _trainingPlan);
-
-                _applyCompletionReward = EditorGUILayout.Toggle("마지막 주 프로젝트 완료 보상", _applyCompletionReward);
+                EditorGUILayout.Space(6f);
+                EditorGUILayout.LabelField("3. 성장/보상 조건", EditorStyles.boldLabel);
+                _trainingPlan = (TrainingPlan)EditorGUILayout.EnumPopup(BalanceGuideUI.WithSource(BalanceGuideUI.WindowSource, "교육 계획"), _trainingPlan);
+                _applyCompletionReward = EditorGUILayout.Toggle(BalanceGuideUI.WithSource(BalanceGuideUI.WindowSource, "마지막 주 프로젝트 완료 보상"), _applyCompletionReward);
                 using (new EditorGUI.DisabledScope(!_applyCompletionReward))
                 {
-                    _completionProjectSize = (ProjectSize)EditorGUILayout.EnumPopup("완료 프로젝트 규모", _completionProjectSize);
-                    _completionGrade = (ProjectGradeOption)EditorGUILayout.EnumPopup("완료 프로젝트 등급", _completionGrade);
+                    using (new EditorGUILayout.HorizontalScope())
+                    {
+                        _completionProjectSize = (ProjectSize)EditorGUILayout.EnumPopup(BalanceGuideUI.WithSource(BalanceGuideUI.WindowSource, "완료 프로젝트 규모"), _completionProjectSize);
+                        _completionGrade = (ProjectGradeOption)EditorGUILayout.EnumPopup(BalanceGuideUI.WithSource(BalanceGuideUI.WindowSource, "완료 프로젝트 등급"), _completionGrade);
+                    }
                 }
 
                 if (_usePlayModeEmployees)
@@ -149,6 +177,10 @@ namespace GameDevTycoon.EditorQA
                 EditorGUILayout.LabelField($"시작: 능력 {first.Ability} / 의욕 {first.Desire} / 피로 {first.Fatigue} / 충성 {first.Loyalty}");
                 EditorGUILayout.LabelField($"결과: 능력 {last.Ability} / 의욕 {last.Desire} / 피로 {last.Fatigue} / 충성 {last.Loyalty}");
                 EditorGUILayout.LabelField($"변화: 능력 {FormatDelta(last.Ability - first.Ability)} / 의욕 {FormatDelta(last.Desire - first.Desire)} / 피로 {FormatDelta(last.Fatigue - first.Fatigue)} / 충성 {FormatDelta(last.Loyalty - first.Loyalty)}");
+                BalanceGuideUI.DrawFormulaNotice("직원 변화는 현재 직원 성장/피로/퇴사 후보 공식으로 계산됩니다.");
+                DrawEmployeeBaselineControls(last);
+                DrawEmployeeAutoChecks(last);
+                DrawEmployeeInterpretation(first, last);
 
                 if (last.IsLeavePending)
                 {
@@ -160,6 +192,89 @@ namespace GameDevTycoon.EditorQA
                 {
                     EditorGUILayout.HelpBox("현재 조건에서는 마지막 주차 기준 퇴사 후보 상태가 아닙니다.", MessageType.Info);
                 }
+            }
+        }
+
+
+        private void DrawEmployeeBaselineControls(WeekSnapshot last)
+        {
+            using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
+            {
+                EditorGUILayout.LabelField("변경 전후 비교", EditorStyles.boldLabel);
+                using (new EditorGUILayout.HorizontalScope())
+                {
+                    if (GUILayout.Button("현재 결과를 기준값으로 저장", GUILayout.Height(24f)))
+                    {
+                        _baselineLast = last;
+                        _hasBaseline = true;
+                    }
+
+                    using (new EditorGUI.DisabledScope(!_hasBaseline))
+                    {
+                        if (GUILayout.Button("기준값 지우기", GUILayout.Width(110f), GUILayout.Height(24f)))
+                            _hasBaseline = false;
+                    }
+                }
+
+                BalanceGuideUI.DrawBaselineHint(_hasBaseline);
+                if (_hasBaseline)
+                {
+                    EditorGUILayout.LabelField(BuildDeltaText("능력", last.Ability, _baselineLast.Ability), EditorStyles.miniLabel);
+                    EditorGUILayout.LabelField(BuildDeltaText("의욕", last.Desire, _baselineLast.Desire), EditorStyles.miniLabel);
+                    EditorGUILayout.LabelField(BuildDeltaText("피로", last.Fatigue, _baselineLast.Fatigue), EditorStyles.miniLabel);
+                    EditorGUILayout.LabelField(BuildDeltaText("충성", last.Loyalty, _baselineLast.Loyalty), EditorStyles.miniLabel);
+                }
+            }
+        }
+
+        private void DrawEmployeeAutoChecks(WeekSnapshot last)
+        {
+            WeekSnapshot firstRisk = _timeline.FirstOrDefault(t => t.IsLeavePending || t.Fatigue >= 80 || t.Desire < 40);
+            bool hasRiskWeek = firstRisk.Week > 0 || firstRisk.IsLeavePending;
+
+            using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
+            {
+                EditorGUILayout.LabelField("자동 감지", EditorStyles.boldLabel);
+                BalanceGuideUI.DrawAutoCheck("퇴사 후보", last.IsLeavePending, last.IsLeavePending ? "마지막 주차 기준 퇴사 후보입니다." : "마지막 주차 기준 퇴사 후보가 아닙니다.");
+                BalanceGuideUI.DrawAutoCheck("위험 주차", hasRiskWeek, hasRiskWeek ? $"{firstRisk.Week}주차에 피로/의욕/퇴사 위험 조건이 감지됩니다." : "관찰 기간 동안 위험 주차가 없습니다.");
+            }
+        }
+
+        private static string BuildDeltaText(string label, int current, int baseline)
+        {
+            int delta = current - baseline;
+            return $"{label}: 현재 {current} / 기준 {baseline} / 차이 {delta:+0;-0;0}";
+        }
+
+        private static void DrawEmployeeInterpretation(WeekSnapshot first, WeekSnapshot last)
+        {
+            if (last.IsLeavePending)
+            {
+                BalanceGuideUI.DrawInterpretation("퇴사 후보 상태입니다. 피로 누적, 의욕 하락, 충성도 하락 조건을 먼저 확인하세요.", MessageType.Warning);
+                return;
+            }
+
+            if (last.Fatigue >= 80 || last.Desire < 40)
+            {
+                BalanceGuideUI.DrawInterpretation("아직 퇴사 후보는 아니지만 직원 상태가 위험권에 가깝습니다.", MessageType.Warning);
+                return;
+            }
+
+            if (last.Ability > first.Ability && last.Loyalty >= first.Loyalty)
+                BalanceGuideUI.DrawInterpretation("성장과 충성도가 함께 유지되는 안정적인 직원 운영 조건입니다.");
+            else
+                BalanceGuideUI.DrawInterpretation("큰 사고는 없지만 성장/충성 보상이 약할 수 있습니다. 교육과 대화 조건을 비교해보세요.");
+        }
+
+        private void DrawTimelineDetailsPanel()
+        {
+            using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
+            {
+                _showTimelineDetails = EditorGUILayout.Foldout(_showTimelineDetails, "주차별 상세 표", true);
+                if (_showTimelineDetails)
+                    DrawTimeline();
+                else
+                    EditorGUILayout.LabelField("요약에서 퇴사 위험이나 큰 변화가 보일 때 펼쳐서 주차별 원인을 확인합니다.", EditorStyles.wordWrappedMiniLabel);
             }
         }
 

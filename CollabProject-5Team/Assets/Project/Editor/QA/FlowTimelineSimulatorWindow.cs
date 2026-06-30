@@ -35,10 +35,13 @@ namespace GameDevTycoon.EditorQA
         private bool _showLaunch = true;
         private bool _showGraph = true;
         private bool _focusGraph;
-        private bool _showFormulaGuide = true;
-        private bool _showFormulaTrace = true;
+        private bool _showFormulaGuide;
+        private bool _showFormulaTrace;
+        private bool _showPresetControls;
         private TraceMode _traceMode = TraceMode.Project;
         private GraphMode _graphMode = GraphMode.Project;
+        private bool _showAdvancedAnalysis;
+        private bool _showTimelineDetails;
         private string _comparisonLabel = "비교 기준 없음";
 
         [MenuItem("Tools/Balance/7. Flow Timeline", false, 207)]
@@ -60,17 +63,57 @@ namespace GameDevTycoon.EditorQA
             DrawToolbar();
 
             _scrollPosition = EditorGUILayout.BeginScrollView(_scrollPosition);
-            DrawInputPanel();
-            DrawFormulaGuidePanel();
             DrawSummaryPanel();
-            DrawFormulaTracePanel();
-            DrawComparisonPanel();
             DrawGraphPanel();
-            if (!_focusGraph)
-                DrawTimeline();
-            else
-                EditorGUILayout.HelpBox("그래프 집중 모드입니다. 표를 다시 보려면 상단의 집중 토글을 끄세요.", MessageType.Info);
+            DrawFlowGuide();
+            DrawInputPanel();
+            DrawAdvancedAnalysisPanel();
             EditorGUILayout.EndScrollView();
+        }
+
+
+        private void DrawAdvancedAnalysisPanel()
+        {
+            using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
+            {
+                _showAdvancedAnalysis = EditorGUILayout.Foldout(_showAdvancedAnalysis, "고급 분석", true);
+                if (!_showAdvancedAnalysis)
+                {
+                    EditorGUILayout.LabelField("공식 안내, 계산 추적, 기준값 비교는 필요할 때만 펼쳐서 봅니다.", EditorStyles.wordWrappedMiniLabel);
+                }
+                else
+                {
+                    DrawFormulaGuidePanel();
+                    DrawFormulaTracePanel();
+                    DrawComparisonPanel();
+                }
+            }
+
+            using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
+            {
+                _showTimelineDetails = EditorGUILayout.Foldout(_showTimelineDetails, "일자별 상세 표", true);
+                if (_showTimelineDetails)
+                {
+                    if (!_focusGraph)
+                        DrawTimeline();
+                    else
+                        EditorGUILayout.HelpBox("그래프 집중 모드입니다. 표를 다시 보려면 상단의 집중 토글을 끄세요.", MessageType.Info);
+                }
+                else
+                {
+                    EditorGUILayout.LabelField("그래프에서 이상한 구간을 발견했을 때 펼쳐서 일자별 흐름을 확인합니다.", EditorStyles.wordWrappedMiniLabel);
+                }
+            }
+        }
+
+
+        private static void DrawFlowGuide()
+        {
+            BalanceGuideUI.Draw(
+                "전체 흐름 밸런싱 가이드",
+                "프로젝트 규모\n대표 팀 구성\n시뮬레이션 주차\n일일 업무 보너스\n피로/의욕 변화",
+                "진척도 흐름\n완성도/안정성/매력도 추세\n직원 의욕/피로 추세\n자금 흐름",
+                "출시 전 적자\n진척도는 끝났는데 점수가 낮음\n피로 80 이상/의욕 40 미만 고착");
         }
 
         private void DrawToolbar()
@@ -98,55 +141,90 @@ namespace GameDevTycoon.EditorQA
             }
         }
 
+
         private void DrawInputPanel()
         {
             EditorGUILayout.Space(8f);
-            EditorGUILayout.LabelField("주차/일자 지표 흐름 시뮬레이터", EditorStyles.boldLabel);
+            EditorGUILayout.LabelField("전체 루프 수치 조절", EditorStyles.boldLabel);
             EditorGUILayout.LabelField(
-                "월~금 낮 업무, 금요일 밤 보고서 채택, 출시 후 일일 매출까지 프로젝트/직원/재화 지표가 어떻게 변하는지 한 화면에서 추적합니다.",
+                "월~금 낮 업무, 금요일 밤 보고서, 출시 후 매출까지 한 번에 이어 보며 프로젝트/직원/재화 흐름을 확인합니다.",
                 EditorStyles.wordWrappedMiniLabel);
+
+            BalanceGuideUI.DrawSourceLegend();
+            BalanceGuideUI.DrawImpactMap("프로젝트/팀 조건 -> 출시 시점과 프로젝트 점수\n자금/고정비 -> 적자 발생 시점\n낮 업무/금요일 회복값 -> 직원 피로, 의욕, 장기 지속성");
 
             using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
             {
-                DrawPresetButtons();
-                EditorGUILayout.Space(5f);
                 EditorGUI.BeginChangeCheck();
-                _projectSize = (ProjectSize)EditorGUILayout.EnumPopup("프로젝트 규모", _projectSize);
-                _pickMode = (PickMode)EditorGUILayout.EnumPopup("대표 팀 구성", _pickMode);
-                _simulationWeeks = EditorGUILayout.IntSlider("시뮬레이션 주차", _simulationWeeks, 1, 24);
-                _initialGold = EditorGUILayout.IntField("[조절 가능] 초기 자금", _initialGold);
-                _companyPopularity = EditorGUILayout.IntSlider("[조절 가능] 회사 인기", _companyPopularity, 0, 300);
-                _officeWeeklyCost = EditorGUILayout.IntField("[조절 가능] 주간 사무실 유지비", _officeWeeklyCost);
 
-                EditorGUILayout.Space(4f);
-                EditorGUILayout.LabelField("일일/직원 변화 임시값", EditorStyles.boldLabel);
-                _dailyQuestScore = EditorGUILayout.IntSlider("[조절 가능] 일일 업무 직군 보너스", _dailyQuestScore, 0, 10);
-                _dailyFatigueGain = EditorGUILayout.IntSlider("[조절 가능] 낮 업무 피로 증가", _dailyFatigueGain, 0, 10);
-                _dailyDesireDecay = EditorGUILayout.IntSlider("[조절 가능] 낮 업무 의욕 감소", _dailyDesireDecay, 0, 10);
-                _fridayRestFatigueRecovery = EditorGUILayout.IntSlider("[조절 가능] 금요일 밤 피로 회복", _fridayRestFatigueRecovery, 0, 30);
-                _fridayRestDesireRecovery = EditorGUILayout.IntSlider("[조절 가능] 금요일 밤 의욕 회복", _fridayRestDesireRecovery, 0, 30);
+                EditorGUILayout.LabelField("1. 프로젝트/팀 조건", EditorStyles.boldLabel);
+                using (new EditorGUILayout.HorizontalScope())
+                {
+                    _projectSize = (ProjectSize)EditorGUILayout.EnumPopup(BalanceGuideUI.WithSource(BalanceGuideUI.WindowSource, "개발 규모"), _projectSize);
+                    _pickMode = (PickMode)EditorGUILayout.EnumPopup(BalanceGuideUI.WithSource(BalanceGuideUI.WindowSource, "대표 팀 구성"), _pickMode);
+                    _simulationWeeks = EditorGUILayout.IntSlider(BalanceGuideUI.WithSource(BalanceGuideUI.WindowSource, "관찰 기간(주)"), _simulationWeeks, 1, 24);
+                }
+                EditorGUILayout.LabelField("규모와 팀 구성에 따라 주차별 진척도, 세부 점수, 출시 시점이 달라집니다.", EditorStyles.wordWrappedMiniLabel);
+
+                EditorGUILayout.Space(6f);
+                EditorGUILayout.LabelField("2. 재화/시장 조건", EditorStyles.boldLabel);
+                using (new EditorGUILayout.HorizontalScope())
+                {
+                    _initialGold = EditorGUILayout.IntField(BalanceGuideUI.WithSource(BalanceGuideUI.WindowSource, "초기 자금"), _initialGold);
+                    _companyPopularity = EditorGUILayout.IntSlider(BalanceGuideUI.WithSource(BalanceGuideUI.WindowSource, "회사 인기"), _companyPopularity, 0, 300);
+                    _officeWeeklyCost = EditorGUILayout.IntField(BalanceGuideUI.WithSource(BalanceGuideUI.WindowSource, "주간 사무실 유지비"), _officeWeeklyCost);
+                }
+                EditorGUILayout.LabelField("자금 흐름, 출시 전 적자 여부, 출시 후 매출 회복 가능성을 확인하는 조건입니다.", EditorStyles.wordWrappedMiniLabel);
+
+                EditorGUILayout.Space(6f);
+                EditorGUILayout.LabelField("3. 낮 업무 변화값", EditorStyles.boldLabel);
+                using (new EditorGUILayout.HorizontalScope())
+                {
+                    _dailyQuestScore = EditorGUILayout.IntSlider(BalanceGuideUI.WithSource(BalanceGuideUI.WindowSource, "일일 업무 보너스"), _dailyQuestScore, 0, 10);
+                    _dailyFatigueGain = EditorGUILayout.IntSlider(BalanceGuideUI.WithSource(BalanceGuideUI.WindowSource, "피로 증가"), _dailyFatigueGain, 0, 10);
+                    _dailyDesireDecay = EditorGUILayout.IntSlider(BalanceGuideUI.WithSource(BalanceGuideUI.WindowSource, "의욕 감소"), _dailyDesireDecay, 0, 10);
+                }
+                EditorGUILayout.LabelField("낮 업무가 프로젝트 점수와 직원 상태에 주는 임시 밸런스값입니다.", EditorStyles.wordWrappedMiniLabel);
+
+                EditorGUILayout.Space(6f);
+                EditorGUILayout.LabelField("4. 금요일 밤 회복값", EditorStyles.boldLabel);
+                using (new EditorGUILayout.HorizontalScope())
+                {
+                    _fridayRestFatigueRecovery = EditorGUILayout.IntSlider(BalanceGuideUI.WithSource(BalanceGuideUI.WindowSource, "피로 회복"), _fridayRestFatigueRecovery, 0, 30);
+                    _fridayRestDesireRecovery = EditorGUILayout.IntSlider(BalanceGuideUI.WithSource(BalanceGuideUI.WindowSource, "의욕 회복"), _fridayRestDesireRecovery, 0, 30);
+                }
+                EditorGUILayout.LabelField("밤 경영 이후 다음 주로 넘어갈 때 직원 상태가 얼마나 회복되는지 보는 값입니다.", EditorStyles.wordWrappedMiniLabel);
 
                 if (EditorGUI.EndChangeCheck())
                     Simulate();
+            }
+
+            using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
+            {
+                _showPresetControls = EditorGUILayout.Foldout(_showPresetControls, "빠른 프리셋", true);
+                if (_showPresetControls)
+                    DrawPresetButtons();
+                else
+                    EditorGUILayout.LabelField("대표 케이스가 필요할 때만 펼쳐서 불러옵니다.", EditorStyles.wordWrappedMiniLabel);
             }
         }
 
 
         private void DrawPresetButtons()
         {
-            EditorGUILayout.LabelField("빠른 프리셋", EditorStyles.boldLabel);
+            EditorGUILayout.LabelField("대표 흐름 프리셋", EditorStyles.boldLabel);
             using (new EditorGUILayout.HorizontalScope())
             {
-                if (GUILayout.Button("소형 안전", GUILayout.Height(24f)))
+                if (GUILayout.Button("소형/상위팀/안정", GUILayout.Height(24f)))
                     ApplyPreset(ProjectSize.Small, PickMode.Strong, 8, 15000, 20, 500, 3, 1, 0, 10, 5);
 
-                if (GUILayout.Button("소형 평균", GUILayout.Height(24f)))
+                if (GUILayout.Button("소형/평균팀", GUILayout.Height(24f)))
                     ApplyPreset(ProjectSize.Small, PickMode.Average, 8, 10000, 0, 500, 2, 2, 1, 5, 2);
 
-                if (GUILayout.Button("중형 공격", GUILayout.Height(24f)))
+                if (GUILayout.Button("중형/상위팀/공격", GUILayout.Height(24f)))
                     ApplyPreset(ProjectSize.Medium, PickMode.Strong, 10, 25000, 40, 1500, 4, 3, 1, 4, 2);
 
-                if (GUILayout.Button("대형 고위험", GUILayout.Height(24f)))
+                if (GUILayout.Button("대형/낮은팀/고위험", GUILayout.Height(24f)))
                     ApplyPreset(ProjectSize.Large, PickMode.Low, 16, 45000, 80, 4000, 5, 5, 2, 2, 1);
             }
             EditorGUILayout.LabelField("프리셋은 비교용 시작값입니다. 실제 밸런스 확정값이 아니라 빠른 검증 기준으로 사용합니다.", EditorStyles.wordWrappedMiniLabel);
@@ -241,11 +319,102 @@ namespace GameDevTycoon.EditorQA
                 else
                     EditorGUILayout.LabelField("출시 시작: 시뮬레이션 기간 내 미도달");
 
+                BalanceGuideUI.DrawFormulaNotice("전체 흐름은 프로젝트/보고서/직원/매출 공식을 연결한 통합 시뮬레이션입니다.");
+                DrawSummaryBaselineControls();
+                DrawFlowAutoChecks();
+                DrawFlowInterpretation(final, minGold, totalNet);
+
                 DrawRiskLabel("자금 적자", minGold < 0);
                 DrawRiskLabel("직원 번아웃 위험", final.Fatigue >= 80f);
                 DrawRiskLabel("의욕 저하", final.Desire < 40f);
                 DrawRiskLabel("품질 저점", final.Quality < 45f || final.Stability < 45f || final.Charm < 45f);
             }
+        }
+
+        private void DrawSummaryBaselineControls()
+        {
+            using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
+            {
+                EditorGUILayout.LabelField("변경 전후 비교", EditorStyles.boldLabel);
+                using (new EditorGUILayout.HorizontalScope())
+                {
+                    if (GUILayout.Button("현재 결과를 기준값으로 저장", GUILayout.Height(24f)))
+                    {
+                        _comparisonTimeline.Clear();
+                        _comparisonTimeline.AddRange(_timeline);
+                        _comparisonLabel = $"{_projectSize}/{_pickMode}/{_simulationWeeks}주";
+                    }
+
+                    using (new EditorGUI.DisabledScope(_comparisonTimeline.Count == 0))
+                    {
+                        if (GUILayout.Button("기준값 지우기", GUILayout.Width(110f), GUILayout.Height(24f)))
+                        {
+                            _comparisonTimeline.Clear();
+                            _comparisonLabel = "비교 기준 없음";
+                        }
+                    }
+                }
+
+                BalanceGuideUI.DrawBaselineHint(_comparisonTimeline.Count > 0);
+                if (_comparisonTimeline.Count > 0)
+                {
+                    FlowSummary baseline = BuildSummary(_comparisonTimeline);
+                    FlowSummary current = BuildSummary(_timeline);
+                    EditorGUILayout.LabelField($"기준: {_comparisonLabel}", EditorStyles.miniLabel);
+                    EditorGUILayout.LabelField(BuildDeltaText("최종 자금", current.FinalGold, baseline.FinalGold), EditorStyles.miniLabel);
+                    EditorGUILayout.LabelField(BuildDeltaText("최저 자금", current.MinGold, baseline.MinGold), EditorStyles.miniLabel);
+                    EditorGUILayout.LabelField(BuildDeltaText("누적 순이익", current.TotalNet, baseline.TotalNet), EditorStyles.miniLabel);
+                    EditorGUILayout.LabelField(BuildDeltaText("평균 피로", current.Fatigue, baseline.Fatigue), EditorStyles.miniLabel);
+                    EditorGUILayout.LabelField(BuildDeltaText("평균 의욕", current.Desire, baseline.Desire), EditorStyles.miniLabel);
+                }
+            }
+        }
+
+        private void DrawFlowAutoChecks()
+        {
+            FlowDaySnapshot firstRisk = _timeline.FirstOrDefault(t => t.HasRisk);
+            FlowDaySnapshot firstDeficit = _timeline.FirstOrDefault(t => t.EndGold < 0);
+            bool hasRisk = firstRisk.Week > 0 || firstRisk.HasRisk;
+            bool hasDeficit = firstDeficit.Week > 0 || firstDeficit.EndGold < 0;
+
+            using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
+            {
+                EditorGUILayout.LabelField("자동 감지", EditorStyles.boldLabel);
+                BalanceGuideUI.DrawAutoCheck("첫 위험 구간", hasRisk, hasRisk ? $"{firstRisk.Week}주차 {firstRisk.DayOfWeek}일차: {firstRisk.Memo}" : "관찰 기간 동안 위험 행이 없습니다.");
+                BalanceGuideUI.DrawAutoCheck("첫 자금 적자", hasDeficit, hasDeficit ? $"{firstDeficit.Week}주차 {firstDeficit.DayOfWeek}일차에 자금이 {firstDeficit.EndGold:N0}G입니다." : "관찰 기간 동안 자금 적자가 없습니다.");
+            }
+        }
+
+        private static string BuildDeltaText(string label, float current, float baseline)
+        {
+            float delta = current - baseline;
+            return $"{label}: 현재 {current:0.#} / 기준 {baseline:0.#} / 차이 {delta:+0.#;-0.#;0}";
+        }
+
+        private static void DrawFlowInterpretation(FlowDaySnapshot final, int minGold, int totalNet)
+        {
+            if (minGold < 0)
+            {
+                BalanceGuideUI.DrawInterpretation("출시 전후 어느 시점에 자금이 적자입니다. 초기 자금, 개발 기간, 고정비를 먼저 확인하세요.", MessageType.Warning);
+                return;
+            }
+
+            if (final.Fatigue >= 80f || final.Desire < 40f)
+            {
+                BalanceGuideUI.DrawInterpretation("자금은 버티지만 직원 상태가 위험합니다. 낮 업무 피로와 금요일 회복값을 확인하세요.", MessageType.Warning);
+                return;
+            }
+
+            if (final.Quality < 45f || final.Stability < 45f || final.Charm < 45f)
+            {
+                BalanceGuideUI.DrawInterpretation("프로젝트 한 축이 낮습니다. 해당 직군 직원/보고서/일일 업무 보너스를 확인하세요.", MessageType.Warning);
+                return;
+            }
+
+            if (totalNet >= 0)
+                BalanceGuideUI.DrawInterpretation("현재 조건은 전체 루프 기준으로 자금, 직원 상태, 프로젝트 점수가 비교적 안정적입니다.");
+            else
+                BalanceGuideUI.DrawInterpretation("최종 누적 순이익이 음수입니다. 출시 후 매출이나 개발 전 지출을 확인하세요.", MessageType.Warning);
         }
 
         private static void DrawRiskLabel(string label, bool isRisk)

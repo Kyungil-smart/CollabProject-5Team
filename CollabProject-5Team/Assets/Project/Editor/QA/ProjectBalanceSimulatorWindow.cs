@@ -34,7 +34,9 @@ namespace GameDevTycoon.EditorQA
         private int _programmerQuestBonus;
         private bool _usePlayModeEmployees;
         private bool _hasBaseline;
-        private bool _showScenarioMatrix = true;
+        private bool _showScenarioMatrix;
+        private bool _showPresetControls;
+        private bool _showTargetSettings;
         private TeamSimulationResult _baselineResult;
         private float _targetTotalMin = 50f;
         private float _targetTotalMax = 90f;
@@ -64,15 +66,26 @@ namespace GameDevTycoon.EditorQA
             DrawToolbar();
 
             _scrollPosition = EditorGUILayout.BeginScrollView(_scrollPosition);
+            DrawProjectGuide();
             DrawInputPanel();
-            DrawScenarioControls();
             DrawTeamSlots();
 
             TeamSimulationResult result = SimulateTeam(GetMaxEmployeePerPart(_projectSize));
-            DrawTargetCheck(result);
             DrawResult(result);
+            DrawFoldoutSection(ref _showPresetControls, "대표 케이스", DrawScenarioControls);
+            DrawFoldoutSection(ref _showTargetSettings, "목표 범위", () => DrawTargetCheck(result));
             DrawScenarioMatrix();
             EditorGUILayout.EndScrollView();
+        }
+
+
+        private static void DrawProjectGuide()
+        {
+            BalanceGuideUI.Draw(
+                "프로젝트 밸런싱 가이드",
+                "프로젝트 규모\n직군별 직원 조합\n일일 퀘스트 보너스\n회사 인기/유지력",
+                "완성도/안정성/매력도\n예상 등급\n일일 매출\n직군별 낮은 축",
+                "한 직군 점수만 낮음\n일일 매출이 목표보다 과함/부족함\n평균 점수는 높지만 특정 축이 45 미만");
         }
 
         private void DrawToolbar()
@@ -90,26 +103,48 @@ namespace GameDevTycoon.EditorQA
             }
         }
 
+
         private void DrawInputPanel()
         {
             EditorGUILayout.Space(8f);
-            EditorGUILayout.LabelField("프로젝트 밸런스 시뮬레이터", EditorStyles.boldLabel);
+            EditorGUILayout.LabelField("기획서 수치 조절", EditorStyles.boldLabel);
             EditorGUILayout.LabelField(
-                "프로젝트 규모와 직군별 인원 조합에 따라 예상 완성도, 안정성, 매력도, 등급, 판매량, 매출을 비교합니다.",
+                "프로젝트 시작/진행 문서의 핵심 조건만 먼저 조정합니다. 팀 배치는 아래 직군별 슬롯에서 따로 선택합니다.",
                 EditorStyles.wordWrappedMiniLabel);
+
+            BalanceGuideUI.DrawSourceLegend();
+            BalanceGuideUI.DrawImpactMap("개발 규모 -> 직군별 배치 인원/판매량/매출\n회사 인기, 유지력 -> 예상 판매량/일일 매출\n일일 업무 보너스 -> 완성도/안정성/매력도 해당 축 점수");
 
             using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
             {
-                _projectSize = (ProjectSize)EditorGUILayout.EnumPopup("프로젝트 규모", _projectSize);
-                _startRepo = EditorGUILayout.Popup("보고서 구분", _startRepo == 1 ? 0 : 1, new[] { "1주차 보고서(startRepo=1)", "랜덤 보고서(startRepo=0)" }) == 0 ? 1 : 0;
-                _companyPopularity = EditorGUILayout.IntSlider("회사 인기", _companyPopularity, 0, 300);
-                _retentionFactor = EditorGUILayout.Slider("유지력 계수", _retentionFactor, 0f, 1f);
+                EditorGUI.BeginChangeCheck();
 
-                EditorGUILayout.Space(4f);
-                EditorGUILayout.LabelField("일일 퀘스트 주간 보너스", EditorStyles.boldLabel);
-                _plannerQuestBonus = EditorGUILayout.IntSlider("기획 보너스", _plannerQuestBonus, 0, 100);
-                _artistQuestBonus = EditorGUILayout.IntSlider("아트 보너스", _artistQuestBonus, 0, 100);
-                _programmerQuestBonus = EditorGUILayout.IntSlider("개발 보너스", _programmerQuestBonus, 0, 100);
+                EditorGUILayout.LabelField("1. 프로젝트 기본 조건", EditorStyles.boldLabel);
+                using (new EditorGUILayout.HorizontalScope())
+                {
+                    _projectSize = (ProjectSize)EditorGUILayout.EnumPopup(BalanceGuideUI.WithSource(BalanceGuideUI.WindowSource, "개발 규모"), _projectSize);
+                    _startRepo = EditorGUILayout.Popup(BalanceGuideUI.WithSource(BalanceGuideUI.WindowSource, "보고서 시점"), _startRepo == 1 ? 0 : 1, new[] { "프로젝트 1주차", "진행 중 랜덤" }) == 0 ? 1 : 0;
+                }
+                EditorGUILayout.LabelField("규모는 직군별 최대 배치 인원과 기본 판매량 계산에 영향을 줍니다.", EditorStyles.wordWrappedMiniLabel);
+
+                EditorGUILayout.Space(6f);
+                EditorGUILayout.LabelField("2. 출시/시장 가정", EditorStyles.boldLabel);
+                using (new EditorGUILayout.HorizontalScope())
+                {
+                    _companyPopularity = EditorGUILayout.IntSlider(BalanceGuideUI.WithSource(BalanceGuideUI.WindowSource, "회사 인기"), _companyPopularity, 0, 300);
+                    _retentionFactor = EditorGUILayout.Slider(BalanceGuideUI.WithSource(BalanceGuideUI.WindowSource, "유지력 계수"), _retentionFactor, 0f, 1f);
+                }
+                EditorGUILayout.LabelField("인기와 유지력은 예상 일일 판매량/매출을 보는 임시 시장 조건입니다.", EditorStyles.wordWrappedMiniLabel);
+
+                EditorGUILayout.Space(6f);
+                EditorGUILayout.LabelField("3. 일일 업무 보너스", EditorStyles.boldLabel);
+                using (new EditorGUILayout.HorizontalScope())
+                {
+                    _plannerQuestBonus = EditorGUILayout.IntSlider(BalanceGuideUI.WithSource(BalanceGuideUI.WindowSource, "기획"), _plannerQuestBonus, 0, 100);
+                    _artistQuestBonus = EditorGUILayout.IntSlider(BalanceGuideUI.WithSource(BalanceGuideUI.WindowSource, "아트"), _artistQuestBonus, 0, 100);
+                    _programmerQuestBonus = EditorGUILayout.IntSlider(BalanceGuideUI.WithSource(BalanceGuideUI.WindowSource, "개발"), _programmerQuestBonus, 0, 100);
+                }
+                EditorGUILayout.LabelField("일일 업무/퀘스트가 해당 주차 직군 점수에 더해지는 보정값입니다.", EditorStyles.wordWrappedMiniLabel);
 
                 using (new EditorGUI.DisabledScope(!Application.isPlaying || QuestManager.Instance == null))
                 {
@@ -127,6 +162,9 @@ namespace GameDevTycoon.EditorQA
                         "Play Mode 직원 사용 중입니다. 현재 고용 직원의 성장 능력치, 의욕, 피로도, 충성도를 기준으로 계산합니다.",
                         MessageType.Info);
                 }
+
+                if (EditorGUI.EndChangeCheck())
+                    Repaint();
             }
         }
 
@@ -142,6 +180,19 @@ namespace GameDevTycoon.EditorQA
                 DrawRoleSlots(Role.PROGRAMMER, _programmerSlotIds, maxPerPart);
             }
         }
+
+        private static void DrawFoldoutSection(ref bool show, string title, Action drawContent)
+        {
+            using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
+            {
+                show = EditorGUILayout.Foldout(show, title, true);
+                if (show)
+                    drawContent();
+                else
+                    EditorGUILayout.LabelField("필요할 때만 펼쳐서 확인합니다.", EditorStyles.wordWrappedMiniLabel);
+            }
+        }
+
         private void DrawScenarioControls()
         {
             using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
@@ -514,11 +565,84 @@ namespace GameDevTycoon.EditorQA
                     $"매력도(아트): {result.Charm:0.#} = 보고서 {result.BaseCharm:0.#} + 일퀘 {result.ArtistQuestBonus}");
                 EditorGUILayout.LabelField($"프로젝트 평균 점수: {result.TotalScore:0.#} / 예상 등급: {GetProjectGrade(result.TotalScore)}");
                 EditorGUILayout.LabelField($"예상 일일 판매량: {result.DailySales:N0} / 예상 일일 매출: {result.DailyGold:N0}G / 주간 유지비: {result.WeeklyCost:N0}G");
+                BalanceGuideUI.DrawFormulaNotice("프로젝트 평균, 판매량, 매출은 현재 코드 공식으로 계산된 예상값입니다.");
+                DrawResultBaselineControls(result);
+                DrawProjectAutoChecks(result);
+                DrawProjectInterpretation(result);
 
                 DrawRoleResult(result.Planner);
                 DrawRoleResult(result.Artist);
                 DrawRoleResult(result.Programmer);
             }
+        }
+
+        private void DrawResultBaselineControls(TeamSimulationResult result)
+        {
+            using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
+            {
+                EditorGUILayout.LabelField("변경 전후 비교", EditorStyles.boldLabel);
+                using (new EditorGUILayout.HorizontalScope())
+                {
+                    if (GUILayout.Button("현재 결과를 기준값으로 저장", GUILayout.Height(24f)))
+                    {
+                        _baselineResult = result;
+                        _hasBaseline = true;
+                    }
+
+                    using (new EditorGUI.DisabledScope(!_hasBaseline))
+                    {
+                        if (GUILayout.Button("기준값 지우기", GUILayout.Width(110f), GUILayout.Height(24f)))
+                            _hasBaseline = false;
+                    }
+                }
+
+                BalanceGuideUI.DrawBaselineHint(_hasBaseline);
+                DrawBaselineCompare(result);
+            }
+        }
+
+        private static void DrawProjectAutoChecks(TeamSimulationResult result)
+        {
+            float lowestAxis = Mathf.Min(result.Quality, result.Stability, result.Charm);
+            int weeklyNet = result.DailyGold * 5 - result.WeeklyCost;
+            bool hasMissingReport = !result.Planner.HasReport || !result.Artist.HasReport || !result.Programmer.HasReport;
+
+            using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
+            {
+                EditorGUILayout.LabelField("자동 감지", EditorStyles.boldLabel);
+                BalanceGuideUI.DrawAutoCheck("보고서 후보", hasMissingReport, hasMissingReport ? "직군 중 보고서가 없는 축이 있습니다." : "모든 직군에서 후보 보고서를 찾았습니다.");
+                BalanceGuideUI.DrawAutoCheck("낮은 직군 축", lowestAxis < 45f, lowestAxis < 45f ? $"가장 낮은 축이 {lowestAxis:0.#}점입니다." : "완성도/안정성/매력도 모두 45 이상입니다.");
+                BalanceGuideUI.DrawAutoCheck("주간 순수익", weeklyNet < 0, weeklyNet < 0 ? $"예상 주간 순수익 {weeklyNet:N0}G입니다." : $"예상 주간 순수익 {weeklyNet:N0}G입니다.");
+            }
+        }
+
+        private static void DrawProjectInterpretation(TeamSimulationResult result)
+        {
+            float lowestAxis = Mathf.Min(result.Quality, result.Stability, result.Charm);
+            int weeklyNet = result.DailyGold * 5 - result.WeeklyCost;
+
+            if (!result.Planner.HasReport || !result.Artist.HasReport || !result.Programmer.HasReport)
+            {
+                BalanceGuideUI.DrawInterpretation("직군 중 보고서가 없는 축이 있어 프로젝트 결과를 신뢰하기 어렵습니다.", MessageType.Warning);
+                return;
+            }
+
+            if (lowestAxis < 45f)
+            {
+                BalanceGuideUI.DrawInterpretation("평균보다 낮은 직군 축이 있습니다. 해당 직군 직원/보고서/일일 업무 보너스를 먼저 확인하세요.", MessageType.Warning);
+                return;
+            }
+
+            if (weeklyNet < 0)
+            {
+                BalanceGuideUI.DrawInterpretation("점수는 나쁘지 않아도 주간 순수익이 적자입니다. 판매량 또는 유지비 쪽을 확인하세요.", MessageType.Warning);
+                return;
+            }
+
+            if (result.TotalScore >= 70f)
+                BalanceGuideUI.DrawInterpretation("현재 조합은 프로젝트 점수와 수익이 안정권입니다.");
+            else
+                BalanceGuideUI.DrawInterpretation("현재 조합은 검증 가능하지만 상위 등급을 노리기엔 평균 점수가 낮습니다.", MessageType.Info);
         }
 
         private void DrawRoleResult(RoleSimulationResult result)
