@@ -35,6 +35,9 @@ namespace GameDevTycoon.EditorQA
         private bool _showLaunch = true;
         private bool _showGraph = true;
         private bool _focusGraph;
+        private bool _showFormulaGuide = true;
+        private bool _showFormulaTrace = true;
+        private TraceMode _traceMode = TraceMode.Project;
         private GraphMode _graphMode = GraphMode.Project;
         private string _comparisonLabel = "비교 기준 없음";
 
@@ -58,7 +61,9 @@ namespace GameDevTycoon.EditorQA
 
             _scrollPosition = EditorGUILayout.BeginScrollView(_scrollPosition);
             DrawInputPanel();
+            DrawFormulaGuidePanel();
             DrawSummaryPanel();
+            DrawFormulaTracePanel();
             DrawComparisonPanel();
             DrawGraphPanel();
             if (!_focusGraph)
@@ -82,6 +87,8 @@ namespace GameDevTycoon.EditorQA
                     Simulate();
 
                 GUILayout.FlexibleSpace();
+                _showFormulaGuide = GUILayout.Toggle(_showFormulaGuide, "공식 안내", EditorStyles.toolbarButton, GUILayout.Width(80f));
+                _showFormulaTrace = GUILayout.Toggle(_showFormulaTrace, "계산 추적", EditorStyles.toolbarButton, GUILayout.Width(80f));
                 _showGraph = GUILayout.Toggle(_showGraph, "그래프", EditorStyles.toolbarButton, GUILayout.Width(70f));
                 using (new EditorGUI.DisabledScope(!_showGraph))
                     _focusGraph = GUILayout.Toggle(_focusGraph, "집중", EditorStyles.toolbarButton, GUILayout.Width(60f));
@@ -107,17 +114,17 @@ namespace GameDevTycoon.EditorQA
                 _projectSize = (ProjectSize)EditorGUILayout.EnumPopup("프로젝트 규모", _projectSize);
                 _pickMode = (PickMode)EditorGUILayout.EnumPopup("대표 팀 구성", _pickMode);
                 _simulationWeeks = EditorGUILayout.IntSlider("시뮬레이션 주차", _simulationWeeks, 1, 24);
-                _initialGold = EditorGUILayout.IntField("초기 자금", _initialGold);
-                _companyPopularity = EditorGUILayout.IntSlider("회사 인기", _companyPopularity, 0, 300);
-                _officeWeeklyCost = EditorGUILayout.IntField("주간 사무실 유지비", _officeWeeklyCost);
+                _initialGold = EditorGUILayout.IntField("[조절 가능] 초기 자금", _initialGold);
+                _companyPopularity = EditorGUILayout.IntSlider("[조절 가능] 회사 인기", _companyPopularity, 0, 300);
+                _officeWeeklyCost = EditorGUILayout.IntField("[조절 가능] 주간 사무실 유지비", _officeWeeklyCost);
 
                 EditorGUILayout.Space(4f);
                 EditorGUILayout.LabelField("일일/직원 변화 임시값", EditorStyles.boldLabel);
-                _dailyQuestScore = EditorGUILayout.IntSlider("일일 업무 직군 보너스", _dailyQuestScore, 0, 10);
-                _dailyFatigueGain = EditorGUILayout.IntSlider("낮 업무 피로 증가", _dailyFatigueGain, 0, 10);
-                _dailyDesireDecay = EditorGUILayout.IntSlider("낮 업무 의욕 감소", _dailyDesireDecay, 0, 10);
-                _fridayRestFatigueRecovery = EditorGUILayout.IntSlider("금요일 밤 휴식 피로 회복", _fridayRestFatigueRecovery, 0, 30);
-                _fridayRestDesireRecovery = EditorGUILayout.IntSlider("금요일 밤 의욕 회복", _fridayRestDesireRecovery, 0, 30);
+                _dailyQuestScore = EditorGUILayout.IntSlider("[조절 가능] 일일 업무 직군 보너스", _dailyQuestScore, 0, 10);
+                _dailyFatigueGain = EditorGUILayout.IntSlider("[조절 가능] 낮 업무 피로 증가", _dailyFatigueGain, 0, 10);
+                _dailyDesireDecay = EditorGUILayout.IntSlider("[조절 가능] 낮 업무 의욕 감소", _dailyDesireDecay, 0, 10);
+                _fridayRestFatigueRecovery = EditorGUILayout.IntSlider("[조절 가능] 금요일 밤 피로 회복", _fridayRestFatigueRecovery, 0, 30);
+                _fridayRestDesireRecovery = EditorGUILayout.IntSlider("[조절 가능] 금요일 밤 의욕 회복", _fridayRestDesireRecovery, 0, 30);
 
                 if (EditorGUI.EndChangeCheck())
                     Simulate();
@@ -173,6 +180,40 @@ namespace GameDevTycoon.EditorQA
             Repaint();
         }
 
+
+        private void DrawFormulaGuidePanel()
+        {
+            if (!_showFormulaGuide)
+                return;
+
+            using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
+            {
+                EditorGUILayout.LabelField("공식/수치 수정 안내", EditorStyles.boldLabel);
+                EditorGUILayout.LabelField(
+                    "이 시뮬레이터는 현재 적용된 공식으로 결과를 확인하는 도구입니다. 화면에 [조절 가능]으로 표시된 값만 이 창에서 바로 수정됩니다.",
+                    EditorStyles.wordWrappedMiniLabel);
+
+                using (new EditorGUILayout.HorizontalScope())
+                {
+                    DrawGuideColumn("[조절 가능]", "이 창에서 바로 바꿔 검증", "초기 자금\n회사 인기\n주간 유지비\n일일 업무 보너스\n피로/의욕 변화값");
+                    DrawGuideColumn("[데이터 수정]", "SO/테이블에서 수정", "프로젝트 기간\n프로젝트 시작 비용\n직원 능력치/급여\n보고서 데이터\n직원 특성 데이터");
+                    DrawGuideColumn("[코드 수정]", "공식 자체 수정 필요", "일일 판매량 공식\n보고서 점수 공식\n진척도 증가 방식\n유지력 감소 공식\n등급 판정 공식");
+                }
+
+                EditorGUILayout.HelpBox("수식이 바뀌어야 하는데 입력칸이 없다면, 못 찾는 것이 아니라 현재는 코드 또는 데이터 쪽 수정 대상일 가능성이 큽니다.", MessageType.Info);
+            }
+        }
+
+        private static void DrawGuideColumn(string title, string subtitle, string body)
+        {
+            using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox, GUILayout.MinWidth(180f)))
+            {
+                EditorGUILayout.LabelField(title, EditorStyles.boldLabel);
+                EditorGUILayout.LabelField(subtitle, EditorStyles.miniLabel);
+                EditorGUILayout.LabelField(body, EditorStyles.wordWrappedMiniLabel);
+            }
+        }
+
         private void DrawSummaryPanel()
         {
             if (_timeline.Count == 0)
@@ -215,6 +256,127 @@ namespace GameDevTycoon.EditorQA
         }
 
 
+
+
+        private void DrawFormulaTracePanel()
+        {
+            if (!_showFormulaTrace || _timeline.Count == 0)
+                return;
+
+            using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
+            {
+                using (new EditorGUILayout.HorizontalScope())
+                {
+                    EditorGUILayout.LabelField("왜 이렇게 나왔나요?", EditorStyles.boldLabel, GUILayout.Width(140f));
+                    _traceMode = (TraceMode)EditorGUILayout.EnumPopup(_traceMode, GUILayout.Width(160f));
+                    if (GUILayout.Button("현재 그래프 기준으로 보기", GUILayout.Width(150f)))
+                        _traceMode = (TraceMode)_graphMode;
+                    GUILayout.FlexibleSpace();
+                    EditorGUILayout.LabelField("공식 출처 / 원인 분해 / 조정 후보를 함께 표시합니다.", EditorStyles.miniLabel, GUILayout.Width(300f));
+                }
+
+                switch (_traceMode)
+                {
+                    case TraceMode.Money:
+                        DrawMoneyTrace();
+                        break;
+                    case TraceMode.Staff:
+                        DrawStaffTrace();
+                        break;
+                    default:
+                        DrawProjectTrace();
+                        break;
+                }
+            }
+        }
+
+        private void DrawMoneyTrace()
+        {
+            ProjectSO project = GetProject(_projectSize);
+            int maxPerPart = Mathf.Max(1, project != null ? project.maxEmployeePerPart : GetFallbackMaxEmployeePerPart(_projectSize));
+            int projectStartCost = Mathf.Max(0, project != null ? project.requiredCost : GetFallbackProjectCost(_projectSize));
+            int totalIncome = _timeline.Sum(t => t.Income);
+            int totalExpense = _timeline.Sum(t => t.Expense);
+            int finalGold = _timeline[_timeline.Count - 1].EndGold;
+            int minGold = _timeline.Min(t => t.EndGold);
+            int weeklySalary = BuildTeam(maxPerPart).Sum(e => Mathf.Max(0, e.weekSalary));
+
+            DrawTraceColumns(
+                "공식 출처",
+                "자금 흐름: FlowTimelineSimulatorWindow.Simulate()\n출시 매출: PerkPolicy.CalcDailySales(), PerkPolicy.CalcDailyGold()\n프로젝트 비용: ProjectSO.requiredCost\n직원 급여: EmployeeImmutableData.weekSalary",
+                "원인 분해",
+                $"초기 자금: {_initialGold:N0}G\n프로젝트 시작 비용: -{projectStartCost:N0}G\n출시 총수입: +{totalIncome:N0}G\n급여/유지비 총지출: -{totalExpense:N0}G\n주간 급여 기준: {weeklySalary:N0}G + 유지비 {_officeWeeklyCost:N0}G\n최종 자금: {finalGold:N0}G\n최저 자금: {minGold:N0}G",
+                "조정 후보",
+                "[조절 가능] 초기 자금, 회사 인기, 주간 사무실 유지비\n[데이터 수정] 프로젝트 시작 비용, 직원 급여, 프로젝트 규모\n[코드 수정] 일일 판매량 공식, 규모별 매출 공식, 유지력 감소 공식");
+
+            if (minGold < 0)
+                EditorGUILayout.HelpBox("자금이 적자로 내려갑니다. 프로젝트 시작 비용, 출시 전 개발 기간, 주간 고정비, 출시 매출 공식을 우선 확인하세요.", MessageType.Warning);
+        }
+
+        private void DrawProjectTrace()
+        {
+            ProjectSO project = GetProject(_projectSize);
+            int durationDays = Mathf.Max(5, project != null ? project.durationDays : GetFallbackDurationDays(_projectSize));
+            int dayWorkCount = _timeline.Count(t => t.EventType == FlowEventType.DayWork);
+            int reportCount = _timeline.Count(t => t.EventType == FlowEventType.FridayReport);
+            FlowDaySnapshot final = _timeline[_timeline.Count - 1];
+            FlowDaySnapshot launch = _timeline.FirstOrDefault(t => t.Phase == FlowPhase.Launch && t.DayOfWeek == 1);
+            string launchText = launch.Week > 0 ? $"{launch.Week}주차 월요일" : "기간 내 미출시";
+
+            DrawTraceColumns(
+                "공식 출처",
+                "진척도: FlowTimelineSimulatorWindow.Simulate()\n프로젝트 기간: ProjectSO.durationDays\n보고서 후보: ReportSO + 직원 특성/의욕\n보고서 점수: ReportPolicy.CalcScore(), CalcRoleScore()\n일일 업무 보너스: 이 창의 [조절 가능] 값",
+                "원인 분해",
+                $"프로젝트 기간 기준: {durationDays}일\n낮 업무 진행 일수: {dayWorkCount}일\n금요일 밤 보고서 반영: {reportCount}회\n일일 업무 직군 보너스: +{_dailyQuestScore}\n최종 진척도: {final.Progress:0.#}%\n최종 완성도/안정성/매력도: {final.Quality:0.#}/{final.Stability:0.#}/{final.Charm:0.#}\n출시 시작: {launchText}",
+                "조정 후보",
+                "[조절 가능] 일일 업무 직군 보너스, 대표 팀 구성\n[데이터 수정] ProjectSO.durationDays, ProjectSO.maxEmployeePerPart, 직원 능력치/특성, ReportSO 데이터\n[코드 수정] 진척도 증가 방식, 보고서 등급/점수 공식, 직군별 결과값 계산식");
+
+            if (final.Quality < 45f || final.Stability < 45f || final.Charm < 45f)
+                EditorGUILayout.HelpBox("프로젝트 점수 중 낮은 축이 있습니다. 해당 직군의 직원 능력치/특성, 보고서 데이터, 일일 업무 보너스를 먼저 확인하세요.", MessageType.Warning);
+        }
+
+        private void DrawStaffTrace()
+        {
+            ProjectSO project = GetProject(_projectSize);
+            int maxPerPart = Mathf.Max(1, project != null ? project.maxEmployeePerPart : GetFallbackMaxEmployeePerPart(_projectSize));
+            List<EmployeeImmutableData> team = BuildTeam(maxPerPart);
+            float initialDesire = team.Count > 0 ? (float)team.Average(e => e.desire) : 0f;
+            float initialFatigue = team.Count > 0 ? (float)team.Average(e => e.fatigue) : 0f;
+            float initialLoyalty = team.Count > 0 ? (float)team.Average(e => e.loyalty) : 0f;
+            int dayWorkCount = _timeline.Count(t => t.EventType == FlowEventType.DayWork);
+            int reportCount = _timeline.Count(t => t.EventType == FlowEventType.FridayReport);
+            FlowDaySnapshot final = _timeline[_timeline.Count - 1];
+
+            DrawTraceColumns(
+                "공식 출처",
+                "초기 직원 상태: EmployeeImmutableData desire/fatigue/loyalty\n낮 업무 변화: 이 창의 [조절 가능] 피로/의욕 변화값\n금요일 밤 변화: SimulateFridayReports()의 보고서 피로/의욕/충성도 결과\n직원 선택: 대표 팀 구성 + ProjectSO.maxEmployeePerPart",
+                "원인 분해",
+                $"팀 인원: {team.Count}명\n초기 의욕/피로/충성: {initialDesire:0.#}/{initialFatigue:0.#}/{initialLoyalty:0.#}\n낮 업무 횟수: {dayWorkCount}회\n낮 업무 누적 피로 증가 추정: +{dayWorkCount * _dailyFatigueGain}\n낮 업무 누적 의욕 감소 추정: -{dayWorkCount * _dailyDesireDecay}\n금요일 밤 보고서/휴식: {reportCount}회\n최종 의욕/피로/충성: {final.Desire:0.#}/{final.Fatigue:0.#}/{final.Loyalty:0.#}",
+                "조정 후보",
+                "[조절 가능] 낮 업무 피로 증가, 낮 업무 의욕 감소, 금요일 밤 피로/의욕 회복\n[데이터 수정] 직원 초기 의욕/피로/충성도, 직원 급여/능력치, 프로젝트 인원수\n[코드 수정] 보고서 채택 피로 증가, 의욕 페널티, 충성도 변화 공식");
+
+            if (final.Fatigue >= 80f || final.Desire < 40f)
+                EditorGUILayout.HelpBox("직원 상태가 위험 구간입니다. 낮 업무 피로 증가, 금요일 회복량, 보고서 채택 피로 증가 공식을 우선 확인하세요.", MessageType.Warning);
+        }
+
+        private static void DrawTraceColumns(string titleA, string bodyA, string titleB, string bodyB, string titleC, string bodyC)
+        {
+            using (new EditorGUILayout.HorizontalScope())
+            {
+                DrawTraceColumn(titleA, bodyA);
+                DrawTraceColumn(titleB, bodyB);
+                DrawTraceColumn(titleC, bodyC);
+            }
+        }
+
+        private static void DrawTraceColumn(string title, string body)
+        {
+            using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox, GUILayout.MinWidth(220f)))
+            {
+                EditorGUILayout.LabelField(title, EditorStyles.boldLabel);
+                EditorGUILayout.LabelField(body, EditorStyles.wordWrappedMiniLabel);
+            }
+        }
 
         private void DrawComparisonPanel()
         {
@@ -937,6 +1099,13 @@ namespace GameDevTycoon.EditorQA
         }
 
         private enum GraphMode
+        {
+            Project,
+            Staff,
+            Money
+        }
+
+        private enum TraceMode
         {
             Project,
             Staff,
