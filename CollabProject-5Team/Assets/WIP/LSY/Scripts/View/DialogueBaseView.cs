@@ -2,64 +2,69 @@ using DG.Tweening;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
-using UnityEngine.UI;
 
 namespace Dialogue
 {
-    /// <summary>
-    /// 대화 View 기반 클래스 - 타이핑 효과 + 다음 버튼 공통 처리
-    /// </summary>
-    public abstract class DialogueBaseView : MonoBehaviour, IPointerClickHandler
+    public abstract class DialogueBaseView : MonoBehaviour, IPointerDownHandler
     {
         [SerializeField] protected TextMeshProUGUI _dialogueText;
-
-        [Header("다음 버튼")]
-        [SerializeField] private Button _nextButton;
 
         [Header("타이핑 속도")]
         [SerializeField] private float _charInterval = 0.03f;
 
         private Tween _typingTween;
+        private bool _isChoiceMode;
 
         public bool IsTyping { get; private set; }
 
         public System.Action OnTypingComplete;
-
         public System.Action OnNextAction;
 
-        public void SetNextButtonVisible(bool visible)
+        public void SetChoiceMode(bool isChoice)
         {
-            if (_nextButton != null)
-                _nextButton.gameObject.SetActive(visible);
-        }
-
-        private void Awake()
-        {
-            if (_nextButton != null)
-                _nextButton.onClick.AddListener(OnNextClicked);
+            _isChoiceMode = isChoice;
         }
 
         private void OnNextClicked()
         {
+            if (_isChoiceMode) return;
+
             if (IsTyping)
+            {
                 SkipTyping();
-            else if (OnNextAction != null)
+                return;
+            }
+
+            if (OnNextAction != null)
                 OnNextAction.Invoke();
-            else if (StoryDialoguePlayer.Instance != null && StoryDialoguePlayer.Instance.IsDialogueRunning)
+            else
+                Advance();
+        }
+
+        private void Advance()
+        {
+            if (StoryDialoguePlayer.Instance != null && StoryDialoguePlayer.Instance.IsDialogueRunning)
                 StoryDialoguePlayer.Instance.AdvanceDialogue();
             else
                 DialogueManager.Instance.AdvanceDialogue();
         }
 
-        public void OnPointerClick(PointerEventData eventData)
+        public void OnPointerDown(PointerEventData eventData)
         {
-            if (_nextButton != null && !_nextButton.gameObject.activeSelf) return;
             OnNextClicked();
         }
 
         protected void StartTyping(string text)
         {
             if (_typingTween != null) _typingTween.Kill();
+
+            if (string.IsNullOrEmpty(text))
+            {
+                _dialogueText.text = string.Empty;
+                IsTyping = false;
+                OnTypingComplete?.Invoke();
+                return;
+            }
 
             _dialogueText.text = text;
             IsTyping = true;
@@ -92,6 +97,7 @@ namespace Dialogue
                 _typingTween = null;
             }
             IsTyping = false;
+            _isChoiceMode = false;
         }
     }
 }

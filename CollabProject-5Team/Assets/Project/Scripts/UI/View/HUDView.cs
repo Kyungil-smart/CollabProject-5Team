@@ -29,7 +29,7 @@ namespace GameDevTycoon.UI.Ingame
         [Header("DayUI")]
         public GameObject _dayUI;
         [SerializeField] private Button _questIconButton;
-        [SerializeField] private Button _workStartButton;
+
 
         [Header("DayUI — QuestBanner")]
         [SerializeField] private GameObject _questBanner;
@@ -97,7 +97,6 @@ namespace GameDevTycoon.UI.Ingame
 
         public Observable<Unit> OnSettingsClicked => _settingsButton.OnClickAsObservable();
         public Observable<Unit> OnQuestIconClicked => _questIconButton.OnClickAsObservable();
-        public Observable<Unit> OnWorkStartClicked => _workStartButton.OnClickAsObservable();
         public Observable<Unit> OnHRClicked => _hrButton.OnClickAsObservable();
         public Observable<Unit> OnProjectClicked => _projectButton.OnClickAsObservable();
         public Observable<Unit> OnCompanyClicked => _companyButton.OnClickAsObservable();
@@ -189,10 +188,6 @@ namespace GameDevTycoon.UI.Ingame
                 _timeIcon.sprite = sprite;
         }
 
-        public void SetWorkStartActive(bool active)
-        {
-            _workStartButton.gameObject.SetActive(active);
-        }
 
         public void SetNightQuitInteractable(int activeProjectCount)
         {
