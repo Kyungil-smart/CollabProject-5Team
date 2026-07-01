@@ -10,7 +10,7 @@ public class StoryQuestManager : MonoBehaviour
     const int FirstHireQuestId  = 1002;
     const int SpyQuestStartId = 1003;
     const int LargeProjectSpyQuestId = 1004;
-    const int SelectSpyQuestId = 1041; // 스파이 퀘스트중 선형적 진행이 끝나고 스파이 결정 선택지가 나오는 퀘스트
+    const int SelectSpyQuestId = 1042; // 스파이 퀘스트중 선형적 진행이 끝나고 스파이 결정 선택지가 나오는 퀘스트
 
     [SerializeField] Sprite StoryBookBubbleSprite;
 
@@ -63,12 +63,12 @@ public class StoryQuestManager : MonoBehaviour
     StoryQuestPoolSO SelectStartableQuest()
     {
         if (curSpyQuestID != 0)
-            return SelectCurrentSpyQuest();
+            return SelectCurrentSpyQuest(); // 스파이 퀘스트 진행중이면 여기
 
-        StoryQuestPoolSO normalQuest = SelectNormalStoryQuest();
+        StoryQuestPoolSO normalQuest = SelectNormalStoryQuest(); // 일반 퀘스트 조건체크
         if (normalQuest != null) return normalQuest;
 
-        return SelectSpyStartQuest();
+        return SelectSpyStartQuest(); // 스파이시작 퀘스트 조건체크
     }
 
     StoryQuestPoolSO SelectCurrentSpyQuest()
@@ -159,6 +159,7 @@ public class StoryQuestManager : MonoBehaviour
         return questId == SpyQuestStartId || questId == SelectSpyQuestId;
     }
 
+    #region Quest Condition Check
     bool IsNormalStoryConditionSatisfied(StoryQuestPoolSO questSO)
     {
         return questSO.id switch
@@ -171,17 +172,15 @@ public class StoryQuestManager : MonoBehaviour
 
     bool IsSpyQuestConditionSatisfied(StoryQuestPoolSO questSO)
     {
-        if (Company.Instance.level < questSO.conditionCompanyLv) return false;
-
         return questSO.id switch
         {
-            SpyQuestStartId => true,
+            SpyQuestStartId => Company.Instance.level == 3,
             LargeProjectSpyQuestId => Company.Instance.activeProjectCount.Value > 0 &&
                                       Company.Instance.curProject.Scale == ProjectSize.Large,
             _ => true
         };
     }
-
+    #endregion
 
     private void StartCurrentStoryDialogue()
     {
