@@ -95,8 +95,6 @@ public class NPCInteract : MonoBehaviour, IInteractable
         {
             Dialogue.DialogueManager.Instance.ShowBusyMessage(emp);
 
-            controller?.EndConversation();
-
             return;
         }
 

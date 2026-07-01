@@ -157,7 +157,18 @@ public class NPCController : MonoBehaviour
 
         if (CurrentTarget != null)
         {
-            RestoreActionAnimation(); 
+            ((ActionPoint)CurrentTarget).IsOccupied = true;
+
+            if (IsAtDestination())
+            {
+                RestoreActionAnimation(); 
+            }
+
+            else
+            {
+                Agent.SetDestination(CurrentTarget.GetTransform().position);
+                Anim.SetBool("IsWalking", true);
+            }
         }
 
         else
@@ -189,6 +200,13 @@ public class NPCController : MonoBehaviour
             case PointType.Drink: Anim.SetTrigger("Drink"); break;
             case PointType.ServerRoom: Anim.SetTrigger("PushButton"); break;
         }
+    }
+
+    private bool IsAtDestination()
+    {
+        if (CurrentTarget == null) return false;
+        float distance = Vector3.Distance(transform.position, CurrentTarget.GetTransform().position);
+        return distance <= 0.5f;
     }
 
     public void SetTargetPoint(IInteractablePoint point) => _myTargetPoint = point;
