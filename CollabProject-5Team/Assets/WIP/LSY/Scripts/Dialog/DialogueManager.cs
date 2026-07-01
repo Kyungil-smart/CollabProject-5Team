@@ -95,7 +95,7 @@ namespace Dialogue
                 _chosenBranch = selectedIndex + 1;
 
             HideChoices();
-            if (_currentView != null) _currentView.SetNextButtonVisible(true);
+            if (_currentView != null) _currentView.SetChoiceMode(false);
 
             int nextId = selectedIndex == 0 ? node.nextId01 : node.nextId02;
             AdvanceTo(nextId);
@@ -204,11 +204,6 @@ namespace Dialogue
 
             _isDialogueRunning = false;
             _currentPoolEntry  = null;
-
-            if (TutorialManager.Instance != null)
-            {
-                TutorialManager.Instance.FinishDialogueAndProceed();
-            }
         }
 
         void BindViews(DialogueStartPayload payload)
@@ -216,6 +211,7 @@ namespace Dialogue
             HideChoices();
             if (_currentView != null)
             {
+                _currentView.SetChoiceMode(false);
                 _currentView.OnTypingComplete = null;
                 _currentView.OnNextAction     = null;
             }
@@ -252,19 +248,22 @@ namespace Dialogue
                 });
             }
 
-            _currentView.OnTypingComplete = () =>
-            {
-                DialogueEvents.OnNodeTypingCompleted.OnNext(_currentNodeId);
-            };
-
             if (payload.isChoice)
-                _currentView.OnNextAction = () => EnterChoiceMode(payload);
-        }
-
-        public void SetNextButtonActive(bool active)
-        {
-            if (_currentView != null)
-                _currentView.SetNextButtonVisible(active);
+            {
+                var capturedPayload = payload;
+                _currentView.OnTypingComplete = () =>
+                {
+                    DialogueEvents.OnNodeTypingCompleted.OnNext(_currentNodeId);
+                    EnterChoiceMode(capturedPayload);
+                };
+            }
+            else
+            {
+                _currentView.OnTypingComplete = () =>
+                {
+                    DialogueEvents.OnNodeTypingCompleted.OnNext(_currentNodeId);
+                };
+            }
         }
 
         void ShowChoice(ChoiceItemView item, string text, int index)
@@ -282,7 +281,7 @@ namespace Dialogue
 
         void EnterChoiceMode(DialogueStartPayload payload)
         {
-            _currentView.SetNextButtonVisible(false);
+            _currentView.SetChoiceMode(true);
             ShowChoice(_choiceItem01, payload.choice01, 0);
             ShowChoice(_choiceItem02, payload.choice02, 1);
         }

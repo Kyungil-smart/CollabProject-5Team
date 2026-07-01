@@ -155,10 +155,20 @@ public class NPCController : MonoBehaviour
             Agent.enabled = true;
         }
 
-        if (_myTargetPoint != null && _myTargetPoint.GetTransform() != null)
+        if (CurrentTarget != null)
         {
-            Agent.ResetPath();
-            Agent.SetDestination(_myTargetPoint.GetTransform().position);
+            ((ActionPoint)CurrentTarget).IsOccupied = true;
+
+            if (IsAtDestination())
+            {
+                RestoreActionAnimation(); 
+            }
+
+            else
+            {
+                Agent.SetDestination(CurrentTarget.GetTransform().position);
+                Anim.SetBool("IsWalking", true);
+            }
         }
 
         else
@@ -171,7 +181,15 @@ public class NPCController : MonoBehaviour
     {
         if (Anim == null || CurrentTarget == null) return;
 
-        transform.rotation = CurrentTarget.GetTransform().rotation;
+        if (_currentState is NPCAction action)
+        {
+            action.ResetTargetPosition(this);
+        }
+        else
+        {
+            // 만약 상태가 바뀌어 있다면 기본 위치라도 맞춤
+            transform.rotation = CurrentTarget.GetTransform().rotation;
+        }
 
         // 현재 업무 상태에 맞는 파라미터를 다시 세팅
         switch (CurrentTarget.GetPointType())
@@ -182,6 +200,13 @@ public class NPCController : MonoBehaviour
             case PointType.Drink: Anim.SetTrigger("Drink"); break;
             case PointType.ServerRoom: Anim.SetTrigger("PushButton"); break;
         }
+    }
+
+    private bool IsAtDestination()
+    {
+        if (CurrentTarget == null) return false;
+        float distance = Vector3.Distance(transform.position, CurrentTarget.GetTransform().position);
+        return distance <= 0.5f;
     }
 
     public void SetTargetPoint(IInteractablePoint point) => _myTargetPoint = point;
