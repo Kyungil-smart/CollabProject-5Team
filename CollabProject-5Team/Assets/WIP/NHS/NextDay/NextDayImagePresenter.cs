@@ -58,11 +58,16 @@ public class NextDayImagePresenter : MonoBehaviour
 
     private void OnEnable()
     {
+        DateTimeManager.OnDateChangedVisual = PlayDateDirectionAsync;
+
         DateTimeManager.OnTimeChangedVisual = PlayNightDirectionAsync;
     }
 
     private void OnDisable()
     {
+        if (DateTimeManager.OnDateChangedVisual == PlayDateDirectionAsync)
+            DateTimeManager.OnDateChangedVisual = null;
+
         if (DateTimeManager.OnTimeChangedVisual == PlayNightDirectionAsync)
             DateTimeManager.OnTimeChangedVisual = null;
     }
@@ -130,6 +135,7 @@ public class NextDayImagePresenter : MonoBehaviour
     {
         HideAllGroups();
 
+        /*
         float duration = Mathf.Max(0f, fadeDurationSeconds);
         float elapsed = 0f;
 
@@ -160,6 +166,7 @@ public class NextDayImagePresenter : MonoBehaviour
             }
             _clockFillImage.fillAmount = 1f;
         }
+        */
 
         // 2. 데이터 및 텍스트 미리 세팅
         if (DateTimeManager.Instance != null)
@@ -168,6 +175,7 @@ public class NextDayImagePresenter : MonoBehaviour
             DateTimeManager.OnDateUIChanged?.Invoke();
         }
 
+        /*
         await UniTask.Delay(TimeSpan.FromSeconds(Mathf.Max(0f, visibleDurationSeconds)));
 
         // 3. 화면 다시 원래대로 돌리기
@@ -194,6 +202,7 @@ public class NextDayImagePresenter : MonoBehaviour
             _clockFillImage.fillAmount = 0f;
             _clockGroupObj.SetActive(false);
         }
+        */
 
         SetRandomMessage();
 
