@@ -60,7 +60,6 @@ namespace GameDevTycoon.UI.Ingame
         {
             DateTimeManager.OnReportEnd -= SwitchToNight;
             DateTimeManager.OnDay -= OnNewDay;
-            DeskInteract.OnPlayerArrived -= OnPlayerArrivedAtDesk;
         }
 
         public void SwitchToNight()
@@ -276,16 +275,6 @@ namespace GameDevTycoon.UI.Ingame
 
         private void OnWorkStartClicked()
         {
-            if (_desk == null) _desk = FindObjectOfType<DeskInteract>();
-            _desk?.OnClickWorkButton();
-
-            DeskInteract.OnPlayerArrived -= OnPlayerArrivedAtDesk;
-            DeskInteract.OnPlayerArrived += OnPlayerArrivedAtDesk;
-        }
-
-        private void OnPlayerArrivedAtDesk()
-        {
-            DeskInteract.OnPlayerArrived -= OnPlayerArrivedAtDesk;
             if (_workStartIcon != null)
                 _workStartIcon.gameObject.SetActive(false);
             QuestManager.Instance.StartQuestForToday();
