@@ -22,6 +22,12 @@ namespace GameDevTycoon.UI.Ingame
         [Header("업무 시작 시 이동할 데스크탑 프리팹")]
         [SerializeField] private DeskInteract _desk;
 
+        [Header("업무 시작 아이콘")]
+        [SerializeField] private GameObject _workStartIconPrefab;
+        [SerializeField] private Vector3 _workStartIconOffset = new Vector3(0f, 1.5f, 0f);
+
+        private WorkStartIcon _workStartIcon;
+
         private HRPresenter _hrPresenter;
         private ProjectPresenter _projectPresenter;
         private CompanyPresenter _companyPresenter;
@@ -54,6 +60,7 @@ namespace GameDevTycoon.UI.Ingame
         {
             DateTimeManager.OnReportEnd -= SwitchToNight;
             DateTimeManager.OnDay -= OnNewDay;
+            DeskInteract.OnPlayerArrived -= OnPlayerArrivedAtDesk;
         }
 
         public void SwitchToNight()
@@ -68,10 +75,6 @@ namespace GameDevTycoon.UI.Ingame
         {
             _view.OnQuestIconClicked
                 .Subscribe(_ => OnQuestIconClicked())
-                .AddTo(this);
-
-            _view.OnWorkStartClicked
-                .Subscribe(_ => OnWorkStartClicked())
                 .AddTo(this);
 
             _view.OnHRClicked
@@ -243,7 +246,23 @@ namespace GameDevTycoon.UI.Ingame
         private void OnNewDay()
         {
             _view.SwitchToDay();
-            _view.SetWorkStartActive(true);
+
+            _desk = FindObjectOfType<DeskInteract>();
+
+            if (_workStartIconPrefab != null && _desk != null)
+            {
+                if (_workStartIcon == null)
+                {
+                    _workStartIcon = Instantiate(_workStartIconPrefab, (RectTransform)_view.transform)
+                        .GetComponent<WorkStartIcon>();
+                    _workStartIcon.Button.onClick.AddListener(OnWorkStartClicked);
+                    _workStartIcon.gameObject.SetActive(false);
+                }
+
+                _workStartIcon.SetTarget(_desk.transform, _workStartIconOffset);
+                _workStartIcon.gameObject.SetActive(true);
+            }
+
             RefreshHUD();
         }
 
@@ -257,13 +276,19 @@ namespace GameDevTycoon.UI.Ingame
 
         private void OnWorkStartClicked()
         {
-            _view.SetWorkStartActive(false);
+            if (_desk == null) _desk = FindObjectOfType<DeskInteract>();
+            _desk?.OnClickWorkButton();
+
+            DeskInteract.OnPlayerArrived -= OnPlayerArrivedAtDesk;
+            DeskInteract.OnPlayerArrived += OnPlayerArrivedAtDesk;
+        }
+
+        private void OnPlayerArrivedAtDesk()
+        {
+            DeskInteract.OnPlayerArrived -= OnPlayerArrivedAtDesk;
+            if (_workStartIcon != null)
+                _workStartIcon.gameObject.SetActive(false);
             QuestManager.Instance.StartQuestForToday();
-
-            if (_desk != null)
-                _desk.OnClickWorkButton();
-
-            // [TODO: WorkStartBubble 비활성화 메서드 HUDView에 추가 후 연결]
         }
 
         private void OnNightButtonClicked(int index, IBottomNightUI targetPresenter)

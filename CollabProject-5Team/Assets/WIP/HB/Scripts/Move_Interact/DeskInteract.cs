@@ -5,12 +5,12 @@ public class DeskInteract : MonoBehaviour
     [Header("업무 UI창")]
     [SerializeField] private GameObject _interactionUI;
 
-    /*
     [Header("플레이어 레이어 설정")]
     [SerializeField] private LayerMask _playerLayer;
-    */
 
     [SerializeField] private Transform _workPosition;
+
+    public static event System.Action OnPlayerArrived;
 
     private void Start()
     {
@@ -26,6 +26,12 @@ public class DeskInteract : MonoBehaviour
         {
             GameManager.Instance.player.MoveToPosition(_workPosition.position);
         }
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (((1 << other.gameObject.layer) & _playerLayer) != 0)
+            OnPlayerArrived?.Invoke();
     }
 
     /*
@@ -57,7 +63,7 @@ public class DeskInteract : MonoBehaviour
         {
             // UI 닫기
             if (_interactionUI != null) _interactionUI.SetActive(false);
-            
+
             // 카메라 조작 재개
             if (CameraManager.Instance != null)
             {
