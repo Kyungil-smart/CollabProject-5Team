@@ -155,10 +155,9 @@ public class NPCController : MonoBehaviour
             Agent.enabled = true;
         }
 
-        if (_myTargetPoint != null && _myTargetPoint.GetTransform() != null)
+        if (CurrentTarget != null)
         {
-            Agent.ResetPath();
-            Agent.SetDestination(_myTargetPoint.GetTransform().position);
+            RestoreActionAnimation(); 
         }
 
         else
@@ -171,7 +170,15 @@ public class NPCController : MonoBehaviour
     {
         if (Anim == null || CurrentTarget == null) return;
 
-        transform.rotation = CurrentTarget.GetTransform().rotation;
+        if (_currentState is NPCAction action)
+        {
+            action.ResetTargetPosition(this);
+        }
+        else
+        {
+            // 만약 상태가 바뀌어 있다면 기본 위치라도 맞춤
+            transform.rotation = CurrentTarget.GetTransform().rotation;
+        }
 
         // 현재 업무 상태에 맞는 파라미터를 다시 세팅
         switch (CurrentTarget.GetPointType())
