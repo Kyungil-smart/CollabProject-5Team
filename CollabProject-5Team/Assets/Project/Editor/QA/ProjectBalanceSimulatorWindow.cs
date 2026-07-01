@@ -32,6 +32,10 @@ namespace GameDevTycoon.EditorQA
         private int _plannerQuestBonus;
         private int _artistQuestBonus;
         private int _programmerQuestBonus;
+        private bool _useManualTeamState;
+        private int _manualTeamDesire = 70;
+        private int _manualTeamFatigue = 20;
+        private int _manualTeamLoyalty = 70;
         private bool _usePlayModeEmployees;
         private bool _hasBaseline;
         private bool _showScenarioMatrix;
@@ -138,7 +142,26 @@ namespace GameDevTycoon.EditorQA
                 EditorGUILayout.LabelField("인기와 유지력은 예상 일일 판매량/매출을 보는 임시 시장 조건입니다.", EditorStyles.wordWrappedMiniLabel);
 
                 EditorGUILayout.Space(6f);
-                EditorGUILayout.LabelField("3. 일일 업무 보너스", EditorStyles.boldLabel);
+                EditorGUILayout.LabelField("3. 직원 상태 영향", EditorStyles.boldLabel);
+                _useManualTeamState = EditorGUILayout.Toggle("팀 상태 임시 적용", _useManualTeamState);
+                if (_useManualTeamState)
+                {
+                    using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
+                    {
+                        EditorGUILayout.LabelField("선택된 직원들의 의욕/피로/충성도를 이 값으로 가정합니다. 원본 직원 데이터는 수정하지 않습니다.", EditorStyles.wordWrappedMiniLabel);
+                        _manualTeamDesire = EditorGUILayout.IntSlider("팀 의욕", _manualTeamDesire, 0, 100);
+                        _manualTeamFatigue = EditorGUILayout.IntSlider("팀 피로도", _manualTeamFatigue, 0, 100);
+                        _manualTeamLoyalty = EditorGUILayout.IntSlider("팀 충성도", _manualTeamLoyalty, 0, 100);
+                        EditorGUILayout.LabelField("의욕은 보고서 등급, 충성도는 능력 보정, 피로도는 프로젝트 점수 페널티에 반영됩니다.", EditorStyles.wordWrappedMiniLabel);
+                    }
+                }
+                else
+                {
+                    EditorGUILayout.LabelField("직원 SO 또는 Play Mode 직원의 현재 의욕/피로/충성도를 그대로 사용합니다.", EditorStyles.wordWrappedMiniLabel);
+                }
+
+                EditorGUILayout.Space(6f);
+                EditorGUILayout.LabelField("4. 일일 업무 보너스", EditorStyles.boldLabel);
                 using (new EditorGUILayout.HorizontalScope())
                 {
                     _plannerQuestBonus = EditorGUILayout.IntSlider("기획", _plannerQuestBonus, 0, 100);
@@ -444,7 +467,7 @@ namespace GameDevTycoon.EditorQA
         {
             List<EmployeeSnapshot> employees = GetEmployeesForRole(role);
             string[] options = new[] { "미배치" }
-                .Concat(employees.Select(e => $"{e.So.id} / {e.So.Name} / 능력 {e.StatAbility} / 의욕 {e.Desire}"))
+                .Concat(employees.Select(e => $"{e.So.id} / {e.So.Name} / 능력 {e.StatAbility} / 의욕 {e.Desire} / 피로 {e.Fatigue} / 충성 {e.Loyalty}"))
                 .ToArray();
             int[] optionIds = new[] { -1 }
                 .Concat(employees.Select(e => e.So.id))
@@ -660,7 +683,11 @@ namespace GameDevTycoon.EditorQA
 
                 TeamReportPreview best = result.BestReport;
                 EditorGUILayout.LabelField($"자동 선택: {best.Employee.So.Name} - {best.Report.title}");
+                EditorGUILayout.LabelField($"상태 능력 {best.Employee.StatAbility} / 의욕 {best.Employee.Desire} / 피로 {best.Employee.Fatigue} / 충성 {best.Employee.Loyalty}");
                 EditorGUILayout.LabelField($"특성 {GetTraitLabel(best.Report.trait)} / {best.MatchSource} 매칭 / grade={best.Grade} / 점수 {best.Score:0.#}");
+                float fatiguePenalty = CalcFatigueProjectPenalty(best.Employee.Fatigue);
+                if (fatiguePenalty > 0f)
+                    EditorGUILayout.HelpBox($"피로도 {best.Employee.Fatigue}로 프로젝트 점수 -{fatiguePenalty:0.#} 페널티가 적용되었습니다.", MessageType.Warning);
 
                 if (GUILayout.Button("보고서 SO 선택", GUILayout.Width(110f)))
                 {
@@ -684,7 +711,7 @@ namespace GameDevTycoon.EditorQA
 
                 EmployeeSnapshot employee = employees.FirstOrDefault(e => e.So.id == id);
                 if (employee.IsValid && selected.All(e => e.So.id != employee.So.id))
-                    selected.Add(employee);
+                    selected.Add(ApplyTeamStateOverride(employee));
             }
 
             return selected;
@@ -753,11 +780,12 @@ namespace GameDevTycoon.EditorQA
             float traitWeight = QATraitUtility.TryGetTraitData(report.trait, out TraitData data)
                 ? data.score * 2f
                 : 0f;
+            float fatiguePenalty = CalcFatigueProjectPenalty(employee.Fatigue);
 
-            return (Mathf.Clamp(scores[stats[0]], 0f, 100f)
+            return Mathf.Max(0f, (Mathf.Clamp(scores[stats[0]], 0f, 100f)
                 + Mathf.Clamp(scores[stats[1]], 0f, 100f)
                 + Mathf.Clamp(scores[stats[2]], 0f, 100f)
-                + traitWeight) / 3f;
+                + traitWeight) / 3f - fatiguePenalty);
         }
 
         private static void ApplyPreviewDelta(Dictionary<TraitStat, float> scores, Trait trait, int delta)
@@ -841,6 +869,25 @@ namespace GameDevTycoon.EditorQA
         private static float CalcReportScore(int ability, int desire)
         {
             return PerkPolicy.CalcBaseProperty(ability) + CalcMotivationBonus(desire);
+        }
+
+        private static float CalcFatigueProjectPenalty(int fatigue)
+        {
+            if (fatigue >= 80)
+                return 10f;
+
+            if (fatigue >= 60)
+                return 5f;
+
+            return 0f;
+        }
+
+        private EmployeeSnapshot ApplyTeamStateOverride(EmployeeSnapshot employee)
+        {
+            if (!_useManualTeamState)
+                return employee;
+
+            return employee.WithState(_manualTeamDesire, _manualTeamFatigue, _manualTeamLoyalty);
         }
 
         private static string GetProjectGrade(float score)
@@ -1010,6 +1057,7 @@ namespace GameDevTycoon.EditorQA
             public int ReportScoreAbility { get; }
             public int StatAbility { get; }
             public int Desire { get; }
+            public int Fatigue { get; }
             public int Loyalty { get; }
             public bool IsValid => So != null;
 
@@ -1018,19 +1066,21 @@ namespace GameDevTycoon.EditorQA
                 int reportScoreAbility,
                 int statAbility,
                 int desire,
+                int fatigue,
                 int loyalty)
             {
                 So = so;
                 ReportScoreAbility = reportScoreAbility;
                 StatAbility = statAbility;
                 Desire = desire;
+                Fatigue = fatigue;
                 Loyalty = loyalty;
             }
 
             public static EmployeeSnapshot FromAsset(AssetEntry<EmployeeImmutableData> entry)
             {
                 EmployeeImmutableData so = entry.Asset;
-                return new EmployeeSnapshot(so, so.ability, so.ability, so.desire, so.loyalty);
+                return new EmployeeSnapshot(so, so.ability, so.ability, so.desire, so.fatigue, so.loyalty);
             }
 
             public static EmployeeSnapshot FromRuntime(Employee employee)
@@ -1040,7 +1090,13 @@ namespace GameDevTycoon.EditorQA
                     employee.so.ability,
                     employee.MutableData.ability,
                     employee.MutableData.desire,
+                    employee.MutableData.fatigue,
                     employee.MutableData.loyalty);
+            }
+
+            public EmployeeSnapshot WithState(int desire, int fatigue, int loyalty)
+            {
+                return new EmployeeSnapshot(So, ReportScoreAbility, StatAbility, desire, fatigue, loyalty);
             }
         }
     }

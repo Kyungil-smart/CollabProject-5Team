@@ -19,6 +19,12 @@ namespace GameDevTycoon.EditorQA
         private Role _roleFilter = Role.PLANNER;
         private int _selectedEmployeeIndex;
         private int _weeks = 8;
+        private bool _useEmployeeSourceValues = true;
+        private bool _hasManualStartValues;
+        private int _manualAbility;
+        private int _manualDesire;
+        private int _manualFatigue;
+        private int _manualLoyalty;
         private bool _usePlayModeEmployees;
         private bool _inProject = true;
         private bool _talkEveryWeek = true;
@@ -124,8 +130,36 @@ namespace GameDevTycoon.EditorQA
                 string[] employeeOptions = filteredEmployees
                     .Select(e => $"{e.So.id} / {e.So.Name} / 능력 {e.Ability} / 의욕 {e.Desire} / 피로 {e.Fatigue} / 충성 {e.Loyalty}")
                     .ToArray();
+                int previousEmployeeIndex = _selectedEmployeeIndex;
                 _selectedEmployeeIndex = EditorGUILayout.Popup("직원", _selectedEmployeeIndex, employeeOptions);
+                EmployeeSnapshot selectedEmployee = filteredEmployees[_selectedEmployeeIndex];
+                if (previousEmployeeIndex != _selectedEmployeeIndex)
+                    _hasManualStartValues = false;
+
                 _weeks = EditorGUILayout.IntSlider("관찰 기간(주)", _weeks, 1, 24);
+
+                EditorGUILayout.Space(6f);
+                EditorGUILayout.LabelField("1-1. 시작 상태 직접 조정", EditorStyles.boldLabel);
+                _useEmployeeSourceValues = EditorGUILayout.Toggle("직원 원본값 사용", _useEmployeeSourceValues);
+                if (_useEmployeeSourceValues)
+                {
+                    _hasManualStartValues = false;
+                    EditorGUILayout.LabelField(
+                        $"시작값: 능력 {selectedEmployee.Ability} / 의욕 {selectedEmployee.Desire} / 피로 {selectedEmployee.Fatigue} / 충성 {selectedEmployee.Loyalty}",
+                        EditorStyles.wordWrappedMiniLabel);
+                }
+                else
+                {
+                    EnsureManualStartValues(selectedEmployee);
+                    using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
+                    {
+                        EditorGUILayout.LabelField("이 값은 시뮬레이션 시작값만 바꾸며 Employee SO나 Play Mode 직원 데이터는 수정하지 않습니다.", EditorStyles.wordWrappedMiniLabel);
+                        _manualAbility = EditorGUILayout.IntSlider("시작 능력치", _manualAbility, 0, 100);
+                        _manualDesire = EditorGUILayout.IntSlider("시작 의욕", _manualDesire, 0, 100);
+                        _manualFatigue = EditorGUILayout.IntSlider("시작 피로도", _manualFatigue, 0, 100);
+                        _manualLoyalty = EditorGUILayout.IntSlider("시작 충성도", _manualLoyalty, 0, 100);
+                    }
+                }
 
                 EditorGUILayout.Space(6f);
                 EditorGUILayout.LabelField("2. 주간 행동 조건", EditorStyles.boldLabel);
@@ -307,12 +341,14 @@ namespace GameDevTycoon.EditorQA
             if (!employee.IsValid)
                 return;
 
-            int ability = employee.Ability;
-            int desire = employee.Desire;
-            int fatigue = employee.Fatigue;
-            int loyalty = employee.Loyalty;
+            EnsureManualStartValues(employee);
+            int ability = _useEmployeeSourceValues ? employee.Ability : _manualAbility;
+            int desire = _useEmployeeSourceValues ? employee.Desire : _manualDesire;
+            int fatigue = _useEmployeeSourceValues ? employee.Fatigue : _manualFatigue;
+            int loyalty = _useEmployeeSourceValues ? employee.Loyalty : _manualLoyalty;
+            string startNote = _useEmployeeSourceValues ? "시작값" : "수동 시작값";
 
-            _timeline.Add(new WeekSnapshot(0, ability, desire, fatigue, loyalty, IsLeavePending(desire, fatigue, loyalty), "시작값"));
+            _timeline.Add(new WeekSnapshot(0, ability, desire, fatigue, loyalty, IsLeavePending(desire, fatigue, loyalty), startNote));
 
             for (int week = 1; week <= _weeks; week++)
             {
@@ -416,6 +452,18 @@ namespace GameDevTycoon.EditorQA
 
             _selectedEmployeeIndex = Mathf.Clamp(_selectedEmployeeIndex, 0, filteredEmployees.Count - 1);
             return filteredEmployees[_selectedEmployeeIndex];
+        }
+
+        private void EnsureManualStartValues(EmployeeSnapshot employee)
+        {
+            if (_hasManualStartValues || !employee.IsValid)
+                return;
+
+            _manualAbility = employee.Ability;
+            _manualDesire = employee.Desire;
+            _manualFatigue = employee.Fatigue;
+            _manualLoyalty = employee.Loyalty;
+            _hasManualStartValues = true;
         }
 
         private static int ApplyAbilityGrowth(int currentAbility, int delta)
