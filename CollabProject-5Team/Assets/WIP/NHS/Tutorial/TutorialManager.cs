@@ -11,7 +11,8 @@ public class TutorialManager : MonoBehaviour
         TextOnly,
         ButtonActivated,
         HighlightSqureTouchAnywhere,
-        HighLightSqureTouchSomewhere
+        HighLightSqureTouchSomewhere,
+        PunchHole
     }
 
     // 싱글톤
@@ -23,6 +24,10 @@ public class TutorialManager : MonoBehaviour
     [SerializeField] private GameObject      _guideBox;
     [SerializeField] private TextMeshProUGUI _tutorialText;
     [SerializeField] private GameObject      _tutorialPanel;
+
+    [Header("Pointer Settings")]
+    [SerializeField] private Image _tutorialPointer; // 인스펙터에서 할당
+    [SerializeField] private Vector2 _pointerOffset = new Vector2(30, -30);
 
     // 튜토리얼 진행
     [SerializeField] private List<TutorialDataSO> _tutorialSteps = new List<TutorialDataSO>();
@@ -41,11 +46,44 @@ public class TutorialManager : MonoBehaviour
     private bool          _isCanvasAddedByManager;
     private bool       _isRaycasterAddedByManager;
 
+    // Shader
+    [SerializeField] private Material _templateMaterial; // 인스펙터에서 M_TutorialPunchHole 할당!
+    private Material _runtimeMaterial;
+
     /////////////////// - 라이프사이클 - ///////////////////
     private void Awake()
     {
         if (_instance == null) _instance = this;
         else Destroy(gameObject);
+
+        // 1. 인스펙터 할당 체크
+        if (_tutorialPanel == null)
+        {
+            Debug.LogError("[TutorialManager] TutorialPanel 변수가 할당되지 않았습니다! 인스펙터를 확인하세요.");
+            return;
+        }
+
+        // 2. Image 컴포넌트 체크
+        Image panelImage = _tutorialPanel.GetComponent<Image>();
+        if (panelImage == null)
+        {
+            Debug.LogError("[TutorialManager] TutorialPanel 오브젝트에 Image 컴포넌트가 없습니다!");
+            return;
+        }
+
+        // 3. 머티리얼 할당 로직
+        Material sourceMat = _templateMaterial != null ? _templateMaterial : panelImage.material;
+
+        if (sourceMat != null)
+        {
+            _runtimeMaterial = new Material(sourceMat);
+            panelImage.material = _runtimeMaterial;
+            Debug.Log("[TutorialManager] 머티리얼이 성공적으로 설정되었습니다.");
+        }
+        else
+        {
+            Debug.LogError("[TutorialManager] sourceMat이 null입니다. templateMaterial을 할당했는지 확인하세요.");
+        }
     }
 
     private IEnumerator Start()
@@ -97,6 +135,8 @@ public class TutorialManager : MonoBehaviour
     {
         _tutorialPanel.SetActive(true);
 
+        _tutorialPointer.gameObject.SetActive(false);
+
         if (string.IsNullOrEmpty(_tutorialSteps[_curIndex].tutorialText))
             _guideBox.SetActive(false);
         else
@@ -120,6 +160,9 @@ public class TutorialManager : MonoBehaviour
                 break;
             case ShowMode.HighLightSqureTouchSomewhere:
                 TutorialHighLightSqureTouchSomewhere();
+                break;
+            case ShowMode.PunchHole:
+                TutorialPunchHole();
                 break;
         }
     }
@@ -152,24 +195,36 @@ public class TutorialManager : MonoBehaviour
         {
             _currentActiveObject = targetObj;
 
-            // Canvas 체크
-            Canvas targetCanvas = _currentActiveObject.GetComponent<Canvas>();
-            if (targetCanvas == null)
-            {
-                targetCanvas = _currentActiveObject.AddComponent<Canvas>();
-                _isCanvasAddedByManager = true;
-            }
-
-            targetCanvas.overrideSorting = true;
-            targetCanvas.sortingOrder    = 1001;
-
             var showMode = _tutorialSteps[_curIndex].showMode;
-            if (showMode == ShowMode.ButtonActivated || showMode == ShowMode.HighLightSqureTouchSomewhere)
+
+            RectTransform checkRect = _currentActiveObject.GetComponent<RectTransform>();
+            if(checkRect != null)
             {
-                if (_currentActiveObject.GetComponent<GraphicRaycaster>() == null)
+                // 1. 캔버스 설정
+                Canvas targetCanvas = _currentActiveObject.GetComponent<Canvas>();
+                if (targetCanvas == null)
                 {
-                    _currentActiveObject.AddComponent<GraphicRaycaster>();
-                    _isRaycasterAddedByManager = true;
+                    targetCanvas = _currentActiveObject.AddComponent<Canvas>();
+                    _isCanvasAddedByManager = true;
+                }
+                else
+                {
+                    _isCanvasAddedByManager = false;
+                }
+
+                targetCanvas.overrideSorting = true;
+                targetCanvas.sortingOrder = 1001;
+
+                // 2. GraphicRaycaster 설정
+                if (showMode == ShowMode.ButtonActivated ||
+                    showMode == ShowMode.HighLightSqureTouchSomewhere ||
+                    showMode == ShowMode.PunchHole)
+                {
+                    if (_currentActiveObject.GetComponent<GraphicRaycaster>() == null)
+                    {
+                        _currentActiveObject.AddComponent<GraphicRaycaster>();
+                        _isRaycasterAddedByManager = true;
+                    }
                 }
             }
         }
@@ -202,6 +257,50 @@ public class TutorialManager : MonoBehaviour
         _currentActiveObject = null;
     }
 
+    /////////////////// - PingerPointer - ///////////////////
+
+    private void SetPointerPosition()
+    {
+        if (_tutorialPointer == null || _currentActiveObject == null) return;
+
+        if (_tutorialPointer.transform.parent != _tutorialPanel.transform)
+        {
+            _tutorialPointer.transform.SetParent(_tutorialPanel.transform, false);
+        }
+
+         _tutorialPointer.transform.SetAsLastSibling();
+        _tutorialPointer.gameObject.SetActive(true);
+
+        RectTransform pointerRect = _tutorialPointer.rectTransform;
+        Vector2 screenPoint = Vector2.zero;
+
+        RectTransform targetRect = _currentActiveObject.GetComponent<RectTransform>();
+        if (targetRect != null)
+        {
+            Vector3[] worldCorners = new Vector3[4];
+            targetRect.GetWorldCorners(worldCorners);
+            Vector3 targetWorldPos = worldCorners[3];
+            screenPoint = RectTransformUtility.WorldToScreenPoint(null, targetWorldPos);
+        }
+        else
+        {
+            Vector3 worldPos = _currentActiveObject.transform.position;
+            screenPoint = Camera.main.WorldToScreenPoint(worldPos);
+        }
+
+        RectTransform canvasRect = _tutorialPanel.GetComponent<RectTransform>() ??
+                                   _tutorialPointer.canvas.GetComponent<RectTransform>();
+
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(
+            canvasRect,
+            screenPoint,
+            null,
+            out Vector2 localPoint
+        );
+
+        pointerRect.anchoredPosition = localPoint + _pointerOffset;
+    }
+
     /////////////////// - TextOnly - ///////////////////
     private void TutorialTextOnly()
     {
@@ -220,6 +319,8 @@ public class TutorialManager : MonoBehaviour
             button.onClick.RemoveListener(OnTutorialButtonClicked);
             button.onClick.   AddListener(OnTutorialButtonClicked);
         }
+
+        SetPointerPosition();
     }
 
     private void OnTutorialButtonClicked()
@@ -240,6 +341,8 @@ public class TutorialManager : MonoBehaviour
     private void TutorialHighlightSqureTouchAnywhere()
     {
         _isWaitingPlayerInput = true;
+
+        SetPointerPosition();
     }
 
     /////////////////// - HighLightSqureTouchSomewhere - ///////////////////
@@ -247,6 +350,8 @@ public class TutorialManager : MonoBehaviour
     {
         OnSomewhereTutorialCompleted -= OnSomewhereConditionMet;
         OnSomewhereTutorialCompleted += OnSomewhereConditionMet;
+
+        SetPointerPosition();
     }
 
     private void OnSomewhereConditionMet()
@@ -256,5 +361,114 @@ public class TutorialManager : MonoBehaviour
         CleanUpActiveObjectComponents();
 
         ProceedTutorial();
+    }
+
+    /////////////////// - TutorialPunchHole - ///////////////////
+    private void TutorialPunchHole()
+    {
+        if (_currentActiveObject == null) return;
+
+        var filter = _tutorialPanel.GetComponent<PunchHoleFilter>()
+                     ?? _tutorialPanel.AddComponent<PunchHoleFilter>();
+
+        RectTransform targetRect = _currentActiveObject.GetComponent<RectTransform>();
+        RectTransform panelRect = _tutorialPanel.GetComponent<RectTransform>();
+        Vector4 holeVector = Vector4.zero;
+
+        if (targetRect != null)
+        {
+            // (1) 대상이 UI 요소일 때
+            filter.SetTarget(targetRect);
+
+            Vector3[] corners = new Vector3[4];
+            targetRect.GetWorldCorners(corners);
+
+            Vector3 bl = panelRect.InverseTransformPoint(corners[0]); // Bottom Left
+            Vector3 tr = panelRect.InverseTransformPoint(corners[2]); // Top Right
+
+            // 회전이나 스케일 반전을 대비해 안전하게 Min/Max 값 추출
+            float minX = Mathf.Min(bl.x, tr.x);
+            float maxX = Mathf.Max(bl.x, tr.x);
+            float minY = Mathf.Min(bl.y, tr.y);
+            float maxY = Mathf.Max(bl.y, tr.y);
+
+            holeVector = new Vector4(minX, minY, maxX, maxY);
+        }
+        else
+        {
+            // (2) 대상이 3D 월드 오브젝트일 때
+            Vector3 worldPos = _currentActiveObject.transform.position;
+            Vector3 screenPos = Camera.main.WorldToScreenPoint(worldPos);
+
+            float screenObjectSize = 60;
+            Vector4 pixelRect = new Vector4(
+                screenPos.x - screenObjectSize,
+                screenPos.y - screenObjectSize,
+                screenPos.x + screenObjectSize,
+                screenPos.y + screenObjectSize
+            );
+            filter.SetCustomScreenRect(pixelRect);
+
+            // 셰이더용 로컬 좌표 변환
+            Canvas canvas = _tutorialPanel.GetComponentInParent<Canvas>();
+            Camera uiCamera = (canvas.renderMode == RenderMode.ScreenSpaceOverlay) ? null : canvas.worldCamera;
+
+            // 스크린 좌표를 튜토리얼 패널의 로컬 좌표로 변환
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                panelRect,
+                new Vector2(screenPos.x, screenPos.y),
+                uiCamera,
+                out Vector2 localCenter
+            );
+
+            // 캔버스 스케일 팩터를 고려한 구멍 크기 조정
+            float scaleFactor = canvas != null ? canvas.scaleFactor : 1f;
+            float localSize = screenObjectSize / scaleFactor;
+
+            holeVector = new Vector4(
+                localCenter.x - localSize,
+                localCenter.y - localSize,
+                localCenter.x + localSize,
+                localCenter.y + localSize
+            );
+        }
+
+        // 셰이더 데이터 주입
+        var panelImage = _tutorialPanel.GetComponent<Image>();
+        if (panelImage != null && _runtimeMaterial != null)
+        {
+            panelImage.raycastTarget = true;
+
+            // 명시적으로 복제 가공된 런타임 머티리얼에 위치 좌표 주입
+            _runtimeMaterial.SetVector("_HoleRect", holeVector);
+
+            panelImage.SetMaterialDirty(); // 강제 UI 그래픽 갱신
+        }
+
+        SetPointerPosition();
+    }
+
+    // 구멍 안의 버튼이 클릭되었을 때 실행될 콜백
+    private void CleanUpPunchHole()
+    {
+        var filter = _tutorialPanel.GetComponent<PunchHoleFilter>();
+        if (filter != null) filter.ClearTarget();
+
+        var panelImage = _tutorialPanel.GetComponent<Image>();
+        if (panelImage != null && panelImage.material != null)
+        {
+            panelImage.material.SetVector("_HoleRect", Vector4.zero);
+        }
+    }
+
+    public void CompletePunchHoleStep()
+    {
+        if (_curIndex >= 0 && _curIndex < _tutorialSteps.Count &&
+            _tutorialSteps[_curIndex].showMode == ShowMode.PunchHole)
+        {
+            CleanUpPunchHole();
+            CleanUpActiveObjectComponents();
+            ProceedTutorial();
+        }
     }
 }

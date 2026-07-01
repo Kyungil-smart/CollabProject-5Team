@@ -55,7 +55,7 @@ public class SaveLoadSystem : MonoBehaviour
             QuestManager.Instance.ExportQuestData(data);     // 퀘스트 정보 저장
 
         if (StoryQuestManager.Instance != null)
-            StoryQuestManager.Instance.ExportStoryQuestData(data); // 스토리 퀘스트 진행 ID 저장
+            StoryQuestManager.Instance.ExportStoryQuestData(data); // 스토리 퀘스트 진행 상태 저장
 
         if (DateTimeManager.Instance != null)
             DateTimeManager.Instance.ExportSaveData(data);   // 날짜 정보 저장
@@ -109,7 +109,7 @@ public class SaveLoadSystem : MonoBehaviour
                 QuestManager.Instance.ImportQuestData(data);         // 퀘스트 정보 로드
 
             if (StoryQuestManager.Instance != null)
-                StoryQuestManager.Instance.ImportStoryQuestData(data); // 스토리 퀘스트 진행 ID 로드
+                StoryQuestManager.Instance.ImportStoryQuestData(data); // 스토리 퀘스트 진행 상태 로드
 
             if (DateTimeManager.Instance != null)
                 DateTimeManager.Instance.ImportSaveData(data);       // 날짜 정보 로드

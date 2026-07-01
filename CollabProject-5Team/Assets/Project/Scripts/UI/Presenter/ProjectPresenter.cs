@@ -371,7 +371,7 @@ namespace GameDevTycoon.UI.Ingame
                 project.artStyle,
                 project.engine
             );
-            _view.SetProgressBar(project.ProgressDayBar / 100f);
+            _view.SetProgressBar(project.ProgressDayBar);
 
             _view.SetOperationGroupVisible(false);
             _view.SetServiceStopInteractable(false);
@@ -390,7 +390,7 @@ namespace GameDevTycoon.UI.Ingame
                 record.artStyle,
                 record.engine
             );
-            _view.SetProgressBar(1f);
+            _view.SetProgressBar(100f);
             _view.SetOperationGroupVisible(true);
             SetServiceOperationValues(record);
             _view.SetServiceStopInteractable(!record.isServiceOver);

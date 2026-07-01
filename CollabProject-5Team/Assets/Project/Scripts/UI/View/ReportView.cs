@@ -132,7 +132,8 @@ namespace GameDevTycoon.UI.Ingame
         public void Hide()
         {
             // [DoTween Bottom Sheet 아웃 연출 추가 예정]
-            //_canvasReport.SetActive(false); // 현재 이 오브젝트가 비활성화 되면 두번(3주차)이후 보고서가 뜨지 않는 버그가 있음.
+            _canvasReport.SetActive(false);
+            SetSlideVisible(false);
         }
 
         public void ShowPanel(ReportPanel panel)
@@ -196,6 +197,8 @@ namespace GameDevTycoon.UI.Ingame
 
                 if (active)
                 {
+                    // 고정 GO 방식 전환으로 Awake 재호출 없음 — 매 바인딩마다 상태 초기화
+                    cards[i].SetDisabled(false);
                     cards[i].Bind(reports[i]);
                     int captured = i;
                     cards[i].OnCardClicked
@@ -214,7 +217,6 @@ namespace GameDevTycoon.UI.Ingame
             _detailTitleLable.text = report.so.title;
             _detailEmployeeNameLable.text = report.owner.so.Name;
             _detailContentLable.text = report.so.content;
-
             _profileIcon.sprite = report.owner.so.iconNormal;
 
             _departmentTagPrefab.Bind(report.role);

@@ -102,6 +102,10 @@ public class QuestInteract : MonoBehaviour, IPointerClickHandler, IPointerDownHa
     // TAP: 활성 오브젝트가 여러 개면 1탭으로 완료, 1개뿐이면 targetCount번 연타해야 완료
     public void OnPointerClick(PointerEventData eventData)
     {
+        TutorialManager.OnSomewhereTutorialCompleted?.Invoke();
+
+        TutorialManager.Instance.CompletePunchHoleStep();
+
         DailyQuest quest = QuestManager.Instance.curDailyQuest;
         if (quest == null || QuestManager.Instance.EffectiveControlType != ControlType.TAP) return;
 

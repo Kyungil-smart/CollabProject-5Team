@@ -92,6 +92,9 @@ namespace GameDevTycoon.UI.Ingame
 
         private int _selectedIndex = -1;
 
+        // 튜토리얼
+        private string _tutorialObjectId = "Tutorial_5";
+
         public Observable<Unit> OnSettingsClicked => _settingsButton.OnClickAsObservable();
         public Observable<Unit> OnQuestIconClicked => _questIconButton.OnClickAsObservable();
         public Observable<Unit> OnWorkStartClicked => _workStartButton.OnClickAsObservable();
@@ -158,6 +161,12 @@ namespace GameDevTycoon.UI.Ingame
                 _questTypeLabel = FindDeepChild(_questBanner.transform, "QuestTypeLabel")?.GetComponent<TextMeshProUGUI>();
 
             _questBanner.SetActive(false);
+
+            if (!string.IsNullOrEmpty(_tutorialObjectId) && TutorialManager.Instance != null)
+            {
+                TutorialManager.Instance.RegisterObject(_tutorialObjectId, this.gameObject);
+                Debug.Log($"[QuestInteract] 튜토리얼 ID {_tutorialObjectId} 등록 완료");
+            }
         }
 
         // [TODO: DateTimeManager에 year/month 데이터 추가 후 파라미터 확정]

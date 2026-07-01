@@ -1,7 +1,10 @@
 using Cysharp.Threading.Tasks;
+using NUnit.Framework;
 using System;
 using UnityEngine;
 using UnityEngine.UI;
+using System.Collections.Generic;
+using TMPro;
 
 public class NextDayImagePresenter : MonoBehaviour
 {
@@ -11,36 +14,55 @@ public class NextDayImagePresenter : MonoBehaviour
         ClockFill
     }
 
+    [System.Serializable]
+    public class DayMessageData
+    {
+        public DayOfWeek dayOfWeek;
+        [TextArea(2, 4)] public List<string> randomMessage; // 변수명 일치 (randomMessage)
+    }
+
+
     [Header("연출 모드 선택")]
     [SerializeField] private DirectionMode visualMode = DirectionMode.FadeInOut;
 
     [Header("[모드 1] 페이드인/아웃 컴포넌트")]
-    [SerializeField] private GameObject  _fadeGroupObj;  
-    [SerializeField] private CanvasGroup _fadeCanvasGroup;  
+    [SerializeField] private GameObject  _fadeGroupObj;
+    [SerializeField] private CanvasGroup _fadeCanvasGroup;
 
     [Header("[모드 2] 시계 쿨타임 컴포넌트")]
-    [SerializeField] private GameObject _clockGroupObj; 
+    [SerializeField] private GameObject _clockGroupObj;
     [SerializeField] private Image      _clockFillImage;
 
     [Header("낮 잠 전환 컴포넌트")]
-    [SerializeField] private GameObject  _nightGroupObj;
-    [SerializeField] private Image       _nightFillImage;
+    [SerializeField] private GameObject _nightGroupObj;
+    [SerializeField] private Image      _nightFillImage;
 
-    [Header("시간 조절")]
+    [Header("화면 전환 후 왼쪽에서 나타날 요일 UI")]
+    [SerializeField] private GameObject    _slidePopupGroupObj;
+    [SerializeField] private RectTransform _slidePopupRect;
+    [SerializeField] private CanvasGroup   _slidePopupCanvasGroup; 
+
+    [Header("시간 조절 (화면 가림용)")]
     [SerializeField, Min(0f)] float    fadeDurationSeconds = 0.5f;
     [SerializeField, Min(0f)] float visibleDurationSeconds = 1f;
 
+    [Header("시간 조절 (왼쪽 슬라이드 UI)")]
+    [SerializeField] private float slideDuration        = 0.4f; // 들어오고 나가는 이동 시간
+    [SerializeField] private float slideVisibleDuration = 1.5f; // 화면에 머무르는 시간
+    [SerializeField] private float startXPosition       = -250; // 시작 위치 (화면 왼쪽 밖 X 좌표)
+    [SerializeField] private float targetXPosition      = +250; // 도달 위치 (화면 안쪽 X 좌표)
+
+    [Header("요일 별 멘트")]
+    [SerializeField] private TextMeshProUGUI _dailyComment;
+    [SerializeField] private List<DayMessageData> _dayMessageDatas = new List<DayMessageData>();
+
     private void OnEnable()
     {
-        DateTimeManager.OnDateChangedVisual = PlayDateDirectionAsync;
         DateTimeManager.OnTimeChangedVisual = PlayNightDirectionAsync;
     }
 
     private void OnDisable()
     {
-        if (DateTimeManager.OnDateChangedVisual == PlayDateDirectionAsync)
-            DateTimeManager.OnDateChangedVisual = null;
-
         if (DateTimeManager.OnTimeChangedVisual == PlayNightDirectionAsync)
             DateTimeManager.OnTimeChangedVisual = null;
     }
@@ -56,9 +78,13 @@ public class NextDayImagePresenter : MonoBehaviour
         if (_clockGroupObj != null) _clockGroupObj.SetActive(false);
         if (_nightGroupObj != null) _nightGroupObj.SetActive(false);
 
+        if (_slidePopupGroupObj != null) _slidePopupGroupObj.SetActive(false);
+
         if (_fadeCanvasGroup != null) _fadeCanvasGroup.alpha = 0f;
-        if (_clockFillImage  != null) _clockFillImage.fillAmount = 0f;
-        if (_nightFillImage  != null) _nightFillImage.fillAmount = 0f;
+        if ( _clockFillImage != null) _clockFillImage.fillAmount = 0f;
+        if ( _nightFillImage != null) _nightFillImage.fillAmount = 0f;
+
+        if (_slidePopupCanvasGroup != null) _slidePopupCanvasGroup.alpha = 0f;
     }
 
     private async UniTask PlayNightDirectionAsync()
@@ -69,7 +95,6 @@ public class NextDayImagePresenter : MonoBehaviour
         float elapsed = 0f;
 
         if (_nightGroupObj == null || _nightFillImage == null) return;
-
         _nightGroupObj.SetActive(true);
 
         while (elapsed < duration)
@@ -89,7 +114,6 @@ public class NextDayImagePresenter : MonoBehaviour
         await UniTask.Delay(TimeSpan.FromSeconds(Mathf.Max(0f, visibleDurationSeconds)));
 
         elapsed = 0f;
-
         while (elapsed < duration)
         {
             elapsed += Time.deltaTime;
@@ -97,6 +121,7 @@ public class NextDayImagePresenter : MonoBehaviour
             await UniTask.Yield(PlayerLoopTiming.Update);
         }
         _nightFillImage.fillAmount = 0f;
+        _nightGroupObj.SetActive(false);
 
         HideAllGroups();
     }
@@ -108,10 +133,10 @@ public class NextDayImagePresenter : MonoBehaviour
         float duration = Mathf.Max(0f, fadeDurationSeconds);
         float elapsed = 0f;
 
+        // 1. 화면 가리기 연출
         if (visualMode == DirectionMode.FadeInOut)
         {
             if (_fadeGroupObj == null || _fadeCanvasGroup == null) return;
-
             _fadeGroupObj.SetActive(true);
 
             while (elapsed < duration)
@@ -122,7 +147,6 @@ public class NextDayImagePresenter : MonoBehaviour
             }
             _fadeCanvasGroup.alpha = 1f;
         }
-
         else if (visualMode == DirectionMode.ClockFill)
         {
             if (_clockGroupObj == null || _clockFillImage == null) return;
@@ -137,6 +161,7 @@ public class NextDayImagePresenter : MonoBehaviour
             _clockFillImage.fillAmount = 1f;
         }
 
+        // 2. 데이터 및 텍스트 미리 세팅
         if (DateTimeManager.Instance != null)
         {
             await DateTimeManager.Instance.ProcessDateLogic();
@@ -145,8 +170,8 @@ public class NextDayImagePresenter : MonoBehaviour
 
         await UniTask.Delay(TimeSpan.FromSeconds(Mathf.Max(0f, visibleDurationSeconds)));
 
+        // 3. 화면 다시 원래대로 돌리기
         elapsed = 0f;
-
         if (visualMode == DirectionMode.FadeInOut)
         {
             while (elapsed < duration)
@@ -156,8 +181,8 @@ public class NextDayImagePresenter : MonoBehaviour
                 await UniTask.Yield(PlayerLoopTiming.Update);
             }
             _fadeCanvasGroup.alpha = 0f;
+            _fadeGroupObj.SetActive(false);
         }
-
         else if (visualMode == DirectionMode.ClockFill)
         {
             while (elapsed < duration)
@@ -167,8 +192,83 @@ public class NextDayImagePresenter : MonoBehaviour
                 await UniTask.Yield(PlayerLoopTiming.Update);
             }
             _clockFillImage.fillAmount = 0f;
+            _clockGroupObj.SetActive(false);
         }
 
+        SetRandomMessage();
+
+        // 4. 화면이 완전히 원래대로 돌아오면 왼쪽 슬라이드 UI 연출 시작
+        await PlayLeftSlideAnimationAsync();
+
         HideAllGroups();
+    }
+
+    private async UniTask PlayLeftSlideAnimationAsync()
+    {
+        if (_slidePopupGroupObj == null || _slidePopupRect == null) return;
+
+        Vector2 anchoredPos = _slidePopupRect.anchoredPosition;
+        _slidePopupRect.anchoredPosition = new Vector2(startXPosition, anchoredPos.y);
+        if (_slidePopupCanvasGroup != null) _slidePopupCanvasGroup.alpha = 0f;
+
+        _slidePopupGroupObj.SetActive(true);
+
+        float elapsed = 0f;
+        while (elapsed < slideDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / slideDuration);
+
+            float currentX = Mathf.Lerp(startXPosition, targetXPosition, t);
+            _slidePopupRect.anchoredPosition = new Vector2(currentX, anchoredPos.y);
+
+            if (_slidePopupCanvasGroup != null) _slidePopupCanvasGroup.alpha = t;
+
+            await UniTask.Yield(PlayerLoopTiming.Update);
+        }
+        _slidePopupRect.anchoredPosition = new Vector2(targetXPosition, anchoredPos.y);
+        if (_slidePopupCanvasGroup != null) _slidePopupCanvasGroup.alpha = 1f;
+
+        await UniTask.Delay(TimeSpan.FromSeconds(Mathf.Max(0f, slideVisibleDuration)));
+
+        elapsed = 0f;
+        while (elapsed < slideDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / slideDuration);
+
+            float currentX = Mathf.Lerp(targetXPosition, startXPosition, t);
+            _slidePopupRect.anchoredPosition = new Vector2(currentX, anchoredPos.y);
+
+            if (_slidePopupCanvasGroup != null) _slidePopupCanvasGroup.alpha = 1f - t;
+
+            await UniTask.Yield(PlayerLoopTiming.Update);
+        }
+        _slidePopupRect.anchoredPosition = new Vector2(startXPosition, anchoredPos.y);
+        if (_slidePopupCanvasGroup != null) _slidePopupCanvasGroup.alpha = 0f;
+    }
+
+    private void SetRandomMessage()
+    {
+        if (_dailyComment == null) return;
+
+        DayOfWeek currentDay = DayOfWeek.Monday;
+        
+        if(DateTimeManager.Instance != null)
+            currentDay = DateTimeManager.Instance.currentDay;
+
+        Debug.Log($"[디버그] 현재 매니저의 요일: {currentDay}");
+
+        DayMessageData targetData = _dayMessageDatas.Find(data => data.dayOfWeek == currentDay);
+
+        string dailyText = "";
+
+        if (targetData != null && targetData.randomMessage != null && targetData.randomMessage.Count > 0)
+        {
+            int randomIndex = UnityEngine.Random.Range(0, targetData.randomMessage.Count);
+            dailyText = targetData.randomMessage[randomIndex];
+        }
+
+        _dailyComment.text = dailyText;
     }
 }

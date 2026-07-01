@@ -23,7 +23,8 @@ public class SaveData
 
     // QuestManager 저장
     public Dictionary<Role, int> weeklyBonusPoints = new();
-    public int storyQuestId = 1001;
+    public List<int> completedStoryQuestIds = new();
+    public int curSpyQuestID;
 
     // Company 저장
     [Header("Company Data")]
