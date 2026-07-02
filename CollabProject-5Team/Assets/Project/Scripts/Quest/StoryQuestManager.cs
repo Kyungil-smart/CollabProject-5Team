@@ -11,7 +11,7 @@ public class StoryQuestManager : MonoBehaviour
     public Action OnSpySelect;
 
     const int FirstStoryQuestId = 1001;
-    const int FirstHireQuestId  = 1002;
+    const int FirstHireQuestId = 1002;
     const int SpyQuestStartId = 1003;
     const int LargeProjectSpyQuestId = 1004;
     const int SelectSpyQuestId = 1042; // 스파이 퀘스트중 선형적 진행이 끝나고 스파이 결정 선택지가 나오는 퀘스트
@@ -42,9 +42,9 @@ public class StoryQuestManager : MonoBehaviour
         if (Instance != null && Instance != this) { Destroy(gameObject); return; }
         Instance = this;
         // 테스트 코드 (삭제예정)~
-        OnSpySelect += LogSpySelect; 
+        OnSpySelect += LogSpySelect;
     }
-    void LogSpySelect() 
+    void LogSpySelect()
     {
         Debug.Log("잡았다 요놈");
     }
@@ -220,12 +220,14 @@ public class StoryQuestManager : MonoBehaviour
     #region SPY GetSet
     Employee GetSpyEmployee()
     {
-        foreach (Employee employee in Company.Instance.curProject.GetAllEmployees())
+        if (Company.Instance.activeProjectCount.Value > 0)
         {
-            if (employee.MutableData.isSpy)
-                return employee;
+            foreach (Employee employee in Company.Instance.curProject.GetAllEmployees())
+            {
+                if (employee.MutableData.isSpy)
+                    return employee;
+            }
         }
-
         return null;
     }
     void SetRandomSpy()
