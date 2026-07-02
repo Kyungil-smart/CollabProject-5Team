@@ -1,10 +1,14 @@
+using System;
 using System.Collections.Generic;
 using R3;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 public class StoryQuestManager : MonoBehaviour
 {
     public static StoryQuestManager Instance { get; private set; }
+
+    public Action OnSpySelect;
 
     const int FirstStoryQuestId = 1001;
     const int FirstHireQuestId  = 1002;
@@ -37,7 +41,14 @@ public class StoryQuestManager : MonoBehaviour
     {
         if (Instance != null && Instance != this) { Destroy(gameObject); return; }
         Instance = this;
+        // 테스트 코드 (삭제예정)~
+        OnSpySelect += LogSpySelect; 
     }
+    void LogSpySelect() 
+    {
+        Debug.Log("잡았다 요놈");
+    }
+    // ~---
     public void ResetForNewDay()
     {
         if (_currentBubble != null)
@@ -244,8 +255,11 @@ public class StoryQuestManager : MonoBehaviour
         if (!completedStoryQuestIds.Contains(completedQuestId))
             completedStoryQuestIds.Add(completedQuestId);
 
+        // 스파이 선택 퀘스트 차별
         if (completedSpyQuest)
-            curSpyQuestID = completedQuestId < SelectSpyQuestId ? completedQuestId + 1 : 0; // 스파이 선택 퀘스트 차별
+            curSpyQuestID = completedQuestId < SelectSpyQuestId ? completedQuestId + 1 : 0;
+        if (completedQuestId == SelectSpyQuestId)
+            OnSpySelect?.Invoke();
 
         DateTimeManager.Instance.CompleteDayWork();
     }
