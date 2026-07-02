@@ -148,28 +148,26 @@ public class NPCController : MonoBehaviour
 
     public void EndConversation()
     {
-        IsInteracting = false;
+            IsInteracting = false;
 
-        if (Agent != null)
-        {
-            Agent.enabled = true;
-        }
-
-        if (CurrentTarget != null)
-        {
-            ((ActionPoint)CurrentTarget).IsOccupied = true;
-
-            if (IsAtDestination())
+            if (Agent != null)
             {
-                RestoreActionAnimation(); 
+                Agent.enabled = true;
             }
 
-            else
+            if (CurrentTarget != null)
             {
-                Agent.SetDestination(CurrentTarget.GetTransform().position);
-                Anim.SetBool("IsWalking", true);
+                ((ActionPoint)CurrentTarget).IsOccupied = true;
+
+                if (_currentState is NPCAction)
+                {
+                    RestoreActionAnimation();
+                }
+                else
+                {
+                    ChangeState(new NPCMove());
+                }
             }
-        }
 
         else
         {
