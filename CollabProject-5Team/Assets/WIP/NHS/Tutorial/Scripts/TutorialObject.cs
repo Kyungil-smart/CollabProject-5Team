@@ -7,6 +7,7 @@ public class TutorialObject : MonoBehaviour
     private void Start()
     {
         RegisterTutorialObject();
+        Debug.Log($"[TutorialObject: Start] : {_tutorialObjectId} 등록되었습니다. (Object: {gameObject.name})");
     }
 
     private void OnEnable()
@@ -14,6 +15,7 @@ public class TutorialObject : MonoBehaviour
         if (TutorialManager.Instance != null && !string.IsNullOrEmpty(_tutorialObjectId))
         {
             RegisterTutorialObject();
+            Debug.Log($"[TutorialObject : OnEnable] : {_tutorialObjectId} 등록되었습니다. (Object: {gameObject.name})");
         }
     }
 
@@ -24,6 +26,18 @@ public class TutorialObject : MonoBehaviour
 
         TutorialManager.Instance.RegisterObject(_tutorialObjectId, this.gameObject);
 
-        Debug.Log($"[TutorialObject] : {_tutorialObjectId} 등록되었습니다. (Object: {gameObject.name})");
+    }
+
+    public Vector3 GetWorldPosition()
+    {
+        RectTransform rt = GetComponent<RectTransform>();
+        if (rt != null)
+        {
+            Vector3[] corners = new Vector3[4];
+            rt.GetWorldCorners(corners);
+            return (corners[0] + corners[2]) / 2f;
+        }
+
+        return transform.position;
     }
 }
