@@ -116,6 +116,11 @@ namespace Dialogue
         /// </summary>
         public void ShowBusyMessage(Employee emp, string message = "지금은 좀 바빠 보인다...")
         {
+            if (_isDialogueRunning) return;
+
+            _isDialogueRunning   = true;
+            _currentEmployeeId   = emp.so.id;
+            _currentNpcController = emp.GetComponent<NPCController>();
 
             CameraManager.Instance.IsUIOpen.Value = true;
             CameraManager.Instance.FocusOnTarget(emp.transform.position);
@@ -124,7 +129,11 @@ namespace Dialogue
 
             _currentView = _employeeView;
             _employeeView.OnTypingComplete = null;
-            _employeeView.OnNextAction     = () => HideAll();
+            _employeeView.OnNextAction     = () =>
+            {
+                _isDialogueRunning = false; 
+                HideAll();
+            }; 
 
             _employeeView.Bind(new EmployeeDialogueViewData
             {
