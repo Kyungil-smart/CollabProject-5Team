@@ -47,13 +47,6 @@ public class StoryDialoguePlayer : MonoBehaviour
         _onComplete       = onComplete;
         _isDialogueRunning = true;
 
-        var storyNPC = _speakerEmployees.Values.FirstOrDefault(e => e != null);
-        if (storyNPC != null)
-        {
-            CameraManager.Instance.IsUIOpen.Value = true;
-            CameraManager.Instance.FocusOnTarget(storyNPC.transform.position);
-        }
-
         ShowNode(startNodeId);
     }
 
@@ -136,9 +129,6 @@ public class StoryDialoguePlayer : MonoBehaviour
         _currentView = null;
         _isDialogueRunning = false;
         _currentNodeId = 0;
-
-        CameraManager.Instance.ResetCamera();
-        CameraManager.Instance.IsUIOpen.Value = false;
 
         if (_playerView   != null) _playerView.gameObject.SetActive(false);
         if (_employeeView != null) _employeeView.gameObject.SetActive(false);
