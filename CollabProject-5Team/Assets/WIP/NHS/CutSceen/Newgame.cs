@@ -28,8 +28,9 @@ public class Newgame : MonoBehaviour
     [SerializeField] private Button         _playerNameAcceptButton;
 
     [Header("경고 팝업")]
-    [SerializeField] private GameObject _warningPanel;
-    [SerializeField] private Button     _warningCheckButton;
+    [SerializeField] private GameObject      _warningPanel;
+    [SerializeField] private Button          _warningCheckButton;
+    [SerializeField] private TextMeshProUGUI _warningText;
 
     [Header("스킵")]
     [SerializeField] private Button _skipButton;
@@ -38,6 +39,7 @@ public class Newgame : MonoBehaviour
     [Header("컷씬")]
     [SerializeField] private CutScenePanelUI    _cutSceneUI;
     [SerializeField] private List<CutSceneData> _cutSceneList;
+    
 
     private string _companyName = "미정";
     private string _playerName  = "주인공";
@@ -207,6 +209,7 @@ public class Newgame : MonoBehaviour
         if (string.IsNullOrWhiteSpace(nameToCheck))
         {
             _warningPanel.SetActive(true);
+            _warningText.text = "이름이 비어있어요!";
             Debug.LogWarning("이름이 비어있습니다.");
             return false;
         }
@@ -214,6 +217,7 @@ public class Newgame : MonoBehaviour
         if (nameToCheck.Length < 2 || nameToCheck.Length > 8)
         {
             _warningPanel.SetActive(true);
+            _warningText.text = "글자 수를 맞춰 주세요!";
             Debug.LogWarning("이름은 2자 이상, 8자 이하로 설정해야 합니다.");
             return false;
         }
@@ -222,6 +226,7 @@ public class Newgame : MonoBehaviour
         if (!Regex.IsMatch(nameToCheck, pattern))
         {
             _warningPanel.SetActive(true);
+            _warningText.text = "올바르지 않은 문자 방식이예요!";
             Debug.LogWarning("올바르지 않은 문자가 포함되어 있거나, 자음/모음만 입력되었습니다. (예: ㅇㄹㅇㄹ)");
             return false;
         }
@@ -236,6 +241,7 @@ public class Newgame : MonoBehaviour
                 if (nameToCheck.ToLower().Contains(word.Trim().ToLower()))
                 {
                     _warningPanel.SetActive(true);
+                    _warningText.text = "나쁜말은 안되요~";
                     Debug.LogWarning($"금지어가 포함되어 있습니다: {word}");
                     return false; 
                 }
