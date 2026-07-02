@@ -10,7 +10,7 @@ namespace GameDevTycoon.UI
 {
     /// <summary>
     /// Canvas_Alert 담당 View.
-    /// ConfirmPopup, FireConfirmPopup, AlertPopup, NoticePopup 표시 제어.
+    /// ConfirmPopup, FireConfirmPopup, AlertPopup, NoticePopup, SpyPopup 표시 제어.
     /// 팝업 간 배타적 활성화는 Show 메서드 호출 측에서 보장.
     /// 타이틀 씬에서는 ConfirmPopup만 연결해서 사용 가능.
     /// </summary>
@@ -41,6 +41,11 @@ namespace GameDevTycoon.UI
         [SerializeField] private TextMeshProUGUI _noticeEmployeeNameLabel;
         [SerializeField] private Image _noticeEmployeeIcon;
 
+        [Header("SpyPopup")]
+        [SerializeField] private GameObject _spyPopup;
+        [SerializeField] private Button _spyConfirmButton;
+        [SerializeField] private Button _spyCancelButton;
+
         private const float NOTICE_DURATION = 3f;
         private const float POPUP_FADE_DURATION = 0.15f;
 
@@ -49,6 +54,8 @@ namespace GameDevTycoon.UI
         private IDisposable _fireConfirmSubscription;
         private IDisposable _fireCancelSubscription;
         private IDisposable _alertConfirmSubscription;
+        private IDisposable _spySubscription;
+        private IDisposable _spyCancelSubscription;
 
         private void Awake()
         {
@@ -56,6 +63,7 @@ namespace GameDevTycoon.UI
             if (_fireConfirmPopup != null) _fireConfirmPopup.SetActive(false);
             if (_alertPopup != null) _alertPopup.SetActive(false);
             if (_noticePopup != null) _noticePopup.SetActive(false);
+            if (_spyPopup != null) _spyPopup.SetActive(false);
         }
 
         /// <summary>
@@ -151,16 +159,45 @@ namespace GameDevTycoon.UI
             WaitAndHideNoticeAsync().Forget();
         }
 
+        /// <summary>
+        /// 최종 스파이 지목 확인 팝업. 고정 텍스트 형태이므로 매개변수 없이 이벤트를 바인딩합니다.
+        /// </summary>
+        public void ShowSpyConfirmPopup(Action onConfirm, Action onCancel = null)
+        {
+            if (_spyPopup == null) return;
+
+            ClearSpyPopupSubscriptions();
+            _spyPopup.SetActive(true);
+
+            _spySubscription = _spyConfirmButton.OnClickAsObservable()
+                .Subscribe(_ =>
+                {
+                    ClearSpyPopupSubscriptions();
+                    _spyPopup.SetActive(false);
+                    onConfirm?.Invoke();
+                });
+
+            _spyCancelSubscription = _spyCancelButton.OnClickAsObservable()
+                .Subscribe(_ =>
+                {
+                    ClearSpyPopupSubscriptions();
+                    _spyPopup.SetActive(false);
+                    onCancel?.Invoke();
+                });
+        }
+
         public void HideAll()
         {
             ClearConfirmPopupSubscriptions();
             ClearFireConfirmPopupSubscriptions();
             ClearAlertPopupSubscription();
+            ClearSpyPopupSubscriptions();
 
             if (_confirmPopup != null) _confirmPopup.SetActive(false);
             if (_fireConfirmPopup != null) _fireConfirmPopup.SetActive(false);
             if (_alertPopup != null) _alertPopup.SetActive(false);
             if (_noticePopup != null) _noticePopup.SetActive(false);
+            if (_spyPopup != null) _spyPopup.SetActive(false);
         }
 
         private void OnDestroy()
@@ -168,6 +205,7 @@ namespace GameDevTycoon.UI
             ClearConfirmPopupSubscriptions();
             ClearFireConfirmPopupSubscriptions();
             ClearAlertPopupSubscription();
+            ClearSpyPopupSubscriptions();
         }
 
         private async UniTaskVoid WaitAndHideNoticeAsync()
@@ -199,6 +237,14 @@ namespace GameDevTycoon.UI
         {
             _alertConfirmSubscription?.Dispose();
             _alertConfirmSubscription = null;
+        }
+
+        private void ClearSpyPopupSubscriptions()
+        {
+            _spySubscription?.Dispose();
+            _spyCancelSubscription?.Dispose();
+            _spySubscription = null;
+            _spyCancelSubscription = null;
         }
     }
 }

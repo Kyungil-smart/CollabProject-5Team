@@ -218,6 +218,17 @@ public class StoryQuestManager : MonoBehaviour
     #endregion
 
     #region SPY GetSet
+    /// <summary>
+    /// [원리 설명] 외부(Presenter 등)에서 특정 직원을 스파이로 의심하여 판정을 요청할 때 사용하는 검증 인터페이스입니다.
+    /// 실제 데이터 원본(GetSpyEmployee)을 외부에 노출(Public)하지 않고, 참/거짓 결과만 안전하게 반환하여 데이터 오염을 방지합니다.
+    /// </summary>
+    public bool CheckIsSpy(Employee targetEmployee)
+    {
+        if (targetEmployee == null) return false;
+
+        return targetEmployee == GetSpyEmployee();
+    }
+
     Employee GetSpyEmployee()
     {
         foreach (Employee employee in Company.Instance.curProject.GetAllEmployees())
