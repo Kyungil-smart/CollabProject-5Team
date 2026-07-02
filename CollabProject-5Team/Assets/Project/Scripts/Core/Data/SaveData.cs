@@ -66,6 +66,8 @@ public class EmployeeSaveData
     public int preLoyalty;
     public int preFatigue;
 
+    public bool isSpy;
+
     public EmployeeWorkStatus workStatus;
     public bool hasTalkedThisWeek;
     public List<string> completedProjectNames = new();
