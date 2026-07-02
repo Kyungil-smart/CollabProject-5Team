@@ -5,7 +5,7 @@ using UnityEngine.EventSystems;
 
 namespace Dialogue
 {
-    public abstract class DialogueBaseView : MonoBehaviour, IPointerDownHandler
+    public abstract class DialogueBaseView : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
     {
         [SerializeField] protected TextMeshProUGUI _dialogueText;
 
@@ -14,6 +14,7 @@ namespace Dialogue
 
         private Tween _typingTween;
         private bool _isChoiceMode;
+        private bool _justSkipped;
 
         public bool IsTyping { get; private set; }
 
@@ -23,22 +24,6 @@ namespace Dialogue
         public void SetChoiceMode(bool isChoice)
         {
             _isChoiceMode = isChoice;
-        }
-
-        private void OnNextClicked()
-        {
-            if (_isChoiceMode) return;
-
-            if (IsTyping)
-            {
-                SkipTyping();
-                return;
-            }
-
-            if (OnNextAction != null)
-                OnNextAction.Invoke();
-            else
-                Advance();
         }
 
         private void Advance()
@@ -51,7 +36,23 @@ namespace Dialogue
 
         public void OnPointerDown(PointerEventData eventData)
         {
-            OnNextClicked();
+            if (IsTyping)
+            {
+                SkipTyping();
+                _justSkipped = true;
+            }
+        }
+
+        public void OnPointerUp(PointerEventData eventData)
+        {
+            if (_isChoiceMode) return;
+            if (_justSkipped) { _justSkipped = false; return; }
+            if (IsTyping) return;
+
+            if (OnNextAction != null)
+                OnNextAction.Invoke();
+            else
+                Advance();
         }
 
         protected void StartTyping(string text)
@@ -98,6 +99,7 @@ namespace Dialogue
             }
             IsTyping = false;
             _isChoiceMode = false;
+            _justSkipped = false;
         }
     }
 }
