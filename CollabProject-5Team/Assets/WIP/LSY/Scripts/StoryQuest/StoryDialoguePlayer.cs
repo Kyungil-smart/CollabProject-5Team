@@ -76,12 +76,14 @@ public class StoryDialoguePlayer : MonoBehaviour
 
         if (node.isUser)
         {
+            _employeeView.gameObject.SetActive(false);
             _currentView = _playerView;
             _playerView.Bind(Company.Instance.playerName, resolvedText);
             _playerView.OnNextAction = AdvanceDialogue;
         }
         else
         {
+            _playerView.gameObject.SetActive(false);
             _currentView = _employeeView;
             _employeeView.Bind(new EmployeeDialogueViewData
             {
