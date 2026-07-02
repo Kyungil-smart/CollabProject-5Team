@@ -7,6 +7,8 @@ public class AudioManager : MonoBehaviour
     public static AudioManager Instance;
     public AudioMixer audioMixer;
 
+    [SerializeField] private AudioSource _bgmSource;
+
     bool[] isMute = new bool[3];
     float[] audioVolumes = new float[3];
 
@@ -42,6 +44,23 @@ public class AudioManager : MonoBehaviour
             isMute[type] = false;
             SetAudioVolume(audioMixerType, audioVolumes[type]);
         }
+    }
+
+    public void PlayBGM(AudioClip clip, bool loop = true)
+    {
+        if (_bgmSource == null) return;
+        if (_bgmSource.clip == clip && _bgmSource.isPlaying) return;
+
+        _bgmSource.clip = clip;
+        _bgmSource.loop = loop;
+        _bgmSource.Play();
+    }
+
+    public void StopBGM()
+    {
+        if (_bgmSource == null) return;
+        _bgmSource.Stop();
+        _bgmSource.clip = null;
     }
 
     // 버튼 연결용 함수

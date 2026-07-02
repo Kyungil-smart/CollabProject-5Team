@@ -26,6 +26,10 @@ namespace GameDevTycoon.UI.Ingame
         [SerializeField] private GameObject _workStartIconPrefab;
         [SerializeField] private Vector3 _workStartIconOffset = new Vector3(0f, 1.5f, 0f);
 
+        [Header("BGM")]
+        [SerializeField] private AudioClip _dayBGM;
+        [SerializeField] private AudioClip _nightBGM;
+
         private WorkStartIcon _workStartIcon;
 
         private HRPresenter _hrPresenter;
@@ -67,6 +71,7 @@ namespace GameDevTycoon.UI.Ingame
             CloseAllBottomPopups();  // HR, Project, Company 닫기
             _settingsPresenter.Hide();  // 세팅도 같이 닫기
             _view.SwitchToNight();
+            AudioManager.Instance?.PlayBGM(_nightBGM);
             RefreshHUD();
         }
 
@@ -245,6 +250,7 @@ namespace GameDevTycoon.UI.Ingame
         private void OnNewDay()
         {
             _view.SwitchToDay();
+            AudioManager.Instance?.PlayBGM(_dayBGM);
 
             _desk = FindObjectOfType<DeskInteract>();
 

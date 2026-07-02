@@ -23,19 +23,21 @@ namespace GameDevTycoon.UI
         private bool _isBGMOn = true;
         private bool _isSFXOn = true;
 
+        private float _bgmVolume = 100f;
+        private float _sfxVolume = 100f;
+
         private void Start()
         {
             _view.SetBGMToggle(_isBGMOn);
             _view.SetSFXToggle(_isSFXOn);
+            _view.SetBGMSlider(100f);
+            _view.SetSFXSlider(100f);
 
             bool isGameScene = gameObject.scene.name == "GameScene";
             _view.SetTitleButtonVisible(isGameScene);
 
             BindButtons();
-
-            // [추후 활성화]
-            // LoadSettings();
-            // BindSliders();
+            BindSliders();
         }
 
         public void Show()
@@ -76,17 +78,37 @@ namespace GameDevTycoon.UI
         {
             _isBGMOn = !_isBGMOn;
             _view.SetBGMToggle(_isBGMOn);
-
-            // 슬라이더 0단계 시 자동 OFF — 슬라이더 연결 후 처리
-            // [TODO: AudioMixer 연결 후 ApplyBGM 호출]
+            float vol = _isBGMOn ? _bgmVolume : 0f;
+            AudioManager.Instance?.SetAudioVolume(EAudioMixerType.BGM, Mathf.Max(vol / 50f, 0.0001f));
         }
 
         private void OnSFXToggleClicked()
         {
             _isSFXOn = !_isSFXOn;
             _view.SetSFXToggle(_isSFXOn);
+            float vol = _isSFXOn ? _sfxVolume : 0f;
+            AudioManager.Instance?.SetAudioVolume(EAudioMixerType.SFX, Mathf.Max(vol / 50f, 0.0001f));
+        }
 
-            // [TODO: AudioMixer 연결 후 ApplySFX 호출]
+        private void BindSliders()
+        {
+            _view.OnBGMChanged
+                .Subscribe(v =>
+                {
+                    _bgmVolume = v;
+                    if (_isBGMOn)
+                        AudioManager.Instance?.SetAudioVolume(EAudioMixerType.BGM, Mathf.Max(v / 50f, 0.0001f));
+                })
+                .AddTo(this);
+
+            _view.OnSFXChanged
+                .Subscribe(v =>
+                {
+                    _sfxVolume = v;
+                    if (_isSFXOn)
+                        AudioManager.Instance?.SetAudioVolume(EAudioMixerType.SFX, Mathf.Max(v / 50f, 0.0001f));
+                })
+                .AddTo(this);
         }
 
         private void OnTitleClicked()
@@ -98,11 +120,5 @@ namespace GameDevTycoon.UI
             });
         }
 
-        // [추후 활성화]
-        // private void LoadSettings() { ... }
-        // private void BindSliders() { ... }
-        // private void ApplyBGM(float value) { ... }
-        // private void ApplySFX(float value) { ... }
-        // private static float LinearToDecibel(float linear) => linear > 0.0001f ? Mathf.Log10(linear) * 20f : -80f;
     }
 }
