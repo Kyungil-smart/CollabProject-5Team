@@ -151,7 +151,7 @@ namespace GameDevTycoon.UI.Ingame
             if (isCorrect)
             {
                 Debug.Log($"[SpySystem] 정답 성공 판정: {target.so.Name} 검거 완료.");
-
+                StoryQuestManager.Instance.isCorrectSpySelected = true;
                 target.isSpy = false;
 
                 // "잡았다 요놈" 이미지 연출 팝업을 띄웁니다.
@@ -170,7 +170,7 @@ namespace GameDevTycoon.UI.Ingame
             else
             {
                 Debug.Log($"[SpySystem] 오답 실패 판정: {target.so.Name}은 일반 직원입니다.");
-
+                StoryQuestManager.Instance.isCorrectSpySelected = false;
                 // 오답일 경우, 공용 경고창을 통해 유저에게 힌트나 실패 알림을 제공합니다.
                 _alertView.ShowAlertPopup($"{target.so.Name}은(는) 스파이가 아니었습니다! 다른 직원을 의심해 보세요.");
 

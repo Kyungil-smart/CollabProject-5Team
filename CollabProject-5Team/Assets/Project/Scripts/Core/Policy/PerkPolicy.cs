@@ -91,7 +91,7 @@ public static class PerkPolicy
     }
 
     // ─ 유지력 계수 ─
-    public const float RETENTION_DECAY  = 0.05f; // 매주 감소
+    public const float RETENTION_DECAY  = 0.01f; // 매일 감소
     public const float RETENTION_UPDATE = 0.2f;  // 업데이트 승인 시 회복
 
     // - 유저수 ─
