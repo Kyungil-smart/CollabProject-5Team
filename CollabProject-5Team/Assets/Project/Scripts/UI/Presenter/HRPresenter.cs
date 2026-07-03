@@ -14,6 +14,8 @@ namespace GameDevTycoon.UI.Ingame
     /// </summary>
     public sealed class HRPresenter : MonoBehaviour, IBottomNightUI
     {
+        private const int RecruitCostPerEmployee = 10000;
+
         [SerializeField] private HRView _view;
         [SerializeField] private AlertView _alertView;
         [SerializeField] private HUDPresenter _hudPresenter;
@@ -248,7 +250,7 @@ namespace GameDevTycoon.UI.Ingame
         private void RefreshRecruitCost()
         {
             int totalCount = _view.AllSliders.Sum(s => s.Count);
-            int totalCost = totalCount * 1000;
+            int totalCost = totalCount * RecruitCostPerEmployee;
             _view.SetTotalRecruitInfo(totalCount, totalCost);
             _view.SetRecruitConfirmInteractable(totalCount > 0);
         }
@@ -523,7 +525,7 @@ namespace GameDevTycoon.UI.Ingame
 
         private int CalculateRecruitCost()
         {
-            return _view.AllSliders.Sum(s => s.Count) * 1000;
+            return _view.AllSliders.Sum(s => s.Count) * RecruitCostPerEmployee;
         }
 
         private static int GetRoleOrder(Role role) => role switch

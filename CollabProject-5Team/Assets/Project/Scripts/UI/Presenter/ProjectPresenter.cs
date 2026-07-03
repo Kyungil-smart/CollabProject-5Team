@@ -706,9 +706,9 @@ namespace GameDevTycoon.UI.Ingame
 
         private static int GetRequiredCost(ProjectSize scale) => scale switch
         {
-            ProjectSize.Medium => 10000,
-            ProjectSize.Large => 100000,
-            _ => 1000,
+            ProjectSize.Medium => 50000,
+            ProjectSize.Large => 200000,
+            _ => 15000,
         };
 
         private static int GetMaxEmployeePerPart(ProjectSize scale) => scale switch
