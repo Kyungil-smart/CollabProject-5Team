@@ -239,6 +239,7 @@ namespace GameDevTycoon.UI.Ingame
         {
             Debug.Log($"[ReportView] ToggleSlide called, Button.interactable: {_slideToggleButton.interactable}");
 
+            AudioManager.Instance?.PlaySFXClick();
             _isSlideExpanded = !_isSlideExpanded;
 
             _activeSlideTween?.Kill();

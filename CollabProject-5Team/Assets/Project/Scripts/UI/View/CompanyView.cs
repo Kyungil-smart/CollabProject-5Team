@@ -1,6 +1,7 @@
 using R3;
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace GameDevTycoon.UI.Ingame
@@ -113,8 +114,19 @@ namespace GameDevTycoon.UI.Ingame
 
         public bool IsVisible => _companyPopup.activeSelf;
 
+        private static void RegisterDropdownSFX(TMP_Dropdown dropdown)
+        {
+            var trigger = dropdown.gameObject.GetComponent<EventTrigger>()
+                          ?? dropdown.gameObject.AddComponent<EventTrigger>();
+            var entry = new EventTrigger.Entry { eventID = EventTriggerType.PointerClick };
+            entry.callback.AddListener(_ => AudioManager.Instance?.PlaySFXClick());
+            trigger.triggers.Add(entry);
+        }
+
         private void Awake()
         {
+            RegisterDropdownSFX(_filterDropdown);
+
             _expansionConfirmButton.interactable = false;
             _expansionConfirmButton.image.sprite = _confirmInactiveSprite;
 

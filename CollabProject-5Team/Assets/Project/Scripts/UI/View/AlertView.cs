@@ -80,6 +80,7 @@ namespace GameDevTycoon.UI
             _confirmPopupConfirmSubscription = _confirmPopupConfirmButton.OnClickAsObservable()
                 .Subscribe(_ =>
                 {
+                    AudioManager.Instance?.PlaySFXPositive();
                     ClearConfirmPopupSubscriptions();
                     _confirmPopup.SetActive(false);
                     onConfirm?.Invoke();
@@ -88,6 +89,7 @@ namespace GameDevTycoon.UI
             _confirmPopupCancelSubscription = _confirmPopupCancelButton.OnClickAsObservable()
                 .Subscribe(_ =>
                 {
+                    AudioManager.Instance?.PlaySFXNegative();
                     ClearConfirmPopupSubscriptions();
                     _confirmPopup.SetActive(false);
                     onCancel?.Invoke();
@@ -111,6 +113,7 @@ namespace GameDevTycoon.UI
             _fireConfirmSubscription = _fireConfirmButton.OnClickAsObservable()
                 .Subscribe(_ =>
                 {
+                    AudioManager.Instance?.PlaySFXNegative();
                     ClearFireConfirmPopupSubscriptions();
                     _fireConfirmPopup.SetActive(false);
                     onConfirm?.Invoke();
@@ -119,6 +122,7 @@ namespace GameDevTycoon.UI
             _fireCancelSubscription = _fireCancelButton.OnClickAsObservable()
                 .Subscribe(_ =>
                 {
+                    AudioManager.Instance?.PlaySFXNegative();
                     ClearFireConfirmPopupSubscriptions();
                     _fireConfirmPopup.SetActive(false);
                     onCancel?.Invoke();
@@ -139,6 +143,7 @@ namespace GameDevTycoon.UI
             _alertConfirmSubscription = _alertConfirmButton.OnClickAsObservable()
                 .Subscribe(_ =>
                 {
+                    AudioManager.Instance?.PlaySFXClick();
                     ClearAlertPopupSubscription();
                     _alertPopup.SetActive(false);
                 });
@@ -172,6 +177,7 @@ namespace GameDevTycoon.UI
             _spySubscription = _spyConfirmButton.OnClickAsObservable()
                 .Subscribe(_ =>
                 {
+                    AudioManager.Instance?.PlaySFXPositive();
                     ClearSpyPopupSubscriptions();
                     _spyPopup.SetActive(false);
                     onConfirm?.Invoke();
@@ -180,6 +186,7 @@ namespace GameDevTycoon.UI
             _spyCancelSubscription = _spyCancelButton.OnClickAsObservable()
                 .Subscribe(_ =>
                 {
+                    AudioManager.Instance?.PlaySFXNegative();
                     ClearSpyPopupSubscriptions();
                     _spyPopup.SetActive(false);
                     onCancel?.Invoke();

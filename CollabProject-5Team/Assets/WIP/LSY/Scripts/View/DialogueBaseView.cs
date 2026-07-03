@@ -38,8 +38,14 @@ namespace Dialogue
         {
             if (IsTyping)
             {
+                AudioManager.Instance?.PlaySFXClick();
                 SkipTyping();
                 _justSkipped = true;
+                if (!_isChoiceMode)
+                {
+                    if (OnNextAction != null) OnNextAction.Invoke();
+                    else Advance();
+                }
             }
         }
 
@@ -49,6 +55,7 @@ namespace Dialogue
             if (_justSkipped) { _justSkipped = false; return; }
             if (IsTyping) return;
 
+            AudioManager.Instance?.PlaySFXClick();
             if (OnNextAction != null)
                 OnNextAction.Invoke();
             else
