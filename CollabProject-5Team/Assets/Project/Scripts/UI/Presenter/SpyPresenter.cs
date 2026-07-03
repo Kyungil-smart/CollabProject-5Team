@@ -125,6 +125,8 @@ namespace GameDevTycoon.UI.Ingame
             bool isCorrect = StoryQuestManager.Instance.CheckIsSpy(selectedEmployee);
 
             ShowResultNotification(isCorrect, selectedEmployee);
+
+            // 지목 처리가 완전히 완료되었으므로, 상위 플로우에서 전달받은 콜백을 수행하고 프레임을 닫습니다.
             ClosePopup();
             _onSpySelectCompleted?.Invoke();
             _onSpySelectCompleted = null;
@@ -148,34 +150,29 @@ namespace GameDevTycoon.UI.Ingame
         /// </summary>
         private void ShowResultNotification(bool isCorrect, Employee target)
         {
+            // 지목 시점에는 "잡았다 요놈" 연출을 직접 제어하지 않고 결과 플래그만 세팅합니다.
+            // 최종 연출은 다음 날 후속 스토리 퀘스트 대사 출력 중에 기획에 맞춰 유동적으로 트리거됩니다.
             if (isCorrect)
             {
                 Debug.Log($"[SpySystem] 정답 성공 판정: {target.so.Name} 검거 완료.");
-                StoryQuestManager.Instance.isCorrectSpySelected = true;
+
+                // 직원의 스파이 플래그 해제 및 퀘스트 성공 플래그 세팅
                 target.isSpy = false;
-
-                // "잡았다 요놈" 이미지 연출 팝업을 띄웁니다.
-                _alertView.ShowSpySuccessResult(onClose: () =>
-                {
-                    _isProcessing = false;
-                    ClosePopup();
-
-                    // 연출이 완벽하게 종료되면 하루 일과를 마감하고 다음 단계로 진행합니다.
-                    if (DateTimeManager.Instance != null)
-                    {
-                        DateTimeManager.Instance.CompleteDayWork();
-                    }
-                });
+                StoryQuestManager.Instance.isCorrectSpySelected = true;
             }
             else
             {
-                Debug.Log($"[SpySystem] 오답 실패 판정: {target.so.Name}은 일반 직원입니다.");
-                StoryQuestManager.Instance.isCorrectSpySelected = false;
-                // 오답일 경우, 공용 경고창을 통해 유저에게 힌트나 실패 알림을 제공합니다.
-                _alertView.ShowAlertPopup($"{target.so.Name}은(는) 스파이가 아니었습니다! 다른 직원을 의심해 보세요.");
+                Debug.Log($"[SpySystem] 오답 실패 판정: {target.so.Name} 선택.");
 
-                // 오답 시에는 팝업을 닫지 않고 다시 고를 수 있게 상호작용 잠금을 풀어줍니다.
-                _isProcessing = false;
+                StoryQuestManager.Instance.isCorrectSpySelected = false;
+            }
+
+            // 스파이 최종 선택 절차가 완료되었으므로 프로세스 플래그를 밀어주고 당일 일과를 마감합니다.
+            _isProcessing = false;
+
+            if (DateTimeManager.Instance != null)
+            {
+                DateTimeManager.Instance.CompleteDayWork();
             }
         }
 
