@@ -16,27 +16,31 @@ namespace GameDevTycoon.UI.Title
         [SerializeField] private SettingsPresenter _settingsPresenter;
         [SerializeField] private LoadPresenter _loadPresenter;
 
+        [Header("BGM")]
+        [SerializeField] private AudioClip _bgm;
+
         private void Start()
         {
+            AudioManager.Instance?.PlayBGM(_bgm);
             BindButtons();
         }
 
         private void BindButtons()
         {
             _view.OnStartClicked
-                .Subscribe(_ => LoadNewGameSceneAsync().Forget())
+                .Subscribe(_ => { AudioManager.Instance?.PlaySFXPositive(); LoadNewGameSceneAsync().Forget(); })
                 .AddTo(this);
 
             _view.OnLoadClicked
-                .Subscribe(_ => _loadPresenter.Show())
+                .Subscribe(_ => { AudioManager.Instance?.PlaySFXClick(); _loadPresenter.Show(); })
                 .AddTo(this);
 
             _view.OnSettingsClicked
-                .Subscribe(_ => _settingsPresenter.Show())
+                .Subscribe(_ => { AudioManager.Instance?.PlaySFXClick(); _settingsPresenter.Show(); })
                 .AddTo(this);
 
             _view.OnQuitClicked
-                .Subscribe(_ => Application.Quit())
+                .Subscribe(_ => { AudioManager.Instance?.PlaySFXNegative(); Application.Quit(); })
                 .AddTo(this);
         }
 

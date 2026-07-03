@@ -54,6 +54,9 @@ public class TutorialManager : MonoBehaviour
     [SerializeField] private Material _templateMaterial; // 인스펙터에서 M_TutorialPunchHole 할당!
     private Material _runtimeMaterial;
 
+    [Header("BGM")]
+    [SerializeField] private AudioClip _bgm;
+
     [Header("Index 23")]
     [SerializeField] private TMP_InputField _myInputField;
 
@@ -139,6 +142,7 @@ public class TutorialManager : MonoBehaviour
     /////////////////// - 실행 - ///////////////////
     private void StartTutorial()
     {
+        AudioManager.Instance?.PlayBGM(_bgm);
         ProceedTutorial();
     }
 

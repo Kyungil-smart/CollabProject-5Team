@@ -31,6 +31,8 @@ public class _EmployeeManager : MonoBehaviour
     const float DailyLeaveChance = 0.25f;
     public static event Action<string> OnEmployeeLeft;
 
+    [Header("스스로 퇴사 가능?")]
+    public bool canLeaveSelf;
     #region DontDestroyOnLoad 없는 Instance
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     public static void Init() => Instance = null;
@@ -172,6 +174,8 @@ public class _EmployeeManager : MonoBehaviour
 
     public void TryProcessDailyLeave()
     {
+        if (!canLeaveSelf) return;
+
         for (int i = 0; i < leavePendingEmployees.Count; i++)
         {
             Employee employee = leavePendingEmployees[i];
@@ -304,6 +308,7 @@ public class _EmployeeManager : MonoBehaviour
                 preDesire = emp.MutableData.preDesire,
                 preLoyalty = emp.MutableData.preLoyalty,
                 preFatigue = emp.MutableData.preFatigue,
+                isSpy = emp.isSpy,
 
                 workStatus = emp.WorkStatus,
                 hasTalkedThisWeek = emp.hasTalkedThisWeek,
@@ -368,6 +373,7 @@ public class _EmployeeManager : MonoBehaviour
                 preFatigue = empSave.preFatigue
             };
 
+            emp.isSpy = empSave.isSpy;
             emp.hasTalkedThisWeek = empSave.hasTalkedThisWeek;
             emp.completedProjectNames = empSave.completedProjectNames != null
                 ? new List<string>(empSave.completedProjectNames)

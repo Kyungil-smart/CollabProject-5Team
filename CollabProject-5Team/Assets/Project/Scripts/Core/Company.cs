@@ -83,6 +83,7 @@ public class Company : MonoBehaviour
             gold.Value = project.RequiredCost + goldBeforeStart;
 
         StartNewProject(project);
+        VerifyTestLargeProjectSpy(project);
         selectedProjectEmployees.Clear();
     }
     bool EnsureTestEmployees(Role role, int targetCount)
@@ -185,6 +186,18 @@ public class Company : MonoBehaviour
                 return "테스트 소형 프로젝트";
         }
     }
+    void VerifyTestLargeProjectSpy(Project project)
+    {
+        if (_testProjectStartSize != TestProjectStartSize.large) return;
+
+        foreach (Employee employee in project.GetAllEmployees())
+        {
+            if (!employee.isSpy) continue;
+
+            Debug.Log($"[Company Test] Large 프로젝트 스파이 배정: {employee.so.Name}");
+            return;
+        }
+    }
 #endif
     #endregion
 
@@ -223,6 +236,19 @@ public class Company : MonoBehaviour
 
         curProject = project;
         activeProjectCount.Value = 1;
+        SetRandomSpy(project);
+    }
+    void SetRandomSpy(Project project)
+    {
+        if (level < 3) return;
+        if (project.Scale != ProjectSize.Large) return;
+
+        List<Employee> employees = project.GetAllEmployees();
+        foreach (Employee employee in employees)
+            employee.isSpy = false;
+
+        Employee spy = employees[Random.Range(0, employees.Count)];
+        spy.isSpy = true;
     }
 
     public void ClearSelectedProjectEmployees()
@@ -332,6 +358,8 @@ public class Company : MonoBehaviour
             cumulativeManagementStatus.gameSales += p.dailyGold;
             curManagementStatus.Recalculate();
             cumulativeManagementStatus.Recalculate();
+
+            p.RetentionFactor -= PerkPolicy.RETENTION_DECAY; // 유지력 매일 감소
         }
     }
 
@@ -373,7 +401,6 @@ public class Company : MonoBehaviour
 
             p.weeklySales = 0;
             p.weeklyGoldAccum = 0;
-            p.RetentionFactor -= PerkPolicy.RETENTION_DECAY; // 유지력 주간 감소
         }
 
         // 적자 패널티

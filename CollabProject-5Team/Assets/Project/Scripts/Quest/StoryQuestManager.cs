@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using R3;
 using UnityEngine;
@@ -6,11 +7,14 @@ public class StoryQuestManager : MonoBehaviour
 {
     public static StoryQuestManager Instance { get; private set; }
 
+    public delegate void SpySelectDelegate(List<Employee> employees, Action onComplete);
+    public event SpySelectDelegate OnSpySelect;
+
     const int FirstStoryQuestId = 1001;
-    const int FirstHireQuestId  = 1002;
+    const int FirstHireQuestId = 1002;
     const int SpyQuestStartId = 1003;
     const int LargeProjectSpyQuestId = 1004;
-    const int SelectSpyQuestId = 1041; // 스파이 퀘스트중 선형적 진행이 끝나고 스파이 결정 선택지가 나오는 퀘스트
+    const int SelectSpyQuestId = 1042; // 스파이 퀘스트중 선형적 진행이 끝나고 스파이 결정 선택지가 나오는 퀘스트
 
     [SerializeField] Sprite StoryBookBubbleSprite;
 
@@ -20,13 +24,14 @@ public class StoryQuestManager : MonoBehaviour
     public StoryQuest curStoryQuest;
     public int curSpyQuestID;
     public List<int> completedStoryQuestIds = new();
+    public bool isCorrectSpySelected;
 
-    private Employee _currentSpeaker;  // NPC1
-    private Employee _currentSpeaker2; // NPC2
+    Employee _currentSpeaker;  // NPC1
+    Employee _currentSpeaker2; // NPC2
+    SpeechBubble _currentBubble;
 
     const string FlowerTag = "Flower";
     const string DeskTag = "Desk";
-    private SpeechBubble _currentBubble;
     const string StoryBubbleMessage = "<b>...</b>";
 
     #region Init
@@ -37,7 +42,14 @@ public class StoryQuestManager : MonoBehaviour
     {
         if (Instance != null && Instance != this) { Destroy(gameObject); return; }
         Instance = this;
+        // 테스트 코드 (삭제예정)~
+        OnSpySelect += LogSpySelect;
     }
+    void LogSpySelect(List<Employee> employees, Action onComplete)
+    {
+        Debug.Log("잡았다 요놈");
+    }
+    // ~---
     public void ResetForNewDay()
     {
         if (_currentBubble != null)
@@ -54,6 +66,7 @@ public class StoryQuestManager : MonoBehaviour
     }
     #endregion
 
+    #region Start Story Quest
     public bool TryStartStoryQuestForToday()
     {
         StoryQuestPoolSO questSO = SelectStartableQuest();
@@ -63,12 +76,12 @@ public class StoryQuestManager : MonoBehaviour
     StoryQuestPoolSO SelectStartableQuest()
     {
         if (curSpyQuestID != 0)
-            return SelectCurrentSpyQuest();
+            return SelectCurrentSpyQuest(); // 스파이 퀘스트 진행중이면 여기
 
-        StoryQuestPoolSO normalQuest = SelectNormalStoryQuest();
+        StoryQuestPoolSO normalQuest = SelectNormalStoryQuest(); // 일반 퀘스트 조건체크
         if (normalQuest != null) return normalQuest;
 
-        return SelectSpyStartQuest();
+        return SelectSpyStartQuest(); // 스파이시작 퀘스트 조건체크
     }
 
     StoryQuestPoolSO SelectCurrentSpyQuest()
@@ -108,6 +121,9 @@ public class StoryQuestManager : MonoBehaviour
         if (questSO.isSpyQuest || questSO.id == SpyQuestStartId)
             curSpyQuestID = questSO.id;
 
+        if (questSO.id == LargeProjectSpyQuestId)
+            _EmployeeManager.Instance.canLeaveSelf = false;
+
         curStoryQuest = new StoryQuest();
         curStoryQuest.Init(questSO);
         curStoryQuest.state = QuestState.Playing;
@@ -119,7 +135,32 @@ public class StoryQuestManager : MonoBehaviour
 
         return true;
     }
+    #endregion
 
+    #region Condition Check
+    bool IsNormalStoryConditionSatisfied(StoryQuestPoolSO questSO)
+    {
+        return questSO.id switch
+        {
+            FirstStoryQuestId => Company.Instance.completedProjects.Count > 0,
+            FirstHireQuestId => _EmployeeManager.Instance.lastHiredEmployee != null,
+            _ => false
+        };
+    }
+
+    bool IsSpyQuestConditionSatisfied(StoryQuestPoolSO questSO)
+    {
+        return questSO.id switch
+        {
+            SpyQuestStartId => Company.Instance.level == 3,
+            LargeProjectSpyQuestId => Company.Instance.activeProjectCount.Value > 0 &&
+                                      Company.Instance.curProject.Scale == ProjectSize.Large,
+            _ => true
+        };
+    }
+    #endregion
+
+    #region Dialogue
     // 말풍선 버튼 띄워줄 객체 결정
     private Transform ResolveBubbleTarget(int questId)
     {
@@ -153,35 +194,11 @@ public class StoryQuestManager : MonoBehaviour
         _currentSpeaker2 = GameManager.Instance.GetRandomActiveEmployee();
         return _currentSpeaker.transform;
     }
-
+    // 스토리북 띄워야하는 퀘스트인지 확인
     bool IsStoryBookBubbleQuest(int questId)
     {
         return questId == SpyQuestStartId || questId == SelectSpyQuestId;
     }
-
-    bool IsNormalStoryConditionSatisfied(StoryQuestPoolSO questSO)
-    {
-        return questSO.id switch
-        {
-            FirstStoryQuestId => Company.Instance.completedProjects.Count > 0,
-            FirstHireQuestId => _EmployeeManager.Instance.lastHiredEmployee != null,
-            _ => false
-        };
-    }
-
-    bool IsSpyQuestConditionSatisfied(StoryQuestPoolSO questSO)
-    {
-        if (Company.Instance.level < questSO.conditionCompanyLv) return false;
-
-        return questSO.id switch
-        {
-            SpyQuestStartId => true,
-            LargeProjectSpyQuestId => Company.Instance.activeProjectCount.Value > 0 &&
-                                      Company.Instance.curProject.Scale == ProjectSize.Large,
-            _ => true
-        };
-    }
-
 
     private void StartCurrentStoryDialogue()
     {
@@ -190,7 +207,8 @@ public class StoryQuestManager : MonoBehaviour
         var speakers = new Dictionary<string, Employee>
         {
             ["NPC1"] = _currentSpeaker,
-            ["NPC2"] = _currentSpeaker2
+            ["NPC2"] = _currentSpeaker2,
+            ["SPY"] = GetSpyEmployee()
         };
 
         StoryDialoguePlayer.Instance.StartStoryDialogue(
@@ -198,7 +216,35 @@ public class StoryQuestManager : MonoBehaviour
             speakers,
             CompleteCurrentStoryQuest);
     }
+    #endregion
 
+    #region SPY GetSet
+    /// <summary>
+    /// [원리 설명] 외부(Presenter 등)에서 특정 직원을 스파이로 의심하여 판정을 요청할 때 사용하는 검증 인터페이스입니다.
+    /// 실제 데이터 원본(GetSpyEmployee)을 외부에 노출(Public)하지 않고, 참/거짓 결과만 안전하게 반환하여 데이터 오염을 방지합니다.
+    /// </summary>
+    public bool CheckIsSpy(Employee targetEmployee)
+    {
+        if (targetEmployee == null) return false;
+
+        return targetEmployee == GetSpyEmployee();
+    }
+
+    Employee GetSpyEmployee()
+    {
+        if (Company.Instance.activeProjectCount.Value > 0)
+        {
+            foreach (Employee employee in Company.Instance.curProject.GetAllEmployees())
+            {
+                if (employee.isSpy)
+                    return employee;
+            }
+        }
+        return null;
+    }
+    #endregion
+
+    #region Complete Quest
     private void CompleteCurrentStoryQuest()
     {
         if (curStoryQuest.state != QuestState.Playing) return;
@@ -214,8 +260,15 @@ public class StoryQuestManager : MonoBehaviour
         if (!completedStoryQuestIds.Contains(completedQuestId))
             completedStoryQuestIds.Add(completedQuestId);
 
+        // 스파이 선택 퀘스트 차별
         if (completedSpyQuest)
-            curSpyQuestID = completedQuestId < SelectSpyQuestId ? completedQuestId + 1 : 0; // 스파이 선택 퀘스트 차별
+            curSpyQuestID = completedQuestId < SelectSpyQuestId ? completedQuestId + 1 : 0;
+
+        if (completedQuestId == SelectSpyQuestId)
+        {
+            OnSpySelect?.Invoke(Company.Instance.curProject.GetAllEmployees(), DateTimeManager.Instance.CompleteDayWork);
+            return;
+        }
 
         DateTimeManager.Instance.CompleteDayWork();
     }
@@ -233,6 +286,7 @@ public class StoryQuestManager : MonoBehaviour
                 break;
         }
     }
+    #endregion
 
     #region Save/Load
     public void ExportStoryQuestData(SaveData data)

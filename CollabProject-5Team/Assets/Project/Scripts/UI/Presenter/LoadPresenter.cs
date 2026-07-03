@@ -51,19 +51,19 @@ namespace GameDevTycoon.UI.Title
         private void BindButtons()
         {
             _view.OnCloseClicked
-                .Subscribe(_ => Hide())
+                .Subscribe(_ => { AudioManager.Instance?.PlaySFXClick(); Hide(); })
                 .AddTo(this);
 
             _view.OnAutoSlotClicked
-                .Subscribe(_ => OnSlotClicked(1))
+                .Subscribe(_ => { AudioManager.Instance?.PlaySFXClick(); OnSlotClicked(1); })
                 .AddTo(this);
 
             _view.OnSlot1Clicked
-                .Subscribe(_ => OnSlotClicked(2))
+                .Subscribe(_ => { AudioManager.Instance?.PlaySFXClick(); OnSlotClicked(2); })
                 .AddTo(this);
 
             _view.OnSlot2Clicked
-                .Subscribe(_ => OnSlotClicked(3))
+                .Subscribe(_ => { AudioManager.Instance?.PlaySFXClick(); OnSlotClicked(3); })
                 .AddTo(this);
 
             _view.OnLoadClicked
@@ -132,11 +132,13 @@ namespace GameDevTycoon.UI.Title
             if (_selectedSlot == 0) return;
             if (GetSelectedSlotData() == null) return;
 
+            AudioManager.Instance?.PlaySFXAlert();
             _alertView.ShowConfirmPopup("불러오시겠습니까?", () =>
             {
                 if (SaveLoadSystem.Instance == null ||
                     !SaveLoadSystem.Instance.SetPendingLoad(_selectedSlot - 1))
                 {
+                    AudioManager.Instance?.PlaySFXAlert();
                     _alertView.ShowAlertPopup("불러오기에 실패했습니다.");
                     return;
                 }

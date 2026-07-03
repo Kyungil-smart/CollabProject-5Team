@@ -10,7 +10,7 @@ namespace GameDevTycoon.UI
 {
     /// <summary>
     /// Canvas_Alert 담당 View.
-    /// ConfirmPopup, FireConfirmPopup, AlertPopup, NoticePopup 표시 제어.
+    /// ConfirmPopup, FireConfirmPopup, AlertPopup, NoticePopup, SpyPopup 표시 제어.
     /// 팝업 간 배타적 활성화는 Show 메서드 호출 측에서 보장.
     /// 타이틀 씬에서는 ConfirmPopup만 연결해서 사용 가능.
     /// </summary>
@@ -41,14 +41,26 @@ namespace GameDevTycoon.UI
         [SerializeField] private TextMeshProUGUI _noticeEmployeeNameLabel;
         [SerializeField] private Image _noticeEmployeeIcon;
 
+        [Header("SpyPopup")]
+        [SerializeField] private GameObject _spyPopup;
+        [SerializeField] private Button _spyConfirmButton;
+        [SerializeField] private Button _spyCancelButton;
+
+        [Header("스파이 검거 성공 연출 (추가)")]
+        [SerializeField] private GameObject _spyResultSuccessGo;
+        [SerializeField] private Button _spyResultSuccessCloseButton;
+
         private const float NOTICE_DURATION = 3f;
         private const float POPUP_FADE_DURATION = 0.15f;
+        private IDisposable _spyResultSuccessSubscription;
 
         private IDisposable _confirmPopupConfirmSubscription;
         private IDisposable _confirmPopupCancelSubscription;
         private IDisposable _fireConfirmSubscription;
         private IDisposable _fireCancelSubscription;
         private IDisposable _alertConfirmSubscription;
+        private IDisposable _spySubscription;
+        private IDisposable _spyCancelSubscription;
 
         private void Awake()
         {
@@ -56,6 +68,8 @@ namespace GameDevTycoon.UI
             if (_fireConfirmPopup != null) _fireConfirmPopup.SetActive(false);
             if (_alertPopup != null) _alertPopup.SetActive(false);
             if (_noticePopup != null) _noticePopup.SetActive(false);
+            if (_spyPopup != null) _spyPopup.SetActive(false);
+            if (_spyResultSuccessGo != null) _spyResultSuccessGo.SetActive(false);
         }
 
         /// <summary>
@@ -72,6 +86,7 @@ namespace GameDevTycoon.UI
             _confirmPopupConfirmSubscription = _confirmPopupConfirmButton.OnClickAsObservable()
                 .Subscribe(_ =>
                 {
+                    AudioManager.Instance?.PlaySFXPositive();
                     ClearConfirmPopupSubscriptions();
                     _confirmPopup.SetActive(false);
                     onConfirm?.Invoke();
@@ -80,6 +95,7 @@ namespace GameDevTycoon.UI
             _confirmPopupCancelSubscription = _confirmPopupCancelButton.OnClickAsObservable()
                 .Subscribe(_ =>
                 {
+                    AudioManager.Instance?.PlaySFXNegative();
                     ClearConfirmPopupSubscriptions();
                     _confirmPopup.SetActive(false);
                     onCancel?.Invoke();
@@ -103,6 +119,7 @@ namespace GameDevTycoon.UI
             _fireConfirmSubscription = _fireConfirmButton.OnClickAsObservable()
                 .Subscribe(_ =>
                 {
+                    AudioManager.Instance?.PlaySFXNegative();
                     ClearFireConfirmPopupSubscriptions();
                     _fireConfirmPopup.SetActive(false);
                     onConfirm?.Invoke();
@@ -111,6 +128,7 @@ namespace GameDevTycoon.UI
             _fireCancelSubscription = _fireCancelButton.OnClickAsObservable()
                 .Subscribe(_ =>
                 {
+                    AudioManager.Instance?.PlaySFXNegative();
                     ClearFireConfirmPopupSubscriptions();
                     _fireConfirmPopup.SetActive(false);
                     onCancel?.Invoke();
@@ -131,6 +149,7 @@ namespace GameDevTycoon.UI
             _alertConfirmSubscription = _alertConfirmButton.OnClickAsObservable()
                 .Subscribe(_ =>
                 {
+                    AudioManager.Instance?.PlaySFXClick();
                     ClearAlertPopupSubscription();
                     _alertPopup.SetActive(false);
                 });
@@ -151,16 +170,118 @@ namespace GameDevTycoon.UI
             WaitAndHideNoticeAsync().Forget();
         }
 
+        /// <summary>
+        /// 최종 스파이 지목 확인 팝업. 고정 텍스트 형태이므로 매개변수 없이 이벤트를 바인딩합니다.
+        /// </summary>
+        public void ShowSpyConfirmPopup(Action onConfirm, Action onCancel = null)
+        {
+            if (_spyPopup == null) return;
+
+            ClearSpyPopupSubscriptions();
+            _spyPopup.SetActive(true);
+
+            _spySubscription = _spyConfirmButton.OnClickAsObservable()
+                .Subscribe(_ =>
+                {
+                    AudioManager.Instance?.PlaySFXPositive();
+                    ClearSpyPopupSubscriptions();
+                    _spyPopup.SetActive(false);
+                    onConfirm?.Invoke();
+                });
+
+            _spyCancelSubscription = _spyCancelButton.OnClickAsObservable()
+                .Subscribe(_ =>
+                {
+                    AudioManager.Instance?.PlaySFXNegative();
+                    ClearSpyPopupSubscriptions();
+                    _spyPopup.SetActive(false);
+                    onCancel?.Invoke();
+                });
+        }
+
+        /// <summary>
+        /// 스파이 검거 성공 연출용 "잡았다 요놈" 팝업을 애니메이션 효과와 함께 표시합니다.
+        /// </summary>
+        public void ShowSpySuccessResult(Action onClose)
+        {
+            if (_spyResultSuccessGo == null)
+            {
+                onClose?.Invoke();
+                return;
+            }
+
+            ClearSpyResultSubscriptions();
+            _spyResultSuccessGo.SetActive(true);
+
+            // DOTween + UniTask 조합의 하이브리드 검거 연출 구동
+            AnimateSpySuccessComboAsync().Forget();
+
+            if (_spyResultSuccessCloseButton != null)
+            {
+                _spyResultSuccessSubscription = _spyResultSuccessCloseButton.OnClickAsObservable()
+                    .Subscribe(_ =>
+                    {
+                        // 닫힐 때 트윈 연산 꼬임 방지를 위한 Kill 처리
+                        _spyResultSuccessGo.transform.DOKill();
+
+                        var canvasGroup = _spyResultSuccessGo.GetComponent<CanvasGroup>();
+                        if (canvasGroup != null) canvasGroup.DOKill();
+
+                        ClearSpyResultSubscriptions();
+                        _spyResultSuccessGo.SetActive(false);
+                        onClose?.Invoke();
+                    });
+            }
+        }
+
+        /// <summary>
+        /// PHASE 1(진동) 후 PHASE 2(쿵! 타격)로 이어지는 연출 파이프라인
+        /// </summary>
+        private async UniTaskVoid AnimateSpySuccessComboAsync()
+        {
+            Transform popupTransform = _spyResultSuccessGo.transform;
+
+            // 기존 상태 완전 초기화
+            popupTransform.DOKill();
+            popupTransform.localScale = new Vector3(1.5f, 1.5f, 1f);
+
+            if (!_spyResultSuccessGo.TryGetComponent<CanvasGroup>(out var canvasGroup))
+            {
+                canvasGroup = _spyResultSuccessGo.AddComponent<CanvasGroup>();
+            }
+            canvasGroup.DOKill();
+            canvasGroup.alpha = 0f; // 진동하는 동안은 고양이 숨기기
+
+            // PHASE 1: 전조 현상 - 화면 파르르 진동 (0.3초)
+            var shakeTween = popupTransform.DOShakePosition(duration: 0.3f, strength: 15f, vibrato: 20, randomness: 90, fadeOut: true);
+            await shakeTween.AsyncWaitForCompletion();
+
+            // 진동으로 인해 미세하게 틀어진 로컬 좌표 완벽 정돈
+            popupTransform.localPosition = Vector3.zero;
+
+            // PHASE 2: 본 연출 - "쿵!" 찍히며 페이드인 등장 (0.2초)
+            popupTransform.DOScale(Vector3.one, 0.2f).SetEase(Ease.OutQuad);
+
+            var fadeTween = canvasGroup.DOFade(1f, 0.2f).SetEase(Ease.Linear);
+            await fadeTween.AsyncWaitForCompletion();
+        }
+
         public void HideAll()
         {
             ClearConfirmPopupSubscriptions();
             ClearFireConfirmPopupSubscriptions();
             ClearAlertPopupSubscription();
+            ClearSpyPopupSubscriptions();
+            ClearSpyResultSubscriptions();
+
+            if (_spyResultSuccessGo != null) _spyResultSuccessGo.transform.DOKill();
 
             if (_confirmPopup != null) _confirmPopup.SetActive(false);
             if (_fireConfirmPopup != null) _fireConfirmPopup.SetActive(false);
             if (_alertPopup != null) _alertPopup.SetActive(false);
             if (_noticePopup != null) _noticePopup.SetActive(false);
+            if (_spyPopup != null) _spyPopup.SetActive(false);
+            if (_spyResultSuccessGo != null) _spyResultSuccessGo.SetActive(false);
         }
 
         private void OnDestroy()
@@ -168,6 +289,8 @@ namespace GameDevTycoon.UI
             ClearConfirmPopupSubscriptions();
             ClearFireConfirmPopupSubscriptions();
             ClearAlertPopupSubscription();
+            ClearSpyPopupSubscriptions();
+            ClearSpyResultSubscriptions();
         }
 
         private async UniTaskVoid WaitAndHideNoticeAsync()
@@ -199,6 +322,20 @@ namespace GameDevTycoon.UI
         {
             _alertConfirmSubscription?.Dispose();
             _alertConfirmSubscription = null;
+        }
+
+        private void ClearSpyPopupSubscriptions()
+        {
+            _spySubscription?.Dispose();
+            _spyCancelSubscription?.Dispose();
+            _spySubscription = null;
+            _spyCancelSubscription = null;
+        }
+
+        private void ClearSpyResultSubscriptions()
+        {
+            _spyResultSuccessSubscription?.Dispose();
+            _spyResultSuccessSubscription = null;
         }
     }
 }

@@ -46,6 +46,7 @@ namespace GameDevTycoon.UI.Ingame
             _view.OnCompanyInfoTabClicked
                 .Subscribe(_ =>
                 {
+                    AudioManager.Instance?.PlaySFXClick();
                     _view.ShowTab(CompanyTab.CompanyInfo);
                     RefreshCompanyInfo();
                 })
@@ -54,6 +55,7 @@ namespace GameDevTycoon.UI.Ingame
             _view.OnManagementStatusTabClicked
                 .Subscribe(_ =>
                 {
+                    AudioManager.Instance?.PlaySFXClick();
                     _view.ShowTab(CompanyTab.ManagementStatus);
                     RefreshManagementStatus();
                 })
@@ -62,6 +64,7 @@ namespace GameDevTycoon.UI.Ingame
             _view.OnExpansionTabClicked
                 .Subscribe(_ =>
                 {
+                    AudioManager.Instance?.PlaySFXClick();
                     _view.ShowTab(CompanyTab.Expansion);
                     ResetExpansionSelection();
                     RefreshExpansionCards();
@@ -76,6 +79,7 @@ namespace GameDevTycoon.UI.Ingame
                 .Skip(1)
                 .Subscribe(index =>
                 {
+                    AudioManager.Instance?.PlaySFXClick();
                     _currentFilter = index > 0 ? ManagementFilter.Cumulative : ManagementFilter.Monthly;
                     RefreshManagementStatus();
                 })
@@ -178,6 +182,8 @@ namespace GameDevTycoon.UI.Ingame
             if (_cardStates[cardIndex] != ExpansionCardState.Unlocked &&
                 _cardStates[cardIndex] != ExpansionCardState.Selected) return;
 
+            AudioManager.Instance?.PlaySFXClick();
+
             if (_selectedCardIndex == cardIndex)
             {
                 // 같은 카드 재클릭 시 선택 해제
@@ -213,24 +219,29 @@ namespace GameDevTycoon.UI.Ingame
 
             if (Company.Instance.gold.Value < data.GoldCost)
             {
+                AudioManager.Instance?.PlaySFXAlert();
                 _alertView.ShowAlertPopup("보유 자금이 부족하여 실행할 수 없습니다.");
                 return;
             }
 
             if (Company.Instance.reputation < data.RequiredReputation)
             {
+                AudioManager.Instance?.PlaySFXAlert();
                 _alertView.ShowAlertPopup("평판이 부족하여 실행할 수 없습니다.");
                 return;
             }
 
+            AudioManager.Instance?.PlaySFXAlert();
             _alertView.ShowConfirmPopup("구매하시겠습니까?", onConfirm: () =>
             {
+                AudioManager.Instance?.PlaySFXPositive();
                 Company.Instance.UpgradeOffice();
 
                 ResetExpansionSelection();
                 RefreshExpansionCards();
                 RefreshCompanyInfo();
                 _hudPresenter.RefreshHUD();
+                AudioManager.Instance?.PlaySFXAlert();
                 _alertView.ShowAlertPopup("회사 증축에 성공했습니다.");
             });
         }

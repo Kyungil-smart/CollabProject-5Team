@@ -26,6 +26,10 @@ namespace GameDevTycoon.UI.Ingame
         [SerializeField] private GameObject _workStartIconPrefab;
         [SerializeField] private Vector3 _workStartIconOffset = new Vector3(0f, 1.5f, 0f);
 
+        [Header("BGM")]
+        [SerializeField] private AudioClip _dayBGM;
+        [SerializeField] private AudioClip _nightBGM;
+
         private WorkStartIcon _workStartIcon;
 
         private HRPresenter _hrPresenter;
@@ -67,6 +71,7 @@ namespace GameDevTycoon.UI.Ingame
             CloseAllBottomPopups();  // HR, Project, Company 닫기
             _settingsPresenter.Hide();  // 세팅도 같이 닫기
             _view.SwitchToNight();
+            AudioManager.Instance?.PlayBGM(_nightBGM);
             RefreshHUD();
         }
 
@@ -77,15 +82,15 @@ namespace GameDevTycoon.UI.Ingame
                 .AddTo(this);
 
             _view.OnHRClicked
-                .Subscribe(_ => OnNightButtonClicked(IndexHR, _hrPresenter))
+                .Subscribe(_ => { AudioManager.Instance?.PlaySFXClick(); OnNightButtonClicked(IndexHR, _hrPresenter); })
                 .AddTo(this);
 
             _view.OnProjectClicked
-                .Subscribe(_ => OnNightButtonClicked(IndexProject, _projectPresenter))
+                .Subscribe(_ => { AudioManager.Instance?.PlaySFXClick(); OnNightButtonClicked(IndexProject, _projectPresenter); })
                 .AddTo(this);
 
             _view.OnCompanyClicked
-                .Subscribe(_ => OnNightButtonClicked(IndexCompany, _companyPresenter))
+                .Subscribe(_ => { AudioManager.Instance?.PlaySFXClick(); OnNightButtonClicked(IndexCompany, _companyPresenter); })
                 .AddTo(this);
 
             _view.OnSaveClicked
@@ -97,7 +102,7 @@ namespace GameDevTycoon.UI.Ingame
                 .AddTo(this);
 
             _view.OnSettingsClicked
-                .Subscribe(_ => _settingsPresenter.Show())
+                .Subscribe(_ => { AudioManager.Instance?.PlaySFXClick(); _settingsPresenter.Show(); })
                 .AddTo(this);
 
             // Save 팝업 닫힐 때 버튼 선택 해제
@@ -245,6 +250,7 @@ namespace GameDevTycoon.UI.Ingame
         private void OnNewDay()
         {
             _view.SwitchToDay();
+            AudioManager.Instance?.PlayBGM(_dayBGM);
 
             _desk = FindObjectOfType<DeskInteract>();
 
@@ -267,6 +273,7 @@ namespace GameDevTycoon.UI.Ingame
 
         private void OnQuestIconClicked()
         {
+            AudioManager.Instance?.PlaySFXClick();
             if (_questPresenter.IsDetailVisible)
                 _questPresenter.HideDetail();
             else
@@ -275,6 +282,7 @@ namespace GameDevTycoon.UI.Ingame
 
         private void OnWorkStartClicked()
         {
+            AudioManager.Instance?.PlaySFXPositive();
             if (_workStartIcon != null)
                 _workStartIcon.gameObject.SetActive(false);
             QuestManager.Instance.StartQuestForToday();
@@ -299,12 +307,14 @@ namespace GameDevTycoon.UI.Ingame
 
         private void OnSaveClicked()
         {
+            AudioManager.Instance?.PlaySFXClick();
             _view.SelectNightButton(IndexSave);
             _savePresenter.Show();
         }
 
         private void OnNightQuitClicked()
         {
+            AudioManager.Instance?.PlaySFXClick();
             CloseAllBottomPopups();
             _view.SwitchToDay();
             DateTimeManager.Instance.OnClickEndDayButton().Forget();

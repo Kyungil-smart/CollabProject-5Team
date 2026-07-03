@@ -51,19 +51,19 @@ namespace GameDevTycoon.UI.Ingame
         private void BindButtons()
         {
             _view.OnCloseClicked
-                .Subscribe(_ => Hide())
+                .Subscribe(_ => { AudioManager.Instance?.PlaySFXClick(); Hide(); })
                 .AddTo(this);
 
             _view.OnAutoSlotClicked
-                .Subscribe(_ => OnSlotClicked(1))
+                .Subscribe(_ => { AudioManager.Instance?.PlaySFXClick(); OnSlotClicked(1); })
                 .AddTo(this);
 
             _view.OnSlot1Clicked
-                .Subscribe(_ => OnSlotClicked(2))
+                .Subscribe(_ => { AudioManager.Instance?.PlaySFXClick(); OnSlotClicked(2); })
                 .AddTo(this);
 
             _view.OnSlot2Clicked
-                .Subscribe(_ => OnSlotClicked(3))
+                .Subscribe(_ => { AudioManager.Instance?.PlaySFXClick(); OnSlotClicked(3); })
                 .AddTo(this);
 
             _view.OnSaveClicked
@@ -147,6 +147,7 @@ namespace GameDevTycoon.UI.Ingame
 
             Confirm("저장하시겠습니까?", () =>
             {
+                AudioManager.Instance?.PlaySFXPositive();
                 SaveLoadSystem.Instance.SaveGame(_selectedSlot - 1);
 
                 RefreshSlots();
@@ -165,6 +166,7 @@ namespace GameDevTycoon.UI.Ingame
             {
                 if (!SaveLoadSystem.Instance.SetPendingLoad(_selectedSlot - 1))
                 {
+                    AudioManager.Instance?.PlaySFXAlert();
                     ShowAlert("불러오기에 실패했습니다.");
                     return;
                 }
@@ -182,6 +184,7 @@ namespace GameDevTycoon.UI.Ingame
         {
             if (_alertView != null)
             {
+                AudioManager.Instance?.PlaySFXAlert();
                 _alertView.ShowConfirmPopup(message, onConfirm);
                 return;
             }
@@ -193,6 +196,7 @@ namespace GameDevTycoon.UI.Ingame
         {
             if (_alertView != null)
             {
+                AudioManager.Instance?.PlaySFXAlert();
                 _alertView.ShowAlertPopup(message);
                 return;
             }
