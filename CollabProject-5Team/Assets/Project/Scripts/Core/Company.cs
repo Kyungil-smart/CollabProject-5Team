@@ -17,7 +17,7 @@ public class Company : MonoBehaviour
     [Header("회사 정보")]
     public string playerName;
     public string CompanyName;
-    public ReactiveProperty<int> gold = new(10000); // 보유 자금
+    public ReactiveProperty<int> gold = new(100000); // 보유 자금
     public int level = 1;                           // 회사 레벨, 회사 증축 상황(소형=1 중형=2 대형=3) 과 같음
 
     public ReactiveProperty<int> activeProjectCount = new(0); // 현재 프로젝트 보유 여부 0: 없음, 1: 있음
@@ -436,8 +436,7 @@ public class Company : MonoBehaviour
             cumulativeManagementStatus.Recalculate();
 
             if (e.WorkStatus != EmployeeWorkStatus.InProject)
-                continue; // 프로젝트 중인 직원만 능력치 변화
-            e.AddAbilityDelta(PerkPolicy.CalcWeeklyAbilityDelta(e.MutableData.loyalty));
+                continue; // 프로젝트 중인 직원만 주간 대화 패널티 검사
 
             // 대화 안한 직원 패널티 적용
             if (!e.hasTalkedThisWeek)

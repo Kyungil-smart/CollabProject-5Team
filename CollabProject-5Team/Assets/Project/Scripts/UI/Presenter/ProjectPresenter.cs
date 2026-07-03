@@ -625,9 +625,9 @@ namespace GameDevTycoon.UI.Ingame
             bool hasRevenueDelta = record.prevWeekGold > 0 && settledWeekCount > 1;
 
             _view.SetUserCountValue(FormatValueWithDelta(record.users, userDelta, "명", hasUserDelta), userDelta >= 0, hasUserDelta);
-            _view.SetSalesValue(FormatValueWithDelta(revenue, revenueDelta, "G", hasRevenueDelta), revenueDelta >= 0, hasRevenueDelta);
-            _view.SetMaintenanceValue($"{record.dailyCost:N0}G");
-            _view.SetProfitValue(FormatValueWithDelta(profit, profitDelta, "G", hasRevenueDelta), profitDelta >= 0, hasRevenueDelta);
+            _view.SetSalesValue(FormatGoldWithDelta(revenue, revenueDelta, hasRevenueDelta), revenueDelta >= 0, hasRevenueDelta);
+            _view.SetMaintenanceValue(FormatPolicy.FormatGold(record.dailyCost));
+            _view.SetProfitValue(FormatGoldWithDelta(profit, profitDelta, hasRevenueDelta), profitDelta >= 0, hasRevenueDelta);
             _view.SetRevenueGraphValues(GetRevenueGraphValues(record));
         }
 
@@ -644,9 +644,9 @@ namespace GameDevTycoon.UI.Ingame
             int profit = revenue - record.dailyCost;
 
             _view.SetCompletedUserCountValue($"{record.users:N0}명");
-            _view.SetCompletedSalesValue($"{revenue:N0}G");
-            _view.SetCompletedMaintenanceValue($"{record.dailyCost:N0}G");
-            _view.SetCompletedProfitValue($"{profit:N0}G");
+            _view.SetCompletedSalesValue(FormatPolicy.FormatGold(revenue));
+            _view.SetCompletedMaintenanceValue(FormatPolicy.FormatGold(record.dailyCost));
+            _view.SetCompletedProfitValue(FormatPolicy.FormatGold(profit));
             _view.SetCompletedRevenueGraphValues(GetRevenueGraphValues(record));
         }
 
@@ -686,6 +686,15 @@ namespace GameDevTycoon.UI.Ingame
             return $"{value:N0}{suffix} ({Mathf.Abs(delta):N0}{arrow})";
         }
 
+        private static string FormatGoldWithDelta(int value, int delta, bool showDelta)
+        {
+            if (!showDelta)
+                return FormatPolicy.FormatGold(value);
+
+            string arrow = delta >= 0 ? "▲" : "▼";
+            return $"{FormatPolicy.FormatGold(value)} ({FormatPolicy.FormatGold(Mathf.Abs(delta))}{arrow})";
+        }
+
         private int CountAssigned(Role role)
             => Company.Instance.selectedProjectEmployees.Count(e => e.so.role == role);
 
@@ -697,9 +706,9 @@ namespace GameDevTycoon.UI.Ingame
 
         private static int GetRequiredCost(ProjectSize scale) => scale switch
         {
-            ProjectSize.Medium => 10000,
-            ProjectSize.Large => 100000,
-            _ => 1000,
+            ProjectSize.Medium => 50000,
+            ProjectSize.Large => 200000,
+            _ => 15000,
         };
 
         private static int GetMaxEmployeePerPart(ProjectSize scale) => scale switch

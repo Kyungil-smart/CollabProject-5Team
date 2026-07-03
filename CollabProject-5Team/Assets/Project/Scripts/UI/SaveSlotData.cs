@@ -37,7 +37,7 @@ namespace GameDevTycoon.UI
                 companyLevel = data.company_Level,
                 dateTime = $"{DateTimeManager.GetDateString(data.day)} ({GetTimeOfDayLabel(data.currentTime)})",
                 savedAt = string.IsNullOrWhiteSpace(data.realSaveTime) ? "저장 시간 없음" : data.realSaveTime,
-                gold = $"{data.company_Gold:N0}G",
+                gold = FormatPolicy.FormatGold(data.company_Gold),
                 employeeCount = data.savedEmployees?.Count ?? 0,
                 playTime = FormatPlayTime(data.playTime),
                 projectName = projectName,
