@@ -2,13 +2,13 @@ using System;
 using System.Collections.Generic;
 using R3;
 using UnityEngine;
-using Random = UnityEngine.Random;
 
 public class StoryQuestManager : MonoBehaviour
 {
     public static StoryQuestManager Instance { get; private set; }
 
-    public Action OnSpySelect;
+    public delegate void SpySelectDelegate(List<Employee> employees, Action onComplete);
+    public event SpySelectDelegate OnSpySelect;
 
     const int FirstStoryQuestId = 1001;
     const int FirstHireQuestId = 1002;
@@ -44,7 +44,7 @@ public class StoryQuestManager : MonoBehaviour
         // 테스트 코드 (삭제예정)~
         OnSpySelect += LogSpySelect;
     }
-    void LogSpySelect()
+    void LogSpySelect(List<Employee> employees, Action onComplete)
     {
         Debug.Log("잡았다 요놈");
     }
@@ -119,9 +119,6 @@ public class StoryQuestManager : MonoBehaviour
 
         if (questSO.isSpyQuest || questSO.id == SpyQuestStartId)
             curSpyQuestID = questSO.id;
-
-        if (questSO.id == LargeProjectSpyQuestId)
-            SetRandomSpy();
 
         curStoryQuest = new StoryQuest();
         curStoryQuest.Init(questSO);
@@ -235,20 +232,11 @@ public class StoryQuestManager : MonoBehaviour
         {
             foreach (Employee employee in Company.Instance.curProject.GetAllEmployees())
             {
-                if (employee.MutableData.isSpy)
+                if (employee.isSpy)
                     return employee;
             }
         }
         return null;
-    }
-    void SetRandomSpy()
-    {
-        List<Employee> employees = Company.Instance.curProject.GetAllEmployees();
-
-        Employee spy = employees[Random.Range(0, employees.Count)];
-        EmployeeMutableData spyData = spy.MutableData;
-        spyData.isSpy = true;
-        spy.MutableData = spyData;
     }
     #endregion
 
@@ -271,8 +259,12 @@ public class StoryQuestManager : MonoBehaviour
         // 스파이 선택 퀘스트 차별
         if (completedSpyQuest)
             curSpyQuestID = completedQuestId < SelectSpyQuestId ? completedQuestId + 1 : 0;
+
         if (completedQuestId == SelectSpyQuestId)
-            OnSpySelect?.Invoke();
+        {
+            OnSpySelect?.Invoke(Company.Instance.curProject.GetAllEmployees(), DateTimeManager.Instance.CompleteDayWork);
+            return;
+        }
 
         DateTimeManager.Instance.CompleteDayWork();
     }

@@ -308,7 +308,7 @@ public class _EmployeeManager : MonoBehaviour
                 preDesire = emp.MutableData.preDesire,
                 preLoyalty = emp.MutableData.preLoyalty,
                 preFatigue = emp.MutableData.preFatigue,
-                isSpy = emp.MutableData.isSpy,
+                isSpy = emp.isSpy,
 
                 workStatus = emp.WorkStatus,
                 hasTalkedThisWeek = emp.hasTalkedThisWeek,
@@ -370,10 +370,10 @@ public class _EmployeeManager : MonoBehaviour
 
                 preDesire = empSave.preDesire,
                 preLoyalty = empSave.preLoyalty,
-                preFatigue = empSave.preFatigue,
-                isSpy = empSave.isSpy
+                preFatigue = empSave.preFatigue
             };
 
+            emp.isSpy = empSave.isSpy;
             emp.hasTalkedThisWeek = empSave.hasTalkedThisWeek;
             emp.completedProjectNames = empSave.completedProjectNames != null
                 ? new List<string>(empSave.completedProjectNames)
