@@ -130,6 +130,4 @@ public struct EmployeeMutableData // 가변 데이터
         get => _preFatigue;
         set => _preFatigue = Mathf.Clamp(value, 0, 100);
     }
-
-    public bool isSpy;
 }

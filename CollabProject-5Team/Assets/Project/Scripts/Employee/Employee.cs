@@ -11,6 +11,7 @@ public class Employee : MonoBehaviour
 
     [Header("플래그")]
     public bool hasTalkedThisWeek;
+    public bool isSpy;
 
     [Header("프로젝트 이력")]
     public List<string> completedProjectNames = new();
@@ -34,6 +35,7 @@ public class Employee : MonoBehaviour
             preFatigue = so.fatigue
         };
 
+        isSpy = false;
         completedProjectNames = new List<string>();
     }
 

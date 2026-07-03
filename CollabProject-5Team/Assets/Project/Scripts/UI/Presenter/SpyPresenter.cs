@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using R3;
 using UnityEngine;
@@ -24,6 +25,7 @@ namespace GameDevTycoon.UI.Ingame
 
         private readonly CompositeDisposable _disposables = new();
         private SpyView _selectedView;
+        private Action _onSpySelectCompleted;
 
         // 판정 연출이 시작된 순간부터 알림창이 뜨기 전까지 유저가 다른 카드를 누르거나 
         // 확인 버튼을 무한 연타하여 정답 판정 로직이 중복 실행되는 상태이상(Race Condition)을 방지하는 플래그입니다.
@@ -47,13 +49,20 @@ namespace GameDevTycoon.UI.Ingame
             UpdateButtonState(false);
         }
 
+        private void Start()
+        {
+            StoryQuestManager.Instance.OnSpySelect += Open;
+        }
+
         private void OnDestroy()
         {
+            StoryQuestManager.Instance.OnSpySelect -= Open;
             _disposables.Dispose();
         }
 
-        public void Open(List<Employee> employees)
+        public void Open(List<Employee> employees, Action onComplete = null)
         {
+            _onSpySelectCompleted = onComplete;
             _selectedView = null;
             _isProcessing = false;
             UpdateButtonState(false);
@@ -114,6 +123,9 @@ namespace GameDevTycoon.UI.Ingame
             bool isCorrect = StoryQuestManager.Instance.CheckIsSpy(selectedEmployee);
 
             ShowResultNotification(isCorrect, selectedEmployee);
+            ClosePopup();
+            _onSpySelectCompleted?.Invoke();
+            _onSpySelectCompleted = null;
         }
 
         /// <summary>
