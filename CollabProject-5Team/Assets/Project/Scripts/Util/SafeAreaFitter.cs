@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 namespace GameDevTycoon.UI
@@ -6,44 +7,64 @@ namespace GameDevTycoon.UI
     public sealed class SafeAreaFitter : MonoBehaviour
     {
         private RectTransform _rect;
+        private int _retryCount = 0;
+        private const int MAX_RETRY = 5; // 혹시 모를 무한 루프 방지
 
         private void Awake()
         {
             _rect = GetComponent<RectTransform>();
-            Refresh();
         }
 
-        private void Refresh()
+        private void Start()
         {
-            // 세로 모드 고정 게임이므로 초기화 시점에 딱 한 번만 안전 영역을 적용
-            Apply(Screen.safeArea);
+            // Start 시점에 코루틴을 돌려 유니티 엔진이 화면 정렬을 끝내도록 유도
+            StartCoroutine(CoApplySafeArea());
         }
 
-        private void Apply(Rect safeArea)
+        private IEnumerator CoApplySafeArea()
         {
-            // 1. 물리 픽셀 해상도(Screen)를 기준으로 철저하게 0 ~ 1 사이의 비율만 계산
-            float screenWidth = Screen.width;
-            float screenHeight = Screen.height;
+            while (_retryCount < MAX_RETRY)
+            {
+                // 유니티 UI와 프레임 렌더링이 완전히 끝날 때까지 대기
+                yield return new WaitForEndOfFrame();
 
-            // 방어 코드: 0으로 나누기 방지
-            if (screenWidth <= 0 || screenHeight <= 0) return;
+                Rect safeArea = Screen.safeArea;
+                float screenWidth = Screen.width;
+                float screenHeight = Screen.height;
 
-            var anchorMin = safeArea.position;
-            var anchorMax = safeArea.position + safeArea.size;
+                // 방어 코드: 간혹 앱 구동 극초기에 해상도가 0 이하인 경우를 대비
+                if (screenWidth <= 0 || screenHeight <= 0 || safeArea.width <= 0 || safeArea.height <= 0)
+                {
+                    _retryCount++;
+                    yield return new WaitForSecondsRealtime(0.1f);
+                    continue;
+                }
 
-            anchorMin.x /= screenWidth;
-            anchorMin.y /= screenHeight;
-            anchorMax.x /= screenWidth;
-            anchorMax.y /= screenHeight;
+                Vector2 anchorMin = safeArea.position;
+                Vector2 anchorMax = safeArea.position + safeArea.size;
 
-            // 2. 계산된 비율을 앵커에 대입 (Canvas Scaler 비율과 무관하게 영역이 잡힙니다)
-            _rect.anchorMin = anchorMin;
-            _rect.anchorMax = anchorMax;
+                anchorMin.x /= screenWidth;
+                anchorMin.y /= screenHeight;
+                anchorMax.x /= screenWidth;
+                anchorMax.y /= screenHeight;
 
-            // 3. 핵심: 앵커가 변경되면서 생성된 마진(Offset)을 제로로 만듬
-            // Canvas Scaler 환경에서 이 처리가 없으면 UI 레이아웃이 완전히 틀어집니다.
-            _rect.offsetMin = Vector2.zero;
-            _rect.offsetMax = Vector2.zero;
+                anchorMin.x = Mathf.Clamp01(anchorMin.x);
+                anchorMin.y = Mathf.Clamp01(anchorMin.y);
+                anchorMax.x = Mathf.Clamp01(anchorMax.x);
+                anchorMax.y = Mathf.Clamp01(anchorMax.y);
+
+                _rect.anchorMin = anchorMin;
+                _rect.anchorMax = anchorMax;
+
+                _rect.offsetMin = Vector2.zero;
+                _rect.offsetMax = Vector2.zero;
+
+                yield break;
+            }
+
+#if UNITY_EDITOR
+            Debug.LogWarning("[SafeAreaFitter] SafeArea 적용에 실패했습니다.");
+#endif
         }
     }
 }

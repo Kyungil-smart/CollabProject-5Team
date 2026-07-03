@@ -16,8 +16,12 @@ namespace GameDevTycoon.UI.Title
         [SerializeField] private SettingsPresenter _settingsPresenter;
         [SerializeField] private LoadPresenter _loadPresenter;
 
+        [Header("BGM")]
+        [SerializeField] private AudioClip _bgm;
+
         private void Start()
         {
+            AudioManager.Instance?.PlayBGM(_bgm);
             BindButtons();
         }
 

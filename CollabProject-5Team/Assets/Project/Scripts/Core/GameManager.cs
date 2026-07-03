@@ -167,6 +167,7 @@ public class GameManager : MonoBehaviour
         }
 
         if (_currentOfficeIndex + 1 >= _offices.Count) return;
+        await UniTask.Yield();
 
         LeaveWorkNPCs();
         await UniTask.Yield();

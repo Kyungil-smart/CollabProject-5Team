@@ -1565,7 +1565,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   SitPoint: {fileID: 4280676350941451801}
   PointType: 0
-  IsOccupied: 0
+  _isOccupied: 0
   Owner: {fileID: 0}
 --- !u!1 &183996773623607542
 GameObject:
@@ -6344,7 +6344,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   SitPoint: {fileID: 1818781965572622591}
   PointType: 1
-  IsOccupied: 0
+  _isOccupied: 0
   Owner: {fileID: 0}
 --- !u!114 &5574956332186139021
 MonoBehaviour:
@@ -10416,7 +10416,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   SitPoint: {fileID: 526933932713973730}
   PointType: 0
-  IsOccupied: 0
+  _isOccupied: 0
   Owner: {fileID: 0}
 --- !u!1 &1542572384496070689
 GameObject:
@@ -12153,6 +12153,8 @@ GameObject:
   - component: {fileID: 1560124317800390798}
   - component: {fileID: 8048047253882858481}
   - component: {fileID: 7448644956047712234}
+  - component: {fileID: 330854085777006603}
+  - component: {fileID: 4542101341727874438}
   m_Layer: 0
   m_Name: Hotel_PC_Monitor_1 (1)
   m_TagString: Untagged
@@ -12228,6 +12230,44 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!114 &330854085777006603
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1777816379897274489}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6f760b0c755e0314e86fbdde5c44a73f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _interactionUI: {fileID: 0}
+  _playerLayer:
+    serializedVersion: 2
+    m_Bits: 256
+  _workPosition: {fileID: 1560124317800390798}
+--- !u!65 &4542101341727874438
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1777816379897274489}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 1, y: 1, z: 1}
+  m_Center: {x: 0, y: 0, z: 0.35}
 --- !u!1 &1782539819645230031
 GameObject:
   m_ObjectHideFlags: 0
@@ -18150,7 +18190,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   SitPoint: {fileID: 8712663295368019335}
   PointType: 0
-  IsOccupied: 0
+  _isOccupied: 0
   Owner: {fileID: 0}
 --- !u!1 &2781207702674774724
 GameObject:
@@ -21255,7 +21295,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   SitPoint: {fileID: 2365082425539085215}
   PointType: 0
-  IsOccupied: 0
+  _isOccupied: 0
   Owner: {fileID: 0}
 --- !u!1 &3273072710218386095
 GameObject:
@@ -24089,7 +24129,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   SitPoint: {fileID: 9111375656292028279}
   PointType: 3
-  IsOccupied: 0
+  _isOccupied: 0
   Owner: {fileID: 0}
 --- !u!114 &5950099237692763138
 MonoBehaviour:
@@ -29880,7 +29920,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   SitPoint: {fileID: 4160900699697866023}
   PointType: 2
-  IsOccupied: 0
+  _isOccupied: 0
   Owner: {fileID: 0}
 --- !u!1 &4388917597609521682
 GameObject:
@@ -32696,8 +32736,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   SitPoint: {fileID: 301534202229679759}
-  PointType: 0
-  IsOccupied: 0
+  PointType: 1
+  _isOccupied: 0
   Owner: {fileID: 0}
 --- !u!114 &4138804385039316172
 MonoBehaviour:
@@ -37359,7 +37399,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   SitPoint: {fileID: 7376125578813989454}
   PointType: 3
-  IsOccupied: 0
+  _isOccupied: 0
   Owner: {fileID: 0}
 --- !u!1 &5502122708359775927
 GameObject:
@@ -38295,7 +38335,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   SitPoint: {fileID: 5765902303154202563}
   PointType: 1
-  IsOccupied: 0
+  _isOccupied: 0
   Owner: {fileID: 0}
 --- !u!114 &8985527371675791745
 MonoBehaviour:
@@ -41461,7 +41501,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   SitPoint: {fileID: 3597143124950183612}
   PointType: 0
-  IsOccupied: 0
+  _isOccupied: 0
   Owner: {fileID: 0}
 --- !u!1 &6050660582671616304
 GameObject:
@@ -42000,7 +42040,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   SitPoint: {fileID: 1732689948588408963}
   PointType: 0
-  IsOccupied: 0
+  _isOccupied: 0
   Owner: {fileID: 0}
 --- !u!1 &6116154963039577615
 GameObject:
@@ -42904,7 +42944,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   SitPoint: {fileID: 2075524519719068264}
   PointType: 2
-  IsOccupied: 0
+  _isOccupied: 0
   Owner: {fileID: 0}
 --- !u!1 &6286219663176802851
 GameObject:
@@ -45936,8 +45976,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   SitPoint: {fileID: 351399190745925545}
-  PointType: 0
-  IsOccupied: 0
+  PointType: 1
+  _isOccupied: 0
   Owner: {fileID: 0}
 --- !u!114 &2509137570988374901
 MonoBehaviour:
@@ -50854,7 +50894,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   SitPoint: {fileID: 4174431705489310272}
   PointType: 0
-  IsOccupied: 0
+  _isOccupied: 0
   Owner: {fileID: 0}
 --- !u!1 &7492373420960238100
 GameObject:
@@ -59233,7 +59273,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   SitPoint: {fileID: 6059073267617418936}
   PointType: 0
-  IsOccupied: 0
+  _isOccupied: 0
   Owner: {fileID: 0}
 --- !u!1 &8720739399669137086
 GameObject:

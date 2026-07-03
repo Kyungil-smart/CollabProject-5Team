@@ -10,4 +10,9 @@ public class TutorialDataSO : ScriptableObject
     public ShowMode         showMode;
     public GameObject activateObject;
     public string       tutorialText;
+    public string    tutorialExplain;
+    public bool         textPosition;
+
+    public int punchHoleX;
+    public int punchHoleY;
 }

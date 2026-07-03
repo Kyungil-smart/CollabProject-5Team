@@ -12,7 +12,8 @@ public class TutorialManager : MonoBehaviour
         ButtonActivated,
         HighlightSqureTouchAnywhere,
         HighLightSqureTouchSomewhere,
-        PunchHole
+        PunchHole,
+        WaitPlayer
     }
 
     // 싱글톤
@@ -24,6 +25,8 @@ public class TutorialManager : MonoBehaviour
     [SerializeField] private GameObject      _guideBox;
     [SerializeField] private TextMeshProUGUI _tutorialText;
     [SerializeField] private GameObject      _tutorialPanel;
+    [SerializeField] private Transform       _position1;
+    [SerializeField] private Transform       _position2;
 
     [Header("Pointer Settings")]
     [SerializeField] private Image _tutorialPointer; // 인스펙터에서 할당
@@ -34,6 +37,7 @@ public class TutorialManager : MonoBehaviour
     private int _curIndex = -1;
 
     private bool _isWaitingPlayerInput = false;
+
 
     // 오브젝트 ID 등록
     private Dictionary<string, GameObject> _registeredObjects = new Dictionary<string, GameObject>();
@@ -49,6 +53,12 @@ public class TutorialManager : MonoBehaviour
     // Shader
     [SerializeField] private Material _templateMaterial; // 인스펙터에서 M_TutorialPunchHole 할당!
     private Material _runtimeMaterial;
+
+    [Header("BGM")]
+    [SerializeField] private AudioClip _bgm;
+
+    [Header("Index 23")]
+    [SerializeField] private TMP_InputField _myInputField;
 
     /////////////////// - 라이프사이클 - ///////////////////
     private void Awake()
@@ -101,7 +111,22 @@ public class TutorialManager : MonoBehaviour
 
             if (_tutorialSteps[_curIndex].showMode == ShowMode.HighlightSqureTouchAnywhere)
             {
-                CleanUpActiveObjectComponents();
+                bool isNextSame = false;
+                if (_curIndex + 1 < _tutorialSteps.Count)
+                {
+                    string currentId = _tutorialSteps[_curIndex].tutorialObjectId;
+                    string nextId = _tutorialSteps[_curIndex + 1].tutorialObjectId;
+
+                    if (!string.IsNullOrEmpty(currentId) && currentId == nextId)
+                    {
+                        isNextSame = true;
+                    }
+                }
+
+                if (!isNextSame)
+                {
+                    CleanUpActiveObjectComponents();
+                }
             }
 
             ProceedTutorial();
@@ -117,6 +142,7 @@ public class TutorialManager : MonoBehaviour
     /////////////////// - 실행 - ///////////////////
     private void StartTutorial()
     {
+        AudioManager.Instance?.PlayBGM(_bgm);
         ProceedTutorial();
     }
 
@@ -125,27 +151,61 @@ public class TutorialManager : MonoBehaviour
         if (string.IsNullOrEmpty(id)) return;
 
         if (_registeredObjects.ContainsKey(id))
+        {
             _registeredObjects[id] = tutorialObject;
-
+            Debug.Log($"[TutorialManager] ID '{id}' 오브젝트가 최신 인스턴스로 갱신되었습니다. ({tutorialObject.name})");
+        }
         else
+        {
             _registeredObjects.Add(id, tutorialObject);
+        }
     }
 
     private void ExecuteTutorial()
     {
-        _tutorialPanel.SetActive(true);
+        if (_tutorialSteps == null || _curIndex < 0 || _curIndex >= _tutorialSteps.Count)
+        {
+            Debug.LogError($"[TutorialManager] 인덱스 오류: _curIndex={_curIndex}, 리스트 크기={(_tutorialSteps != null ? _tutorialSteps.Count : 0)}");
+            return;
+        }
 
+        if (_tutorialSteps[_curIndex] == null)
+        {
+            Debug.LogError($"[TutorialManager] _tutorialSteps[{_curIndex}] 데이터가 null입니다!");
+            return;
+        }
+
+        _tutorialPanel.             SetActive(true);
         _tutorialPointer.gameObject.SetActive(false);
 
-        if (string.IsNullOrEmpty(_tutorialSteps[_curIndex].tutorialText))
+        if (string.IsNullOrWhiteSpace(_tutorialSteps[_curIndex].tutorialText))
             _guideBox.SetActive(false);
         else
         {
             _guideBox.SetActive(true);
+
+            if (_tutorialSteps[_curIndex].textPosition)
+                _guideBox.transform.position = _position2.position;
+            else
+                _guideBox.transform.position = _position1.position;
+
             _tutorialText.text = _tutorialSteps[_curIndex].tutorialText;
         }
 
         SetupActiveObjectContext();
+
+        if (_currentActiveObject != null && _myInputField != null)
+        {
+            // 타겟 오브젝트가 InputField 본인이거나 그 자식/부모 관계인지 체크
+            if (_currentActiveObject == _myInputField.gameObject || _currentActiveObject.GetComponentInChildren<TMP_InputField>() != null)
+            {
+                _myInputField.text = "임시 프로젝트";
+
+                // UI 갱신 유도
+                _myInputField.ForceLabelUpdate();
+                Debug.Log($"[TutorialManager] InputField 타겟 감지: 자동으로 이름을 채웠습니다. ({_myInputField.text})");
+            }
+        }
 
         switch (_tutorialSteps[_curIndex].showMode)
         {
@@ -163,6 +223,8 @@ public class TutorialManager : MonoBehaviour
                 break;
             case ShowMode.PunchHole:
                 TutorialPunchHole();
+                break;
+            case ShowMode.WaitPlayer:
                 break;
         }
     }
@@ -263,12 +325,10 @@ public class TutorialManager : MonoBehaviour
     {
         if (_tutorialPointer == null || _currentActiveObject == null) return;
 
-        if (_tutorialPointer.transform.parent != _tutorialPanel.transform)
-        {
-            _tutorialPointer.transform.SetParent(_tutorialPanel.transform, false);
-        }
+        var tutorialComp = _currentActiveObject.GetComponent<TutorialObject>();
+        Vector3 worldPos = (tutorialComp != null) ? tutorialComp.GetWorldPosition() : _currentActiveObject.transform.position;
 
-         _tutorialPointer.transform.SetAsLastSibling();
+        _tutorialPointer.transform.SetAsLastSibling();
         _tutorialPointer.gameObject.SetActive(true);
 
         RectTransform pointerRect = _tutorialPointer.rectTransform;
@@ -284,7 +344,7 @@ public class TutorialManager : MonoBehaviour
         }
         else
         {
-            Vector3 worldPos = _currentActiveObject.transform.position;
+            worldPos = _currentActiveObject.transform.position;
             screenPoint = Camera.main.WorldToScreenPoint(worldPos);
         }
 
@@ -468,6 +528,32 @@ public class TutorialManager : MonoBehaviour
         {
             CleanUpPunchHole();
             CleanUpActiveObjectComponents();
+            ProceedTutorial();
+        }
+    }
+
+    /////////////////////////////
+
+    public bool IsWaitingDialogue = false;
+
+    public void StartWaitingForDialogue()
+    {
+        IsWaitingDialogue = true;
+        _tutorialPanel.SetActive(false); 
+    }
+
+    public void FinishDialogueAndProceed()
+    {
+        if (IsWaitingDialogue)
+        {
+            IsWaitingDialogue = false;
+            _tutorialPanel.SetActive(true);
+
+            if (_tutorialSteps[_curIndex].showMode == ShowMode.PunchHole)
+                CleanUpPunchHole();
+
+            CleanUpActiveObjectComponents();
+
             ProceedTutorial();
         }
     }

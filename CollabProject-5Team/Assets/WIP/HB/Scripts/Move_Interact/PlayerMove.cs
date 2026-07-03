@@ -258,10 +258,7 @@ public class PlayerMove : MonoBehaviour
 
         var point = _targetInteractable as IInteractablePoint;
         if (point != null)
-        {
-            // 진짜 컴포넌트인지, 원본과 같은지 ID로 확인
-            Debug.Log($"[플레이어] 점유할 포인트 이름: {((MonoBehaviour)point).name}, ID: {((MonoBehaviour)point).GetInstanceID()}");
-        
+        {        
             // 형변환
             var actionPoint = PointManager.Instance.GetAllPoints()
                                 .FirstOrDefault(p => p.name == ((MonoBehaviour)point).name 
@@ -269,7 +266,6 @@ public class PlayerMove : MonoBehaviour
             if(actionPoint != null) 
             {
                 actionPoint.IsOccupied = true;
-                Debug.Log($"[플레이어] {actionPoint.name}의 IsOccupied를 {actionPoint.IsOccupied}로 변경함");
             }
         
             Transform targetTransform = point.GetTransform();

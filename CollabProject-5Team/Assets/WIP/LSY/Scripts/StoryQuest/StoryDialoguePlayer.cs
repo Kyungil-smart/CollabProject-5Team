@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Dialogue;
 using UnityEngine;
 
@@ -45,6 +46,7 @@ public class StoryDialoguePlayer : MonoBehaviour
         _speakerEmployees = speakerEmployees ?? new Dictionary<string, Employee>();
         _onComplete       = onComplete;
         _isDialogueRunning = true;
+
         ShowNode(startNodeId);
     }
 
@@ -76,12 +78,14 @@ public class StoryDialoguePlayer : MonoBehaviour
 
         if (node.isUser)
         {
+            _employeeView.gameObject.SetActive(false);
             _currentView = _playerView;
             _playerView.Bind(Company.Instance.playerName, resolvedText);
             _playerView.OnNextAction = AdvanceDialogue;
         }
         else
         {
+            _playerView.gameObject.SetActive(false);
             _currentView = _employeeView;
             _employeeView.Bind(new EmployeeDialogueViewData
             {

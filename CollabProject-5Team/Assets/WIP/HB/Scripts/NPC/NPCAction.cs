@@ -19,6 +19,8 @@ public class NPCAction : INPCState
             npc.transform.rotation = targetTransform.rotation;
         }
 
+        ResetTargetPosition(npc);
+
         switch (_pointType)
         {
             case PointType.Desk: npc.Anim.SetTrigger("Sit"); break;
@@ -47,8 +49,20 @@ public class NPCAction : INPCState
 
         try
         {
-            await UniTask.Delay((int)(stayTime * 1000), cancellationToken: npc.Cts.Token);
-
+            while (stayTime > 0)
+            {
+                if (!npc.IsInteracting) 
+                {
+                    // 1초씩 카운트다운
+                    await UniTask.Delay(1000, cancellationToken: npc.Cts.Token);
+                    stayTime -= 1.0f;
+                }
+                else
+                {
+                    // 대화 중이면 잠시 대기
+                    await UniTask.Yield(PlayerLoopTiming.Update, npc.Cts.Token);
+                }
+            }
         }
 
         catch (System.OperationCanceledException)
@@ -71,6 +85,14 @@ public class NPCAction : INPCState
 
         npc.AssignNewTask();
         
+    }
+
+    public void ResetTargetPosition(NPCController npc)
+    {
+        var targetTransform = npc.CurrentTarget.GetTransform();
+        npc.Agent.enabled = false;
+        npc.transform.position = targetTransform.position;
+        npc.transform.rotation = targetTransform.rotation;
     }
 
     public void Update(NPCController npc)

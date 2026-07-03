@@ -14,7 +14,6 @@ public class NPCInteract : MonoBehaviour, IInteractable
 
     [Header("UI창 내부의 텍스트, 퀘스트 완료 버튼")]
     [SerializeField] private TextMeshProUGUI dialogueText;
-    //[SerializeField] private Button questCompleteButton;
 
     private void Awake()
     {
@@ -31,6 +30,11 @@ public class NPCInteract : MonoBehaviour, IInteractable
 
     public void OnInteract()
     {
+        if (TutorialManager.Instance != null)
+        {
+            TutorialManager.Instance.StartWaitingForDialogue();
+        }
+
         var controller = GetComponent<NPCController>();
         var player = GameManager.Instance.player;
 
@@ -91,8 +95,6 @@ public class NPCInteract : MonoBehaviour, IInteractable
         {
             Dialogue.DialogueManager.Instance.ShowBusyMessage(emp);
 
-            controller?.EndConversation();
-
             return;
         }
 
@@ -102,7 +104,10 @@ public class NPCInteract : MonoBehaviour, IInteractable
     private void RollBackAnimation()
     {
         var controller = GetComponent<NPCController>();
-        controller?.RestoreActionAnimation();
+        if(controller != null)
+        {
+            controller?.RestoreActionAnimation();
+        }
     }
 
     public Transform GetTransform()

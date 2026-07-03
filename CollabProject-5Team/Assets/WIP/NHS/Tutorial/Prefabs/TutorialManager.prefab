@@ -1,0 +1,71 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &6854953271899399263
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2181051930028469559}
+  - component: {fileID: 7208143724258782596}
+  m_Layer: 0
+  m_Name: TutorialManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2181051930028469559
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6854953271899399263}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 625.17413, y: 775.616, z: -8.268516}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &7208143724258782596
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6854953271899399263}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 53f105f8a4fc66940bd19dbf4d113983, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _guideBox: {fileID: 0}
+  _tutorialText: {fileID: 0}
+  _tutorialPanel: {fileID: 0}
+  _position1: {fileID: 0}
+  _position2: {fileID: 0}
+  _tutorialPointer: {fileID: 0}
+  _pointerOffset: {x: 35, y: -35}
+  _tutorialSteps:
+  - {fileID: 11400000, guid: 406a06116a1da794e897c64b5527fc5e, type: 2}
+  - {fileID: 11400000, guid: 6a2222b62bf1c3b49934cd8683d3509d, type: 2}
+  - {fileID: 11400000, guid: e8418e4ca862ce5479a4e37d80e6c28b, type: 2}
+  - {fileID: 11400000, guid: 35e19da8be0db5646bbedaeef4f609c4, type: 2}
+  - {fileID: 11400000, guid: 3eec9237d8bbd1c49ba1cf62fa0808c4, type: 2}
+  - {fileID: 11400000, guid: 984990f92621db14cb97df177129db49, type: 2}
+  - {fileID: 11400000, guid: 61c4767da8c57374582e5b40e78b84e5, type: 2}
+  - {fileID: 11400000, guid: bed068d6cff5b2041ae24a2ec6729d07, type: 2}
+  - {fileID: 11400000, guid: 4bacceb69ecd5d2419776a08022271ee, type: 2}
+  - {fileID: 11400000, guid: da90df7ca95ecdb45b5aed5219d2e3f6, type: 2}
+  - {fileID: 11400000, guid: e60c173f657d2bf408706da527aaa1a9, type: 2}
+  - {fileID: 11400000, guid: 67a04cb4a9c1a054abdc46434fdfa8b0, type: 2}
+  - {fileID: 11400000, guid: 1ea98bec8fad45f4d9f9e42c67294191, type: 2}
+  _templateMaterial: {fileID: 2100000, guid: 4e3a38a698c2ab649b8e5b1671101b8e, type: 2}
+  _bgm: {fileID: 8300000, guid: 6a7e81a52582bed428d58652a42d50b5, type: 3}
+  _myInputField: {fileID: 0}
+  IsWaitingDialogue: 0
