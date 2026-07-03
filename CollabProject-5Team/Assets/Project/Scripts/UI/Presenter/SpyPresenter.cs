@@ -142,19 +142,38 @@ namespace GameDevTycoon.UI.Ingame
         }
 
         /// <summary>
-        /// 알림창 오픈 매개체 (미완성 영역 연결 고리)
+        /// 알림창 오픈 매개체 및 스파이 결과 연출 링커
         /// </summary>
         private void ShowResultNotification(bool isCorrect, Employee target)
         {
             if (isCorrect)
             {
                 Debug.Log($"[SpySystem] 정답 성공 판정: {target.so.Name} 검거 완료.");
-                // TODO: 성공 후속 처리 또는 결과 팝업 연계 후 ClosePopup() 호출
+
+                target.isSpy = false;
+
+                // "잡았다 요놈" 이미지 연출 팝업을 띄웁니다.
+                _alertView.ShowSpySuccessResult(onClose: () =>
+                {
+                    _isProcessing = false;
+                    ClosePopup();
+
+                    // 연출이 완벽하게 종료되면 하루 일과를 마감하고 다음 단계로 진행합니다.
+                    if (DateTimeManager.Instance != null)
+                    {
+                        DateTimeManager.Instance.CompleteDayWork();
+                    }
+                });
             }
             else
             {
                 Debug.Log($"[SpySystem] 오답 실패 판정: {target.so.Name}은 일반 직원입니다.");
-                // TODO: 실패 후속 처리 또는 결과 팝업 연계 후 ClosePopup() 호출
+
+                // 오답일 경우, 공용 경고창을 통해 유저에게 힌트나 실패 알림을 제공합니다.
+                _alertView.ShowAlertPopup($"{target.so.Name}은(는) 스파이가 아니었습니다! 다른 직원을 의심해 보세요.");
+
+                // 오답 시에는 팝업을 닫지 않고 다시 고를 수 있게 상호작용 잠금을 풀어줍니다.
+                _isProcessing = false;
             }
         }
 
