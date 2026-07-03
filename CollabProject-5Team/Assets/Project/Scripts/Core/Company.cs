@@ -436,8 +436,7 @@ public class Company : MonoBehaviour
             cumulativeManagementStatus.Recalculate();
 
             if (e.WorkStatus != EmployeeWorkStatus.InProject)
-                continue; // 프로젝트 중인 직원만 능력치 변화
-            e.AddAbilityDelta(PerkPolicy.CalcWeeklyAbilityDelta(e.MutableData.loyalty));
+                continue; // 프로젝트 중인 직원만 주간 대화 패널티 검사
 
             // 대화 안한 직원 패널티 적용
             if (!e.hasTalkedThisWeek)

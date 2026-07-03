@@ -7,38 +7,29 @@ public static class PerkPolicy
     // 직원 세부 능력치 기본값: 20 + ability * 0.5
     public static int CalcBaseProperty(int ability) => 20 + Mathf.RoundToInt(ability * 0.5f);
 
-    public static int CalcWeeklyAbilityDelta(int loyalty)
-    {
-        if (loyalty >= 81) return 5;
-        if (loyalty >= 61) return 3;
-        if (loyalty >= 41) return 2;
-        if (loyalty >= 21) return 1;
-        return 0;
-    }
-
     public static int CalcCompletionAbilityDelta(ProjectSize size, char grade)
     {
         return size switch
         {
             ProjectSize.Medium => grade switch
             {
-                'S' => 12,
-                'A' => 9,
-                'B' => 6,
+                'S' => 7,
+                'A' => 5,
+                'B' => 3,
                 _ => 2,
             },
             ProjectSize.Large => grade switch
             {
-                'S' => 18,
-                'A' => 14,
-                'B' => 9,
-                _ => 4,
+                'S' => 10,
+                'A' => 8,
+                'B' => 5,
+                _ => 3,
             },
             _ => grade switch
             {
-                'S' => 8,
-                'A' => 6,
-                'B' => 4,
+                'S' => 4,
+                'A' => 3,
+                'B' => 2,
                 _ => 1,
             },
         };
@@ -66,7 +57,7 @@ public static class PerkPolicy
             {
                 'S' => 4,
                 'A' => 2,
-                'B' => -1,
+                'B' => 0,
                 _ => -2,
             },
         };
