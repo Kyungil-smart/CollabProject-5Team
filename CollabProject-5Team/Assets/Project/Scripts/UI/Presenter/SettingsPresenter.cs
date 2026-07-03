@@ -57,7 +57,7 @@ namespace GameDevTycoon.UI
         private void BindButtons()
         {
             _view.OnConfirmClicked
-                .Subscribe(_ => Hide())
+                .Subscribe(_ => { AudioManager.Instance?.PlaySFXClick(); Hide(); })
                 .AddTo(this);
 
             _view.OnBGMToggleClicked
@@ -69,12 +69,13 @@ namespace GameDevTycoon.UI
                 .AddTo(this);
 
             _view.OnTitleClicked
-                .Subscribe(_ => OnTitleClicked())
+                .Subscribe(_ => { AudioManager.Instance?.PlaySFXClick(); OnTitleClicked(); })
                 .AddTo(this);
         }
 
         private void OnBGMToggleClicked()
         {
+            AudioManager.Instance?.PlaySFXClick();
             _isBGMOn = !_isBGMOn;
             _view.SetBGMToggle(_isBGMOn);
             PlayerPrefs.SetInt(KEY_BGM_ON, _isBGMOn ? 1 : 0);
@@ -84,6 +85,7 @@ namespace GameDevTycoon.UI
 
         private void OnSFXToggleClicked()
         {
+            AudioManager.Instance?.PlaySFXClick();
             _isSFXOn = !_isSFXOn;
             _view.SetSFXToggle(_isSFXOn);
             PlayerPrefs.SetInt(KEY_SFX_ON, _isSFXOn ? 1 : 0);
@@ -116,6 +118,7 @@ namespace GameDevTycoon.UI
 
         private void OnTitleClicked()
         {
+            AudioManager.Instance?.PlaySFXAlert();
             _alertView.ShowConfirmPopup("타이틀로 이동하시겠습니까?", () =>
             {
                 // [TODO: SceneLoader 확정 후 교체]

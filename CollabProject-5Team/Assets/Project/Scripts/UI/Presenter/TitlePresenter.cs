@@ -28,19 +28,19 @@ namespace GameDevTycoon.UI.Title
         private void BindButtons()
         {
             _view.OnStartClicked
-                .Subscribe(_ => LoadNewGameSceneAsync().Forget())
+                .Subscribe(_ => { AudioManager.Instance?.PlaySFXPositive(); LoadNewGameSceneAsync().Forget(); })
                 .AddTo(this);
 
             _view.OnLoadClicked
-                .Subscribe(_ => _loadPresenter.Show())
+                .Subscribe(_ => { AudioManager.Instance?.PlaySFXClick(); _loadPresenter.Show(); })
                 .AddTo(this);
 
             _view.OnSettingsClicked
-                .Subscribe(_ => _settingsPresenter.Show())
+                .Subscribe(_ => { AudioManager.Instance?.PlaySFXClick(); _settingsPresenter.Show(); })
                 .AddTo(this);
 
             _view.OnQuitClicked
-                .Subscribe(_ => Application.Quit())
+                .Subscribe(_ => { AudioManager.Instance?.PlaySFXNegative(); Application.Quit(); })
                 .AddTo(this);
         }
 

@@ -70,6 +70,7 @@ namespace GameDevTycoon.UI.Ingame
         {
             if (_selectedView == clickedView) return;
 
+            AudioManager.Instance?.PlaySFXClick();
             _selectedView?.SetSelected(false);
             clickedView.SetSelected(true);
             _selectedView = clickedView;
@@ -81,6 +82,7 @@ namespace GameDevTycoon.UI.Ingame
         {
             if (_selectedView == null || _isProcessing) return;
 
+            AudioManager.Instance?.PlaySFXPositive();
             // 팝업이 뜨는 순간 True로 만들어 Canvas_Spy 내부의 모든 카드 클릭 및 확인 버튼 상호작용을 막습니다.
             _isProcessing = true;
 

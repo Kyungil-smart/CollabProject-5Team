@@ -38,21 +38,22 @@ namespace GameDevTycoon.UI.Ingame
             _view.OnCoverNextPageClicked
                 .Subscribe(_ =>
                 {
+                    AudioManager.Instance?.PlaySFXClick();
                     _view.ShowPanel(ReportPanel.EmployeeComment);
                     // [TODO: 담당자 EmployeeComment 패널 초기화 호출]
                 })
                 .AddTo(this);
 
             _view.OnAdoptClicked
-                .Subscribe(_ => OnAdoptReport())
+                .Subscribe(_ => { AudioManager.Instance?.PlaySFXPositive(); OnAdoptReport(); })
                 .AddTo(this);
 
             _view.OnCancelClicked
-                .Subscribe(_ => OnCancelDetail())
+                .Subscribe(_ => { AudioManager.Instance?.PlaySFXNegative(); OnCancelDetail(); })
                 .AddTo(this);
 
             _view.OnReportEndConfirmClicked
-                .Subscribe(_ => OnReportEndConfirmed())
+                .Subscribe(_ => { AudioManager.Instance?.PlaySFXPositive(); OnReportEndConfirmed(); })
                 .AddTo(this);
 
             for (int i = 0; i < _nextButtons.Length; i++)
@@ -61,6 +62,7 @@ namespace GameDevTycoon.UI.Ingame
                 _nextButtons[idx].OnClickAsObservable()
                     .Subscribe(_ =>
                     {
+                        AudioManager.Instance?.PlaySFXClick();
                         _roleIndex = idx + 1;
                         ShowReviewForCurrentRole();
                     })
@@ -154,6 +156,7 @@ namespace GameDevTycoon.UI.Ingame
 
         private void ShowDetail(Report report)
         {
+            AudioManager.Instance?.PlaySFXClick();
             _viewingReport = report;
             _view.SetDetailInfo(report);
             _view.PanelReportDetail.SetActive(true);

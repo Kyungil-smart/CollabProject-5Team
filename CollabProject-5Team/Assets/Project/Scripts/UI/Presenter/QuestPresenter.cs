@@ -45,11 +45,11 @@ namespace GameDevTycoon.UI.Ingame
         private void BindButtons()
         {
             _view.OnQuestDetailCloseClicked
-                .Subscribe(_ => _view.HideDetail())
+                .Subscribe(_ => { AudioManager.Instance?.PlaySFXClick(); _view.HideDetail(); })
                 .AddTo(this);
 
             _view.OnAlertConfirmClicked
-                .Subscribe(_ => _view.HideDailyQuestAlert())
+                .Subscribe(_ => { AudioManager.Instance?.PlaySFXClick(); _view.HideDailyQuestAlert(); })
                 .AddTo(this);
         }
 
@@ -217,12 +217,14 @@ namespace GameDevTycoon.UI.Ingame
         /// </summary>
         public void ShowClearPopup(bool completionUp, bool stabilityUp, bool appealUp)
         {
+            AudioManager.Instance?.PlaySFXQuestClear();
             _view.ShowClearPopup(completionUp, stabilityUp, appealUp);
             AutoHideClearPopupAsync().Forget();
         }
 
         public void ShowGoldClearPopup(int goldAmount)
         {
+            AudioManager.Instance?.PlaySFXQuestClear();
             _view.ShowGoldClearPopup(goldAmount);
             AutoHideClearPopupAsync().Forget();
         }
