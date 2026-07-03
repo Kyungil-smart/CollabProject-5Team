@@ -173,10 +173,10 @@ namespace GameDevTycoon.UI.Ingame
             _gameRankingValue.text = $"{ranking} 위";
             _employeeCountValue.text = $"{employeeCount} 명";
             _releasedGameCountValue.text = $"{releasedGameCount} 개";
-            _reputationValue.text = FormatK(reputation);
-            _popularityValue.text = FormatK(popularity);
-            _goldValue.text = FormatK(gold);
-            _totalRevenueValue.text = FormatK(totalRevenue);
+            _reputationValue.text = reputation.ToString();
+            _popularityValue.text = popularity.ToString();
+            _goldValue.text = FormatPolicy.FormatGold(gold);
+            _totalRevenueValue.text = FormatPolicy.FormatGold(totalRevenue);
         }
 
         /// <summary>
@@ -266,12 +266,12 @@ namespace GameDevTycoon.UI.Ingame
             TextMeshProUGUI current, TextMeshProUGUI previous,
             int currentVal, int? previousVal, bool isBold = false)
         {
-            current.text = FormatK(currentVal);
+            current.text = FormatPolicy.FormatGold(currentVal);
             current.fontStyle = isBold ? FontStyles.Bold : FontStyles.Normal;
             current.color = Color.black;
 
             if (previous == null) return;
-            previous.text = previousVal.HasValue ? FormatK(previousVal.Value) : "-";
+            previous.text = previousVal.HasValue ? FormatPolicy.FormatGold(previousVal.Value) : "-";
             previous.fontStyle = isBold ? FontStyles.Bold : FontStyles.Normal;
             previous.color = Color.black;
         }
@@ -281,13 +281,13 @@ namespace GameDevTycoon.UI.Ingame
             TextMeshProUGUI current, TextMeshProUGUI previous,
             int currentVal, int? previousVal, bool isBold = false)
         {
-            current.text = currentVal > 0 ? $"({FormatK(currentVal)})" : "-";
+            current.text = currentVal > 0 ? $"({FormatPolicy.FormatGold(currentVal)})" : "-";
             current.fontStyle = isBold ? FontStyles.Bold : FontStyles.Normal;
             current.color = Color.red;
 
             if (previous == null) return;
             previous.text = previousVal.HasValue && previousVal.Value > 0
-                ? $"({FormatK(previousVal.Value)})" : "-";
+                ? $"({FormatPolicy.FormatGold(previousVal.Value)})" : "-";
             previous.fontStyle = isBold ? FontStyles.Bold : FontStyles.Normal;
             previous.color = Color.red;
         }
@@ -297,7 +297,7 @@ namespace GameDevTycoon.UI.Ingame
             TextMeshProUGUI current, TextMeshProUGUI previous,
             int currentVal, int? previousVal)
         {
-            current.text = currentVal >= 0 ? FormatK(currentVal) : $"({FormatK(-currentVal)})";
+            current.text = currentVal >= 0 ? FormatPolicy.FormatGold(currentVal) : $"({FormatPolicy.FormatGold(-currentVal)})";
             current.color = currentVal >= 0 ? Color.black : Color.red;
             current.fontStyle = FontStyles.Bold;
 
@@ -309,13 +309,12 @@ namespace GameDevTycoon.UI.Ingame
             }
             else
             {
-                previous.text = previousVal.Value >= 0 ? FormatK(previousVal.Value) : $"({FormatK(-previousVal.Value)})";
+                previous.text = previousVal.Value >= 0 ? FormatPolicy.FormatGold(previousVal.Value) : $"({FormatPolicy.FormatGold(-previousVal.Value)})";
                 previous.color = previousVal.Value >= 0 ? Color.black : Color.red;
             }
             previous.fontStyle = FontStyles.Bold;
         }
 
-        private static string FormatK(int value) => $"{value:N0}K";
     }
 
     public enum CompanyTab

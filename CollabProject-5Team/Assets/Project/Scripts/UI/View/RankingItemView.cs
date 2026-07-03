@@ -36,9 +36,9 @@ namespace GameDevTycoon.UI.Ingame
         public void Bind(RankingItemData data)
         {
             _companyNameLabel.text = data.companyName;
-            _reputationLabel.text = FormatK(data.reputation);
-            _popularityLabel.text = FormatK(data.popularity);
-            _totalRevenueLabel.text = FormatK(data.totalRevenue);
+            _reputationLabel.text = data.reputation.ToString();
+            _popularityLabel.text = data.popularity.ToString();
+            _totalRevenueLabel.text = FormatPolicy.FormatGold(data.totalRevenue);
 
             _rankIcon.sprite = GetRankSprite(data.rank);
             _rowBackground.color = data.isPlayer ? _playerRowColor : _defaultRowColor;
@@ -52,7 +52,6 @@ namespace GameDevTycoon.UI.Ingame
             _ => _iconDefault,
         };
 
-        private static string FormatK(int value) => $"{value:N0}K";
     }
 
     public sealed class RankingItemData

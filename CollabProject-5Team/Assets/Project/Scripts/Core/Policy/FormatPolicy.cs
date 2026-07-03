@@ -5,6 +5,9 @@ public static class FormatPolicy
 {
     public static string FormatGold(int gold)
     {
+        if (gold < 0)
+            return $"-{FormatGold(-gold)}";
+
         if (gold < 10_000)
             return $"{gold:N0}G";
 
