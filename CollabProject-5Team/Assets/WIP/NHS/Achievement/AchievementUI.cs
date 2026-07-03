@@ -1,7 +1,6 @@
 using TMPro;
 using UnityEngine;
 using DG.Tweening;
-using Cysharp.Threading.Tasks;
 
 public class AchievementUI : MonoBehaviour
 {
@@ -27,9 +26,7 @@ public class AchievementUI : MonoBehaviour
     private void OnDestroy()
     {
         if (_showSequence != null)
-        {
             _showSequence.Kill();
-        }
     }
 
     public void ShowAchievement(string title, string description)
@@ -38,9 +35,7 @@ public class AchievementUI : MonoBehaviour
         _textDetail.text = description;
 
         if (_showSequence != null && _showSequence.IsActive())
-        {
             _showSequence.Kill();
-        }
 
         HideImmediately();
 

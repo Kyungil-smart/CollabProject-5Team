@@ -3,64 +3,63 @@ using System.Text.RegularExpressions;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using DG.Tweening;
 
 public class Newgame : MonoBehaviour
 {
     [System.Serializable]
     public struct CutScenePanelUI
     {
-        public GameObject panel;
-        public Image image;
+        public GameObject              panel;
+        public Image                   image;
         public TextMeshProUGUI characterName;
-        public TextMeshProUGUI dialogue;
-        public Button nextButton;
+        public TextMeshProUGUI      dialogue;
+        public Button             nextButton;
     }
 
     [Header("회사 이름 정하기")]
-    [SerializeField] private GameObject _setCompanyPanel;
+    [SerializeField] private GameObject     _setCompanyPanel;
     [SerializeField] private TMP_InputField _companyInputField;
-    [SerializeField] private Button _companyAcceptButton;
+    [SerializeField] private Button         _companyAcceptButton;
 
     [Header("플레이어 이름 정하기")]
-    [SerializeField] private GameObject _setPlayerNamePanel;
+    [SerializeField] private GameObject     _setPlayerNamePanel;
     [SerializeField] private TMP_InputField _playerNameInputField;
-    [SerializeField] private Button _playerNameAcceptButton;
+    [SerializeField] private Button         _playerNameAcceptButton;
 
     [Header("경고 팝업")]
-    [SerializeField] private GameObject _warningPanel;
-    [SerializeField] private Button _warningCheckButton;
+    [SerializeField] private GameObject      _warningPanel;
     [SerializeField] private TextMeshProUGUI _warningText;
+    [SerializeField] private Button          _warningCheckButton;
 
     [Header("스킵")]
     [SerializeField] private Button _skipButton;
     private bool _isFinishedSetPlayerName = false;
 
     [Header("컷씬")]
-    [SerializeField] private CutScenePanelUI _cutSceneUI;
+    [SerializeField] private CutScenePanelUI    _cutSceneUI;
     [SerializeField] private List<CutSceneData> _cutSceneList;
 
     [Header("사운드 타이핑 컴포넌트")]
     [SerializeField] private TextSoundTweener _textTweener; // 분리한 독립 컴포넌트
 
     private string _companyName = "미정";
-    private string _playerName = "주인공";
+    private string _playerName  = "주인공";
     private int _currentIdx = 0;
 
-    private float _typingSpeed = 0.5f;
+    private float  _typingSpeed         = 0.5f;
     private string _currentFullDialogue = "";
 
     private void Start()
     {
-        _companyAcceptButton.onClick.AddListener(OnCompanyConfirmed);
-        _cutSceneUI.nextButton.onClick.AddListener(OnNextDialogueClicked);
+           _companyAcceptButton.onClick.AddListener(OnCompanyConfirmed);
+         _cutSceneUI.nextButton.onClick.AddListener(OnNextDialogueClicked);
         _playerNameAcceptButton.onClick.AddListener(OnPlayerNameConfirmed);
-        _skipButton.onClick.AddListener(OnCanSkip);
+                    _skipButton.onClick.AddListener(OnCanSkip);
 
-        _setCompanyPanel.SetActive(true);
-        _cutSceneUI.panel.SetActive(false);
+           _setCompanyPanel.SetActive(true);
+          _cutSceneUI.panel.SetActive(false);
         _setPlayerNamePanel.SetActive(false);
-        _warningPanel.SetActive(false);
+              _warningPanel.SetActive(false);
     }
 
     private void ShowCutScene()
@@ -75,7 +74,6 @@ public class Newgame : MonoBehaviour
 
         if (currentData != null)
         {
-            // 새로운 대사 시작 전 이전 타이핑 연출 안전하게 종료
             _textTweener.KillActiveTween();
 
             _currentFullDialogue = currentData.dialogue
@@ -96,14 +94,12 @@ public class Newgame : MonoBehaviour
                 return;
             }
 
-            // 독립 컴포넌트에 텍스트와 대사를 넘겨 동숲 사운드 타이핑 시작
             _textTweener.DoType(_cutSceneUI.dialogue, _currentFullDialogue, _typingSpeed);
         }
     }
 
     private void OnNextDialogueClicked()
     {
-        // 글자가 찍히는 중이었다면 클릭 시 즉시 전체 텍스트 출력 (사운드 중지)
         if (_textTweener.CompleteActiveTween())
         {
             return;
@@ -161,8 +157,6 @@ public class Newgame : MonoBehaviour
 
     private void OnCanSkip()
     {
-        // 🐱 변형 유도 버그 수정: 과거 직접 쓰던 _typingTween 제어 로직을 지우고
-        // 독립 컴포넌트인 _textTweener를 멈추도록 일원화했습니다.
         _textTweener.KillActiveTween();
 
         if (!_isFinishedSetPlayerName)
