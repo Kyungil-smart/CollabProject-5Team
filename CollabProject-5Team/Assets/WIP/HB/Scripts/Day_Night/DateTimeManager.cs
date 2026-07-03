@@ -58,7 +58,10 @@ public class DateTimeManager : MonoBehaviour
 
             if (AchievementSystem.Instance != null)
             {
-                AchievementSystem.Instance.CheckAll();
+                AchievementSystem.Instance.NotifyEvent(
+                    AchievementNotifyType.OnPlayTimeChanged,
+                    Mathf.FloorToInt(playTime)
+                );
             }
         }
     }
