@@ -394,7 +394,7 @@ public class Company : MonoBehaviour
             curManagementStatus.Recalculate();
             cumulativeManagementStatus.Recalculate();
 
-            // 평판: 이번 주 판매 100당 +1
+            // 평판: 이번 주 판매 10당 +1
             reputation += PerkPolicy.CalcReputationGainFromSales(p.weeklySales);
             // 누적매출 증가
             totalRevenue += p.weeklyGoldAccum;

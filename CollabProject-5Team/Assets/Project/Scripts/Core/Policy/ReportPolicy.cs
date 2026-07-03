@@ -12,7 +12,7 @@ public static class ReportPolicy
         float baseScore = PerkPolicy.CalcBaseProperty(so.ability);
 
         float motivBonus = desire >= 80 ? 5f :
-                           desire >= 40 ? 0f : -10f;
+                           desire >= 40 ? 0f : -5f;
 
         return baseScore + motivBonus;
     }
@@ -79,10 +79,10 @@ public static class ReportPolicy
 
     public static int CalcLoyaltyAdjustedAbility(int ability, int loyalty)
     {
-        float rate = loyalty >= 81 ? 1.3f :
-                     loyalty >= 61 ? 1.15f :
+        float rate = loyalty >= 81 ? 1.1f :
+                     loyalty >= 61 ? 1.05f :
                      loyalty >= 41 ? 1.0f :
-                     loyalty >= 21 ? 0.85f : 0.7f;
+                     loyalty >= 21 ? 0.95f : 0.9f;
 
         return Mathf.Clamp((int)(ability * rate), 0, 100);
     }
@@ -128,7 +128,7 @@ public static class ReportPolicy
     static int CalcAcceptedFatigueDelta(int grade) => grade switch
     {
         1 => 5,
-        2 => Random.value < 0.5f ? 5 : 15,
-        _ => 15,
+        2 => Random.value < 0.5f ? 5 : 10,
+        _ => 10,
     };
 }

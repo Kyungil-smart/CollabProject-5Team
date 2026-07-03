@@ -91,8 +91,8 @@ public static class PerkPolicy
     }
 
     // ─ 유지력 계수 ─
-    public const float RETENTION_DECAY  = 0.01f; // 매일 감소
-    public const float RETENTION_UPDATE = 0.2f;  // 업데이트 승인 시 회복
+    public const float RETENTION_DECAY  = 0.05f; // 매일 감소
+    public const float RETENTION_UPDATE = 0.1f;  // 업데이트 승인 시 회복
 
     // - 유저수 ─
     const int SMALL_USERS  = 500; // 기본 유저수
@@ -117,9 +117,9 @@ public static class PerkPolicy
     }
 
     // - 기본 판매량 ─
-    const int SMALL_BASE_SALES  = 100;
+    const int SMALL_BASE_SALES  = 300;
     const int MEDIUM_BASE_SALES = 500;
-    const int LARGE_BASE_SALES  = 2500;
+    const int LARGE_BASE_SALES  = 800;
     static int BaseSales(ProjectSize size) => size switch
     {
         ProjectSize.Small => SMALL_BASE_SALES,
@@ -144,15 +144,15 @@ public static class PerkPolicy
     }
 
     // -점수 가중치 (처음값: 50)
-    const float SCORE_WEIGHT_BASELINE = 25f;
+    const float SCORE_WEIGHT_BASELINE = 40f;
 
     public static float CalcScoreWeight(float score)
-        => Mathf.Max(0f, (score - SCORE_WEIGHT_BASELINE) / 100f);
+        => Mathf.Max(0.1f, (score - SCORE_WEIGHT_BASELINE) / 100f);
 
     // - 매출 가중치 (gold) ─
-    const int SMALL_FACTOR  = 10;
-    const int MEDIUM_FACTOR = 15;
-    const int LARGE_FACTOR  = 20;
+    const int SMALL_FACTOR  = 150;
+    const int MEDIUM_FACTOR = 200;
+    const int LARGE_FACTOR  = 300;
     static int SalesFactor(ProjectSize size) => size switch
     {
         ProjectSize.Medium => MEDIUM_FACTOR,
@@ -195,8 +195,8 @@ public static class PerkPolicy
     // 평판 : 0부터 시작, 감소 가능
     /// <summary>주간 판매량 100장 미다 +1</summary>
     public static int CalcReputationGainFromSales(int weeklySales)
-        => (weeklySales+50) / 100;
-            //반올림 용 50더하기
+        => (weeklySales+5) / 10;
+            //반올림 용 5더하기
 
     // 평판 감소 상수 (미구현)
     public const int PENALTY_SPY_FAIL    = -10; // 스파이 행위 적발 실패 시

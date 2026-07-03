@@ -387,9 +387,10 @@ public class QuestManager : MonoBehaviour
     }
 
     // 금요일 밤 보고서 정산 시 직군별 누적 포인트 조회
-    public int GetWeeklyBonus(Role role)
-    {
-        return _weeklyBonusPoints.TryGetValue(role, out int value) ? value : 0;
+    public float GetWeeklyBonus(Role role)
+    {// 밸런스 요청에 의해 매일 1증가를 0.5로 바꾸는 구현을 여기서 2로 나눠서 구현하기로 함
+     // int를 float로 바꿔야해서 세이브등 광범위한 수정이 필요하기 때문
+        return _weeklyBonusPoints.TryGetValue(role, out int value) ? value / 2f : 0f;
     }
 
     // 주간 정산 후 초기화
