@@ -125,11 +125,6 @@ namespace GameDevTycoon.UI.Ingame
             bool isCorrect = StoryQuestManager.Instance.CheckIsSpy(selectedEmployee);
 
             ShowResultNotification(isCorrect, selectedEmployee);
-
-            // 지목 처리가 완전히 완료되었으므로, 상위 플로우에서 전달받은 콜백을 수행하고 프레임을 닫습니다.
-            ClosePopup();
-            _onSpySelectCompleted?.Invoke();
-            _onSpySelectCompleted = null;
         }
 
         /// <summary>
@@ -150,8 +145,6 @@ namespace GameDevTycoon.UI.Ingame
         /// </summary>
         private void ShowResultNotification(bool isCorrect, Employee target)
         {
-            // 지목 시점에는 "잡았다 요놈" 연출을 직접 제어하지 않고 결과 플래그만 세팅합니다.
-            // 최종 연출은 다음 날 후속 스토리 퀘스트 대사 출력 중에 기획에 맞춰 유동적으로 트리거됩니다.
             if (isCorrect)
             {
                 Debug.Log($"[SpySystem] 정답 성공 판정: {target.so.Name} 검거 완료.");
@@ -159,20 +152,32 @@ namespace GameDevTycoon.UI.Ingame
                 // 직원의 스파이 플래그 해제 및 퀘스트 성공 플래그 세팅
                 target.isSpy = false;
                 StoryQuestManager.Instance.isCorrectSpySelected = true;
+
+                // "잡았다 요놈" 연출 프레임이 뜨기 전에 스파이 선택용 카드 프레임을 먼저 깔끔하게 닫아줍니다.
+                ClosePopup();
+
+                // "잡았다 요놈" 연출 팝업을 띄우고, 유저가 클릭해서 닫으면(onClose) 후속 퀘스트 플로우로 제어권을 넘깁니다.
+                _alertView.ShowSpySuccessResult(onClose: () =>
+                {
+                    _isProcessing = false;
+
+                    // 상위 플로우(StoryQuestManager)에서 넘겨받은 완료 콜백을 실행하여 즉시 후속 대사/결과로 진입시킵니다.
+                    _onSpySelectCompleted?.Invoke();
+                    _onSpySelectCompleted = null;
+                });
             }
             else
             {
                 Debug.Log($"[SpySystem] 오답 실패 판정: {target.so.Name} 선택.");
 
                 StoryQuestManager.Instance.isCorrectSpySelected = false;
-            }
 
-            // 스파이 최종 선택 절차가 완료되었으므로 프로세스 플래그를 밀어주고 당일 일과를 마감합니다.
-            _isProcessing = false;
+                // 오답일 경우 연출 없이 즉시 프레임을 닫고 후속 대사/결과 플로우로 진입시킵니다.
+                ClosePopup();
+                _isProcessing = false;
 
-            if (DateTimeManager.Instance != null)
-            {
-                DateTimeManager.Instance.CompleteDayWork();
+                _onSpySelectCompleted?.Invoke();
+                _onSpySelectCompleted = null;
             }
         }
 
