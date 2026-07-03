@@ -8,6 +8,15 @@ public class AudioManager : MonoBehaviour
     public AudioMixer audioMixer;
 
     [SerializeField] private AudioSource _bgmSource;
+    [SerializeField] private AudioSource _sfxSource;
+
+    [Header("SFX Clips")]
+    [SerializeField] private AudioClip _sfxAlert;
+    [SerializeField] private AudioClip _sfxQuestTap;
+    [SerializeField] private AudioClip _sfxClick;
+    [SerializeField] private AudioClip _sfxNegative;
+    [SerializeField] private AudioClip _sfxPositive;
+    [SerializeField] private AudioClip _sfxQuestClear;
 
     bool[] isMute = new bool[3];
     float[] audioVolumes = new float[3];
@@ -62,6 +71,26 @@ public class AudioManager : MonoBehaviour
         _bgmSource.Stop();
         _bgmSource.clip = null;
     }
+
+    private float _lastSfxTime = -1f;
+    private AudioClip _lastSfxClip;
+    private const float SfxSameCooldown = 0.08f;
+
+    public void PlaySFX(AudioClip clip)
+    {
+        if (_sfxSource == null || clip == null) return;
+        if (clip == _lastSfxClip && Time.unscaledTime - _lastSfxTime < SfxSameCooldown) return;
+        _lastSfxTime = Time.unscaledTime;
+        _lastSfxClip = clip;
+        _sfxSource.PlayOneShot(clip);
+    }
+
+    public void PlaySFXAlert()      => PlaySFX(_sfxAlert);
+    public void PlaySFXQuestTap()   => PlaySFX(_sfxQuestTap);
+    public void PlaySFXClick()      => PlaySFX(_sfxClick);
+    public void PlaySFXNegative()   => PlaySFX(_sfxNegative);
+    public void PlaySFXPositive()   => PlaySFX(_sfxPositive);
+    public void PlaySFXQuestClear() => PlaySFX(_sfxQuestClear);
 
     // 버튼 연결용 함수
     private void Mute()

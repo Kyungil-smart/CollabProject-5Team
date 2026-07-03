@@ -58,6 +58,7 @@ namespace GameDevTycoon.UI.Ingame
 
         private void OnConfirmClicked()
         {
+            AudioManager.Instance?.PlaySFXPositive();
             _view.Hide();
             ProceedToReport();
         }

@@ -60,6 +60,7 @@ namespace GameDevTycoon.UI.Ingame
             _view.OnEmployeeManageTabClicked
                 .Subscribe(_ =>
                 {
+                    AudioManager.Instance?.PlaySFXClick();
                     _view.ShowTab(HRTab.EmployeeManage);
                     RefreshEmployeeManageList();
                 })
@@ -68,6 +69,7 @@ namespace GameDevTycoon.UI.Ingame
             _view.OnHireTabClicked
                 .Subscribe(_ =>
                 {
+                    AudioManager.Instance?.PlaySFXClick();
                     _view.ShowTab(HRTab.Hire);
                     _view.ShowHireMain();
                 })
@@ -78,12 +80,13 @@ namespace GameDevTycoon.UI.Ingame
         {
             _view.OnEmployeeManageSortChanged
                 .Skip(1)
-                .Subscribe(_ => RefreshEmployeeManageList())
+                .Subscribe(_ => { AudioManager.Instance?.PlaySFXClick(); RefreshEmployeeManageList(); })
                 .AddTo(this);
 
             _view.OnEmployeeManageEducationClicked
                 .Subscribe(_ =>
                 {
+                    AudioManager.Instance?.PlaySFXClick();
                     if (_selectedEmployee == null) return;
 
                     // 현재 교육 중인 직원이면 해당 과정 인덱스를 넘겨 EducationOverlay 표시
@@ -103,12 +106,13 @@ namespace GameDevTycoon.UI.Ingame
                 .AddTo(this);
 
             _view.OnEmployeeManageFireClicked
-                .Subscribe(_ => OnFireButtonClicked(_selectedEmployee))
+                .Subscribe(_ => { AudioManager.Instance?.PlaySFXNegative(); OnFireButtonClicked(_selectedEmployee); })
                 .AddTo(this);
 
             _view.OnEmployeeManageBackClicked
                 .Subscribe(_ =>
                 {
+                    AudioManager.Instance?.PlaySFXClick();
                     _selectedEmployee = null;
                     _view.ShowEmployeeManageList();
                 })
@@ -117,6 +121,7 @@ namespace GameDevTycoon.UI.Ingame
             _view.OnCourseSelected
                 .Subscribe(index =>
                 {
+                    AudioManager.Instance?.PlaySFXClick();
                     // 이전 SelectIMG 해제 후 새 선택 반영
                     if (_selectedCourseIndex >= 0)
                         _view.SetCourseSelectImg(_selectedCourseIndex, false);
@@ -128,12 +133,13 @@ namespace GameDevTycoon.UI.Ingame
                 .AddTo(this);
 
             _view.OnEducationCourseConfirmClicked
-                .Subscribe(_ => OnEducationCourseConfirmClicked())
+                .Subscribe(_ => { AudioManager.Instance?.PlaySFXPositive(); OnEducationCourseConfirmClicked(); })
                 .AddTo(this);
 
             _view.OnEducationCourseBackClicked
                 .Subscribe(_ =>
                 {
+                    AudioManager.Instance?.PlaySFXClick();
                     _view.ResetCourseSelection();
                     _selectedCourseIndex = -1;
                     _view.ShowEmployeeManageDetail();
@@ -146,6 +152,7 @@ namespace GameDevTycoon.UI.Ingame
             _view.OnRecruitClicked
                 .Subscribe(_ =>
                 {
+                    AudioManager.Instance?.PlaySFXClick();
                     foreach (var slider in _view.AllSliders)
                         slider.ResetSelection();
 
@@ -158,13 +165,14 @@ namespace GameDevTycoon.UI.Ingame
             _view.OnApplicantClicked
                 .Subscribe(_ =>
                 {
+                    AudioManager.Instance?.PlaySFXClick();
                     _view.ShowApplicantList();
                     RefreshApplicantList();
                 })
                 .AddTo(this);
 
             _view.OnRecruitBackClicked
-                .Subscribe(_ => _view.ShowHireMain())
+                .Subscribe(_ => { AudioManager.Instance?.PlaySFXClick(); _view.ShowHireMain(); })
                 .AddTo(this);
 
             _view.OnRecruitConfirmClicked
@@ -172,12 +180,12 @@ namespace GameDevTycoon.UI.Ingame
                 .AddTo(this);
 
             _view.OnApplicantListBackClicked
-                .Subscribe(_ => _view.ShowHireMain())
+                .Subscribe(_ => { AudioManager.Instance?.PlaySFXClick(); _view.ShowHireMain(); })
                 .AddTo(this);
 
             _view.OnApplicantSortChanged
                 .Skip(1)
-                .Subscribe(_ => RefreshApplicantList())
+                .Subscribe(_ => { AudioManager.Instance?.PlaySFXClick(); RefreshApplicantList(); })
                 .AddTo(this);
 
             //_view.OnFinalHireClicked
@@ -191,6 +199,7 @@ namespace GameDevTycoon.UI.Ingame
             _view.OnApplicantDetailBackClicked
                 .Subscribe(_ =>
                 {
+                    AudioManager.Instance?.PlaySFXClick();
                     _selectedApplicant = null;
                     _view.ShowApplicantList();
                 })
@@ -225,7 +234,7 @@ namespace GameDevTycoon.UI.Ingame
                 slider.Setup(false);
 
                 slider.OnCountChanged
-                    .Subscribe(_ => RefreshRecruitCost())
+                    .Subscribe(_ => { AudioManager.Instance?.PlaySFXClick(); RefreshRecruitCost(); })
                     .AddTo(_sliderDisposables);
 
                 slider.OnSelectedChanged += RefreshRecruitCost;
@@ -261,6 +270,7 @@ namespace GameDevTycoon.UI.Ingame
                 var captured = employee;
                 card.GetComponent<UnityEngine.UI.Button>()?.onClick.AddListener(() =>
                 {
+                    AudioManager.Instance?.PlaySFXClick();
                     _selectedEmployee = captured;
                     RefreshEmployeeDetail(captured, _view.EmployeeManageDetailContent);
                     _view.ShowEmployeeManageDetail();
@@ -304,6 +314,7 @@ namespace GameDevTycoon.UI.Ingame
                 var captured = applicant;
                 btn.onClick.AddListener(() =>
                 {
+                    AudioManager.Instance?.PlaySFXClick();
                     _selectedApplicant = captured;
                     RefreshApplicantDetail(captured);
                     _view.ShowApplicantDetail();
@@ -345,6 +356,7 @@ namespace GameDevTycoon.UI.Ingame
             int cost = CalculateRecruitCost();
             if (Company.Instance.gold.Value < cost)
             {
+                AudioManager.Instance?.PlaySFXAlert();
                 _alertView.ShowAlertPopup("보유 자금이 부족합니다.");
                 return;
             }
@@ -354,6 +366,7 @@ namespace GameDevTycoon.UI.Ingame
                 .Select(s => new RecruitRequest(s.Role, s.Count))
                 .ToList();
 
+            AudioManager.Instance?.PlaySFXPositive();
             _EmployeeManager.Instance.RegisterRecruitRequests(requests);
 
             Company.Instance.gold.Value -= cost;
@@ -375,12 +388,14 @@ namespace GameDevTycoon.UI.Ingame
         {
             if (!GameManager.Instance.CanHireMore())
             {
+                AudioManager.Instance?.PlaySFXAlert();
                 _alertView.ShowAlertPopup("사무실에 자리가 없습니다. 직원을 해고하거나 사무실을 증축하세요");
                 return;
             }
 
             if (_EmployeeManager.Instance.haveEmployees.haveEmployeeList.Exists(e => e.so.id == applicant.so.id))
             {
+                AudioManager.Instance?.PlaySFXAlert();
                 _alertView.ShowAlertPopup("이미 고용된 직원입니다.");
                 return;
             }
@@ -388,6 +403,7 @@ namespace GameDevTycoon.UI.Ingame
             int cost = applicant.so.hiringCost;
             if (Company.Instance.gold.Value < cost)
             {
+                AudioManager.Instance?.PlaySFXAlert();
                 _alertView.ShowAlertPopup("보유 자금이 부족합니다.");
                 return;
             }
@@ -398,6 +414,7 @@ namespace GameDevTycoon.UI.Ingame
             Company.Instance.curManagementStatus.Recalculate();
             Company.Instance.cumulativeManagementStatus.Recalculate();
 
+            AudioManager.Instance?.PlaySFXPositive();
             Employee hiredEmployee = _EmployeeManager.Instance.HireEmployee(applicant);
             _EmployeeManager.Instance.lastHiredEmployee = hiredEmployee;
             _EmployeeManager.Instance.currentApplicants.Remove(applicant);
@@ -407,6 +424,7 @@ namespace GameDevTycoon.UI.Ingame
             RefreshApplicantList();
             _view.SetApplicantButtonLabel(true);
             _view.ShowApplicantList();
+            AudioManager.Instance?.PlaySFXAlert();
             _alertView.ShowAlertPopup($"{applicant.so.Name}님을 채용했습니다.\n월요일에 출근합니다!");
         }
 
@@ -423,6 +441,7 @@ namespace GameDevTycoon.UI.Ingame
             int severancePay = employee.so.hiringCost;
             string comment = employee.so.fireText;
 
+            AudioManager.Instance?.PlaySFXAlert();
             _alertView.ShowFireConfirmPopup(
                 comment,
                 employee.so.iconNormal,
@@ -439,6 +458,7 @@ namespace GameDevTycoon.UI.Ingame
                     GameManager.Instance.RemoveNpcFromScene(employee);
                     _hudPresenter.RefreshHUD();
 
+                    AudioManager.Instance?.PlaySFXAlert();
                     _alertView.ShowNoticePopup(
                         employee.so.fireText2,
                         employee.so.Name,
@@ -463,6 +483,7 @@ namespace GameDevTycoon.UI.Ingame
             }
             catch (System.InvalidOperationException e)
             {
+                AudioManager.Instance?.PlaySFXAlert();
                 _alertView.ShowAlertPopup(e.Message);
                 return;
             }

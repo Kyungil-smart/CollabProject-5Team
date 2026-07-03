@@ -29,6 +29,7 @@ namespace Dialogue
 
         private void OnClicked()
         {
+            AudioManager.Instance?.PlaySFXClick();
             _data?.onSelected?.Invoke(_data.index);
         }
     }

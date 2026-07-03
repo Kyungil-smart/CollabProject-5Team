@@ -44,12 +44,13 @@ namespace GameDevTycoon.UI.Ingame
         private void BindButtons()
         {
             _view.OnSaveClicked
-                .Subscribe(_ => _savePresenter.Show())
+                .Subscribe(_ => { AudioManager.Instance?.PlaySFXClick(); _savePresenter.Show(); })
                 .AddTo(this);
 
             _view.OnDayQuitClicked
                 .Subscribe(_ =>
                 {
+                    AudioManager.Instance?.PlaySFXClick();
                     DateTimeManager.Instance.OnClickEndDayButton().Forget();
                     _view.SetDayQuitInteractable(false);
                 }).AddTo(this);

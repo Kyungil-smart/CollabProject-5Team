@@ -82,6 +82,7 @@ public class QuestObject : MonoBehaviour, IInteractable
     // 전구 아이콘 클릭 시 플레이어를 이 오브젝트로 이동시켜 상호작용 시작
     private void OnIconClicked()
     {
+        AudioManager.Instance?.PlaySFXClick();
         Collider col = targetCollider != null ? targetCollider : GetComponent<Collider>();
         GameManager.Instance.player.SetInteractTarget(this, col);
     }
