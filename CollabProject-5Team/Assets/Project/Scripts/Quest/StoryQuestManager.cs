@@ -24,6 +24,7 @@ public class StoryQuestManager : MonoBehaviour
     public StoryQuest curStoryQuest;
     public int curSpyQuestID;
     public List<int> completedStoryQuestIds = new();
+    public bool isCorrectSpySelected;
 
     Employee _currentSpeaker;  // NPC1
     Employee _currentSpeaker2; // NPC2
@@ -119,6 +120,9 @@ public class StoryQuestManager : MonoBehaviour
 
         if (questSO.isSpyQuest || questSO.id == SpyQuestStartId)
             curSpyQuestID = questSO.id;
+
+        if (questSO.id == LargeProjectSpyQuestId)
+            _EmployeeManager.Instance.canLeaveSelf = false;
 
         curStoryQuest = new StoryQuest();
         curStoryQuest.Init(questSO);

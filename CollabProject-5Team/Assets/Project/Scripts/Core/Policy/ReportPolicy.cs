@@ -60,9 +60,9 @@ public static class ReportPolicy
         };
 
         // 등급별 특성 delta (대표/보조/리스크)
-        int mainDelta = report.grade == 1 ? 12 : report.grade == 2 ? 8 : 4;
-        int subDelta  = report.grade == 1 ?  6 : report.grade == 2 ? 4 : 2;
-        int riskDelta = report.grade == 1 ? -6 : report.grade == 2 ? -4 : -2;
+        int mainDelta = report.grade == 1 ? 15 : report.grade == 2 ? 11 : 7;
+        int subDelta  = report.grade == 1 ?  7 : report.grade == 2 ? 5 : 3;
+        int riskDelta = report.grade == 1 ? -8 : report.grade == 2 ? -6 : -4;
 
         // 값 적용 (특성 점수 + 가중치)
         ApplyTraitDelta(scores, e.so.mainTrait, mainDelta);

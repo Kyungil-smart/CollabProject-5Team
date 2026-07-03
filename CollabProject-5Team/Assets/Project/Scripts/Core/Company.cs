@@ -358,6 +358,8 @@ public class Company : MonoBehaviour
             cumulativeManagementStatus.gameSales += p.dailyGold;
             curManagementStatus.Recalculate();
             cumulativeManagementStatus.Recalculate();
+
+            p.RetentionFactor -= PerkPolicy.RETENTION_DECAY; // 유지력 매일 감소
         }
     }
 
@@ -399,7 +401,6 @@ public class Company : MonoBehaviour
 
             p.weeklySales = 0;
             p.weeklyGoldAccum = 0;
-            p.RetentionFactor -= PerkPolicy.RETENTION_DECAY; // 유지력 주간 감소
         }
 
         // 적자 패널티
