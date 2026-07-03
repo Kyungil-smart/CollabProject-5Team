@@ -12,15 +12,15 @@ public static class FormatPolicy
             return $"{gold:N0}G";
 
         if (gold < 100_000)
-            return $"{DecimalTruncate(gold, 1_000)}k";
+            return $"{DecimalTruncate(gold, 1_000)}kG";
 
         if (gold < 10_000_000)
-            return $"{(gold / 1_000).ToString("N0", CultureInfo.InvariantCulture)}k";
+            return $"{(gold / 1_000).ToString("N0", CultureInfo.InvariantCulture)}kG";
 
         if (gold < 100_000_000)
-            return $"{DecimalTruncate(gold, 1_000_000)}m";
+            return $"{DecimalTruncate(gold, 1_000_000)}mG";
 
-        return $"{(gold / 1_000_000).ToString("N0", CultureInfo.InvariantCulture)}m";
+        return $"{(gold / 1_000_000).ToString("N0", CultureInfo.InvariantCulture)}mG";
     }
 
     static string DecimalTruncate(int value, int unit)

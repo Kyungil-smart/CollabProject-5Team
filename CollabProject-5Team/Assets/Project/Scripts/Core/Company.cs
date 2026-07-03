@@ -17,7 +17,7 @@ public class Company : MonoBehaviour
     [Header("회사 정보")]
     public string playerName;
     public string CompanyName;
-    public ReactiveProperty<int> gold = new(10000); // 보유 자금
+    public ReactiveProperty<int> gold = new(100000); // 보유 자금
     public int level = 1;                           // 회사 레벨, 회사 증축 상황(소형=1 중형=2 대형=3) 과 같음
 
     public ReactiveProperty<int> activeProjectCount = new(0); // 현재 프로젝트 보유 여부 0: 없음, 1: 있음
