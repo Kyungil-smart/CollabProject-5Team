@@ -24,7 +24,7 @@ public class ProjectCompleted
 
 
     // 완료 데이터
-    float _retentionFactor; // 유지력 계수 (0.0~1.0, 출시 후 감소)
+    [SerializeField] float _retentionFactor; // 유지력 계수 (0.0~1.0, 출시 후 감소)
     public float RetentionFactor
     {
         get => _retentionFactor;
@@ -55,4 +55,10 @@ public class ProjectCompleted
     // 종료
     public bool isServiceOver; // 서비스 종료 여부
     public bool isUpdatePending; // 업데이트 확정 대기 여부
+    public int planUpdateId;
+    public int artUpdateId;
+    public int devUpdateId;
+    public bool planUpdateCompleted;
+    public bool artUpdateCompleted;
+    public bool devUpdateCompleted;
 }

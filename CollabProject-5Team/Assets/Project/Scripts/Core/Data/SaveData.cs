@@ -136,6 +136,12 @@ public class ProjectCompletedSaveData
     public List<int> weeklyGoldHistoryList;
     public bool isServiceOver;
     public bool isUpdatePending;
+    public int planUpdateId;
+    public int artUpdateId;
+    public int devUpdateId;
+    public bool planUpdateCompleted;
+    public bool artUpdateCompleted;
+    public bool devUpdateCompleted;
 
 }
 

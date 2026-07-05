@@ -112,6 +112,10 @@ namespace GameDevTycoon.UI.Ingame
         [SerializeField] private Sprite _updateConfirmActiveSprite;
         [SerializeField] private Sprite _updateConfirmInactiveSprite;
 
+        private readonly UpdateItemTextRefs _planUpdateTexts = new();
+        private readonly UpdateItemTextRefs _artUpdateTexts = new();
+        private readonly UpdateItemTextRefs _devUpdateTexts = new();
+
         [Header("Tab_Completed")]
         [SerializeField] private GameObject _tabCompleted;
         [SerializeField] private TMP_Dropdown _completedSortDropdown;
@@ -485,6 +489,16 @@ namespace GameDevTycoon.UI.Ingame
             _updateConfirmButton.image.sprite = interactable ? _updateConfirmActiveSprite : _updateConfirmInactiveSprite;
         }
 
+        public void SetUpdateItemInfo(UpdatePart part, string title, string desc, string costText, bool interactable)
+        {
+            UpdateItemTextRefs textRefs = GetUpdateItemTextRefs(part);
+            if (textRefs.titleLabel != null) textRefs.titleLabel.text = title;
+            if (textRefs.descLabel != null) textRefs.descLabel.text = desc;
+            if (textRefs.costLabel != null) textRefs.costLabel.text = costText;
+
+            GetUpdateItemButton(part).interactable = interactable;
+        }
+
         /// <summary>
         /// 지난주 완료된 업데이트 항목 오버레이 표시.
         /// </summary>
@@ -498,13 +512,8 @@ namespace GameDevTycoon.UI.Ingame
             };
             overlay.SetActive(completed);
 
-            var button = part switch
-            {
-                UpdatePart.Plan => _updateItem_Plan,
-                UpdatePart.Art => _updateItem_Art,
-                _ => _updateItem_Dev,
-            };
-            button.interactable = !completed;
+            if (completed)
+                GetUpdateItemButton(part).interactable = false;
         }
 
         /// <summary>
@@ -515,6 +524,50 @@ namespace GameDevTycoon.UI.Ingame
             _selectImg_Plan.SetActive(selectedPart == UpdatePart.Plan);
             _selectImg_Art.SetActive(selectedPart == UpdatePart.Art);
             _selectImg_Dev.SetActive(selectedPart == UpdatePart.Dev);
+        }
+
+        private Button GetUpdateItemButton(UpdatePart part)
+        {
+            switch (part)
+            {
+                case UpdatePart.Plan:
+                    return _updateItem_Plan;
+                case UpdatePart.Art:
+                    return _updateItem_Art;
+                default:
+                    return _updateItem_Dev;
+            }
+        }
+
+        private UpdateItemTextRefs GetUpdateItemTextRefs(UpdatePart part)
+        {
+            UpdateItemTextRefs textRefs = part switch
+            {
+                UpdatePart.Plan => _planUpdateTexts,
+                UpdatePart.Art => _artUpdateTexts,
+                _ => _devUpdateTexts,
+            };
+
+            if (textRefs.initialized) return textRefs;
+
+            foreach (TextMeshProUGUI label in GetUpdateItemButton(part).GetComponentsInChildren<TextMeshProUGUI>(true))
+            {
+                switch (label.gameObject.name)
+                {
+                    case "UpdateTitleLabel":
+                        textRefs.titleLabel = label;
+                        break;
+                    case "UpdateDescLabel":
+                        textRefs.descLabel = label;
+                        break;
+                    case "CostLabel":
+                        textRefs.costLabel = label;
+                        break;
+                }
+            }
+
+            textRefs.initialized = true;
+            return textRefs;
         }
 
         // Tab_Completed 수치 표시
@@ -659,6 +712,14 @@ namespace GameDevTycoon.UI.Ingame
             rect.anchoredPosition = from + direction * 0.5f;
             rect.sizeDelta = new Vector2(direction.magnitude, 3f);
             rect.localRotation = Quaternion.Euler(0f, 0f, Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg);
+        }
+
+        private sealed class UpdateItemTextRefs
+        {
+            public bool initialized;
+            public TextMeshProUGUI titleLabel;
+            public TextMeshProUGUI descLabel;
+            public TextMeshProUGUI costLabel;
         }
     }
 

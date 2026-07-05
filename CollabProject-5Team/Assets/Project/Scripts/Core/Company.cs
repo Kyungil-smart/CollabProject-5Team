@@ -401,6 +401,13 @@ public class Company : MonoBehaviour
 
             p.weeklySales = 0;
             p.weeklyGoldAccum = 0;
+            p.isUpdatePending = false;
+            p.planUpdateCompleted = false;
+            p.artUpdateCompleted = false;
+            p.devUpdateCompleted = false;
+            p.planUpdateId = 0;
+            p.artUpdateId = 0;
+            p.devUpdateId = 0;
         }
 
         // 적자 패널티
@@ -592,6 +599,12 @@ public class Company : MonoBehaviour
                 prevWeekGold    = p.prevWeekGold,
                 isServiceOver   = p.isServiceOver,
                 isUpdatePending = p.isUpdatePending,
+                planUpdateId = p.planUpdateId,
+                artUpdateId = p.artUpdateId,
+                devUpdateId = p.devUpdateId,
+                planUpdateCompleted = p.planUpdateCompleted,
+                artUpdateCompleted = p.artUpdateCompleted,
+                devUpdateCompleted = p.devUpdateCompleted,
 
                 weeklyGoldHistoryList = new List<int>(p.weeklyGoldHistory)
             };
@@ -656,6 +669,12 @@ public class Company : MonoBehaviour
                     prevWeekGold    = pData.prevWeekGold,
                     isServiceOver   = pData.isServiceOver,
                     isUpdatePending = pData.isUpdatePending,
+                    planUpdateId = pData.planUpdateId,
+                    artUpdateId = pData.artUpdateId,
+                    devUpdateId = pData.devUpdateId,
+                    planUpdateCompleted = pData.planUpdateCompleted,
+                    artUpdateCompleted = pData.artUpdateCompleted,
+                    devUpdateCompleted = pData.devUpdateCompleted,
                 };
 
                 p.weeklyGoldHistory = new Queue<int>();
