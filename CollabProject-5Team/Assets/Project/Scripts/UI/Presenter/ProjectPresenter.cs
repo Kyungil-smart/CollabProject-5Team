@@ -237,6 +237,8 @@ namespace GameDevTycoon.UI.Ingame
 
         private void RefreshNewProject()
         {
+            RefreshScaleCardInfo();
+
             bool hasActiveProject = Company.Instance.activeProjectCount.Value > 0;
             _view.SetActiveProjectWarningVisible(hasActiveProject);
 
@@ -658,9 +660,8 @@ namespace GameDevTycoon.UI.Ingame
 
         private void OnScaleSelected(ProjectSize scale)
         {
-            _selectedScale = scale;
-
-            int cost = GetRequiredCost(scale);
+            ProjectSO projectSo = Company.Instance.GetProjectTemplate(scale);
+            int cost = projectSo.requiredCost;
             bool canAfford = Company.Instance.gold.Value >= cost;
 
             if (!canAfford)
@@ -670,6 +671,7 @@ namespace GameDevTycoon.UI.Ingame
                 return;
             }
 
+            _selectedScale = scale;
             AudioManager.Instance?.PlaySFXClick();
             _view.SetScaleCardSelectImg(scale);
             _view.SetProjectSetupNextInteractable(!string.IsNullOrWhiteSpace(GetCurrentProjectName()));
@@ -695,7 +697,8 @@ namespace GameDevTycoon.UI.Ingame
 
         private void OnStaffAssignConfirmClicked()
         {
-            int cost = GetRequiredCost(_selectedScale);
+            ProjectSO projectSo = Company.Instance.GetProjectTemplate(_selectedScale);
+            int cost = projectSo.requiredCost;
             if (Company.Instance.gold.Value < cost)
             {
                 AudioManager.Instance?.PlaySFXAlert();
@@ -705,7 +708,7 @@ namespace GameDevTycoon.UI.Ingame
 
             AudioManager.Instance?.PlaySFXAlert();
             _alertView.ShowConfirmPopup(
-                $"개발비 {cost:N0}G를 지불하고 프로젝트를 시작하시겠습니까?",
+                $"개발비 {FormatPolicy.FormatGold(cost)}를 지불하고 프로젝트를 시작하시겠습니까?",
                 onConfirm: () =>
                 {
                     var project = Company.Instance.CreateProject(_selectedScale, GetCurrentProjectName());
@@ -875,12 +878,23 @@ namespace GameDevTycoon.UI.Ingame
         private void ClearSelectedEmployees()
             => Company.Instance.ClearSelectedProjectEmployees();
 
-        private static int GetRequiredCost(ProjectSize scale) => scale switch
+        private void RefreshScaleCardInfo()
         {
-            ProjectSize.Medium => 50000,
-            ProjectSize.Large => 200000,
-            _ => 15000,
-        };
+            SetScaleCardInfo(ProjectSize.Small);
+            SetScaleCardInfo(ProjectSize.Medium);
+            SetScaleCardInfo(ProjectSize.Large);
+        }
+
+        private void SetScaleCardInfo(ProjectSize scale)
+        {
+            ProjectSO projectSo = Company.Instance.GetProjectTemplate(scale);
+            int weeks = Mathf.CeilToInt(Mathf.Max(0, projectSo.durationDays) / 5f);
+            _view.SetScaleCardInfo(
+                scale,
+                $"개발기간 : {weeks}주",
+                $"비       용 : {FormatPolicy.FormatGold(projectSo.requiredCost)}"
+            );
+        }
 
         private static int GetMaxEmployeePerPart(ProjectSize scale) => scale switch
         {

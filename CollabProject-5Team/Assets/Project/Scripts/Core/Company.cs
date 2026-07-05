@@ -202,6 +202,13 @@ public class Company : MonoBehaviour
     #endregion
 
     #region 프로젝트 시작 관리
+    public ProjectSO GetProjectTemplate(ProjectSize scale)
+    {
+        GameObject prefab = GetProjectPrefab(scale);
+        Project project = prefab.GetComponent<Project>();
+        return project.so;
+    }
+
     public Project CreateProject(ProjectSize scale, string projectName)
     {
         var project = InstantiateProject(scale, projectName);
