@@ -60,6 +60,7 @@ namespace GameDevTycoon.UI.Ingame
             _view.OnNewProjectTabClicked
                 .Subscribe(_ =>
                 {
+                    AudioManager.Instance?.PlaySFXClick();
                     _view.ShowTab(ProjectTab.NewProject);
                     RefreshNewProject();
                 })
@@ -68,6 +69,7 @@ namespace GameDevTycoon.UI.Ingame
             _view.OnInProgressTabClicked
                 .Subscribe(_ =>
                 {
+                    AudioManager.Instance?.PlaySFXClick();
                     _view.ShowTab(ProjectTab.InProgress);
                     RefreshInProgressList();
                 })
@@ -76,6 +78,7 @@ namespace GameDevTycoon.UI.Ingame
             _view.OnCompletedTabClicked
                 .Subscribe(_ =>
                 {
+                    AudioManager.Instance?.PlaySFXClick();
                     _view.ShowTab(ProjectTab.Completed);
                     RefreshCompletedList();
                 })
@@ -108,6 +111,7 @@ namespace GameDevTycoon.UI.Ingame
             _view.OnProjectSetupNextClicked
                 .Subscribe(_ =>
                 {
+                    AudioManager.Instance?.PlaySFXClick();
                     _view.ShowStaffAssign();
                     RefreshStaffAssign();
                 })
@@ -116,18 +120,20 @@ namespace GameDevTycoon.UI.Ingame
             _view.OnResetClicked
                 .Subscribe(_ =>
                 {
+                    AudioManager.Instance?.PlaySFXClick();
                     ClearSelectedEmployees();
                     RefreshStaffAssign();
                 })
                 .AddTo(this);
 
             _view.OnStaffSortChanged
-                .Subscribe(_ => RefreshStaffAssign())
+                .Subscribe(_ => { AudioManager.Instance?.PlaySFXClick(); RefreshStaffAssign(); })
                 .AddTo(this);
 
             _view.OnStaffAssignBackClicked
                 .Subscribe(_ =>
                 {
+                    AudioManager.Instance?.PlaySFXClick();
                     ClearSelectedEmployees();
                     _view.ShowProjectSetup();
                 })
@@ -141,11 +147,11 @@ namespace GameDevTycoon.UI.Ingame
         private void BindInProgress()
         {
             _view.OnInProgressSortChanged
-                .Subscribe(_ => RefreshInProgressList())
+                .Subscribe(_ => { AudioManager.Instance?.PlaySFXClick(); RefreshInProgressList(); })
                 .AddTo(this);
 
             _view.OnProjectDetailBackClicked
-                .Subscribe(_ => _view.ShowInProgressList())
+                .Subscribe(_ => { AudioManager.Instance?.PlaySFXClick(); _view.ShowInProgressList(); })
                 .AddTo(this);
 
             _view.OnServiceStopClicked
@@ -157,7 +163,7 @@ namespace GameDevTycoon.UI.Ingame
                 .AddTo(this);
 
             _view.OnStaffDetailCloseClicked
-                .Subscribe(_ => _view.HideStaffDetailPopup())
+                .Subscribe(_ => { AudioManager.Instance?.PlaySFXClick(); _view.HideStaffDetailPopup(); })
                 .AddTo(this);
         }
 
@@ -178,6 +184,7 @@ namespace GameDevTycoon.UI.Ingame
             _view.OnUpdateBackClicked
                 .Subscribe(_ =>
                 {
+                    AudioManager.Instance?.PlaySFXClick();
                     _selectedUpdatePart = null;
                     _view.HideUpdateManagement();
                 })
@@ -191,11 +198,11 @@ namespace GameDevTycoon.UI.Ingame
         private void BindCompleted()
         {
             _view.OnCompletedSortChanged
-                .Subscribe(_ => RefreshCompletedList())
+                .Subscribe(_ => { AudioManager.Instance?.PlaySFXClick(); RefreshCompletedList(); })
                 .AddTo(this);
 
             _view.OnCompletedDetailBackClicked
-                .Subscribe(_ => _view.ShowCompletedList())
+                .Subscribe(_ => { AudioManager.Instance?.PlaySFXClick(); _view.ShowCompletedList(); })
                 .AddTo(this);
         }
 
@@ -268,8 +275,10 @@ namespace GameDevTycoon.UI.Ingame
                 var captured = employee;
 
                 cardGO.GetComponent<UnityEngine.UI.Button>()?.onClick.AddListener(() =>
-                    cardView.SetSelected(!cardView.IsOverlayVisible)
-                );
+                {
+                    AudioManager.Instance?.PlaySFXClick();
+                    cardView.SetSelected(!cardView.IsOverlayVisible);
+                });
 
                 cardView.OnInfoClicked
                     .Subscribe(_ => OnStaffInfoClicked(captured))
@@ -310,16 +319,20 @@ namespace GameDevTycoon.UI.Ingame
                     itemView.Bind(row.Project);
                     var captured = row.Project;
                     item.GetComponentInChildren<UnityEngine.UI.Button>()?.onClick.AddListener(() =>
-                        ShowProjectDetail(captured)
-                    );
+                    {
+                        AudioManager.Instance?.PlaySFXClick();
+                        ShowProjectDetail(captured);
+                    });
                     continue;
                 }
 
                 itemView.Bind(row.Record);
                 var capturedRecord = row.Record;
                 item.GetComponentInChildren<UnityEngine.UI.Button>()?.onClick.AddListener(() =>
-                    ShowServiceProjectDetail(capturedRecord)
-                );
+                {
+                    AudioManager.Instance?.PlaySFXClick();
+                    ShowServiceProjectDetail(capturedRecord);
+                });
             }
         }
 
@@ -354,8 +367,10 @@ namespace GameDevTycoon.UI.Ingame
 
                 var captured = record;
                 item.GetComponentInChildren<UnityEngine.UI.Button>()?.onClick.AddListener(() =>
-                    ShowCompletedDetail(captured)
-                );
+                {
+                    AudioManager.Instance?.PlaySFXClick();
+                    ShowCompletedDetail(captured);
+                });
             }
         }
 
@@ -419,6 +434,7 @@ namespace GameDevTycoon.UI.Ingame
         {
             if (_currentDetailProject == null) return;
 
+            AudioManager.Instance?.PlaySFXClick();
             _selectedUpdatePart = null;
             _view.SetUpdateConfirmInteractable(false);
             _view.SetUpdateItemSelectImg(null);
@@ -433,6 +449,7 @@ namespace GameDevTycoon.UI.Ingame
 
         private void OnUpdateItemSelected(UpdatePart part)
         {
+            AudioManager.Instance?.PlaySFXClick();
             _selectedUpdatePart = part;
             _view.SetUpdateItemSelectImg(part);
             _view.SetUpdateConfirmInteractable(true);
@@ -442,24 +459,23 @@ namespace GameDevTycoon.UI.Ingame
         {
             if (_selectedUpdatePart == null || _currentDetailProject == null) return;
 
-            int cost = GetUpdateCost(_currentServiceRecord.scale);
+            // [TODO: 업데이트 비용 데이터 연동 후 실제 cost 계산]
+            int cost = 0;
 
             if (Company.Instance.gold.Value < cost)
             {
+                AudioManager.Instance?.PlaySFXAlert();
                 _alertView.ShowAlertPopup("보유 자금이 부족하여 실행할 수 없습니다.");
                 return;
             }
 
+            AudioManager.Instance?.PlaySFXAlert();
             _alertView.ShowConfirmPopup(
                 $"업데이트비용 {cost:N0}G 지불해야합니다. 진행 하시겠습니까?",
                 onConfirm: () =>
                 {
-                    Company.Instance.gold.Value -= cost;
-                    Company.Instance.curManagementStatus.otherExpense += cost;
-                    Company.Instance.cumulativeManagementStatus.otherExpense += cost;
-                    Company.Instance.curManagementStatus.Recalculate();
-                    Company.Instance.cumulativeManagementStatus.Recalculate();
-                    _currentServiceRecord.RetentionFactor = Mathf.Clamp01(_currentServiceRecord.RetentionFactor + PerkPolicy.RETENTION_UPDATE);
+                    AudioManager.Instance?.PlaySFXPositive();
+                    // [TODO: 비용 차감 및 업데이트 진행 처리]
                     _currentServiceRecord.isUpdatePending = true;
 
                     _selectedUpdatePart = null;
@@ -478,10 +494,12 @@ namespace GameDevTycoon.UI.Ingame
 
             if (!canAfford)
             {
+                AudioManager.Instance?.PlaySFXAlert();
                 _alertView.ShowAlertPopup("보유 자금이 부족합니다.");
                 return;
             }
 
+            AudioManager.Instance?.PlaySFXClick();
             _view.SetScaleCardSelectImg(scale);
             _view.SetProjectSetupNextInteractable(!string.IsNullOrWhiteSpace(GetCurrentProjectName()));
         }
@@ -494,9 +512,12 @@ namespace GameDevTycoon.UI.Ingame
             bool toggled = Company.Instance.ToggleSelectedProjectEmployee(employee, max);
             if (!toggled)
             {
+                AudioManager.Instance?.PlaySFXAlert();
                 _alertView.ShowAlertPopup($"해당 직군은 최대 {max}명까지 배치 가능합니다.");
                 return;
             }
+
+            AudioManager.Instance?.PlaySFXClick();
 
             RefreshStaffAssign();
         }
@@ -506,10 +527,12 @@ namespace GameDevTycoon.UI.Ingame
             int cost = GetRequiredCost(_selectedScale);
             if (Company.Instance.gold.Value < cost)
             {
+                AudioManager.Instance?.PlaySFXAlert();
                 _alertView.ShowAlertPopup("보유 자금이 부족합니다.");
                 return;
             }
 
+            AudioManager.Instance?.PlaySFXAlert();
             _alertView.ShowConfirmPopup(
                 $"개발비 {cost:N0}G를 지불하고 프로젝트를 시작하시겠습니까?",
                 onConfirm: () =>
@@ -517,10 +540,12 @@ namespace GameDevTycoon.UI.Ingame
                     var project = Company.Instance.CreateProject(_selectedScale, GetCurrentProjectName());
                     if (project == null)
                     {
+                        AudioManager.Instance?.PlaySFXAlert();
                         _alertView.ShowAlertPopup("프로젝트 생성에 실패했습니다.");
                         return;
                     }
 
+                    AudioManager.Instance?.PlaySFXPositive();
                     Company.Instance.StartNewProject(project);
                     _hudPresenter.RefreshHUD();
                     ClearSelectedEmployees();
@@ -533,6 +558,7 @@ namespace GameDevTycoon.UI.Ingame
 
         private void OnStaffInfoClicked(Employee employee)
         {
+            AudioManager.Instance?.PlaySFXClick();
             foreach (Transform child in _view.StaffDetailContent)
                 Destroy(child.gameObject);
 
@@ -546,8 +572,10 @@ namespace GameDevTycoon.UI.Ingame
         {
             if (_currentServiceRecord == null) return;
 
+            AudioManager.Instance?.PlaySFXAlert();
             _alertView.ShowConfirmPopup("게임 서비스를 종료하겠습니까?", onConfirm: () =>
             {
+                AudioManager.Instance?.PlaySFXNegative();
                 _currentServiceRecord.isServiceOver = true;
                 _currentDetailProject = null;
                 _currentServiceRecord = null;
@@ -597,9 +625,9 @@ namespace GameDevTycoon.UI.Ingame
             bool hasRevenueDelta = record.prevWeekGold > 0 && settledWeekCount > 1;
 
             _view.SetUserCountValue(FormatValueWithDelta(record.users, userDelta, "명", hasUserDelta), userDelta >= 0, hasUserDelta);
-            _view.SetSalesValue(FormatValueWithDelta(revenue, revenueDelta, "G", hasRevenueDelta), revenueDelta >= 0, hasRevenueDelta);
-            _view.SetMaintenanceValue($"{record.dailyCost:N0}G");
-            _view.SetProfitValue(FormatValueWithDelta(profit, profitDelta, "G", hasRevenueDelta), profitDelta >= 0, hasRevenueDelta);
+            _view.SetSalesValue(FormatGoldWithDelta(revenue, revenueDelta, hasRevenueDelta), revenueDelta >= 0, hasRevenueDelta);
+            _view.SetMaintenanceValue(FormatPolicy.FormatGold(record.dailyCost));
+            _view.SetProfitValue(FormatGoldWithDelta(profit, profitDelta, hasRevenueDelta), profitDelta >= 0, hasRevenueDelta);
             _view.SetRevenueGraphValues(GetRevenueGraphValues(record));
         }
 
@@ -616,9 +644,9 @@ namespace GameDevTycoon.UI.Ingame
             int profit = revenue - record.dailyCost;
 
             _view.SetCompletedUserCountValue($"{record.users:N0}명");
-            _view.SetCompletedSalesValue($"{revenue:N0}G");
-            _view.SetCompletedMaintenanceValue($"{record.dailyCost:N0}G");
-            _view.SetCompletedProfitValue($"{profit:N0}G");
+            _view.SetCompletedSalesValue(FormatPolicy.FormatGold(revenue));
+            _view.SetCompletedMaintenanceValue(FormatPolicy.FormatGold(record.dailyCost));
+            _view.SetCompletedProfitValue(FormatPolicy.FormatGold(profit));
             _view.SetCompletedRevenueGraphValues(GetRevenueGraphValues(record));
         }
 
@@ -658,6 +686,15 @@ namespace GameDevTycoon.UI.Ingame
             return $"{value:N0}{suffix} ({Mathf.Abs(delta):N0}{arrow})";
         }
 
+        private static string FormatGoldWithDelta(int value, int delta, bool showDelta)
+        {
+            if (!showDelta)
+                return FormatPolicy.FormatGold(value);
+
+            string arrow = delta >= 0 ? "▲" : "▼";
+            return $"{FormatPolicy.FormatGold(value)} ({FormatPolicy.FormatGold(Mathf.Abs(delta))}{arrow})";
+        }
+
         private int CountAssigned(Role role)
             => Company.Instance.selectedProjectEmployees.Count(e => e.so.role == role);
 
@@ -672,13 +709,6 @@ namespace GameDevTycoon.UI.Ingame
             ProjectSize.Medium => 50000,
             ProjectSize.Large => 200000,
             _ => 15000,
-        };
-
-        private static int GetUpdateCost(ProjectSize scale) => scale switch
-        {
-            ProjectSize.Medium => 35000,
-            ProjectSize.Large => 100000,
-            _ => 10000,
         };
 
         private static int GetMaxEmployeePerPart(ProjectSize scale) => scale switch

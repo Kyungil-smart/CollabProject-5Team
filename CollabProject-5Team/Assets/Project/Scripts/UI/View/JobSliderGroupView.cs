@@ -80,6 +80,7 @@ namespace GameDevTycoon.UI.Ingame
 
         private void ToggleSelected()
         {
+            AudioManager.Instance?.PlaySFXClick();
             _isSelected = !_isSelected;
             _countSlider.interactable = _isSelected;
 

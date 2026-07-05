@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using R3;
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace GameDevTycoon.UI.Ingame
@@ -192,9 +193,21 @@ namespace GameDevTycoon.UI.Ingame
         public int InProgressSortIndex => _inProgressSortDropdown.value;
         public int CompletedSortIndex => _completedSortDropdown.value;
 
+        private static void RegisterDropdownSFX(TMP_Dropdown dropdown)
+        {
+            var trigger = dropdown.gameObject.GetComponent<EventTrigger>()
+                          ?? dropdown.gameObject.AddComponent<EventTrigger>();
+            var entry = new EventTrigger.Entry { eventID = EventTriggerType.PointerClick };
+            entry.callback.AddListener(_ => AudioManager.Instance?.PlaySFXClick());
+            trigger.triggers.Add(entry);
+        }
+
         private void Awake()
         {
-            _projectPopup.SetActive(false);
+            RegisterDropdownSFX(_staffSortDropdown);
+            RegisterDropdownSFX(_inProgressSortDropdown);
+            RegisterDropdownSFX(_completedSortDropdown);
+
             ShowTab(ProjectTab.NewProject);
 
             _activeProjectLabel.gameObject.SetActive(false);

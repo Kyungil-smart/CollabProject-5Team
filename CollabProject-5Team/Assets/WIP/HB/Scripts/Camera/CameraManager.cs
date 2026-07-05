@@ -13,9 +13,9 @@ public class CameraManager : MonoBehaviour
     [SerializeField] private float _inertiaDuration = 0.5f;                  // 관성 지속 시간
 
     [Header("줌 범위")]
-    [SerializeField] private float _defaultSize = 13f;                        // 기본 줌
+    [SerializeField] private float _defaultSize = 8.5f;                        // 기본 줌
     [SerializeField] private float _minSize = 5f;                            // 최대 줌
-    [SerializeField] private float _maxSize = 13f;                           // 최소 줌
+    [SerializeField] private float _maxSize = 8.5f;                           // 최소 줌
 
     [Header("대화 시 카메라 배율")]
     [SerializeField] private float _talkZoomSize = 5f;                       // 대화 시 줌인 비율

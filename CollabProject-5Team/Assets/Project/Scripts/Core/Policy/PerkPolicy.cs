@@ -7,11 +7,6 @@ public static class PerkPolicy
     // 직원 세부 능력치 기본값: 20 + ability * 0.5
     public static int CalcBaseProperty(int ability) => 20 + Mathf.RoundToInt(ability * 0.5f);
 
-    public static int CalcWeeklyAbilityDelta(int loyalty)
-    {
-        return 0;
-    }
-
     public static int CalcCompletionAbilityDelta(ProjectSize size, char grade)
     {
         return size switch
@@ -139,7 +134,7 @@ public static class PerkPolicy
         return Mathf.RoundToInt(sales);
     }
 
-    // - 점수 가중치: 기준점 40, 최소 가중치 0.1
+    // -점수 가중치 (처음값: 50)
     const float SCORE_WEIGHT_BASELINE = 40f;
 
     public static float CalcScoreWeight(float score)
@@ -189,10 +184,10 @@ public static class PerkPolicy
 
     // ─ 평판 ─
     // 평판 : 0부터 시작, 감소 가능
-    /// <summary>주간 판매량 10장마다 +1, 반올림</summary>
+    /// <summary>주간 판매량 100장 미다 +1</summary>
     public static int CalcReputationGainFromSales(int weeklySales)
-        => (weeklySales + 5) / 10;
-            // 주간 판매량 / 10 반올림
+        => (weeklySales+5) / 10;
+            //반올림 용 5더하기
 
     // 평판 감소 상수 (미구현)
     public const int PENALTY_SPY_FAIL    = -10; // 스파이 행위 적발 실패 시

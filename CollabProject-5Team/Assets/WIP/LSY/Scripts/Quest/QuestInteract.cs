@@ -111,6 +111,8 @@ public class QuestInteract : MonoBehaviour, IPointerClickHandler, IPointerDownHa
         DailyQuest quest = QuestManager.Instance.curDailyQuest;
         if (quest == null || QuestManager.Instance.EffectiveControlType != ControlType.TAP) return;
 
+        AudioManager.Instance?.PlaySFXQuestTap();
+
         int tapsNeeded = quest.so.ActiveObjectCount > 1 ? 1 : QuestManager.Instance.EffectiveTargetCount;
 
         _tapCount++;

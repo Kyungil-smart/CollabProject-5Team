@@ -2,16 +2,16 @@ using System;
 using System.Collections.Generic;
 using R3;
 using UnityEngine;
-using Random = UnityEngine.Random;
 
 public class StoryQuestManager : MonoBehaviour
 {
     public static StoryQuestManager Instance { get; private set; }
 
-    public Action OnSpySelect;
+    public delegate void SpySelectDelegate(List<Employee> employees, Action onComplete);
+    public event SpySelectDelegate OnSpySelect;
 
     const int FirstStoryQuestId = 1001;
-    const int FirstHireQuestId  = 1002;
+    const int FirstHireQuestId = 1002;
     const int SpyQuestStartId = 1003;
     const int LargeProjectSpyQuestId = 1004;
     const int SelectSpyQuestId = 1042; // 스파이 퀘스트중 선형적 진행이 끝나고 스파이 결정 선택지가 나오는 퀘스트
@@ -24,6 +24,7 @@ public class StoryQuestManager : MonoBehaviour
     public StoryQuest curStoryQuest;
     public int curSpyQuestID;
     public List<int> completedStoryQuestIds = new();
+    public bool isCorrectSpySelected;
 
     Employee _currentSpeaker;  // NPC1
     Employee _currentSpeaker2; // NPC2
@@ -42,9 +43,9 @@ public class StoryQuestManager : MonoBehaviour
         if (Instance != null && Instance != this) { Destroy(gameObject); return; }
         Instance = this;
         // 테스트 코드 (삭제예정)~
-        OnSpySelect += LogSpySelect; 
+        OnSpySelect += LogSpySelect;
     }
-    void LogSpySelect() 
+    void LogSpySelect(List<Employee> employees, Action onComplete)
     {
         Debug.Log("잡았다 요놈");
     }
@@ -121,7 +122,7 @@ public class StoryQuestManager : MonoBehaviour
             curSpyQuestID = questSO.id;
 
         if (questSO.id == LargeProjectSpyQuestId)
-            SetRandomSpy();
+            _EmployeeManager.Instance.canLeaveSelf = false;
 
         curStoryQuest = new StoryQuest();
         curStoryQuest.Init(questSO);
@@ -231,22 +232,15 @@ public class StoryQuestManager : MonoBehaviour
 
     Employee GetSpyEmployee()
     {
-        foreach (Employee employee in Company.Instance.curProject.GetAllEmployees())
+        if (Company.Instance.activeProjectCount.Value > 0)
         {
-            if (employee.MutableData.isSpy)
-                return employee;
+            foreach (Employee employee in Company.Instance.curProject.GetAllEmployees())
+            {
+                if (employee.isSpy)
+                    return employee;
+            }
         }
-
         return null;
-    }
-    void SetRandomSpy()
-    {
-        List<Employee> employees = Company.Instance.curProject.GetAllEmployees();
-
-        Employee spy = employees[Random.Range(0, employees.Count)];
-        EmployeeMutableData spyData = spy.MutableData;
-        spyData.isSpy = true;
-        spy.MutableData = spyData;
     }
     #endregion
 
@@ -269,8 +263,12 @@ public class StoryQuestManager : MonoBehaviour
         // 스파이 선택 퀘스트 차별
         if (completedSpyQuest)
             curSpyQuestID = completedQuestId < SelectSpyQuestId ? completedQuestId + 1 : 0;
+
         if (completedQuestId == SelectSpyQuestId)
-            OnSpySelect?.Invoke();
+        {
+            OnSpySelect?.Invoke(Company.Instance.curProject.GetAllEmployees(), DateTimeManager.Instance.CompleteDayWork);
+            return;
+        }
 
         DateTimeManager.Instance.CompleteDayWork();
     }

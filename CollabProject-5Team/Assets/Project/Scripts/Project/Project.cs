@@ -183,7 +183,7 @@ public class Project : MonoBehaviour
 
             // 이번 주 주차 stat 점수 계산 (매 주차 독립)
             float[] weekScores = ReportPolicy.CalcWeeklyStatScores(report);
-            float roleAvg = (weekScores[0] + weekScores[1] + weekScores[2] + (TraitTable.Get(report.trait).score * 2)) / 3f;
+            float roleAvg = (weekScores[0] + weekScores[1] + weekScores[2]) / 3f;
 
             switch (report.role)
             {
