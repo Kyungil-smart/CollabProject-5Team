@@ -239,7 +239,7 @@ namespace GameDevTycoon.UI.Ingame
         private void RefreshRecruitCost()
         {
             int totalCount = _view.AllSliders.Sum(s => s.Count);
-            int totalCost = totalCount * 1000;
+            int totalCost = totalCount * 10000;
             _view.SetTotalRecruitInfo(totalCount, totalCost);
             _view.SetRecruitConfirmInteractable(totalCount > 0);
         }
@@ -502,7 +502,7 @@ namespace GameDevTycoon.UI.Ingame
 
         private int CalculateRecruitCost()
         {
-            return _view.AllSliders.Sum(s => s.Count) * 1000;
+            return _view.AllSliders.Sum(s => s.Count) * 10000;
         }
 
         private static int GetRoleOrder(Role role) => role switch

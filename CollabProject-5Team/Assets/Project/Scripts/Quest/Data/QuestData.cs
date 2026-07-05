@@ -119,7 +119,7 @@ public class EventQuest : QuestBase
 { // 일단 이거 하나로 퀘스트 고정
     public const string QuestTypeName = "대화 퀘스트";
     public const string QuestName = "아무 직원이랑 대화하기";
-    public const int GoldRewardAmount = 200;
+    public const int GoldRewardAmount = 2000;
 
     private const int DefaultTargetCount = 1;
 

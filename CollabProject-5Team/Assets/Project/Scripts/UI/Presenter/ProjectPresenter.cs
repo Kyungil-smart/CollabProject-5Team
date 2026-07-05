@@ -442,8 +442,7 @@ namespace GameDevTycoon.UI.Ingame
         {
             if (_selectedUpdatePart == null || _currentDetailProject == null) return;
 
-            // [TODO: 업데이트 비용 데이터 연동 후 실제 cost 계산]
-            int cost = 0;
+            int cost = GetUpdateCost(_currentServiceRecord.scale);
 
             if (Company.Instance.gold.Value < cost)
             {
@@ -455,7 +454,12 @@ namespace GameDevTycoon.UI.Ingame
                 $"업데이트비용 {cost:N0}G 지불해야합니다. 진행 하시겠습니까?",
                 onConfirm: () =>
                 {
-                    // [TODO: 비용 차감 및 업데이트 진행 처리]
+                    Company.Instance.gold.Value -= cost;
+                    Company.Instance.curManagementStatus.otherExpense += cost;
+                    Company.Instance.cumulativeManagementStatus.otherExpense += cost;
+                    Company.Instance.curManagementStatus.Recalculate();
+                    Company.Instance.cumulativeManagementStatus.Recalculate();
+                    _currentServiceRecord.RetentionFactor = Mathf.Clamp01(_currentServiceRecord.RetentionFactor + PerkPolicy.RETENTION_UPDATE);
                     _currentServiceRecord.isUpdatePending = true;
 
                     _selectedUpdatePart = null;
@@ -665,9 +669,16 @@ namespace GameDevTycoon.UI.Ingame
 
         private static int GetRequiredCost(ProjectSize scale) => scale switch
         {
-            ProjectSize.Medium => 10000,
+            ProjectSize.Medium => 50000,
+            ProjectSize.Large => 200000,
+            _ => 15000,
+        };
+
+        private static int GetUpdateCost(ProjectSize scale) => scale switch
+        {
+            ProjectSize.Medium => 35000,
             ProjectSize.Large => 100000,
-            _ => 1000,
+            _ => 10000,
         };
 
         private static int GetMaxEmployeePerPart(ProjectSize scale) => scale switch

@@ -124,6 +124,7 @@ public class _EmployeeManager : MonoBehaviour
             var applicants = employeeList.leftEmployees.Values
                 .Select(go => go.GetComponent<Employee>())
                 .Where(e => e.so.role == request.TargetRole)
+                .Where(e => Company.Instance == null || Company.Instance.level > 1 || e.so.grade != 1)
                 .OrderBy(_ => UnityEngine.Random.value)
                 .Take(request.Count)
                 .ToList();
@@ -218,9 +219,9 @@ public class _EmployeeManager : MonoBehaviour
     void InitTrainingCourses()
     {
         trainingCourses.Clear();
-        trainingCourses.Add(new EmployeeTrainingCourse("기본 교육", 1000, 1, 3, 0.1f));
-        trainingCourses.Add(new EmployeeTrainingCourse("전문 교육", 3000, 3, 6, 0.2f));
-        trainingCourses.Add(new EmployeeTrainingCourse("집중 교육", 5000, 5, 10, 0.3f));
+        trainingCourses.Add(new EmployeeTrainingCourse("기본 교육", 3000, 1, 3, 0.1f));
+        trainingCourses.Add(new EmployeeTrainingCourse("전문 교육", 10000, 3, 6, 0.2f));
+        trainingCourses.Add(new EmployeeTrainingCourse("집중 교육", 30000, 5, 10, 0.3f));
     }
 
     public void TickWeeklyTraining()

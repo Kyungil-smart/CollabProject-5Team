@@ -27,7 +27,7 @@ namespace GameDevTycoon.EditorTools
 
     public static class PrototypeRooftopBackgroundApplier
     {
-        private const string TexturePath = "Assets/Project/Art/Texture/OfficeRooftopBackground.png";
+        private const string TexturePath = "Assets/Project/Art/Texture/OfficeGroundCityBackground.png";
         private const string MaterialPath = "Assets/Project/Art/Materials/OfficeRooftopBackground.mat";
         private const string ShaderPath = "Assets/Project/Art/Shaders/PrototypeCameraBackground.shader";
         private const string ObjectName = "Prototype_RooftopBackground";
@@ -36,7 +36,7 @@ namespace GameDevTycoon.EditorTools
         [InitializeOnLoadMethod]
         private static void ApplyWhenEditorLoads()
         {
-            EditorApplication.delayCall += ApplyToActiveSceneIfNeeded;
+            // Kept as a manual fallback. The current prototype uses the tiled ground applier instead.
         }
 
         [MenuItem("Tools/Prototype/Apply Rooftop Background")]
