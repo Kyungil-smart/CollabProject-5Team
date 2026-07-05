@@ -131,4 +131,32 @@ public static class ReportPolicy
         2 => Random.value < 0.5f ? 5 : 10,
         _ => 10,
     };
+
+    // 1등급~5등급 확률. 충성도 범위: 0-39, 40-79, 80-100.
+    static readonly int[] AgendaWeightsLowLoyalty = { 0, 10, 30, 40, 20 };
+    static readonly int[] AgendaWeightsMidLoyalty = { 5, 20, 40, 30, 5 };
+    static readonly int[] AgendaWeightsHighLoyalty = { 9, 40, 50, 1, 0 };
+
+    public static int[] GetAgendaGradeWeights(int loyalty)
+    {
+        if (loyalty >= 80) return AgendaWeightsHighLoyalty;
+        if (loyalty >= 40) return AgendaWeightsMidLoyalty;
+        return AgendaWeightsLowLoyalty;
+    }
+
+    public static int PickAgendaGradeByLoyalty(int loyalty)
+    {
+        int[] weights = GetAgendaGradeWeights(loyalty);
+        int roll = Random.Range(0, 100);
+        int accumulated = 0;
+
+        for (int i = 0; i < weights.Length; i++)
+        {
+            accumulated += weights[i];
+            if (roll < accumulated)
+                return i + 1;
+        }
+
+        return weights.Length;
+    }
 }

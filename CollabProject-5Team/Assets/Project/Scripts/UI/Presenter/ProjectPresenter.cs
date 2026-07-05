@@ -25,16 +25,23 @@ namespace GameDevTycoon.UI.Ingame
         [SerializeField] private GameObject _projectListItemPrefab;
         [SerializeField] private GameObject _staffDetailPrefab;
 
+        [Header("업데이트 데이터")]
+        [SerializeField] private List<ProjectUpdateSO> _allUpdateSos = new();
+
         private ProjectSize _selectedScale;
         private Project _currentDetailProject;
         private ProjectCompleted _currentServiceRecord;
         private UpdatePart? _selectedUpdatePart;
+        private readonly Dictionary<int, ProjectUpdateSO> _updateById = new();
+        private readonly Dictionary<(ProjectSize size, Role role), List<ProjectUpdateSO>> _updatesBySizeRole = new();
+        private readonly Dictionary<UpdatePart, ProjectUpdateSO> _currentUpdateOptions = new();
 
         public bool IsVisible => _view.IsVisible;
 
         private void Start()
         {
             _selectedScale = UnselectedScale;
+            InitUpdateList();
             BindTabs();
             BindNewProject();
             BindInProgress();
@@ -53,6 +60,28 @@ namespace GameDevTycoon.UI.Ingame
         {
             ClearSelectedEmployees();
             _view.Hide();
+        }
+
+        private void InitUpdateList()
+        {
+            _updateById.Clear();
+            _updatesBySizeRole.Clear();
+
+            foreach (ProjectUpdateSO so in _allUpdateSos)
+            {
+                if (so == null) continue;
+
+                _updateById[so.id] = so;
+
+                var key = (so.size, so.role);
+                if (!_updatesBySizeRole.TryGetValue(key, out var list))
+                {
+                    list = new List<ProjectUpdateSO>();
+                    _updatesBySizeRole[key] = list;
+                }
+
+                list.Add(so);
+            }
         }
 
         private void BindTabs()
@@ -409,7 +438,7 @@ namespace GameDevTycoon.UI.Ingame
             _view.SetOperationGroupVisible(true);
             SetServiceOperationValues(record);
             _view.SetServiceStopInteractable(!record.isServiceOver);
-            _view.SetUpdateButtonInteractable(false);
+            _view.SetUpdateButtonInteractable(!record.isServiceOver);
         }
 
         private void ShowCompletedDetail(ProjectCompleted record)
@@ -432,23 +461,28 @@ namespace GameDevTycoon.UI.Ingame
 
         private void OnUpdateClicked()
         {
-            if (_currentDetailProject == null) return;
+            if (_currentServiceRecord == null || _currentServiceRecord.isServiceOver) return;
 
             AudioManager.Instance?.PlaySFXClick();
             _selectedUpdatePart = null;
+            _currentUpdateOptions.Clear();
             _view.SetUpdateConfirmInteractable(false);
             _view.SetUpdateItemSelectImg(null);
 
-            // [TODO: 업데이트 시스템 연동 후 지난주 완료 항목 오버레이 처리]
-            _view.SetUpdateItemCompletedOverlay(UpdatePart.Plan, false);
-            _view.SetUpdateItemCompletedOverlay(UpdatePart.Art, false);
-            _view.SetUpdateItemCompletedOverlay(UpdatePart.Dev, false);
+            BindUpdateItem(UpdatePart.Plan);
+            BindUpdateItem(UpdatePart.Art);
+            BindUpdateItem(UpdatePart.Dev);
 
-            _view.ShowUpdateManagement(_currentDetailProject.userNamed.Value);
+            _view.ShowUpdateManagement(_currentServiceRecord.projectName);
         }
 
         private void OnUpdateItemSelected(UpdatePart part)
         {
+            if (_currentServiceRecord == null) return;
+
+            ProjectUpdateSO update = GetCurrentUpdateOption(part);
+            if (update == null || IsUpdateCompleted(_currentServiceRecord, part)) return;
+
             AudioManager.Instance?.PlaySFXClick();
             _selectedUpdatePart = part;
             _view.SetUpdateItemSelectImg(part);
@@ -457,12 +491,13 @@ namespace GameDevTycoon.UI.Ingame
 
         private void OnUpdateConfirmClicked()
         {
-            if (_selectedUpdatePart == null || _currentDetailProject == null) return;
+            if (_selectedUpdatePart == null || _currentServiceRecord == null) return;
 
-            // [TODO: 업데이트 비용 데이터 연동 후 실제 cost 계산]
-            int cost = 0;
+            UpdatePart part = _selectedUpdatePart.Value;
+            ProjectUpdateSO update = GetCurrentUpdateOption(part);
+            if (update == null || IsUpdateCompleted(_currentServiceRecord, part)) return;
 
-            if (Company.Instance.gold.Value < cost)
+            if (Company.Instance.gold.Value < update.cost)
             {
                 AudioManager.Instance?.PlaySFXAlert();
                 _alertView.ShowAlertPopup("보유 자금이 부족하여 실행할 수 없습니다.");
@@ -471,18 +506,154 @@ namespace GameDevTycoon.UI.Ingame
 
             AudioManager.Instance?.PlaySFXAlert();
             _alertView.ShowConfirmPopup(
-                $"업데이트비용 {cost:N0}G 지불해야합니다. 진행 하시겠습니까?",
+                $"업데이트비용 {FormatPolicy.FormatGold(update.cost)} 지불해야합니다. 진행 하시겠습니까?",
                 onConfirm: () =>
                 {
                     AudioManager.Instance?.PlaySFXPositive();
-                    // [TODO: 비용 차감 및 업데이트 진행 처리]
-                    _currentServiceRecord.isUpdatePending = true;
+                    ApplyProjectUpdate(_currentServiceRecord, part, update);
 
                     _selectedUpdatePart = null;
-                    _view.HideUpdateManagement();
+                    _view.SetUpdateItemSelectImg(null);
+                    _view.SetUpdateConfirmInteractable(false);
+                    BindUpdateItem(part);
+                    SetServiceOperationValues(_currentServiceRecord);
+                    _hudPresenter?.RefreshHUD();
                     RefreshInProgressList();
                 }
             );
+        }
+
+        private void BindUpdateItem(UpdatePart part)
+        {
+            ProjectUpdateSO update = GetOrAssignUpdate(_currentServiceRecord, part);
+            bool completed = IsUpdateCompleted(_currentServiceRecord, part);
+            bool hasData = update != null;
+
+            string title = hasData ? (update.Name?.Trim() ?? string.Empty) : "업데이트 없음";
+            string desc = hasData ? (update.desc?.Trim() ?? string.Empty) : "해당 규모의 업데이트 데이터가 없습니다.";
+            string cost = hasData ? FormatPolicy.FormatGold(update.cost) : "-";
+
+            if (hasData)
+                _currentUpdateOptions[part] = update;
+            else
+                _currentUpdateOptions.Remove(part);
+
+            _view.SetUpdateItemInfo(part, title, desc, cost, hasData && !completed);
+            _view.SetUpdateItemCompletedOverlay(part, completed);
+        }
+
+        private ProjectUpdateSO GetCurrentUpdateOption(UpdatePart part)
+        {
+            return _currentUpdateOptions.TryGetValue(part, out ProjectUpdateSO update)
+                ? update
+                : GetOrAssignUpdate(_currentServiceRecord, part);
+        }
+
+        private ProjectUpdateSO GetOrAssignUpdate(ProjectCompleted record, UpdatePart part)
+        {
+            if (record == null) return null;
+
+            int updateId = GetUpdateId(record, part);
+            if (updateId > 0 && _updateById.TryGetValue(updateId, out ProjectUpdateSO savedUpdate))
+                return savedUpdate;
+
+            Role role = GetUpdateRole(part);
+            var key = (record.scale, role);
+            if (!_updatesBySizeRole.TryGetValue(key, out List<ProjectUpdateSO> candidates) || candidates.Count == 0)
+                return null;
+
+            ProjectUpdateSO picked = candidates[Random.Range(0, candidates.Count)];
+            SetUpdateId(record, part, picked.id);
+            return picked;
+        }
+
+        private void ApplyProjectUpdate(ProjectCompleted record, UpdatePart part, ProjectUpdateSO update)
+        {
+            Company.Instance.gold.Value -= update.cost;
+            Company.Instance.curManagementStatus.devCost += update.cost;
+            Company.Instance.cumulativeManagementStatus.devCost += update.cost;
+            Company.Instance.curManagementStatus.Recalculate();
+            Company.Instance.cumulativeManagementStatus.Recalculate();
+
+            record.RetentionFactor += 0.1f;
+            SetUpdateCompleted(record, part, true);
+            record.isUpdatePending = HasCompletedUpdate(record);
+        }
+
+        private static Role GetUpdateRole(UpdatePart part)
+        {
+            switch (part)
+            {
+                case UpdatePart.Plan:
+                    return Role.PLANNER;
+                case UpdatePart.Art:
+                    return Role.ARTIST;
+                default:
+                    return Role.PROGRAMMER;
+            }
+        }
+
+        private static int GetUpdateId(ProjectCompleted record, UpdatePart part)
+        {
+            switch (part)
+            {
+                case UpdatePart.Plan:
+                    return record.planUpdateId;
+                case UpdatePart.Art:
+                    return record.artUpdateId;
+                default:
+                    return record.devUpdateId;
+            }
+        }
+
+        private static void SetUpdateId(ProjectCompleted record, UpdatePart part, int updateId)
+        {
+            switch (part)
+            {
+                case UpdatePart.Plan:
+                    record.planUpdateId = updateId;
+                    break;
+                case UpdatePart.Art:
+                    record.artUpdateId = updateId;
+                    break;
+                case UpdatePart.Dev:
+                    record.devUpdateId = updateId;
+                    break;
+            }
+        }
+
+        private static bool IsUpdateCompleted(ProjectCompleted record, UpdatePart part)
+        {
+            switch (part)
+            {
+                case UpdatePart.Plan:
+                    return record.planUpdateCompleted;
+                case UpdatePart.Art:
+                    return record.artUpdateCompleted;
+                default:
+                    return record.devUpdateCompleted;
+            }
+        }
+
+        private static void SetUpdateCompleted(ProjectCompleted record, UpdatePart part, bool completed)
+        {
+            switch (part)
+            {
+                case UpdatePart.Plan:
+                    record.planUpdateCompleted = completed;
+                    break;
+                case UpdatePart.Art:
+                    record.artUpdateCompleted = completed;
+                    break;
+                case UpdatePart.Dev:
+                    record.devUpdateCompleted = completed;
+                    break;
+            }
+        }
+
+        private static bool HasCompletedUpdate(ProjectCompleted record)
+        {
+            return record.planUpdateCompleted || record.artUpdateCompleted || record.devUpdateCompleted;
         }
 
         private void OnScaleSelected(ProjectSize scale)
