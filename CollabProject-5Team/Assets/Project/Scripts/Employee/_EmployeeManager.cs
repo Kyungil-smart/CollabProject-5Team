@@ -126,6 +126,7 @@ public class _EmployeeManager : MonoBehaviour
             var applicants = employeeList.leftEmployees.Values
                 .Select(go => go.GetComponent<Employee>())
                 .Where(e => e.so.role == request.TargetRole)
+                .Where(e => Company.Instance.level > 1 || e.so.grade != 1)
                 .OrderBy(_ => UnityEngine.Random.value)
                 .Take(request.Count)
                 .ToList();
