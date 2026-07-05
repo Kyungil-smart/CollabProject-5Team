@@ -110,9 +110,6 @@ namespace GameDevTycoon.UI.Ingame
                 .Subscribe(_ => _view.DeselectAllNightButtons())
                 .AddTo(this);
 
-            Company.Instance.activeProjectCount
-                .Subscribe(count => _view.SetNightQuitInteractable(count))
-                .AddTo(this);
         }
 
         private void BindQuestBanner()
