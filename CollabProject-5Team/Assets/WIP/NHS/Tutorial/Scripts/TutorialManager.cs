@@ -13,7 +13,6 @@ public class TutorialManager : MonoBehaviour
         HighlightSqureTouchAnywhere,
         HighLightSqureTouchSomewhere,
         PunchHole,
-        WaitPlayer
     }
 
     // 싱글톤
@@ -223,8 +222,6 @@ public class TutorialManager : MonoBehaviour
                 break;
             case ShowMode.PunchHole:
                 TutorialPunchHole();
-                break;
-            case ShowMode.WaitPlayer:
                 break;
         }
     }

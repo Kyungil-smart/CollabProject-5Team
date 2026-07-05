@@ -992,6 +992,7 @@ MonoBehaviour:
   currentApplicants: []
   leavePendingEmployees: []
   lastHiredEmployee: {fileID: 0}
+  canLeaveSelf: 0
 --- !u!114 &29623097602510584
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -43651,6 +43652,11 @@ MonoBehaviour:
   _noticeCommentLabel: {fileID: 2328578216805660500}
   _noticeEmployeeNameLabel: {fileID: 2538539035528745972}
   _noticeEmployeeIcon: {fileID: 5946612754470958753}
+  _spyPopup: {fileID: 0}
+  _spyConfirmButton: {fileID: 0}
+  _spyCancelButton: {fileID: 0}
+  _spyResultSuccessGo: {fileID: 0}
+  _spyResultSuccessCloseButton: {fileID: 0}
 --- !u!1 &2372516499029225935
 GameObject:
   m_ObjectHideFlags: 0
@@ -70154,6 +70160,19 @@ MonoBehaviour:
   _tutorialPointer: {fileID: 5542987760114971586}
   _pointerOffset: {x: 35, y: -35}
   _tutorialSteps:
+  - {fileID: 11400000, guid: 406a06116a1da794e897c64b5527fc5e, type: 2}
+  - {fileID: 11400000, guid: 6a2222b62bf1c3b49934cd8683d3509d, type: 2}
+  - {fileID: 11400000, guid: e8418e4ca862ce5479a4e37d80e6c28b, type: 2}
+  - {fileID: 11400000, guid: 35e19da8be0db5646bbedaeef4f609c4, type: 2}
+  - {fileID: 11400000, guid: 3eec9237d8bbd1c49ba1cf62fa0808c4, type: 2}
+  - {fileID: 11400000, guid: 984990f92621db14cb97df177129db49, type: 2}
+  - {fileID: 11400000, guid: 61c4767da8c57374582e5b40e78b84e5, type: 2}
+  - {fileID: 11400000, guid: bed068d6cff5b2041ae24a2ec6729d07, type: 2}
+  - {fileID: 11400000, guid: 4bacceb69ecd5d2419776a08022271ee, type: 2}
+  - {fileID: 11400000, guid: da90df7ca95ecdb45b5aed5219d2e3f6, type: 2}
+  - {fileID: 11400000, guid: e60c173f657d2bf408706da527aaa1a9, type: 2}
+  - {fileID: 11400000, guid: 67a04cb4a9c1a054abdc46434fdfa8b0, type: 2}
+  - {fileID: 11400000, guid: 1ea98bec8fad45f4d9f9e42c67294191, type: 2}
   - {fileID: 11400000, guid: a0ce91bbac5385d46aadbf97c7e174cb, type: 2}
   - {fileID: 11400000, guid: 49fdb27996ffc5e43b10ee26cf786972, type: 2}
   - {fileID: 11400000, guid: b3b0a74690b4d964ca2925aba575e599, type: 2}
@@ -70193,6 +70212,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 038a001421fbf5e4e9962ecf52fb379e, type: 2}
   - {fileID: 11400000, guid: 45996127260ff074bab85bf531ed3815, type: 2}
   _templateMaterial: {fileID: 2100000, guid: 4e3a38a698c2ab649b8e5b1671101b8e, type: 2}
+  _bgm: {fileID: 0}
   _myInputField: {fileID: 5293278144023163527}
   IsWaitingDialogue: 0
 --- !u!114 &4635160755316548791
@@ -75080,6 +75100,8 @@ MonoBehaviour:
   _desk: {fileID: 0}
   _workStartIconPrefab: {fileID: 0}
   _workStartIconOffset: {x: 0, y: 1.5, z: 0}
+  _dayBGM: {fileID: 0}
+  _nightBGM: {fileID: 0}
 --- !u!1 &5107983278840805601
 GameObject:
   m_ObjectHideFlags: 0
@@ -97658,6 +97680,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   audioMixer: {fileID: 24100000, guid: b78c16b46e4037741a905d3ea7597344, type: 2}
+  _bgmSource: {fileID: 0}
+  _sfxSource: {fileID: 0}
+  _sfxAlert: {fileID: 0}
+  _sfxQuestTap: {fileID: 0}
+  _sfxClick: {fileID: 0}
+  _sfxNegative: {fileID: 0}
+  _sfxPositive: {fileID: 0}
+  _sfxQuestClear: {fileID: 0}
 --- !u!1 &7170525885845053369
 GameObject:
   m_ObjectHideFlags: 0

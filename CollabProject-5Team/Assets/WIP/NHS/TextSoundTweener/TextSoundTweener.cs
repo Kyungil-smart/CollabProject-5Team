@@ -10,10 +10,7 @@ public class TextSoundTweener : MonoBehaviour
     [SerializeField] private List<AudioClip> _sampleSounds;
 
     [Header("사운드 피치 설정 (동숲 최적화)")]
-    // 💡 파이썬으로 이미 피치를 올렸으므로 기본값은 1.0f가 좋습니다. 
-    // 너무 높으면 귀를 찌르는 불쾌한 소리가 납니다.
     [SerializeField][Range(0.8f, 1.5f)] private float _baseOctave = 1.0f;
-    // 💡 피치가 너무 날뛰면 불협화음처럼 들립니다. 범위를 좁혀서 자연스럽게 만듭니다.
     [SerializeField][Range(0.0f, 0.2f)] private float _randomFactor = 0.08f;
 
     [Header("타이핑 설정")]
@@ -30,7 +27,6 @@ public class TextSoundTweener : MonoBehaviour
     {
         InitializeSoundDictionary();
 
-        // AudioSource 기본 설정 강제 (동숲 웅얼거림의 핵심)
         if (_audioSource != null)
         {
             _audioSource.loop = false;
@@ -75,7 +71,6 @@ public class TextSoundTweener : MonoBehaviour
             char currentChar = _currentFullDialogue[i];
             _targetTextComponent.text += currentChar;
 
-            // 💡 무음 처리할 특수문자 및 공백 필터링
             if (currentChar != ' ' && currentChar != '.' && currentChar != ',' && currentChar != '!' && currentChar != '?')
             {
                 soundCounter++;
@@ -87,7 +82,6 @@ public class TextSoundTweener : MonoBehaviour
             }
             else
             {
-                // 문장 부호나 공백을 만나면 말을 잠시 멈추는 효과
                 if (_audioSource != null) _audioSource.Stop();
             }
 

@@ -50,6 +50,13 @@ public class Company : MonoBehaviour
     {
         Instance = this;
     #endregion
+        gold.Subscribe(currentGold =>
+        {
+            if (AchievementSystem.Instance != null)
+            {
+                AchievementSystem.Instance.NotifyEvent(AchievementNotifyType.OnGoldChanged, currentGold);
+            }
+        }).AddTo(this);
     }
 
     #region 테스트 코드
@@ -476,6 +483,11 @@ public class Company : MonoBehaviour
         }
 
         GameManager.Instance.isUpgradeReserved = true;
+
+        if (AchievementSystem.Instance != null)
+        {
+            AchievementSystem.Instance.NotifyEvent(AchievementNotifyType.OnLevelChanged, level);
+        }
     }
 
     public void TickWeeklyOfficeCost()

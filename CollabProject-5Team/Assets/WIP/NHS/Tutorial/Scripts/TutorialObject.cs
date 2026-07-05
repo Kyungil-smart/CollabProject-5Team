@@ -25,7 +25,6 @@ public class TutorialObject : MonoBehaviour
             return;
 
         TutorialManager.Instance.RegisterObject(_tutorialObjectId, this.gameObject);
-
     }
 
     public Vector3 GetWorldPosition()

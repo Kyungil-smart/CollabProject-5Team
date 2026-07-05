@@ -1,5 +1,3 @@
-using Cysharp.Threading.Tasks;
-using R3;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -8,89 +6,62 @@ public class AchievementSystem : MonoBehaviour
     public static AchievementSystem Instance { get; private set; }
 
     [SerializeField] private AchievementUI _achievementUI;
-
-    public List<Achievement> achievements = new List<Achievement>();
-
-    private CompositeDisposable _disposables = new CompositeDisposable();
+    private Dictionary<AchievementNotifyType, List<AchievementData>> _achievementRegistry = new Dictionary<AchievementNotifyType, List<AchievementData>>();
 
     private void Awake()
     {
-        if (Instance != null && Instance != this)
-        {
-            Destroy(gameObject);
-            return;
-        }
+        if (Instance != null && Instance != this) { Destroy(gameObject); return; }
         Instance = this;
+
+        InitializeRegistry();
+        LoadAchievementData();
     }
 
-    private void Start()
+    private void InitializeRegistry()
     {
-        InitializeAchievements();
-        BindDataObservations();
-    }
-
-    private void OnDestroy()
-    {
-        _disposables.Dispose();
-    }
-
-    private void InitializeAchievements()
-    {
-        AddAchievement("rich_50k", "부자", "골드 5만 모으기", AchievementType.ReachGold, 50000);
-    }
-
-    private void AddAchievement(string id, string title, string desc, AchievementType type, int target)
-    {
-        achievements.Add(new Achievement
+        foreach(AchievementNotifyType type in System.Enum.GetValues(typeof(AchievementNotifyType)))
         {
-            id           = id,
-            title        = title,
-            description  = desc,
-            type         = type,
-            targetValue  = target,
-            isUnlocked   = false,
-            currentValue = 0
-        });
-    }
-
-    private void BindDataObservations()
-    {
-        Company.Instance.gold
-            .Subscribe(currentGold =>
-            {
-                UpdateCurrentValue(AchievementType.ReachGold, currentGold);
-                CheckAll();
-            })
-            .AddTo(_disposables);
-    }
-
-    private void UpdateCurrentValue(AchievementType type, int value)
-    {
-        foreach (var ach in achievements)
-        {
-            if (ach.type == type && !ach.isUnlocked)
-                ach.currentValue = value;
+            _achievementRegistry[type] = new List<AchievementData>();
         }
     }
 
-    public void CheckAll()
+    private void LoadAchievementData()
     {
-        foreach (var ach in achievements)
+        // 1. 골드
+        RegisterAchievement(new AchievementData { id = "Gold_01", title = "돈이 복사가 된다고!"    , description = "골드 5만 모으기", targetEvent = AchievementNotifyType.OnGoldChanged,  targetValue = 50000 });
+        RegisterAchievement(new AchievementData { id = "Gold_02", title = "내 주머니에 종이가 백장", description = "골드 10만 모으기", targetEvent = AchievementNotifyType.OnGoldChanged, targetValue = 100000 });
+
+        // 2. 회사 레벨 
+        RegisterAchievement(new AchievementData { id = "Office_02", title = "좋좋소"              , description = "중형 회사로 증축", targetEvent = AchievementNotifyType.OnLevelChanged, targetValue = 2 });
+        RegisterAchievement(new AchievementData { id = "Office_03", title = "우리도 이제 머기업???", description = "대형 회사로 증축", targetEvent = AchievementNotifyType.OnLevelChanged, targetValue = 3 });
+
+        // 3. 플레이타임
+        RegisterAchievement(new AchievementData { id = "Time_01", title = "엉덩이가 무거운 개발자", description = "10분 동안 개발하기", targetEvent = AchievementNotifyType.OnPlayTimeChanged, targetValue = 600 });
+    }
+
+    private void RegisterAchievement(AchievementData data)
+    {
+        _achievementRegistry[data.targetEvent].Add(data);
+    }
+
+    public void NotifyEvent(AchievementNotifyType eventType, int value)
+    {
+        if (!_achievementRegistry.ContainsKey(eventType)) return;
+
+        List<AchievementData> targetedAchievements = _achievementRegistry[eventType];
+
+        for (int i = 0; i < targetedAchievements.Count; i++)
         {
+            AchievementData ach = targetedAchievements[i];
+
             if (ach.isUnlocked) continue;
 
-            bool unlocked = ach.type switch
-            {
-                AchievementType.ReachGold => Company.Instance.gold.Value >= ach.targetValue,
-                _ => false
-            };
+            ach.currentValue = value;
 
-            if (unlocked)
+            if (ach.currentValue >= ach.targetValue)
             {
                 ach.isUnlocked = true;
                 _achievementUI.ShowAchievement(ach.title, ach.description);
-                Debug.Log($"🎉 업적 달성: {ach.title}");
-                // TODO: UI 팝업
             }
         }
     }
