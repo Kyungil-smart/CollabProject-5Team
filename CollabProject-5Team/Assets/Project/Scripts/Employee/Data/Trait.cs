@@ -96,6 +96,7 @@ public enum Trait
     DetailObsession,  // 디테일 집착증
 
     None,// 보조특성이 없는경우
+    SPY, // 스파이 특성
 }
 
 // ── 특성 데이터
@@ -161,6 +162,7 @@ public static class TraitTable
         [Trait.DetailObsession] = T("디테일 집착증", TraitRole.Art, false, -2, TraitStat.Composition, TraitStat.Direction),
 
         [Trait.None] = T("", TraitRole.Planning, true, 0, TraitStat.Creativity, TraitStat.Fun),
+        [Trait.SPY]  = T("SPY", TraitRole.Planning, false, 0, TraitStat.Creativity, TraitStat.Fun),
     };
 
     static TraitData T(string name, TraitRole role, bool isPositive, int score,
