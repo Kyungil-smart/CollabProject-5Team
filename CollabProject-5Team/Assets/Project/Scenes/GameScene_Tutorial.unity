@@ -992,6 +992,7 @@ MonoBehaviour:
   currentApplicants: []
   leavePendingEmployees: []
   lastHiredEmployee: {fileID: 0}
+  canLeaveSelf: 0
 --- !u!114 &29623097602510584
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3505,6 +3506,7 @@ MonoBehaviour:
   - {fileID: 3473241007350554325}
   - {fileID: 8632612284223505434}
   _employeeStatusMiniItemPrefab: {fileID: 5795527634663094337, guid: e6aadfe9d4b86e448bc4da0a570ac018, type: 3}
+  _allAgendas: []
 --- !u!224 &263189190297462577
 RectTransform:
   m_ObjectHideFlags: 0
@@ -5462,6 +5464,12 @@ MonoBehaviour:
   _adoptBtn: {fileID: 5641179945763414543}
   _cancelBtn: {fileID: 3622583793028959283}
   _panelPersonalOpinion: {fileID: 7535866067010879233}
+  _personalOpinionProfileIcon: {fileID: 5752777902588898854}
+  _personalOpinionNameLabel: {fileID: 3616918976960648443}
+  _personalOpinionDetailLabel: {fileID: 4603920138165696489}
+  _personalOpinionContentLabel: {fileID: 3341181971028866860}
+  _personalOpinionAdoptButton: {fileID: 3505187203087115380}
+  _personalOpinionBackButton: {fileID: 7927066189607998694}
   _panelReportEnd: {fileID: 5452182421442034919}
   _reportEndConfirmButton: {fileID: 616570266251810707}
   _slideHiddenY: -1150
@@ -29766,6 +29774,12 @@ MonoBehaviour:
   _scaleCardLargeSelectImg: {fileID: 654659971076029968}
   _scaleCardMediumLock: {fileID: 8373994062835792863}
   _scaleCardLargeLock: {fileID: 6830427872001542490}
+  _scaleCardSmallDurationLabel: {fileID: 360601315448584372}
+  _scaleCardSmallCostLabel: {fileID: 1347545202981738738}
+  _scaleCardMediumDurationLabel: {fileID: 1020467626605286570}
+  _scaleCardMediumCostLabel: {fileID: 4838678749777601200}
+  _scaleCardLargeDurationLabel: {fileID: 7934946715734163138}
+  _scaleCardLargeCostLabel: {fileID: 7365815861774353561}
   _projectSetupNextButton: {fileID: 6161188767233247673}
   _panelStaffAssign: {fileID: 2656374684684496991}
   _minStaffLabel: {fileID: 6818368170714291823}
@@ -43651,6 +43665,11 @@ MonoBehaviour:
   _noticeCommentLabel: {fileID: 2328578216805660500}
   _noticeEmployeeNameLabel: {fileID: 2538539035528745972}
   _noticeEmployeeIcon: {fileID: 5946612754470958753}
+  _spyPopup: {fileID: 0}
+  _spyConfirmButton: {fileID: 0}
+  _spyCancelButton: {fileID: 0}
+  _spyResultSuccessGo: {fileID: 0}
+  _spyResultSuccessCloseButton: {fileID: 0}
 --- !u!1 &2372516499029225935
 GameObject:
   m_ObjectHideFlags: 0
@@ -59759,6 +59778,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: b13471a92879a4549b2a7d6d3e6118bb, type: 2}
   - {fileID: 11400000, guid: a7bbdb1ffb1b23e46bf416a6daec70f0, type: 2}
   - {fileID: 11400000, guid: 581560dee6e1b0c4682aa350dc29b9e2, type: 2}
+  _allSpyReports: []
 --- !u!222 &3631189467594841216
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -70206,6 +70226,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 038a001421fbf5e4e9962ecf52fb379e, type: 2}
   - {fileID: 11400000, guid: 45996127260ff074bab85bf531ed3815, type: 2}
   _templateMaterial: {fileID: 2100000, guid: 4e3a38a698c2ab649b8e5b1671101b8e, type: 2}
+  _bgm: {fileID: 0}
   _myInputField: {fileID: 5293278144023163527}
   IsWaitingDialogue: 0
 --- !u!114 &4635160755316548791
@@ -75093,6 +75114,8 @@ MonoBehaviour:
   _desk: {fileID: 0}
   _workStartIconPrefab: {fileID: 0}
   _workStartIconOffset: {x: 0, y: 1.5, z: 0}
+  _dayBGM: {fileID: 0}
+  _nightBGM: {fileID: 0}
 --- !u!1 &5107983278840805601
 GameObject:
   m_ObjectHideFlags: 0
@@ -97671,6 +97694,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   audioMixer: {fileID: 24100000, guid: b78c16b46e4037741a905d3ea7597344, type: 2}
+  _bgmSource: {fileID: 0}
+  _sfxSource: {fileID: 0}
+  _sfxAlert: {fileID: 0}
+  _sfxQuestTap: {fileID: 0}
+  _sfxClick: {fileID: 0}
+  _sfxNegative: {fileID: 0}
+  _sfxPositive: {fileID: 0}
+  _sfxQuestClear: {fileID: 0}
 --- !u!1 &7170525885845053369
 GameObject:
   m_ObjectHideFlags: 0
@@ -109532,6 +109563,7 @@ MonoBehaviour:
     prefab: {fileID: 5873220836774723547, guid: ebcc5a56c98f13640992fa94756e059e, type: 3}
   _projectListItemPrefab: {fileID: 6592613811286196612, guid: 7d74af5a852054b42ab023024b602fb5, type: 3}
   _staffDetailPrefab: {fileID: 3874355215507970141, guid: 62edf3cab93f5864da2a902beb2295a9, type: 3}
+  _allUpdateSos: []
 --- !u!224 &8184589348587384459
 RectTransform:
   m_ObjectHideFlags: 0
@@ -118936,6 +118968,7 @@ MonoBehaviour:
     genre: 
     artStyle: 
     engine: 
+    _retentionFactor: 0
     users: 0
     dailySales: 0
     dailyGold: 0
@@ -118946,6 +118979,12 @@ MonoBehaviour:
     prevWeekGold: 0
     isServiceOver: 0
     isUpdatePending: 0
+    planUpdateId: 0
+    artUpdateId: 0
+    devUpdateId: 0
+    planUpdateCompleted: 0
+    artUpdateCompleted: 0
+    devUpdateCompleted: 0
   popularity: 0
   reputation: 0
   weeklyCost: 0

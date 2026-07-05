@@ -48,6 +48,12 @@ namespace GameDevTycoon.UI.Ingame
         [SerializeField] private GameObject _scaleCardLargeSelectImg;
         [SerializeField] private GameObject _scaleCardMediumLock;
         [SerializeField] private GameObject _scaleCardLargeLock;
+        [SerializeField] private TextMeshProUGUI _scaleCardSmallDurationLabel;
+        [SerializeField] private TextMeshProUGUI _scaleCardSmallCostLabel;
+        [SerializeField] private TextMeshProUGUI _scaleCardMediumDurationLabel;
+        [SerializeField] private TextMeshProUGUI _scaleCardMediumCostLabel;
+        [SerializeField] private TextMeshProUGUI _scaleCardLargeDurationLabel;
+        [SerializeField] private TextMeshProUGUI _scaleCardLargeCostLabel;
         [SerializeField] private Button _projectSetupNextButton;
 
         [Header("Tab_NewProject — Panel_StaffAssign")]
@@ -310,6 +316,31 @@ namespace GameDevTycoon.UI.Ingame
             _scaleCardSmallSelectImg.SetActive(false);
             _scaleCardMediumSelectImg.SetActive(false);
             _scaleCardLargeSelectImg.SetActive(false);
+        }
+
+        public void SetScaleCardInfo(ProjectSize scale, string durationText, string costText)
+        {
+            TextMeshProUGUI durationLabel;
+            TextMeshProUGUI costLabel;
+
+            switch (scale)
+            {
+                case ProjectSize.Medium:
+                    durationLabel = _scaleCardMediumDurationLabel;
+                    costLabel = _scaleCardMediumCostLabel;
+                    break;
+                case ProjectSize.Large:
+                    durationLabel = _scaleCardLargeDurationLabel;
+                    costLabel = _scaleCardLargeCostLabel;
+                    break;
+                default:
+                    durationLabel = _scaleCardSmallDurationLabel;
+                    costLabel = _scaleCardSmallCostLabel;
+                    break;
+            }
+
+            if (durationLabel != null) durationLabel.text = durationText;
+            if (costLabel != null) costLabel.text = costText;
         }
 
         // Tab_InProgress 패널 전환

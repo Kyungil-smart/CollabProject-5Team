@@ -1,7 +1,6 @@
 using Dialogue;
 using R3;
 using UnityEngine;
-using static UnityEngine.Rendering.DebugUI;
 
 public class EventQuestManager : MonoBehaviour
 {

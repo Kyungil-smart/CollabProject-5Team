@@ -8,10 +8,12 @@ public class ReportManager : MonoBehaviour
 
     [Header("모든 보고서 SO")]
     [SerializeField] List<ReportSO> _allReports = new();
+    [SerializeField] List<ReportSO> _allSpyReports = new();
     public IReadOnlyList<ReportSO> AllReports => _allReports;
 
     // Trait/startRepo/grade 조합에 여러 ReportSO가 있을 수 있음
     Dictionary<(Trait trait, int startRepo, int grade), List<ReportSO>> _reportMap = new();
+    Dictionary<(Role role, int startRepo, int grade), List<ReportSO>> _spyReportMap = new();
 
     readonly List<ReportSO> _candidateBuffer = new();
     readonly Trait[] _traitBuffer = new Trait[3];
@@ -24,14 +26,14 @@ public class ReportManager : MonoBehaviour
     {
         if (Instance != null && Instance != this) { Destroy(gameObject); return; }
         Instance = this;
-
+    #endregion
         InitList();
     }
-    #endregion
 
     void InitList()
     {
         _reportMap.Clear();
+        _spyReportMap.Clear();
 
         foreach (ReportSO so in _allReports)
         {
@@ -40,6 +42,18 @@ public class ReportManager : MonoBehaviour
             {
                 reports = new List<ReportSO>();
                 _reportMap[key] = reports;
+            }
+
+            reports.Add(so);
+        }
+
+        foreach (ReportSO so in _allSpyReports)
+        {
+            var key = (so.role, so.startRepo, so.grade);
+            if (!_spyReportMap.TryGetValue(key, out var reports))
+            {
+                reports = new List<ReportSO>();
+                _spyReportMap[key] = reports;
             }
 
             reports.Add(so);
@@ -69,6 +83,22 @@ public class ReportManager : MonoBehaviour
             : null;
     }
 
+    public ReportSO GetSpyReport(Employee e, int grade, int startRepo)
+    {
+        _candidateBuffer.Clear();
+
+        if (_spyReportMap.TryGetValue((e.so.role, startRepo, grade), out var reports))
+            _candidateBuffer.AddRange(reports);
+
+#if UNITY_EDITOR
+        LogSpyCandidates(e, grade, startRepo);
+#endif
+
+        return _candidateBuffer.Count > 0
+            ? _candidateBuffer[Random.Range(0, _candidateBuffer.Count)]
+            : null;
+    }
+
 #if UNITY_EDITOR
     void LogCandidates(Employee e, int grade, int startRepo)
     {
@@ -77,6 +107,17 @@ public class ReportManager : MonoBehaviour
 
         foreach (ReportSO so in _candidateBuffer)
             sb.Append($"[{so.title}({so.role}/{so.trait}/start{so.startRepo}/g{so.grade})] ");
+
+        Debug.Log(sb.ToString());
+    }
+
+    void LogSpyCandidates(Employee e, int grade, int startRepo)
+    {
+        var sb = new StringBuilder();
+        sb.Append($"[RM][Spy] {e.so.Name}({e.so.role}) startRepo={startRepo} grade={grade} valid reports={_candidateBuffer.Count}: ");
+
+        foreach (ReportSO so in _candidateBuffer)
+            sb.Append($"[{so.title}({so.role}/start{so.startRepo}/g{so.grade})] ");
 
         Debug.Log(sb.ToString());
     }
