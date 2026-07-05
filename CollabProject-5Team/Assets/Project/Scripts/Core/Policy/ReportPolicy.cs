@@ -34,7 +34,9 @@ public static class ReportPolicy
             int grade   = CalcGrade(score);
             int isStartRepo = project.day <= 5 ? 1 : 0;
 
-            ReportSO picked = ReportManager.Instance.GetReportsByTrait(e, grade, isStartRepo);
+            ReportSO picked = e.isSpy
+                ? ReportManager.Instance.GetSpyReport(e, grade, isStartRepo)
+                : ReportManager.Instance.GetReportsByTrait(e, grade, isStartRepo);
             if (picked == null) { Debug.LogWarning($"[ReportPolicy] {e.so.Name} 에 맞는 보고서 SO 없음"); continue; }
             Report report = new Report { so = picked, owner = e };
             
