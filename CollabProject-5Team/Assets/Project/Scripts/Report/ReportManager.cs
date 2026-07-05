@@ -26,10 +26,9 @@ public class ReportManager : MonoBehaviour
     {
         if (Instance != null && Instance != this) { Destroy(gameObject); return; }
         Instance = this;
-
+    #endregion
         InitList();
     }
-    #endregion
 
     void InitList()
     {
@@ -50,8 +49,6 @@ public class ReportManager : MonoBehaviour
 
         foreach (ReportSO so in _allSpyReports)
         {
-            if (so == null) continue;
-
             var key = (so.role, so.startRepo, so.grade);
             if (!_spyReportMap.TryGetValue(key, out var reports))
             {
