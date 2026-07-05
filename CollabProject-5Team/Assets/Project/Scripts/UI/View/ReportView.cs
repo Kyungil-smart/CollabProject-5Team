@@ -68,6 +68,12 @@ namespace GameDevTycoon.UI.Ingame
 
         [Header("Panel_PersonalOpinion - 추후 작업")]
         [SerializeField] private GameObject _panelPersonalOpinion;
+        [SerializeField] private Image _personalOpinionProfileIcon;
+        [SerializeField] private TextMeshProUGUI _personalOpinionNameLabel;
+        [SerializeField] private TextMeshProUGUI _personalOpinionDetailLabel;
+        [SerializeField] private TextMeshProUGUI _personalOpinionContentLabel;
+        [SerializeField] private Button _personalOpinionAdoptButton;
+        [SerializeField] private Button _personalOpinionBackButton;
 
         [Header("Panel_ReportEnd")]
         [SerializeField] private GameObject _panelReportEnd;
@@ -86,6 +92,8 @@ namespace GameDevTycoon.UI.Ingame
         public Observable<Unit> OnReportEndConfirmClicked => _reportEndConfirmButton.OnClickAsObservable();
         public Observable<Unit> OnAdoptClicked => _adoptBtn.OnClickAsObservable();
         public Observable<Unit> OnCancelClicked => _cancelBtn.OnClickAsObservable();
+        public Observable<Unit> OnPersonalOpinionAdoptClicked => _personalOpinionAdoptButton.OnClickAsObservable();
+        public Observable<Unit> OnPersonalOpinionBackClicked => _personalOpinionBackButton.OnClickAsObservable();
 
         // 담당자 패널 Show/Hide용 — Presenter에서 순서 제어
         public GameObject PanelEmployeeComment => _panelEmployeeComment;
@@ -219,6 +227,24 @@ namespace GameDevTycoon.UI.Ingame
             _profileIcon.sprite = report.owner.so.iconNormal;
 
             _departmentTagPrefab.Bind(report.role);
+        }
+
+        public void SetPersonalOpinionInfo(Employee employee, AgendaSO agenda)
+        {
+            string roleText = employee.so.role switch
+            {
+                Role.PLANNER => "기획",
+                Role.PROGRAMMER => "개발",
+                Role.ARTIST => "아트",
+                Role.MARKETING => "마케팅",
+                Role.QA => "QA",
+                _ => string.Empty,
+            };
+
+            _personalOpinionProfileIcon.sprite = employee.so.iconNormal;
+            _personalOpinionNameLabel.text = employee.so.Name;
+            _personalOpinionDetailLabel.text = $"{roleText} / {agenda.grade}등급 / {FormatPolicy.FormatGold(agenda.cost)}";
+            _personalOpinionContentLabel.text = agenda.desc;
         }
 
         public void SetCoverInfo(string dateRange, string companyName)
