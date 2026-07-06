@@ -25,7 +25,7 @@ namespace GameDevTycoon.UI.Ingame
 
         private readonly CompositeDisposable _disposables = new();
         private SpyView _selectedView;
-        private Action _onSpySelectCompleted;
+        private Action<Employee, bool> _onSpySelectCompleted;
 
         // 판정 연출이 시작된 순간부터 알림창이 뜨기 전까지 유저가 다른 카드를 누르거나 
         // 확인 버튼을 무한 연타하여 정답 판정 로직이 중복 실행되는 상태이상(Race Condition)을 방지하는 플래그입니다.
@@ -60,7 +60,7 @@ namespace GameDevTycoon.UI.Ingame
             _disposables.Dispose();
         }
 
-        public void Open(List<Employee> employees, Action onComplete = null)
+        public void Open(List<Employee> employees, Action<Employee, bool> onComplete = null)
         {
             _onSpySelectCompleted = onComplete;
             _selectedView = null;
@@ -149,10 +149,6 @@ namespace GameDevTycoon.UI.Ingame
             {
                 Debug.Log($"[SpySystem] 정답 성공 판정: {target.so.Name} 검거 완료.");
 
-                // 직원의 스파이 플래그 해제 및 퀘스트 성공 플래그 세팅
-                target.isSpy = false;
-                StoryQuestManager.Instance.isCorrectSpySelected = true;
-
                 // "잡았다 요놈" 연출 프레임이 뜨기 전에 스파이 선택용 카드 프레임을 먼저 깔끔하게 닫아줍니다.
                 ClosePopup();
 
@@ -162,7 +158,7 @@ namespace GameDevTycoon.UI.Ingame
                     _isProcessing = false;
 
                     // 상위 플로우(StoryQuestManager)에서 넘겨받은 완료 콜백을 실행하여 즉시 후속 대사/결과로 진입시킵니다.
-                    _onSpySelectCompleted?.Invoke();
+                    _onSpySelectCompleted?.Invoke(target, true);
                     _onSpySelectCompleted = null;
                 });
             }
@@ -170,13 +166,11 @@ namespace GameDevTycoon.UI.Ingame
             {
                 Debug.Log($"[SpySystem] 오답 실패 판정: {target.so.Name} 선택.");
 
-                StoryQuestManager.Instance.isCorrectSpySelected = false;
-
                 // 오답일 경우 연출 없이 즉시 프레임을 닫고 후속 대사/결과 플로우로 진입시킵니다.
                 ClosePopup();
                 _isProcessing = false;
 
-                _onSpySelectCompleted?.Invoke();
+                _onSpySelectCompleted?.Invoke(target, false);
                 _onSpySelectCompleted = null;
             }
         }
