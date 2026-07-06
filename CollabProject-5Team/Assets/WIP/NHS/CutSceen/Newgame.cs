@@ -35,6 +35,12 @@ public class Newgame : MonoBehaviour
     [SerializeField] private Button _skipButton;
     private bool _isFinishedSetPlayerName = false;
 
+    [Header("BGM")]
+    [SerializeField] private AudioClip _bgmSetup;
+    [SerializeField] private AudioClip _bgmGroup1;
+    [SerializeField] private AudioClip _bgmGroup2;
+    [SerializeField] private AudioClip _bgmGroup3;
+
     [Header("컷씬")]
     [SerializeField] private CutScenePanelUI    _cutSceneUI;
     [SerializeField] private List<CutSceneData> _cutSceneList;
@@ -50,6 +56,8 @@ public class Newgame : MonoBehaviour
 
     private void Start()
     {
+        AudioManager.Instance?.PlayBGM(_bgmSetup);
+
            _companyAcceptButton.onClick.AddListener(OnCompanyConfirmed);
          _cutSceneUI.nextButton.onClick.AddListener(OnNextDialogueClicked);
         _playerNameAcceptButton.onClick.AddListener(OnPlayerNameConfirmed);
@@ -73,6 +81,11 @@ public class Newgame : MonoBehaviour
 
         if (currentData != null)
         {
+            if (currentData.id >= 1000009 && currentData.id < 1000040)
+                AudioManager.Instance?.PlayBGM(_bgmGroup2);
+            else if (currentData.id > 1000040)
+                AudioManager.Instance?.PlayBGM(_bgmGroup3);
+
             _currentFullDialogue = currentData.dialogue
                 .Replace("[Company]", _companyName)
                 .Replace("[Player]", _playerName);
@@ -126,6 +139,7 @@ public class Newgame : MonoBehaviour
 
     private void OpenPlayerNamePanel()
     {
+        AudioManager.Instance?.PlayBGM(_bgmSetup);
           _cutSceneUI.panel.SetActive(false);
         _setPlayerNamePanel.SetActive(true);
     }
@@ -145,6 +159,7 @@ public class Newgame : MonoBehaviour
 
          _setCompanyPanel.SetActive(false);
         _cutSceneUI.panel.SetActive(true);
+        AudioManager.Instance?.PlayBGM(_bgmGroup1);
         ShowCutScene();
     }
 

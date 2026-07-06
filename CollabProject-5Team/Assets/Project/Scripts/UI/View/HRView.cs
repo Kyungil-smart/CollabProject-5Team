@@ -327,7 +327,10 @@ namespace GameDevTycoon.UI.Ingame
             => _recruitButton.interactable = interactable;
 
         public void SetRecruitConfirmInteractable(bool interactable)
-            => _recruitConfirmButton.interactable = interactable;
+        {
+            _recruitConfirmButton.interactable = interactable;
+            _recruitConfirmButton.image.sprite = interactable ? _confirmActiveSprite : _confirmInactiveSprite;
+        }
 
         public void SetHireButtonInteractable(bool interactable)
             => HireButton.interactable = interactable;
