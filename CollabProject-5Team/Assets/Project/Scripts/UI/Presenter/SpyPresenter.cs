@@ -141,32 +141,21 @@ namespace GameDevTycoon.UI.Ingame
         /// </summary>
         private void ShowResultNotification(bool isCorrect, Employee target)
         {
+            ClosePopup();
+            _isProcessing = false;
+
+            _onSpySelectCompleted?.Invoke(target, isCorrect);
+            _onSpySelectCompleted = null;
+
             if (isCorrect)
             {
                 Debug.Log($"[SpySystem] 정답 성공 판정: {target.so.Name} 검거 완료.");
 
-                // "잡았다 요놈" 연출 프레임이 뜨기 전에 스파이 선택용 카드 프레임을 먼저 깔끔하게 닫아줍니다.
-                ClosePopup();
-
-                _alertView.ShowSpySuccessResult(onClose: () =>
-                {
-                    _isProcessing = false;
-
-                    // 상위 플로우(StoryQuestManager)에서 넘겨받은 완료 콜백을 실행하여 즉시 후속 대사/결과로 진입시킵니다.
-                    _onSpySelectCompleted?.Invoke(target, true);
-                    _onSpySelectCompleted = null;
-                });
+                _alertView.ShowSpySuccessResult(onClose: null);
             }
             else
             {
                 Debug.Log($"[SpySystem] 오답 실패 판정: {target.so.Name} 선택.");
-
-                // 오답일 경우 연출 없이 즉시 프레임을 닫고 후속 대사/결과 플로우로 진입시킵니다.
-                ClosePopup();
-                _isProcessing = false;
-
-                _onSpySelectCompleted?.Invoke(target, false);
-                _onSpySelectCompleted = null;
             }
         }
 
