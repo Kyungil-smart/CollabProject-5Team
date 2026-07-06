@@ -231,19 +231,9 @@ namespace GameDevTycoon.UI.Ingame
 
         public void SetPersonalOpinionInfo(Employee employee, AgendaSO agenda)
         {
-            string roleText = employee.so.role switch
-            {
-                Role.PLANNER => "기획",
-                Role.PROGRAMMER => "개발",
-                Role.ARTIST => "아트",
-                Role.MARKETING => "마케팅",
-                Role.QA => "QA",
-                _ => string.Empty,
-            };
-
             _personalOpinionProfileIcon.sprite = employee.so.iconNormal;
             _personalOpinionNameLabel.text = employee.so.Name;
-            _personalOpinionDetailLabel.text = $"{roleText} / {agenda.grade}등급 / {FormatPolicy.FormatGold(agenda.cost)}";
+            _personalOpinionDetailLabel.text = "개인 작업 의견";
             _personalOpinionContentLabel.text = agenda.desc;
         }
 
