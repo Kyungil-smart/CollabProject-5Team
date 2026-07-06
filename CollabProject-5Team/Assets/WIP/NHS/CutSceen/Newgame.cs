@@ -39,15 +39,14 @@ public class Newgame : MonoBehaviour
     [SerializeField] private CutScenePanelUI    _cutSceneUI;
     [SerializeField] private List<CutSceneData> _cutSceneList;
 
-    [Header("사운드 타이핑 컴포넌트")]
-    [SerializeField] private TextSoundTweener _textTweener; // 분리한 독립 컴포넌트
-
     private string _companyName = "미정";
     private string _playerName  = "주인공";
-    private int _currentIdx = 0;
+    private int    _currentIdx  = 0;
 
-    private float  _typingSpeed         = 0.5f;
-    private string _currentFullDialogue = "";
+    private bool      _isTyping            = false;
+    private float     _typingSpeed         = 0.025f;
+    private string    _currentFullDialogue = "";
+    private Coroutine _typingCoroutine;
 
     private void Start()
     {
@@ -74,8 +73,6 @@ public class Newgame : MonoBehaviour
 
         if (currentData != null)
         {
-            _textTweener.KillActiveTween();
-
             _currentFullDialogue = currentData.dialogue
                 .Replace("[Company]", _companyName)
                 .Replace("[Player]", _playerName);
@@ -87,31 +84,49 @@ public class Newgame : MonoBehaviour
             _cutSceneUI.characterName.text = name;
             _cutSceneUI.image.sprite = currentData.cutSceenImage;
 
+            _isTyping = true;
+            _typingCoroutine = StartCoroutine(TypeText(_currentFullDialogue));
+
             if (currentData.id == 1000040)
             {
+                StopCoroutine(_typingCoroutine);
+                _isTyping = false;
                 _cutSceneUI.dialogue.text = "";
                 OpenPlayerNamePanel();
-                return;
             }
-
-            _textTweener.DoType(_cutSceneUI.dialogue, _currentFullDialogue, _typingSpeed);
         }
+    }
+
+    private System.Collections.IEnumerator TypeText(string text)
+    {
+        _cutSceneUI.dialogue.text = "";
+
+        foreach (char letter in text.ToCharArray())
+        {
+            _cutSceneUI.dialogue.text += letter;
+            yield return new WaitForSeconds(_typingSpeed);
+        }
+        _isTyping = false;
     }
 
     private void OnNextDialogueClicked()
     {
-        if (_textTweener.CompleteActiveTween())
+        if (_isTyping)
         {
-            return;
+            StopCoroutine(_typingCoroutine);
+            _cutSceneUI.dialogue.text = _currentFullDialogue;
+            _isTyping = false;
         }
-
-        _currentIdx++;
-        ShowCutScene();
+        else
+        {
+            _currentIdx++;
+            ShowCutScene();
+        }
     }
 
     private void OpenPlayerNamePanel()
     {
-        _cutSceneUI.panel.SetActive(false);
+          _cutSceneUI.panel.SetActive(false);
         _setPlayerNamePanel.SetActive(true);
     }
 
@@ -128,7 +143,7 @@ public class Newgame : MonoBehaviour
         _companyName = input;
         Company.Instance.CompanyName = _companyName;
 
-        _setCompanyPanel.SetActive(false);
+         _setCompanyPanel.SetActive(false);
         _cutSceneUI.panel.SetActive(true);
         ShowCutScene();
     }
@@ -149,16 +164,15 @@ public class Newgame : MonoBehaviour
         _isFinishedSetPlayerName = true;
 
         _setPlayerNamePanel.SetActive(false);
-        _cutSceneUI.panel.SetActive(true);
+          _cutSceneUI.panel.SetActive(true);
 
         _currentIdx++;
+
         ShowCutScene();
     }
 
     private void OnCanSkip()
     {
-        _textTweener.KillActiveTween();
-
         if (!_isFinishedSetPlayerName)
         {
             int targetIdx = _cutSceneList.FindIndex(data => data != null && data.id == 1000040);
@@ -230,6 +244,5 @@ public class Newgame : MonoBehaviour
     private void EndCutSceen()
     {
         _cutSceneUI.panel.SetActive(false);
-        Debug.Log($"인트로 완료! 회사명: {_companyName}, 플레이어명: {_playerName}");
     }
 }
