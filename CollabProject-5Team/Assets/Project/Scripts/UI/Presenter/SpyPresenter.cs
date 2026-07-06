@@ -16,7 +16,7 @@ namespace GameDevTycoon.UI.Ingame
         [SerializeField] private List<SpyView> _spyViews;
         [SerializeField] private Button _confirmButton;
 
-        [Header("확인 버튼 스프라이트 (규칙 5번)")]
+        [Header("확인 버튼 스프라이트")]
         [SerializeField] private Sprite _confirmDefaultGraySprite;
         [SerializeField] private Sprite _confirmActiveRedSprite;
 
@@ -36,7 +36,7 @@ namespace GameDevTycoon.UI.Ingame
             foreach (SpyView spyView in _spyViews)
             {
                 spyView.OnClickAsObservable
-                    .Where(_ => !_isProcessing) // 연출 처리 중에는 카드 선택 입력을 원천 차단합니다.
+                    .Where(_ => !_isProcessing)
                     .Subscribe(employee => OnCardClicked(spyView))
                     .AddTo(_disposables);
             }
@@ -92,7 +92,6 @@ namespace GameDevTycoon.UI.Ingame
             if (_selectedView == null || _isProcessing) return;
 
             AudioManager.Instance?.PlaySFXPositive();
-            // 팝업이 뜨는 순간 True로 만들어 Canvas_Spy 내부의 모든 카드 클릭 및 확인 버튼 상호작용을 막습니다.
             _isProcessing = true;
 
             if (_alertView == null)
@@ -103,17 +102,14 @@ namespace GameDevTycoon.UI.Ingame
                 return;
             }
 
-            // 하이어라키 기반으로 제작한 스파이 확정 전용 팝업 호출
             _alertView.ShowSpyConfirmPopup(
                 onConfirm: () =>
                 {
-                    // 확인을 누르면 그제서야 도장을 찍고 최종 판정을 보냅니다.
                     _selectedView.SetStamped(true);
                     ExecuteVerification();
                 },
                 onCancel: () =>
                 {
-                    // 취소를 누르면 플래그를 풀어 상호작용을 다시 허용합니다. (Canvas_Spy 복귀)
                     _isProcessing = false;
                 }
             );
@@ -149,19 +145,15 @@ namespace GameDevTycoon.UI.Ingame
             {
                 Debug.Log($"[SpySystem] 정답 성공 판정: {target.so.Name} 검거 완료.");
 
-                // 직원의 스파이 플래그 해제 및 퀘스트 성공 플래그 세팅
                 target.isSpy = false;
                 StoryQuestManager.Instance.isCorrectSpySelected = true;
 
-                // "잡았다 요놈" 연출 프레임이 뜨기 전에 스파이 선택용 카드 프레임을 먼저 깔끔하게 닫아줍니다.
                 ClosePopup();
 
-                // "잡았다 요놈" 연출 팝업을 띄우고, 유저가 클릭해서 닫으면(onClose) 후속 퀘스트 플로우로 제어권을 넘깁니다.
                 _alertView.ShowSpySuccessResult(onClose: () =>
                 {
                     _isProcessing = false;
 
-                    // 상위 플로우(StoryQuestManager)에서 넘겨받은 완료 콜백을 실행하여 즉시 후속 대사/결과로 진입시킵니다.
                     _onSpySelectCompleted?.Invoke();
                     _onSpySelectCompleted = null;
                 });
@@ -172,7 +164,6 @@ namespace GameDevTycoon.UI.Ingame
 
                 StoryQuestManager.Instance.isCorrectSpySelected = false;
 
-                // 오답일 경우 연출 없이 즉시 프레임을 닫고 후속 대사/결과 플로우로 진입시킵니다.
                 ClosePopup();
                 _isProcessing = false;
 

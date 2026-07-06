@@ -213,7 +213,6 @@ namespace GameDevTycoon.UI
             ClearSpyResultSubscriptions();
             _spyResultSuccessGo.SetActive(true);
 
-            // DOTween + UniTask 조합의 하이브리드 검거 연출 구동
             AnimateSpySuccessComboAsync().Forget();
 
             if (_spyResultSuccessCloseButton != null)
@@ -221,7 +220,6 @@ namespace GameDevTycoon.UI
                 _spyResultSuccessSubscription = _spyResultSuccessCloseButton.OnClickAsObservable()
                     .Subscribe(_ =>
                     {
-                        // 닫힐 때 트윈 연산 꼬임 방지를 위한 Kill 처리
                         _spyResultSuccessGo.transform.DOKill();
 
                         var canvasGroup = _spyResultSuccessGo.GetComponent<CanvasGroup>();
@@ -234,9 +232,6 @@ namespace GameDevTycoon.UI
             }
         }
 
-        /// <summary>
-        /// PHASE 1(진동) 후 PHASE 2(쿵! 타격)로 이어지는 연출 파이프라인
-        /// </summary>
         private async UniTaskVoid AnimateSpySuccessComboAsync()
         {
             Transform popupTransform = _spyResultSuccessGo.transform;
@@ -250,16 +245,13 @@ namespace GameDevTycoon.UI
                 canvasGroup = _spyResultSuccessGo.AddComponent<CanvasGroup>();
             }
             canvasGroup.DOKill();
-            canvasGroup.alpha = 0f; // 진동하는 동안은 고양이 숨기기
+            canvasGroup.alpha = 0f;
 
-            // PHASE 1: 전조 현상 - 화면 파르르 진동 (0.3초)
             var shakeTween = popupTransform.DOShakePosition(duration: 0.3f, strength: 15f, vibrato: 20, randomness: 90, fadeOut: true);
             await shakeTween.AsyncWaitForCompletion();
 
-            // 진동으로 인해 미세하게 틀어진 로컬 좌표 완벽 정돈
             popupTransform.localPosition = Vector3.zero;
 
-            // PHASE 2: 본 연출 - "쿵!" 찍히며 페이드인 등장 (0.2초)
             popupTransform.DOScale(Vector3.one, 0.2f).SetEase(Ease.OutQuad);
 
             var fadeTween = canvasGroup.DOFade(1f, 0.2f).SetEase(Ease.Linear);
