@@ -58,6 +58,22 @@ namespace GameDevTycoon.UI.Ingame
             await UniTask.Yield();
             BindButtons();
             BindQuestBanner();
+
+            // 튜토리얼 중 Night로 시작하면 OnDay 이벤트가 오지 않으므로 미리 생성·등록
+            if (TutorialManager.Instance != null && _workStartIconPrefab != null && _workStartIcon == null)
+            {
+                _desk = FindObjectOfType<DeskInteract>(true);
+                if (_desk != null)
+                {
+                    _workStartIcon = Instantiate(_workStartIconPrefab, (RectTransform)_view.transform)
+                        .GetComponent<WorkStartIcon>();
+                    _workStartIcon.Button.onClick.AddListener(OnWorkStartClicked);
+                    _workStartIcon.gameObject.SetActive(false);
+                    TutorialManager.Instance.RegisterObject("WorkStartBubble", _workStartIcon.Button.gameObject);
+                    _workStartIcon.SetTarget(_desk.transform, _workStartIconOffset);
+                    _workStartIcon.gameObject.SetActive(true);
+                }
+            }
         }
 
         private void OnDestroy()
@@ -249,7 +265,7 @@ namespace GameDevTycoon.UI.Ingame
             _view.SwitchToDay();
             AudioManager.Instance?.PlayBGM(_dayBGM);
 
-            _desk = FindObjectOfType<DeskInteract>();
+            _desk = FindObjectOfType<DeskInteract>(true);
 
             if (_workStartIconPrefab != null && _desk != null)
             {
@@ -259,6 +275,7 @@ namespace GameDevTycoon.UI.Ingame
                         .GetComponent<WorkStartIcon>();
                     _workStartIcon.Button.onClick.AddListener(OnWorkStartClicked);
                     _workStartIcon.gameObject.SetActive(false);
+                    TutorialManager.Instance?.RegisterObject("WorkStartBubble", _workStartIcon.Button.gameObject);
                 }
 
                 _workStartIcon.SetTarget(_desk.transform, _workStartIconOffset);
@@ -271,6 +288,7 @@ namespace GameDevTycoon.UI.Ingame
         private void OnQuestIconClicked()
         {
             AudioManager.Instance?.PlaySFXClick();
+            TutorialManager.Instance?.CompletePunchHoleStep();
             if (_questPresenter.IsDetailVisible)
                 _questPresenter.HideDetail();
             else
