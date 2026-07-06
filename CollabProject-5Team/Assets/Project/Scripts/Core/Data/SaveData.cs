@@ -195,4 +195,7 @@ public sealed class ManagementStatusData
         clone.Recalculate();
         return clone;
     }
+    
+    // 업적 세이브 데이터
+    
 }
