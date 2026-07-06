@@ -147,6 +147,14 @@ namespace GameDevTycoon.UI.Ingame
         /// </summary>
         public void StartReportReviewFlow()
         {
+            if (Company.Instance.activeProjectCount.Value > 0)
+            {
+                foreach (var employee in Company.Instance.curProject.GetAllEmployees())
+                {
+                    employee.SaveCurrentData();
+                }
+            }
+
             _roleIndex = 0;
             ShowReviewForCurrentRole();
 

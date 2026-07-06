@@ -83,14 +83,6 @@ namespace GameDevTycoon.UI.Ingame
 
         private void SetComment(Employee employee, string commentText)
         {
-            if (!employee.hasTalkedThisWeek)
-            {
-                _commentLabel.text = "코멘트 없음";
-                _commentLabel.color = Color.red;
-                return;
-            }
-
-            // [TODO: 대화 시스템 연결 후 실제 코멘트 데이터 바인딩]
             _commentLabel.text = commentText ?? GetFallbackComment(employee.MutableData);
             _commentLabel.color = Color.white;
         }
