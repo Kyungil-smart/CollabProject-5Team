@@ -223,6 +223,7 @@ namespace Dialogue
                 _currentView.SetChoiceMode(false);
                 _currentView.OnTypingComplete = null;
                 _currentView.OnNextAction     = null;
+                _currentView.gameObject.SetActive(false);
             }
 
             if (payload.isUser)
