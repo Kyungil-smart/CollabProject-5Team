@@ -81,7 +81,7 @@ public class StoryQuestManager : MonoBehaviour
 
     StoryQuestPoolSO SelectStartableQuest()
     {
-        if (curSpyQuestID != 0)
+        if (curSpyQuestID > 0)
             return SelectCurrentSpyQuest(); // 스파이 퀘스트 진행중이면 여기
 
         StoryQuestPoolSO normalQuest = SelectNormalStoryQuest(); // 일반 퀘스트 조건체크
@@ -215,8 +215,8 @@ public class StoryQuestManager : MonoBehaviour
         {
             ["NPC1"] = _currentSpeaker,
             ["NPC2"] = _currentSpeaker2,
+            ["UCSPY"] = selectedSpyEmployee,
             ["SPY"] = GetSpyEmployee(),
-            ["UCSPY"] = selectedSpyEmployee
         };
 
         StoryDialoguePlayer.Instance.StartStoryDialogue(
@@ -283,6 +283,12 @@ public class StoryQuestManager : MonoBehaviour
 
         if (isSpyQuest)
             curSpyQuestID = GetNextSpyQuestId(completedQuestId);
+
+        if (completedQuestId == EndingQuestId)
+        {
+            // TODO: 마지막 스토리 퀘스트 완료 후 일 종료가 아니라 엔딩 씬으로 전환
+            return;
+        }
 
         DateTimeManager.Instance.CompleteDayWork();
     }
