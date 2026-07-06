@@ -70,6 +70,7 @@ namespace Dialogue
             DialoguePoolEntrySO poolEntry = DialogueDataManager.Instance.GetPoolEntry(employeeId, state);
             if (poolEntry == null)
             {
+                DateTimeManager.Instance.CompleteSpecialDialogue(employeeId.ToString());
                 DialogueEvents.NotifyDialogueEnded(employeeId);
                 Debug.Log($"[DM] 풀항목없음으로 종료 — id={employeeId}, state={state}");
                 return;
@@ -125,22 +126,15 @@ namespace Dialogue
             CameraManager.Instance.IsUIOpen.Value = true;
             CameraManager.Instance.FocusOnTarget(emp.transform.position);
 
-            Sprite portrait = emp?.so.iconNormal;
-
-            _currentView = _employeeView;
-            _employeeView.OnTypingComplete = null;
-            _employeeView.OnNextAction     = () =>
+            _currentView = _playerView;
+            _playerView.OnTypingComplete = null;
+            _playerView.OnNextAction     = () =>
             {
-                _isDialogueRunning = false; 
+                _isDialogueRunning = false;
                 HideAll();
-            }; 
+            };
 
-            _employeeView.Bind(new EmployeeDialogueViewData
-            {
-                desc     = "유저",
-                text     = message,
-                portrait = portrait,
-            });
+            _playerView.Bind("", message);
         }
         
         static EmployeeDialogueState GetDialogueState(int fatigue, int desire)
