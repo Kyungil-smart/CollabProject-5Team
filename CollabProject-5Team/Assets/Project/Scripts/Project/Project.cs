@@ -139,11 +139,6 @@ public class Project : MonoBehaviour
     public void ProgressNight()
     {
         // 주간 정산
-        foreach (var e in GetAllEmployees())
-        {
-            e.SaveCurrentData();
-        }
-
         // 마지막 목표날이 아니라면 보고서 산출
         if (day < DurationDays) GenerateReportDrafts();
         else Finish();

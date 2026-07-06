@@ -413,6 +413,9 @@ public class Company : MonoBehaviour
             // 누적매출 증가
             totalRevenue += p.weeklyGoldAccum;
 
+            if (AchievementSystem.Instance != null)
+                AchievementSystem.Instance.NotifyEvent(AchievementNotifyType.OnTotalGoldChanged, totalRevenue);
+
             p.weeklySales = 0;
             p.weeklyGoldAccum = 0;
             p.isUpdatePending = false;

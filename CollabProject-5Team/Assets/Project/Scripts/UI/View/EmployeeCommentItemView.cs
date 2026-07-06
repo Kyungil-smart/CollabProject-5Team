@@ -53,44 +53,35 @@ namespace GameDevTycoon.UI.Ingame
             _tagLabel.text = RoleToString(so.role);
             _tagBG.color = RoleToColor(so.role);
 
-            SetLoyaltyChange(mutable.loyalty - mutable.preLoyalty);
+            SetLoyaltyChange(mutable.loyalty, mutable.loyalty - mutable.preLoyalty);
             SetComment(employee, commentText);
         }
 
-        private void SetLoyaltyChange(int delta)
+        private void SetLoyaltyChange(int currentLoyalty, int delta)
         {
             _loyaltyChangeTitleLabel.text = "충성도";
+            _loyaltyChangeValue.text = currentLoyalty.ToString();
+            _loyaltyChangeValue.color = Color.black;
 
             if (delta > 0)
             {
-                _loyaltyChangeValue.text = $"+{delta}";
-                _loyaltyChangeValue.color = ColorUp;
+                _loyaltyChangeWeightLabel.text = $"+{delta}";
                 _loyaltyChangeWeightLabel.color = ColorUp;
             }
             else if (delta < 0)
             {
-                _loyaltyChangeValue.text = delta.ToString();
-                _loyaltyChangeValue.color = ColorDown;
+                _loyaltyChangeWeightLabel.text = delta.ToString();
                 _loyaltyChangeWeightLabel.color = ColorDown;
             }
             else
             {
-                _loyaltyChangeValue.text = "-";
-                _loyaltyChangeValue.color = ColorNone;
+                _loyaltyChangeWeightLabel.text = "-";
                 _loyaltyChangeWeightLabel.color = ColorNone;
             }
         }
 
         private void SetComment(Employee employee, string commentText)
         {
-            if (!employee.hasTalkedThisWeek)
-            {
-                _commentLabel.text = "코멘트 없음";
-                _commentLabel.color = Color.red;
-                return;
-            }
-
-            // [TODO: 대화 시스템 연결 후 실제 코멘트 데이터 바인딩]
             _commentLabel.text = commentText ?? GetFallbackComment(employee.MutableData);
             _commentLabel.color = Color.white;
         }
