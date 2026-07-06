@@ -86,4 +86,12 @@ public class AchievementSystem : MonoBehaviour
             }
         }
     }
+
+    /////////////////////////// 저장 ///////////////////////////
+    
+    public void ExportAchievementData(SaveData data)
+    {
+        data.activeProjectsData
+    }
+
 }
