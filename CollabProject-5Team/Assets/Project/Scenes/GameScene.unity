@@ -422,6 +422,14 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 500000000000000002, guid: 77dc1a796939040458c44af202ebd16a, type: 3}
+      propertyPath: _playerView
+      value: 
+      objectReference: {fileID: 1978770123}
+    - target: {fileID: 500000000000000002, guid: 77dc1a796939040458c44af202ebd16a, type: 3}
+      propertyPath: _employeeView
+      value: 
+      objectReference: {fileID: 754079601}
     - target: {fileID: 4434448235489518229, guid: 77dc1a796939040458c44af202ebd16a, type: 3}
       propertyPath: m_Name
       value: Dialogue Manager
@@ -1678,6 +1686,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Canvas_Spy
       objectReference: {fileID: 0}
+    - target: {fileID: 2504592254671768447, guid: cfc2439f913328d488828feb9ea5729d, type: 3}
+      propertyPath: m_SortingOrder
+      value: 29
+      objectReference: {fileID: 0}
     - target: {fileID: 3348724387560160607, guid: cfc2439f913328d488828feb9ea5729d, type: 3}
       propertyPath: m_IsActive
       value: 0
@@ -2802,6 +2814,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Canvas_Achievement
       objectReference: {fileID: 0}
+    - target: {fileID: 4932324247898112067, guid: 236d20ab04230574985fab31ba416222, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects:
@@ -3600,7 +3616,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 500000000000000001, guid: cca293fe8fc5c1540b661827cd35c40c, type: 3}
       propertyPath: curSpyQuestID
-      value: 1042
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1498817690296088694, guid: cca293fe8fc5c1540b661827cd35c40c, type: 3}
       propertyPath: m_LocalPosition.x
