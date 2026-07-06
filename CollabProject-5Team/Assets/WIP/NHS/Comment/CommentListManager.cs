@@ -6,7 +6,7 @@ public class CommentListManager : MonoBehaviour
 {
     [Header("UI 설정")]
     [SerializeField] private GameObject _uiPrefab;
-    [SerializeField] private Transform _contentTransform;
+    [SerializeField] private Transform  _contentTransform;
 
     [SerializeField] private List<EmployeeCommentData> _commentSheetDatas = new List<EmployeeCommentData>();
 
