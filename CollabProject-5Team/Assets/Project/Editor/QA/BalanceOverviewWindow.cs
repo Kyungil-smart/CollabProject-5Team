@@ -28,8 +28,13 @@ namespace GameDevTycoon.EditorQA
         int _smallProjectCount = 3;
         int _mediumProjectCount = 2;
         int _largeProjectCount = 2;
+        int _dayBaseSeconds = 75;
+        int _dialoguesPerDay = 1;
+        int _dialogueSeconds = 30;
+        int _nightManagementSeconds = 180;
         bool _showTimeline = true;
         bool _showAdvanced;
+        bool _showPlaytimeAdvanced;
 
         [MenuItem("Tools/Balance/0. Balance Overview", false, 200)]
         public static void Open()
@@ -83,6 +88,7 @@ namespace GameDevTycoon.EditorQA
 
             OverviewSummary summary = BuildSummary();
             DrawSummary(summary);
+            DrawPlaytime(summary);
             DrawChecks(summary);
             DrawGraphs();
 
@@ -114,6 +120,16 @@ namespace GameDevTycoon.EditorQA
                     _smallProjectCount = EditorGUILayout.IntField("소형", _smallProjectCount);
                     _mediumProjectCount = EditorGUILayout.IntField("중형", _mediumProjectCount);
                     _largeProjectCount = EditorGUILayout.IntField("대형", _largeProjectCount);
+                }
+
+                _showPlaytimeAdvanced = EditorGUILayout.Foldout(_showPlaytimeAdvanced, "예상 플레이타임", true);
+                if (_showPlaytimeAdvanced)
+                {
+                    EditorGUILayout.LabelField("실제 유저 행동 시간을 가정하는 값입니다. 수치 밸런스에는 영향을 주지 않고, 도달 예상 시간 계산에만 사용합니다.", EditorStyles.wordWrappedMiniLabel);
+                    _dayBaseSeconds = EditorGUILayout.IntSlider("낮 1일 기본 시간(초)", _dayBaseSeconds, 10, 300);
+                    _dialoguesPerDay = EditorGUILayout.IntSlider("하루 평균 대화 횟수", _dialoguesPerDay, 0, 5);
+                    _dialogueSeconds = EditorGUILayout.IntSlider("대화 1회 평균 시간(초)", _dialogueSeconds, 5, 180);
+                    _nightManagementSeconds = EditorGUILayout.IntSlider("금요일 밤 경영 시간(초)", _nightManagementSeconds, 30, 600);
                 }
 
                 _showAdvanced = EditorGUILayout.Foldout(_showAdvanced, "상세 비용", true);
@@ -164,6 +180,33 @@ namespace GameDevTycoon.EditorQA
                     normal = { textColor = risk ? new Color(1f, 0.45f, 0.35f) : EditorStyles.boldLabel.normal.textColor }
                 };
                 EditorGUILayout.LabelField(value, style);
+            }
+        }
+
+        void DrawPlaytime(OverviewSummary summary)
+        {
+            PlaytimeSummary playtime = BuildPlaytimeSummary(summary);
+
+            EditorGUILayout.Space(8f);
+            EditorGUILayout.LabelField("예상 플레이타임", EditorStyles.boldLabel);
+            EditorGUILayout.HelpBox(
+                "아래 값은 실제 게임 시간이 아니라, 위에서 설정한 낮/대화/밤 평균 소요 시간을 시뮬레이션 주차에 곱한 예상 체감 플레이타임입니다.",
+                MessageType.Info);
+
+            using (new EditorGUILayout.HorizontalScope())
+            {
+                DrawMetricCard("1주 루프", FormatDuration(playtime.SecondsPerWeek), false);
+                DrawMetricCard("첫 출시", FormatMilestone(playtime.FirstReleaseSeconds), playtime.FirstReleaseSeconds < 0);
+                DrawMetricCard("중형 진입", FormatMilestone(playtime.MediumStartSeconds), playtime.MediumStartSeconds < 0);
+                DrawMetricCard("대형 진입", FormatMilestone(playtime.LargeStartSeconds), playtime.LargeStartSeconds < 0);
+            }
+
+            using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
+            {
+                EditorGUILayout.LabelField("플레이 시간별 예상 도달점", EditorStyles.boldLabel);
+                EditorGUILayout.LabelField($"30분: {DescribeAtPlaytime(30 * 60, playtime.SecondsPerWeek)}", EditorStyles.wordWrappedMiniLabel);
+                EditorGUILayout.LabelField($"1시간: {DescribeAtPlaytime(60 * 60, playtime.SecondsPerWeek)}", EditorStyles.wordWrappedMiniLabel);
+                EditorGUILayout.LabelField($"2시간: {DescribeAtPlaytime(120 * 60, playtime.SecondsPerWeek)}", EditorStyles.wordWrappedMiniLabel);
             }
         }
 
@@ -444,6 +487,7 @@ namespace GameDevTycoon.EditorQA
                     Progress = projectProgress,
                     ReleasedProjects = liveProjects.Count,
                     ActiveProjectSize = projectWeeksTotal > 0 ? activeProjectSize : ProjectSize.Small,
+                    ReleasedThisWeek = note.Contains("출시"),
                     Note = string.IsNullOrEmpty(note) ? "-" : note
                 });
             }
@@ -554,6 +598,69 @@ namespace GameDevTycoon.EditorQA
             };
         }
 
+        PlaytimeSummary BuildPlaytimeSummary(OverviewSummary summary)
+        {
+            int secondsPerWeek = CalcSecondsPerWeek();
+            return new PlaytimeSummary
+            {
+                SecondsPerWeek = secondsPerWeek,
+                FirstReleaseSeconds = WeekToSeconds(FindFirstWeek(w => w.ReleasedThisWeek), secondsPerWeek),
+                MediumStartSeconds = WeekToSeconds(FindFirstWeek(w => w.ActiveProjectSize == ProjectSize.Medium), secondsPerWeek),
+                LargeStartSeconds = WeekToSeconds(FindFirstWeek(w => w.ActiveProjectSize == ProjectSize.Large), secondsPerWeek),
+                DeficitSeconds = WeekToSeconds(summary.FirstDeficitWeek, secondsPerWeek)
+            };
+        }
+
+        int CalcSecondsPerWeek()
+        {
+            int daySeconds = Mathf.Max(1, _dayBaseSeconds + _dialoguesPerDay * _dialogueSeconds);
+            return daySeconds * 5 + Mathf.Max(1, _nightManagementSeconds);
+        }
+
+        int FindFirstWeek(Func<OverviewWeekSnapshot, bool> predicate)
+        {
+            foreach (OverviewWeekSnapshot week in _weeks)
+            {
+                if (predicate(week))
+                    return week.Week;
+            }
+
+            return -1;
+        }
+
+        static int WeekToSeconds(int week, int secondsPerWeek)
+        {
+            return week <= 0 ? -1 : week * secondsPerWeek;
+        }
+
+        string DescribeAtPlaytime(int seconds, int secondsPerWeek)
+        {
+            if (_weeks.Count == 0 || secondsPerWeek <= 0)
+                return "시뮬레이션 결과 없음";
+
+            int weekIndex = Mathf.Clamp(Mathf.CeilToInt(seconds / (float)secondsPerWeek) - 1, 0, _weeks.Count - 1);
+            OverviewWeekSnapshot week = _weeks[weekIndex];
+            string projectState = week.ReleasedProjects > 0 ? $"서비스 프로젝트 {week.ReleasedProjects}개" : "출시 전";
+            return $"{week.Week}주차 / {projectState} / 자금 {FormatGold(week.EndGold)} / 점수 {week.Quality:0}/{week.Stability:0}/{week.Charm:0}";
+        }
+
+        static string FormatMilestone(int seconds)
+        {
+            return seconds < 0 ? "미도달" : FormatDuration(seconds);
+        }
+
+        static string FormatDuration(int seconds)
+        {
+            if (seconds < 0)
+                return "미도달";
+
+            TimeSpan span = TimeSpan.FromSeconds(seconds);
+            if (span.TotalHours >= 1d)
+                return $"{(int)span.TotalHours}시간 {span.Minutes}분";
+
+            return $"{span.Minutes}분 {span.Seconds}초";
+        }
+
         List<ProjectSize> BuildProjectRoute()
         {
             var route = new List<ProjectSize>();
@@ -644,7 +751,17 @@ namespace GameDevTycoon.EditorQA
             public int Progress;
             public int ReleasedProjects;
             public ProjectSize ActiveProjectSize;
+            public bool ReleasedThisWeek;
             public string Note;
+        }
+
+        struct PlaytimeSummary
+        {
+            public int SecondsPerWeek;
+            public int FirstReleaseSeconds;
+            public int MediumStartSeconds;
+            public int LargeStartSeconds;
+            public int DeficitSeconds;
         }
 
         struct OverviewSummary
