@@ -1,9 +1,11 @@
 public enum AchievementNotifyType
 {
-         OnGoldChanged,     
-    OnTotalGoldChanged,
-        OnLevelChanged,    
-     OnPlayTimeChanged  
+            OnGoldChanged, // 완     
+       OnTotalGoldChanged, // 완
+    OnHireEmployeeChanged, // 완
+    OnFireEmployeeChanged, // 완
+           OnLevelChanged, // 완   
+        OnPlayTimeChanged  // 완
 }
 
 [System.Serializable]
