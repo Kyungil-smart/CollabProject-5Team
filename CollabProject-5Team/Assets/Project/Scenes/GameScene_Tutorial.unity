@@ -48014,7 +48014,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!222 &2776826700486203752
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -81682,6 +81682,7 @@ GameObject:
   - component: {fileID: 1917985963419322185}
   - component: {fileID: 4752483509434784830}
   - component: {fileID: 387333467338461704}
+  - component: {fileID: 5885432709418611592}
   m_Layer: 5
   m_Name: QuestIconButton
   m_TagString: Untagged
@@ -83781,6 +83782,19 @@ RectTransform:
   m_AnchoredPosition: {x: -75, y: -350}
   m_SizeDelta: {x: 150, y: 150}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &5885432709418611592
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5729864404373264329}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: af080b7816cde7f4d9bdc649f2e26d05, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _tutorialObjectId: TO_05
 --- !u!1 &5886945691505204976
 GameObject:
   m_ObjectHideFlags: 0
@@ -85564,7 +85578,7 @@ Canvas:
   m_AdditionalShaderChannelsFlag: 25
   m_UpdateRectTransformForStandalone: 0
   m_SortingLayerID: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 1000
   m_TargetDisplay: 0
 --- !u!222 &5988424940511258523
 CanvasRenderer:
@@ -117824,7 +117838,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &8893842420275089554
 MonoBehaviour:
   m_ObjectHideFlags: 0
