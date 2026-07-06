@@ -457,10 +457,9 @@ namespace GameDevTycoon.UI.Ingame
 
         private void OnUpdateConfirmClicked()
         {
-            if (_selectedUpdatePart == null || _currentDetailProject == null) return;
+            if (_selectedUpdatePart == null || _currentDetailProject == null || _currentServiceRecord == null) return;
 
-            // [TODO: 업데이트 비용 데이터 연동 후 실제 cost 계산]
-            int cost = 0;
+            int cost = GetUpdateCost(_currentServiceRecord.scale);
 
             if (Company.Instance.gold.Value < cost)
             {
@@ -475,7 +474,12 @@ namespace GameDevTycoon.UI.Ingame
                 onConfirm: () =>
                 {
                     AudioManager.Instance?.PlaySFXPositive();
-                    // [TODO: 비용 차감 및 업데이트 진행 처리]
+                    Company.Instance.gold.Value -= cost;
+                    Company.Instance.curManagementStatus.otherExpense += cost;
+                    Company.Instance.cumulativeManagementStatus.otherExpense += cost;
+                    Company.Instance.curManagementStatus.Recalculate();
+                    Company.Instance.cumulativeManagementStatus.Recalculate();
+                    _currentServiceRecord.RetentionFactor = Mathf.Clamp01(_currentServiceRecord.RetentionFactor + PerkPolicy.RETENTION_UPDATE);
                     _currentServiceRecord.isUpdatePending = true;
 
                     _selectedUpdatePart = null;
@@ -709,6 +713,13 @@ namespace GameDevTycoon.UI.Ingame
             ProjectSize.Medium => 50000,
             ProjectSize.Large => 200000,
             _ => 15000,
+        };
+
+        private static int GetUpdateCost(ProjectSize scale) => scale switch
+        {
+            ProjectSize.Medium => 35000,
+            ProjectSize.Large => 100000,
+            _ => 10000,
         };
 
         private static int GetMaxEmployeePerPart(ProjectSize scale) => scale switch

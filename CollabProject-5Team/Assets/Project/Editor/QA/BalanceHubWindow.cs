@@ -22,6 +22,12 @@ namespace GameDevTycoon.EditorQA
                 MessageType.Info);
 
             DrawSection(
+                "0. 전체 밸런스 흐름",
+                "프로젝트, 매출, 재화, 직원 상태가 장기적으로 어떻게 이어지는지 한 화면에서 확인합니다.",
+                "전체 밸런스 흐름 열기",
+                BalanceOverviewWindow.Open);
+
+            DrawSection(
                 "1. 프로젝트 밸런스",
                 "프로젝트 규모, 직군별 인원 배치, 일일 퀘스트 보너스가 완성도/안정성/매력도와 매출에 미치는 영향을 확인합니다.",
                 "프로젝트 밸런스 열기",

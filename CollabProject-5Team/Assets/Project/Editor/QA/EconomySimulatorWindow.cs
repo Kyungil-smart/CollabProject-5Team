@@ -16,7 +16,7 @@ namespace GameDevTycoon.EditorQA
         private readonly List<EconomyWeekSnapshot> _weeks = new();
 
         private Vector2 _scrollPosition;
-        private int _initialGold = 10000;
+        private int _initialGold = 100000;
         private int _simulationWeeks = 52;
         private int _employeeCount = 4;
         private int _manualWeeklySalary;
@@ -307,16 +307,16 @@ namespace GameDevTycoon.EditorQA
 
                 using (new EditorGUILayout.HorizontalScope())
                 {
-                    DrawScenarioButton("소형 반복", 10000, 12, 4, 1, 0, 0, 1, 0, 0, 0, TrainingPlan.None, 0, 500, 0);
-                    DrawScenarioButton("소형→중형", 18000, 16, 6, 1, 1, 0, 1, 1, 0, 1, TrainingPlan.Basic, 1, 1200, 3000);
-                    DrawScenarioButton("중형 중심", 30000, 20, 8, 0, 2, 0, 1, 2, 0, 1, TrainingPlan.Professional, 2, 1800, 8000);
+                    DrawScenarioButton("소형 반복", 100000, 12, 4, 1, 0, 0, 1, 0, 0, 0, TrainingPlan.None, 0, 500, 0);
+                    DrawScenarioButton("소형→중형", 100000, 16, 6, 1, 1, 0, 1, 1, 0, 1, TrainingPlan.Basic, 1, 1200, 3000);
+                    DrawScenarioButton("중형 중심", 100000, 20, 8, 0, 2, 0, 1, 2, 0, 1, TrainingPlan.Professional, 2, 1800, 8000);
                 }
 
                 using (new EditorGUILayout.HorizontalScope())
                 {
-                    DrawScenarioButton("대형 도전", 55000, 24, 12, 0, 1, 1, 1, 2, 1, 1, TrainingPlan.Intensive, 2, 4000, 15000);
-                    DrawScenarioButton("채용 공격", 25000, 16, 10, 1, 1, 0, 1, 1, 0, 3, TrainingPlan.Basic, 1, 1500, 5000);
-                    DrawScenarioButton("교육 성장", 22000, 16, 6, 1, 0, 0, 1, 1, 0, 0, TrainingPlan.Intensive, 3, 1500, 3000);
+                    DrawScenarioButton("대형 도전", 100000, 24, 12, 0, 1, 1, 1, 2, 1, 1, TrainingPlan.Intensive, 2, 4000, 15000);
+                    DrawScenarioButton("채용 공격", 100000, 16, 10, 1, 1, 0, 1, 1, 0, 3, TrainingPlan.Basic, 1, 1500, 5000);
+                    DrawScenarioButton("교육 성장", 100000, 16, 6, 1, 0, 0, 1, 1, 0, 0, TrainingPlan.Intensive, 3, 1500, 3000);
                 }
             }
         }
@@ -419,7 +419,7 @@ namespace GameDevTycoon.EditorQA
 
         private void ApplyLevelBalanceV02Defaults()
         {
-            _initialGold = 10000;
+            _initialGold = 100000;
             _simulationWeeks = 52;
             _useLevelBalanceOverrides = true;
             _useSequentialRoute = true;
@@ -958,12 +958,12 @@ namespace GameDevTycoon.EditorQA
                 EditorGUILayout.LabelField("주요 운영 패턴을 같은 기준으로 돌려서 어떤 전략이 과하게 쉽거나 막히는지 비교합니다.", EditorStyles.wordWrappedMiniLabel);
                 EditorGUILayout.LabelField("케이스 / 마지막 자금 / 첫 적자 / 수입지출 / 순이익 / 판정", EditorStyles.miniLabel);
 
-                DrawScenarioMatrixRow(new EconomyScenario("소형 반복", 10000, 12, 4, 1, 0, 0, 1, 0, 0, 0, TrainingPlan.None, 0, 500, 0));
-                DrawScenarioMatrixRow(new EconomyScenario("소형→중형", 18000, 16, 6, 1, 1, 0, 1, 1, 0, 1, TrainingPlan.Basic, 1, 1200, 3000));
-                DrawScenarioMatrixRow(new EconomyScenario("중형 중심", 30000, 20, 8, 0, 2, 0, 1, 2, 0, 1, TrainingPlan.Professional, 2, 1800, 8000));
-                DrawScenarioMatrixRow(new EconomyScenario("대형 도전", 55000, 24, 12, 0, 1, 1, 1, 2, 1, 1, TrainingPlan.Intensive, 2, 4000, 15000));
-                DrawScenarioMatrixRow(new EconomyScenario("채용 공격", 25000, 16, 10, 1, 1, 0, 1, 1, 0, 3, TrainingPlan.Basic, 1, 1500, 5000));
-                DrawScenarioMatrixRow(new EconomyScenario("교육 성장", 22000, 16, 6, 1, 0, 0, 1, 1, 0, 0, TrainingPlan.Intensive, 3, 1500, 3000));
+                DrawScenarioMatrixRow(new EconomyScenario("소형 반복", 100000, 12, 4, 1, 0, 0, 1, 0, 0, 0, TrainingPlan.None, 0, 500, 0));
+                DrawScenarioMatrixRow(new EconomyScenario("소형→중형", 100000, 16, 6, 1, 1, 0, 1, 1, 0, 1, TrainingPlan.Basic, 1, 1200, 3000));
+                DrawScenarioMatrixRow(new EconomyScenario("중형 중심", 100000, 20, 8, 0, 2, 0, 1, 2, 0, 1, TrainingPlan.Professional, 2, 1800, 8000));
+                DrawScenarioMatrixRow(new EconomyScenario("대형 도전", 100000, 24, 12, 0, 1, 1, 1, 2, 1, 1, TrainingPlan.Intensive, 2, 4000, 15000));
+                DrawScenarioMatrixRow(new EconomyScenario("채용 공격", 100000, 16, 10, 1, 1, 0, 1, 1, 0, 3, TrainingPlan.Basic, 1, 1500, 5000));
+                DrawScenarioMatrixRow(new EconomyScenario("교육 성장", 100000, 16, 6, 1, 0, 0, 1, 1, 0, 0, TrainingPlan.Intensive, 3, 1500, 3000));
             }
         }
 

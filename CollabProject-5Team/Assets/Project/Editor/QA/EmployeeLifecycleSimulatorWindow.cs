@@ -356,7 +356,7 @@ namespace GameDevTycoon.EditorQA
 
                 if (_inProject)
                 {
-                    int weeklyGrowth = ApplyAbilityGrowth(ability, PerkPolicy.CalcWeeklyAbilityDelta(loyalty));
+                    int weeklyGrowth = ApplyAbilityGrowth(ability, CalcWeeklyAbilityDelta(loyalty));
                     ability = ClampStat(ability + weeklyGrowth);
                     notes.Add($"주간성장 {FormatDelta(weeklyGrowth)}");
 
@@ -464,6 +464,13 @@ namespace GameDevTycoon.EditorQA
             _manualFatigue = employee.Fatigue;
             _manualLoyalty = employee.Loyalty;
             _hasManualStartValues = true;
+        }
+
+        private static int CalcWeeklyAbilityDelta(int loyalty)
+        {
+            if (loyalty >= 80) return 3;
+            if (loyalty >= 40) return 2;
+            return 1;
         }
 
         private static int ApplyAbilityGrowth(int currentAbility, int delta)

@@ -17,7 +17,7 @@ namespace GameDevTycoon.EditorQA
         private float _startRetention = 1f;
         private int _serviceWeeks = 8;
         private bool _chargeWeeklyCost = true;
-        private bool _decayRetentionWeekly = true;
+        private bool _decayRetentionDaily = true;
         private bool _showScenarioMatrix;
         private bool _showPresetPanel;
         private bool _showAdvancedAnalysis;
@@ -170,9 +170,9 @@ namespace GameDevTycoon.EditorQA
                 using (new EditorGUILayout.HorizontalScope())
                 {
                     _chargeWeeklyCost = EditorGUILayout.Toggle("주간 유지비 차감", _chargeWeeklyCost);
-                    _decayRetentionWeekly = EditorGUILayout.Toggle("주간 유지력 감소", _decayRetentionWeekly);
+                    _decayRetentionDaily = EditorGUILayout.Toggle("매일 유지력 감소", _decayRetentionDaily);
                 }
-                EditorGUILayout.LabelField("순수익과 장기 서비스 곡선을 볼 때 켜고 끄는 검증용 규칙입니다.", EditorStyles.wordWrappedMiniLabel);
+                EditorGUILayout.LabelField("실제 게임처럼 매일 판매 계산 후 유지력이 감소하는지 확인하는 검증용 규칙입니다.", EditorStyles.wordWrappedMiniLabel);
 
                 if (EditorGUI.EndChangeCheck())
                     Simulate();
@@ -582,7 +582,7 @@ namespace GameDevTycoon.EditorQA
 
                 days.Add(new RevenueDaySnapshot(day, retention, dailySales, dailyGold, weeklyCost, netGold));
 
-                if (_decayRetentionWeekly && isWeeklySettlementDay)
+                if (_decayRetentionDaily)
                     retention = Mathf.Clamp01(retention - PerkPolicy.RETENTION_DECAY);
             }
         }

@@ -22,7 +22,7 @@ namespace GameDevTycoon.EditorQA
         private ProjectSize _projectSize = ProjectSize.Small;
         private PickMode _pickMode = PickMode.Average;
         private int _simulationWeeks = 8;
-        private int _initialGold = 10000;
+        private int _initialGold = 100000;
         private int _companyPopularity;
         private int _officeWeeklyCost = 500;
         private int _dailyQuestScore = 2;
@@ -217,16 +217,16 @@ namespace GameDevTycoon.EditorQA
             using (new EditorGUILayout.HorizontalScope())
             {
                 if (GUILayout.Button("소형/상위팀/안정", GUILayout.Height(24f)))
-                    ApplyPreset(ProjectSize.Small, PickMode.Strong, 8, 15000, 20, 500, 3, 1, 0, 10, 5);
+                    ApplyPreset(ProjectSize.Small, PickMode.Strong, 8, 100000, 20, 500, 3, 1, 0, 10, 5);
 
                 if (GUILayout.Button("소형/평균팀", GUILayout.Height(24f)))
-                    ApplyPreset(ProjectSize.Small, PickMode.Average, 8, 10000, 0, 500, 2, 2, 1, 5, 2);
+                    ApplyPreset(ProjectSize.Small, PickMode.Average, 8, 100000, 0, 500, 2, 2, 1, 5, 2);
 
                 if (GUILayout.Button("중형/상위팀/공격", GUILayout.Height(24f)))
-                    ApplyPreset(ProjectSize.Medium, PickMode.Strong, 10, 25000, 40, 1500, 4, 3, 1, 4, 2);
+                    ApplyPreset(ProjectSize.Medium, PickMode.Strong, 10, 100000, 40, 1500, 4, 3, 1, 4, 2);
 
                 if (GUILayout.Button("대형/낮은팀/고위험", GUILayout.Height(24f)))
-                    ApplyPreset(ProjectSize.Large, PickMode.Low, 16, 45000, 80, 4000, 5, 5, 2, 2, 1);
+                    ApplyPreset(ProjectSize.Large, PickMode.Low, 16, 100000, 80, 4000, 5, 5, 2, 2, 1);
             }
             EditorGUILayout.LabelField("프리셋은 비교용 시작값입니다. 실제 밸런스 확정값이 아니라 빠른 검증 기준으로 사용합니다.", EditorStyles.wordWrappedMiniLabel);
         }

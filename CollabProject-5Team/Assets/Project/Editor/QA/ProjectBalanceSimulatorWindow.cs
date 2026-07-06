@@ -174,9 +174,9 @@ namespace GameDevTycoon.EditorQA
                 {
                     if (GUILayout.Button("Play Mode 현재 일퀘 보너스 불러오기"))
                     {
-                        _plannerQuestBonus = QuestManager.Instance.GetWeeklyBonus(Role.PLANNER);
-                        _artistQuestBonus = QuestManager.Instance.GetWeeklyBonus(Role.ARTIST);
-                        _programmerQuestBonus = QuestManager.Instance.GetWeeklyBonus(Role.PROGRAMMER);
+                        _plannerQuestBonus = Mathf.RoundToInt(QuestManager.Instance.GetWeeklyBonus(Role.PLANNER));
+                        _artistQuestBonus = Mathf.RoundToInt(QuestManager.Instance.GetWeeklyBonus(Role.ARTIST));
+                        _programmerQuestBonus = Mathf.RoundToInt(QuestManager.Instance.GetWeeklyBonus(Role.PROGRAMMER));
                     }
                 }
 

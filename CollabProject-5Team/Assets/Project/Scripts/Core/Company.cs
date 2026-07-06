@@ -359,7 +359,7 @@ public class Company : MonoBehaviour
             curManagementStatus.Recalculate();
             cumulativeManagementStatus.Recalculate();
 
-            p.RetentionFactor -= PerkPolicy.RETENTION_DECAY; // 유지력 매일 감소
+            p.RetentionFactor = Mathf.Clamp01(p.RetentionFactor - PerkPolicy.RETENTION_DECAY); // 유지력 매일 감소
         }
     }
 
