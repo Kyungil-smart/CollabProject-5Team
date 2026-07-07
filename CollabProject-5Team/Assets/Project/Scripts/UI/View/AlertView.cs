@@ -189,7 +189,14 @@ namespace GameDevTycoon.UI
         }
         private string GetEmployeeSelfLeftNoticeComment(Employee employee)
         {
-            return $"{employee.so.Name} 직원이 회사를 떠났습니다.";
+            if (employee != employee.isSpy)
+            {
+                return $"{employee.so.selfLeftText}";
+            }
+            else
+            {
+                return $"<color=red>크큭...\n그래 내가 스파이다...</color>";
+            }
         }
 
         /// <summary>

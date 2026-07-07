@@ -48,6 +48,7 @@ public class EmployeeImmutableData : SheetDataSOBase
     [TextArea] public string hireText;  // 자기소개서
     [TextArea] public string fireText;  // 해고시 텍스트1
     [TextArea] public string fireText2; // 해고시 텍스트2
+    [TextArea] public string selfLeftText; // 자발적 퇴사시 텍스트
 
     [Header("Art")]
     public Sprite iconNormal; // Normal 상태 초상화
