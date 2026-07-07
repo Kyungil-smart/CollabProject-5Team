@@ -197,6 +197,9 @@ public class NPCController : MonoBehaviour
             case PointType.CopyMachine: Anim.SetTrigger("Fax"); break;
             case PointType.Drink: Anim.SetTrigger("Drink"); break;
             case PointType.ServerRoom: Anim.SetTrigger("PushButton"); break;
+            case PointType.Look: Anim.SetTrigger("Look"); break;
+            case PointType.Make: Anim.SetTrigger("Make"); break;
+            case PointType.Find: Anim.SetTrigger("Find"); break;
         }
     }
 
