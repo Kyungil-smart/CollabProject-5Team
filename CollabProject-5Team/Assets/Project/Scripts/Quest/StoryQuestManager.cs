@@ -179,28 +179,28 @@ public class StoryQuestManager : MonoBehaviour
         if (questId == FirstHireQuestId)
         {
             _currentSpeaker = _EmployeeManager.Instance.lastHiredEmployee;
-            _currentSpeaker2 = GameManager.Instance.GetRandomActiveEmployee();
+            _currentSpeaker2 = GameManager.Instance.GetNonSpyEmployee();
             return _currentSpeaker.transform;
         }
 
         if (questId == SpyQuestStartId)
         {
-            _currentSpeaker = GameManager.Instance.GetRandomActiveEmployee();
-            _currentSpeaker2 = GameManager.Instance.GetRandomActiveEmployee();
+            _currentSpeaker = GameManager.Instance.GetNonSpyEmployee();
+            _currentSpeaker2 = GameManager.Instance.GetNonSpyEmployee();
 
             return GameObject.FindWithTag(FlowerTag).transform;
         }
 
         if (questId == SelectSpyQuestId)
         {
-            _currentSpeaker = GameManager.Instance.GetRandomActiveEmployee();
-            _currentSpeaker2 = GameManager.Instance.GetRandomActiveEmployee();
+            _currentSpeaker = GameManager.Instance.GetNonSpyEmployee();
+            _currentSpeaker2 = GameManager.Instance.GetNonSpyEmployee();
 
             return GameObject.FindWithTag(DeskTag).transform;
         }
 
-        _currentSpeaker = GameManager.Instance.GetRandomActiveEmployee();
-        _currentSpeaker2 = GameManager.Instance.GetRandomActiveEmployee();
+        _currentSpeaker = GameManager.Instance.GetNonSpyEmployee();
+        _currentSpeaker2 = GameManager.Instance.GetNonSpyEmployee();
         return _currentSpeaker.transform;
     }
     // 스토리북 띄워야하는 퀘스트인지 확인
@@ -312,6 +312,7 @@ public class StoryQuestManager : MonoBehaviour
         {
             CorrectSpyEpilogueQuestId => true,
             WrongSpyEpilogueQuestId => true,
+            EndingQuestId => true,
             _ => false
         };
 
@@ -355,6 +356,7 @@ public class StoryQuestManager : MonoBehaviour
         if (!completedStoryQuestIds.Contains(EndingQuestId)) return;
 
         // TODO: 마지막 스토리 퀘스트 완료 후 평판 300 달성 시 OnNight 타이밍에 엔딩 씬으로 전환
+        Debug.Log("<color=green>엔딩 진입!</color>");
     }
 
     #region Save/Load
