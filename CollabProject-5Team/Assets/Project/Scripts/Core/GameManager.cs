@@ -226,6 +226,10 @@ public class GameManager : MonoBehaviour
         foreach (var employee in _activeEmployees)
         {
             var npc = employee.GetComponent<NPCController>();
+
+            npc.IsFirstTask = true; 
+            npc.IsMoveToRest = false;
+            
             // 위치 초기하
             npc.transform.position = _currentNpcSpawnPoint.position;
 
