@@ -89,11 +89,7 @@ public sealed class DebugUIPresenter : MonoBehaviour
         _addGoldButton.OnClickAsObservable()
             .Subscribe(_ =>
             {
-                // 1. 보유 골드 10,000 증가
-                Company.Instance.gold.Value += 10000;
-
-                // 2. 콘솔 창에 현재 보유 골드와 총 누적 매출(totalRevenue) 함께 출력
-                Debug.Log($"[Debug] 골드 지급! 현재 보유 골드: {Company.Instance.gold.Value}G | 총 누적 매출: {Company.Instance.totalRevenue}G");
+                Company.Instance.gold.Value += 100000;
             })
             .AddTo(this);
 
