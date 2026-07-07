@@ -29,13 +29,9 @@ namespace Dialogue
         private void Advance()
         {
             if (StoryDialoguePlayer.Instance != null && StoryDialoguePlayer.Instance.IsDialogueRunning)
-            {
                 StoryDialoguePlayer.Instance.AdvanceDialogue();
-            }
             else
-            {
                 DialogueManager.Instance.AdvanceDialogue();
-            }
         }
 
         public void OnPointerDown(PointerEventData eventData)
@@ -45,11 +41,6 @@ namespace Dialogue
                 AudioManager.Instance?.PlaySFXClick();
                 SkipTyping();
                 _justSkipped = true;
-                if (!_isChoiceMode)
-                {
-                    if (OnNextAction != null) OnNextAction.Invoke();
-                    else Advance();
-                }
             }
         }
 
