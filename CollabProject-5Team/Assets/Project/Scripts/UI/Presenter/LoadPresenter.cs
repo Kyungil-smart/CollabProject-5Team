@@ -150,7 +150,8 @@ namespace GameDevTycoon.UI.Title
         private async UniTaskVoid LoadGameSceneAsync()
         {
             Hide();
-            await SceneLoader.Instance.LoadAsync(SceneName.Game);
+
+            await SceneLoader.Instance.LoadGameFlowAsync();
         }
     }
 }

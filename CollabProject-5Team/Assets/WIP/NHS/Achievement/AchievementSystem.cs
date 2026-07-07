@@ -47,9 +47,9 @@ public class AchievementSystem : MonoBehaviour
         RegisterAchievement(new AchievementData { id = "Hire_01", title = "저희 회사에 어서오세요", description = "1명 고용하기" , targetEvent = AchievementNotifyType.OnHireEmployeeChanged, targetValue = 1 });
         RegisterAchievement(new AchievementData { id = "Hire_02", title = "음음 내 노예들"       , description = "5명 고용하기" , targetEvent = AchievementNotifyType.OnHireEmployeeChanged, targetValue = 5 });
         RegisterAchievement(new AchievementData { id = "Hire_03", title = "입이 많아졌네"        , description = "10명 고용하기", targetEvent = AchievementNotifyType.OnHireEmployeeChanged, targetValue = 10 });
-
+        
         // 4-2. 해고
-        RegisterAchievement(new AchievementData { id = "Fire_01", title = "미안하게 됬습니다.", description = "1명 해고하기"  , targetEvent = AchievementNotifyType.OnFireEmployeeChanged, targetValue = 1 });
+        RegisterAchievement(new AchievementData { id = "Fire_01", title = "미안하게 됐다.", description = "1명 해고하기"  , targetEvent = AchievementNotifyType.OnFireEmployeeChanged, targetValue = 1 });
         RegisterAchievement(new AchievementData { id = "Fire_02", title = "혹독한 사회"      , description = "5명 해고하기"  , targetEvent = AchievementNotifyType.OnFireEmployeeChanged, targetValue = 5 });
         RegisterAchievement(new AchievementData { id = "Fire_03", title = "악덕 사장"        , description = "10명 해고하기", targetEvent = AchievementNotifyType.OnFireEmployeeChanged, targetValue = 10 });
     }

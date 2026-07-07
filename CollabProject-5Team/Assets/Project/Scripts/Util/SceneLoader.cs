@@ -61,12 +61,35 @@ namespace GameDevTycoon.Core
             await SceneManager.UnloadSceneAsync(sceneName.ToSceneString())
                 .ToUniTask(cancellationToken: cancellationToken);
         }
+
+        // SceneLoader.cs
+        public async UniTask LoadGameFlowAsync()
+        {
+            bool isLoading = SaveLoadSystem.Instance != null && SaveLoadSystem.Instance.pendingLoadSlot.HasValue;
+
+            if (!isLoading)
+            {
+                await LoadAsync(SceneName.CutScene);
+                await SceneFlowManager.Instance.WaitForFlowCompletion();
+
+                await LoadAsync(SceneName.GameScene_TutorialDay);
+                await SceneFlowManager.Instance.WaitForFlowCompletion();
+
+                await LoadAsync(SceneName.GameScene_TutorialNight);
+                await SceneFlowManager.Instance.WaitForFlowCompletion();
+            }
+
+            await LoadAsync(SceneName.Game);
+        }
     }
 
     public enum SceneName
     {
         Title,
         Game,
+        CutScene,               
+        GameScene_TutorialDay,  
+        GameScene_TutorialNight
     }
 
     public static class SceneNameExtensions
@@ -75,6 +98,9 @@ namespace GameDevTycoon.Core
         {
             SceneName.Title  => "TitleScene",
             SceneName.Game => "GameScene",
+            SceneName.CutScene => "CutScene",
+            SceneName.GameScene_TutorialDay => "GameScene_TutorialDay",
+            SceneName.GameScene_TutorialNight => "GameScene_TutorialNight",
             _                => string.Empty
         };
     }
