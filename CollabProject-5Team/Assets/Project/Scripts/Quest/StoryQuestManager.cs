@@ -130,11 +130,8 @@ public class StoryQuestManager : MonoBehaviour
         Transform bubbleTarget = ResolveBubbleTarget(questSO.id);
         if (bubbleTarget == null) return false;
 
-        if (questSO.isSpyQuest || questSO.id == SpyQuestStartId)
+        if (questSO.isSpyQuest)
             curSpyQuestID = questSO.id;
-
-        if (questSO.id == LargeProjectSpyQuestId)
-            _EmployeeManager.Instance.canLeaveSelf = false;
 
         curStoryQuest = new StoryQuest();
         curStoryQuest.Init(questSO);

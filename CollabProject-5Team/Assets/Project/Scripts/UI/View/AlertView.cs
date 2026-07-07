@@ -195,7 +195,7 @@ namespace GameDevTycoon.UI
             }
             else
             {
-                return $"<color=red>크큭...\n그래 내가 스파이다...</color>";
+                return $"<color=red>그래, 내가 스파이다...</color>";
             }
         }
 
