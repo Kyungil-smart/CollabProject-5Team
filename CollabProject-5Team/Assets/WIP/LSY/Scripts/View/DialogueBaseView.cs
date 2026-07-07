@@ -29,9 +29,13 @@ namespace Dialogue
         private void Advance()
         {
             if (StoryDialoguePlayer.Instance != null && StoryDialoguePlayer.Instance.IsDialogueRunning)
+            {
                 StoryDialoguePlayer.Instance.AdvanceDialogue();
+            }
             else
+            {
                 DialogueManager.Instance.AdvanceDialogue();
+            }
         }
 
         public void OnPointerDown(PointerEventData eventData)
