@@ -186,11 +186,11 @@ public class Company : MonoBehaviour
         switch (projectSize)
         {
             case ProjectSize.Medium:
-                return "테스트 중형 프로젝트";
+                return "테스트 중형";
             case ProjectSize.Large:
-                return "테스트 대형 프로젝트";
+                return "테스트 대형";
             default:
-                return "테스트 소형 프로젝트";
+                return "테스트 소형";
         }
     }
     void VerifyTestLargeProjectSpy(Project project)

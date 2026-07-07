@@ -20,6 +20,7 @@ public class StoryQuestManager : MonoBehaviour
     const int CorrectSpyEpilogueQuestId = 1045;
     const int WrongSpyEpilogueQuestId = 1046;
     const int EndingQuestId = 1047;
+    const int EndingSceneRequiredReputation = 300;
 
     [SerializeField] Sprite StoryBookBubbleSprite;
 
@@ -48,14 +49,17 @@ public class StoryQuestManager : MonoBehaviour
     {
         if (Instance != null && Instance != this) { Destroy(gameObject); return; }
         Instance = this;
-        // 테스트 코드 (삭제예정)~
-        OnSpySelect += LogSpySelect;
     }
-    void LogSpySelect(List<Employee> employees, Action<Employee, bool> onSelected)
+    private void Start()
     {
-        Debug.Log("잡았다 요놈");
+        DateTimeManager.OnNight += TryEnterEndingScene;
     }
-    // ~---
+
+    private void OnDestroy()
+    {
+        DateTimeManager.OnNight -= TryEnterEndingScene;
+    }
+
     public void ResetForNewDay()
     {
         if (_currentBubble != null)
@@ -81,7 +85,7 @@ public class StoryQuestManager : MonoBehaviour
 
     StoryQuestPoolSO SelectStartableQuest()
     {
-        if (curSpyQuestID != 0)
+        if (curSpyQuestID > 0)
             return SelectCurrentSpyQuest(); // 스파이 퀘스트 진행중이면 여기
 
         StoryQuestPoolSO normalQuest = SelectNormalStoryQuest(); // 일반 퀘스트 조건체크
@@ -161,7 +165,6 @@ public class StoryQuestManager : MonoBehaviour
             SpyQuestStartId => Company.Instance.level == 3,
             LargeProjectSpyQuestId => Company.Instance.activeProjectCount.Value > 0 &&
                                       Company.Instance.curProject.Scale == ProjectSize.Large,
-            EndingQuestId => Company.Instance.reputation >= questSO.conditionReputation,
             _ => true
         };
     }
@@ -215,8 +218,8 @@ public class StoryQuestManager : MonoBehaviour
         {
             ["NPC1"] = _currentSpeaker,
             ["NPC2"] = _currentSpeaker2,
+            ["UCSPY"] = selectedSpyEmployee,
             ["SPY"] = GetSpyEmployee(),
-            ["UCSPY"] = selectedSpyEmployee
         };
 
         StoryDialoguePlayer.Instance.StartStoryDialogue(
@@ -228,8 +231,7 @@ public class StoryQuestManager : MonoBehaviour
 
     #region SPY GetSet
     /// <summary>
-    /// [원리 설명] 외부(Presenter 등)에서 특정 직원을 스파이로 의심하여 판정을 요청할 때 사용하는 검증 인터페이스입니다.
-    /// 실제 데이터 원본(GetSpyEmployee)을 외부에 노출(Public)하지 않고, 참/거짓 결과만 안전하게 반환하여 데이터 오염을 방지합니다.
+    /// 외부(Presenter 등)에서 특정 직원을 스파이로 의심하여 참/거짓 판정을 반환
     /// </summary>
     public bool CheckIsSpy(Employee targetEmployee)
     {
@@ -303,7 +305,6 @@ public class StoryQuestManager : MonoBehaviour
             WrongSpyResultQuestId => WrongSpyEpilogueQuestId,
             CorrectSpyEpilogueQuestId => EndingQuestId,
             WrongSpyEpilogueQuestId => EndingQuestId,
-            EndingQuestId => -1, // 마지막 퀘스트라 다음 퀘스트 id는 -1로 설정
             _ => completedQuestId + 1
         };
     }
@@ -322,6 +323,14 @@ public class StoryQuestManager : MonoBehaviour
         }
     }
     #endregion
+
+    void TryEnterEndingScene()
+    {
+        if (Company.Instance.reputation < EndingSceneRequiredReputation) return;
+        if (!completedStoryQuestIds.Contains(EndingQuestId)) return;
+
+        // TODO: 마지막 스토리 퀘스트 완료 후 평판 300 달성 시 OnNight 타이밍에 엔딩 씬으로 전환
+    }
 
     #region Save/Load
     public void ExportStoryQuestData(SaveData data)
