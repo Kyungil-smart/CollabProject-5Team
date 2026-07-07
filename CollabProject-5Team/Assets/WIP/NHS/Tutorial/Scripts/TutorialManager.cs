@@ -131,6 +131,16 @@ public class TutorialManager : MonoBehaviour
         }
     }
 
+    private void LateUpdate()
+    {
+        if (_tutorialSteps != null && _curIndex  >= 0 && _curIndex < _tutorialSteps.Count &&
+            _tutorialSteps[_curIndex].showMode == ShowMode.PunchHole)
+        {
+            UpdatePunchHole();
+            SetPointerPosition();
+        }
+    }
+
     private void OnDestroy()
     {
         OnSomewhereTutorialCompleted -= OnSomewhereConditionMet;
@@ -454,7 +464,7 @@ public class TutorialManager : MonoBehaviour
             Vector3 worldPos = _currentActiveObject.transform.position;
             Vector3 screenPos = Camera.main.WorldToScreenPoint(worldPos);
 
-            float screenObjectSize = 60;
+            float screenObjectSize = 100;
             Vector4 pixelRect = new Vector4(
                 screenPos.x - screenObjectSize,
                 screenPos.y - screenObjectSize,
@@ -500,6 +510,58 @@ public class TutorialManager : MonoBehaviour
         }
 
         SetPointerPosition();
+    }
+
+    private void UpdatePunchHole()
+    {
+        if (_currentActiveObject == null) return;
+
+        var filter = _tutorialPanel.GetComponent<PunchHoleFilter>();
+        if (filter == null) return;
+
+        RectTransform targetRect = _currentActiveObject.GetComponent<RectTransform>();
+        RectTransform panelRect = _tutorialPanel.GetComponent<RectTransform>();
+        Vector4 holeVector = Vector4.zero;
+
+        if (targetRect != null)
+        {
+            // UI 타겟: WorldCorners를 이용해 현재 위치 계산
+            Vector3[] corners = new Vector3[4];
+            targetRect.GetWorldCorners(corners);
+            Vector3 bl = panelRect.InverseTransformPoint(corners[0]);
+            Vector3 tr = panelRect.InverseTransformPoint(corners[2]);
+
+            holeVector = new Vector4(
+                Mathf.Min(bl.x, tr.x), Mathf.Min(bl.y, tr.y),
+                Mathf.Max(bl.x, tr.x), Mathf.Max(bl.y, tr.y)
+            );
+            filter.SetTarget(targetRect);
+        }
+        else
+        {
+            // 3D 타겟: ScreenPoint 이용
+            Vector3 screenPos = Camera.main.WorldToScreenPoint(_currentActiveObject.transform.position);
+
+            Canvas canvas = _tutorialPanel.GetComponentInParent<Canvas>();
+            Camera uiCamera = (canvas.renderMode == RenderMode.ScreenSpaceOverlay) ? null : canvas.worldCamera;
+
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(panelRect, screenPos, uiCamera, out Vector2 localCenter);
+
+            float scaleFactor = canvas != null ? canvas.scaleFactor : 1f;
+            float localSize = 100f / scaleFactor; // 기존 screenObjectSize 기준
+
+            holeVector = new Vector4(
+                localCenter.x - localSize, localCenter.y - localSize,
+                localCenter.x + localSize, localCenter.y + localSize
+            );
+            filter.SetCustomScreenRect(new Vector4(screenPos.x - 100, screenPos.y - 100, screenPos.x + 100, screenPos.y + 100));
+        }
+
+        // 셰이더 전달
+        if (_runtimeMaterial != null)
+        {
+            _runtimeMaterial.SetVector("_HoleRect", holeVector);
+        }
     }
 
     // 구멍 안의 버튼이 클릭되었을 때 실행될 콜백

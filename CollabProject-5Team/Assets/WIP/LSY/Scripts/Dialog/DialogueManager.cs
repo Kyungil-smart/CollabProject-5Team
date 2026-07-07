@@ -207,6 +207,11 @@ namespace Dialogue
 
             _isDialogueRunning = false;
             _currentPoolEntry  = null;
+
+            if (TutorialManager.Instance != null && TutorialManager.Instance.IsWaitingDialogue)
+            {
+                TutorialManager.Instance.FinishDialogueAndProceed();
+            }
         }
 
         void BindViews(DialogueStartPayload payload)
