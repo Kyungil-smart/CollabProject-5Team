@@ -60,7 +60,6 @@ namespace GameDevTycoon.UI.Ingame
         [SerializeField] private GameObject _panelReportDetail;
         [SerializeField] private Image _profileIcon;
         [SerializeField] TMP_Text _detailTitleLable;
-        [SerializeField] DepartmentTagView _departmentTagPrefab;
         [SerializeField] TMP_Text _detailEmployeeNameLable;
         [SerializeField] TMP_Text _detailContentLable;
         [SerializeField] Button _adoptBtn;
@@ -225,8 +224,6 @@ namespace GameDevTycoon.UI.Ingame
             _detailEmployeeNameLable.text = report.owner.so.Name;
             _detailContentLable.text = report.so.content;
             _profileIcon.sprite = report.owner.so.iconNormal;
-
-            _departmentTagPrefab.Bind(report.role);
         }
 
         public void SetPersonalOpinionInfo(Employee employee, AgendaSO agenda)
