@@ -48,11 +48,11 @@ public class _EmployeeManager : MonoBehaviour
         Dialogue.DialogueEvents.OnStatChangeRequested
             .Subscribe(delta =>
             {
-                Employee emp = haveEmployees.haveEmployeeList.Find(e => e.so.id == delta.employeeId);
-                var data = emp.MutableData;
-                data.desire += delta.desireDelta;
-                data.fatigue += delta.fatigueDelta;
-                data.loyalty += delta.loyaltyDelta;
+                Employee emp    = haveEmployees.haveEmployeeList.Find(e => e.so.id == delta.employeeId);
+                var data        = emp.MutableData;
+                data.desire    += delta.desireDelta;
+                data.fatigue   += delta.fatigueDelta;
+                data.loyalty   += delta.loyaltyDelta;
                 emp.MutableData = data;
             })
             .AddTo(this);
@@ -82,6 +82,12 @@ public class _EmployeeManager : MonoBehaviour
         employee.Init();
         haveEmployees.AddEmployee(employee);
         employeeList.DeleteEmployee(employee.so.id);
+
+        if (AchievementSystem.Instance != null)
+        {
+            AchievementSystem.Instance.NotifyEvent(AchievementNotifyType.OnHireEmployeeChanged, 1);
+        }
+
         return employee;
     }
 
@@ -97,6 +103,11 @@ public class _EmployeeManager : MonoBehaviour
         haveEmployees.RemoveEmployee(employee);
         employeeList.RestoreEmployee(employee.so.id);
         //Destroy(employee.gameObject);
+
+        if (AchievementSystem.Instance != null)
+        {
+            AchievementSystem.Instance.NotifyEvent(AchievementNotifyType.OnFireEmployeeChanged, 1);
+        }
     }
 
     // 직원 채용 요청 등록
@@ -126,7 +137,7 @@ public class _EmployeeManager : MonoBehaviour
             var applicants = employeeList.leftEmployees.Values
                 .Select(go => go.GetComponent<Employee>())
                 .Where(e => e.so.role == request.TargetRole)
-                .Where(e => Company.Instance == null || Company.Instance.level > 1 || e.so.grade != 1)
+                .Where(e => Company.Instance.level > 1 || e.so.grade != 1)
                 .OrderBy(_ => UnityEngine.Random.value)
                 .Take(request.Count)
                 .ToList();

@@ -13,7 +13,6 @@ public class TutorialManager : MonoBehaviour
         HighlightSqureTouchAnywhere,
         HighLightSqureTouchSomewhere,
         PunchHole,
-        WaitPlayer
     }
 
     // 싱글톤
@@ -29,7 +28,7 @@ public class TutorialManager : MonoBehaviour
     [SerializeField] private Transform       _position2;
 
     [Header("Pointer Settings")]
-    [SerializeField] private Image _tutorialPointer; // 인스펙터에서 할당
+    [SerializeField] private Image _tutorialPointer;
     [SerializeField] private Vector2 _pointerOffset = new Vector2(30, -30);
 
     // 튜토리얼 진행
@@ -37,7 +36,6 @@ public class TutorialManager : MonoBehaviour
     private int _curIndex = -1;
 
     private bool _isWaitingPlayerInput = false;
-
 
     // 오브젝트 ID 등록
     private Dictionary<string, GameObject> _registeredObjects = new Dictionary<string, GameObject>();
@@ -51,7 +49,7 @@ public class TutorialManager : MonoBehaviour
     private bool       _isRaycasterAddedByManager;
 
     // Shader
-    [SerializeField] private Material _templateMaterial; // 인스펙터에서 M_TutorialPunchHole 할당!
+    [SerializeField] private Material _templateMaterial;
     private Material _runtimeMaterial;
 
     [Header("BGM")]
@@ -196,12 +194,10 @@ public class TutorialManager : MonoBehaviour
 
         if (_currentActiveObject != null && _myInputField != null)
         {
-            // 타겟 오브젝트가 InputField 본인이거나 그 자식/부모 관계인지 체크
             if (_currentActiveObject == _myInputField.gameObject || _currentActiveObject.GetComponentInChildren<TMP_InputField>() != null)
             {
                 _myInputField.text = "임시 프로젝트";
 
-                // UI 갱신 유도
                 _myInputField.ForceLabelUpdate();
                 Debug.Log($"[TutorialManager] InputField 타겟 감지: 자동으로 이름을 채웠습니다. ({_myInputField.text})");
             }
@@ -223,8 +219,6 @@ public class TutorialManager : MonoBehaviour
                 break;
             case ShowMode.PunchHole:
                 TutorialPunchHole();
-                break;
-            case ShowMode.WaitPlayer:
                 break;
         }
     }

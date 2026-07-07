@@ -3,64 +3,70 @@ using System.Text.RegularExpressions;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using DG.Tweening;
 
 public class Newgame : MonoBehaviour
 {
     [System.Serializable]
     public struct CutScenePanelUI
     {
-        public GameObject panel;
-        public Image image;
+        public GameObject              panel;
+        public Image                   image;
         public TextMeshProUGUI characterName;
-        public TextMeshProUGUI dialogue;
-        public Button nextButton;
+        public TextMeshProUGUI      dialogue;
+        public Button             nextButton;
     }
 
     [Header("회사 이름 정하기")]
-    [SerializeField] private GameObject _setCompanyPanel;
+    [SerializeField] private GameObject     _setCompanyPanel;
     [SerializeField] private TMP_InputField _companyInputField;
-    [SerializeField] private Button _companyAcceptButton;
+    [SerializeField] private Button         _companyAcceptButton;
 
     [Header("플레이어 이름 정하기")]
-    [SerializeField] private GameObject _setPlayerNamePanel;
+    [SerializeField] private GameObject     _setPlayerNamePanel;
     [SerializeField] private TMP_InputField _playerNameInputField;
-    [SerializeField] private Button _playerNameAcceptButton;
+    [SerializeField] private Button         _playerNameAcceptButton;
 
     [Header("경고 팝업")]
-    [SerializeField] private GameObject _warningPanel;
-    [SerializeField] private Button _warningCheckButton;
+    [SerializeField] private GameObject      _warningPanel;
     [SerializeField] private TextMeshProUGUI _warningText;
+    [SerializeField] private Button          _warningCheckButton;
 
     [Header("스킵")]
     [SerializeField] private Button _skipButton;
     private bool _isFinishedSetPlayerName = false;
 
+    [Header("BGM")]
+    [SerializeField] private AudioClip _bgmSetup;
+    [SerializeField] private AudioClip _bgmGroup1;
+    [SerializeField] private AudioClip _bgmGroup2;
+    [SerializeField] private AudioClip _bgmGroup3;
+
     [Header("컷씬")]
-    [SerializeField] private CutScenePanelUI _cutSceneUI;
+    [SerializeField] private CutScenePanelUI    _cutSceneUI;
     [SerializeField] private List<CutSceneData> _cutSceneList;
 
-    [Header("사운드 타이핑 컴포넌트")]
-    [SerializeField] private TextSoundTweener _textTweener; // 분리한 독립 컴포넌트
-
     private string _companyName = "미정";
-    private string _playerName = "주인공";
-    private int _currentIdx = 0;
+    private string _playerName  = "주인공";
+    private int    _currentIdx  = 0;
 
-    private float _typingSpeed = 0.5f;
-    private string _currentFullDialogue = "";
+    private bool      _isTyping            = false;
+    private float     _typingSpeed         = 0.025f;
+    private string    _currentFullDialogue = "";
+    private Coroutine _typingCoroutine;
 
     private void Start()
     {
-        _companyAcceptButton.onClick.AddListener(OnCompanyConfirmed);
-        _cutSceneUI.nextButton.onClick.AddListener(OnNextDialogueClicked);
-        _playerNameAcceptButton.onClick.AddListener(OnPlayerNameConfirmed);
-        _skipButton.onClick.AddListener(OnCanSkip);
+        AudioManager.Instance?.PlayBGM(_bgmSetup);
 
-        _setCompanyPanel.SetActive(true);
-        _cutSceneUI.panel.SetActive(false);
+           _companyAcceptButton.onClick.AddListener(OnCompanyConfirmed);
+         _cutSceneUI.nextButton.onClick.AddListener(OnNextDialogueClicked);
+        _playerNameAcceptButton.onClick.AddListener(OnPlayerNameConfirmed);
+                    _skipButton.onClick.AddListener(OnCanSkip);
+
+           _setCompanyPanel.SetActive(true);
+          _cutSceneUI.panel.SetActive(false);
         _setPlayerNamePanel.SetActive(false);
-        _warningPanel.SetActive(false);
+              _warningPanel.SetActive(false);
     }
 
     private void ShowCutScene()
@@ -75,8 +81,10 @@ public class Newgame : MonoBehaviour
 
         if (currentData != null)
         {
-            // 새로운 대사 시작 전 이전 타이핑 연출 안전하게 종료
-            _textTweener.KillActiveTween();
+            if (currentData.id >= 1000009 && currentData.id < 1000040)
+                AudioManager.Instance?.PlayBGM(_bgmGroup2);
+            else if (currentData.id > 1000040)
+                AudioManager.Instance?.PlayBGM(_bgmGroup3);
 
             _currentFullDialogue = currentData.dialogue
                 .Replace("[Company]", _companyName)
@@ -89,33 +97,50 @@ public class Newgame : MonoBehaviour
             _cutSceneUI.characterName.text = name;
             _cutSceneUI.image.sprite = currentData.cutSceenImage;
 
+            _isTyping = true;
+            _typingCoroutine = StartCoroutine(TypeText(_currentFullDialogue));
+
             if (currentData.id == 1000040)
             {
+                StopCoroutine(_typingCoroutine);
+                _isTyping = false;
                 _cutSceneUI.dialogue.text = "";
                 OpenPlayerNamePanel();
-                return;
             }
-
-            // 독립 컴포넌트에 텍스트와 대사를 넘겨 동숲 사운드 타이핑 시작
-            _textTweener.DoType(_cutSceneUI.dialogue, _currentFullDialogue, _typingSpeed);
         }
+    }
+
+    private System.Collections.IEnumerator TypeText(string text)
+    {
+        _cutSceneUI.dialogue.text = "";
+
+        foreach (char letter in text.ToCharArray())
+        {
+            _cutSceneUI.dialogue.text += letter;
+            yield return new WaitForSeconds(_typingSpeed);
+        }
+        _isTyping = false;
     }
 
     private void OnNextDialogueClicked()
     {
-        // 글자가 찍히는 중이었다면 클릭 시 즉시 전체 텍스트 출력 (사운드 중지)
-        if (_textTweener.CompleteActiveTween())
+        if (_isTyping)
         {
-            return;
+            StopCoroutine(_typingCoroutine);
+            _cutSceneUI.dialogue.text = _currentFullDialogue;
+            _isTyping = false;
         }
-
-        _currentIdx++;
-        ShowCutScene();
+        else
+        {
+            _currentIdx++;
+            ShowCutScene();
+        }
     }
 
     private void OpenPlayerNamePanel()
     {
-        _cutSceneUI.panel.SetActive(false);
+        AudioManager.Instance?.PlayBGM(_bgmSetup);
+          _cutSceneUI.panel.SetActive(false);
         _setPlayerNamePanel.SetActive(true);
     }
 
@@ -132,8 +157,9 @@ public class Newgame : MonoBehaviour
         _companyName = input;
         Company.Instance.CompanyName = _companyName;
 
-        _setCompanyPanel.SetActive(false);
+         _setCompanyPanel.SetActive(false);
         _cutSceneUI.panel.SetActive(true);
+        AudioManager.Instance?.PlayBGM(_bgmGroup1);
         ShowCutScene();
     }
 
@@ -153,18 +179,15 @@ public class Newgame : MonoBehaviour
         _isFinishedSetPlayerName = true;
 
         _setPlayerNamePanel.SetActive(false);
-        _cutSceneUI.panel.SetActive(true);
+          _cutSceneUI.panel.SetActive(true);
 
         _currentIdx++;
+
         ShowCutScene();
     }
 
     private void OnCanSkip()
     {
-        // 🐱 변형 유도 버그 수정: 과거 직접 쓰던 _typingTween 제어 로직을 지우고
-        // 독립 컴포넌트인 _textTweener를 멈추도록 일원화했습니다.
-        _textTweener.KillActiveTween();
-
         if (!_isFinishedSetPlayerName)
         {
             int targetIdx = _cutSceneList.FindIndex(data => data != null && data.id == 1000040);
@@ -236,6 +259,5 @@ public class Newgame : MonoBehaviour
     private void EndCutSceen()
     {
         _cutSceneUI.panel.SetActive(false);
-        Debug.Log($"인트로 완료! 회사명: {_companyName}, 플레이어명: {_playerName}");
     }
 }

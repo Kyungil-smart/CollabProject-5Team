@@ -21,16 +21,42 @@ namespace GameDevTycoon.UI.Ingame
         [Header("프리팹")]
         [SerializeField] private GameObject _employeeStatusMiniItemPrefab;
 
+        [Header("Agenda")]
+        [SerializeField] private List<AgendaSO> _allAgendas = new();
+
         // 직군 진행 순서
         static readonly Role[] RoleOrder = { Role.PLANNER, Role.ARTIST, Role.PROGRAMMER };
 
         private int _roleIndex;
         private List<Report> _currentReports;
         private Report _viewingReport;
+        private readonly Dictionary<int, List<AgendaSO>> _agendasByGrade = new();
+        private readonly List<PersonalAgendaRequest> _personalAgendaQueue = new();
+        private int _personalAgendaIndex;
+        private PersonalAgendaRequest _currentPersonalAgenda;
 
         private void Start()
         {
+            InitAgendaList();
             BindButtons();
+        }
+
+        private void InitAgendaList()
+        {
+            _agendasByGrade.Clear();
+
+            foreach (AgendaSO agenda in _allAgendas)
+            {
+                if (agenda == null) continue;
+
+                if (!_agendasByGrade.TryGetValue(agenda.grade, out List<AgendaSO> agendas))
+                {
+                    agendas = new List<AgendaSO>();
+                    _agendasByGrade[agenda.grade] = agendas;
+                }
+
+                agendas.Add(agenda);
+            }
         }
 
         private void BindButtons()
@@ -54,6 +80,14 @@ namespace GameDevTycoon.UI.Ingame
 
             _view.OnReportEndConfirmClicked
                 .Subscribe(_ => { AudioManager.Instance?.PlaySFXPositive(); OnReportEndConfirmed(); })
+                .AddTo(this);
+
+            _view.OnPersonalOpinionAdoptClicked
+                .Subscribe(_ => { AudioManager.Instance?.PlaySFXPositive(); OnAdoptPersonalOpinion(); })
+                .AddTo(this);
+
+            _view.OnPersonalOpinionBackClicked
+                .Subscribe(_ => { AudioManager.Instance?.PlaySFXNegative(); ShowNextPersonalOpinion(); })
                 .AddTo(this);
 
             for (int i = 0; i < _nextButtons.Length; i++)
@@ -113,6 +147,14 @@ namespace GameDevTycoon.UI.Ingame
         /// </summary>
         public void StartReportReviewFlow()
         {
+            if (Company.Instance.activeProjectCount.Value > 0)
+            {
+                foreach (var employee in Company.Instance.curProject.GetAllEmployees())
+                {
+                    employee.SaveCurrentData();
+                }
+            }
+
             _roleIndex = 0;
             ShowReviewForCurrentRole();
 
@@ -125,7 +167,7 @@ namespace GameDevTycoon.UI.Ingame
             if (_roleIndex >= RoleOrder.Length)
             {
                 Company.Instance.curProject.ApproveSelectedReports();
-                OnPersonalOpinionCompleted();
+                StartPersonalOpinionFlow();
                 return;
             }
 
@@ -191,6 +233,93 @@ namespace GameDevTycoon.UI.Ingame
         /// <summary>
         /// 담당자 패널(PersonalOpinion)에서 모든 의견 처리 완료 시 외부 호출.
         /// </summary>
+        private void StartPersonalOpinionFlow()
+        {
+            BuildPersonalAgendaQueue();
+            _personalAgendaIndex = 0;
+
+            if (_personalAgendaQueue.Count == 0)
+            {
+                OnPersonalOpinionCompleted();
+                return;
+            }
+
+            ShowCurrentPersonalOpinion();
+        }
+
+        private void BuildPersonalAgendaQueue()
+        {
+            _personalAgendaQueue.Clear();
+
+            var candidates = new List<Employee>(_EmployeeManager.Instance.haveEmployees.haveEmployeeList);
+            int count = Mathf.Min(Random.Range(1, 3), candidates.Count);
+
+            for (int i = 0; i < count; i++)
+            {
+                int employeeIndex = Random.Range(0, candidates.Count);
+                Employee employee = candidates[employeeIndex];
+                candidates.RemoveAt(employeeIndex);
+
+                AgendaSO agenda = PickAgenda(employee);
+                if (agenda != null)
+                    _personalAgendaQueue.Add(new PersonalAgendaRequest(employee, agenda));
+            }
+        }
+
+        private AgendaSO PickAgenda(Employee employee)
+        {
+            int grade = ReportPolicy.PickAgendaGradeByLoyalty(employee.MutableData.loyalty);
+            if (_agendasByGrade.TryGetValue(grade, out List<AgendaSO> agendas) && agendas.Count > 0)
+                return agendas[Random.Range(0, agendas.Count)];
+
+            return _allAgendas.Count > 0 ? _allAgendas[Random.Range(0, _allAgendas.Count)] : null;
+        }
+
+        private void ShowCurrentPersonalOpinion()
+        {
+            if (_personalAgendaIndex >= _personalAgendaQueue.Count)
+            {
+                OnPersonalOpinionCompleted();
+                return;
+            }
+
+            _currentPersonalAgenda = _personalAgendaQueue[_personalAgendaIndex];
+            _view.SetPersonalOpinionInfo(_currentPersonalAgenda.employee, _currentPersonalAgenda.agenda);
+            _view.ShowPanel(ReportPanel.PersonalOpinion);
+            _view.SetSlideInteractable(false);
+        }
+
+        private void ShowNextPersonalOpinion()
+        {
+            _personalAgendaIndex++;
+            ShowCurrentPersonalOpinion();
+        }
+
+        private void OnAdoptPersonalOpinion()
+        {
+            Employee employee = _currentPersonalAgenda.employee;
+            AgendaSO agenda = _currentPersonalAgenda.agenda;
+
+            Company.Instance.gold.Value -= agenda.cost;
+            Company.Instance.curManagementStatus.otherExpense += agenda.cost;
+            Company.Instance.cumulativeManagementStatus.otherExpense += agenda.cost;
+            Company.Instance.curManagementStatus.Recalculate();
+            Company.Instance.cumulativeManagementStatus.Recalculate();
+
+            if (Random.value <= agenda.sucessRate)
+            {
+                employee.AddAbilityDelta(10);
+                employee.MutableData.desire += 5;
+            }
+            else
+            {
+                employee.MutableData.desire -= 5;
+            }
+
+            _hudPresenter?.RefreshHUD();
+            ShowNextPersonalOpinion();
+        }
+
         public void OnPersonalOpinionCompleted()
         {
             _view.ShowPanel(ReportPanel.ReportEnd);
@@ -220,5 +349,17 @@ namespace GameDevTycoon.UI.Ingame
             Role.PROGRAMMER => 2,
             _ => 3,
         };
+
+        private readonly struct PersonalAgendaRequest
+        {
+            public readonly Employee employee;
+            public readonly AgendaSO agenda;
+
+            public PersonalAgendaRequest(Employee employee, AgendaSO agenda)
+            {
+                this.employee = employee;
+                this.agenda = agenda;
+            }
+        }
     }
 }

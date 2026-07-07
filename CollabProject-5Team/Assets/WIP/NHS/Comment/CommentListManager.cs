@@ -6,7 +6,7 @@ public class CommentListManager : MonoBehaviour
 {
     [Header("UI 설정")]
     [SerializeField] private GameObject _uiPrefab;
-    [SerializeField] private Transform _contentTransform;
+    [SerializeField] private Transform  _contentTransform;
 
     [SerializeField] private List<EmployeeCommentData> _commentSheetDatas = new List<EmployeeCommentData>();
 
@@ -26,13 +26,20 @@ public class CommentListManager : MonoBehaviour
 
     private void OnEnable()
     {
-        if (_EmployeeManager.Instance == null || _EmployeeManager.Instance.haveEmployees == null)
+        List<Employee> employees = null;
+
+        if (Company.Instance.activeProjectCount.Value > 0)
         {
-            Debug.LogWarning("[CommentListManager] _EmployeeManager 인스턴스를 찾을 수 없습니다.");
+            employees = Company.Instance.curProject.GetAllEmployees();
+        }
+
+        if (employees == null)
+        {
+            Debug.LogWarning("[CommentListManager] 직원 목록을 찾을 수 없습니다.");
             return;
         }
 
-        RefreshCommentList(_EmployeeManager.Instance.haveEmployees.haveEmployeeList, _commentSheetDatas);
+        RefreshCommentList(employees, _commentSheetDatas);
     }
 
     public void RefreshCommentList(List<Employee> currentEmployees, List<EmployeeCommentData> commentSheetData)

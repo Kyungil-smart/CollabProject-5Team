@@ -34,6 +34,8 @@ public class DateTimeManager : MonoBehaviour
     public static Func<UniTask> OnTimeChangedVisual;
     public static Action OnDateUIChanged;
 
+    private float _timeSinceLastCheck = 0f;
+
     #region 싱글톤 설정
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     public static void Init() => Instance = null;
@@ -48,6 +50,20 @@ public class DateTimeManager : MonoBehaviour
     void Update()
     {
         playTime += Time.deltaTime;
+
+        _timeSinceLastCheck += Time.deltaTime;
+        if (_timeSinceLastCheck >= 1.0f)
+        {
+            _timeSinceLastCheck = 0f;
+
+            if (AchievementSystem.Instance != null)
+            {
+                AchievementSystem.Instance.NotifyEvent(
+                    AchievementNotifyType.OnPlayTimeChanged,
+                    Mathf.FloorToInt(playTime)
+                );
+            }
+        }
     }
 
     public string GetPlayTime()

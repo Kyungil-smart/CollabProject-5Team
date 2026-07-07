@@ -3,15 +3,14 @@ using UnityEngine;
 public class PunchHoleFilter : MonoBehaviour, ICanvasRaycastFilter
 {
     private RectTransform _targetRect;
-    private Camera _canvasCamera;
+    private Camera        _canvasCamera;
 
     private Vector4 _customScreenRect = Vector4.zero;
     private bool _useCustomRect = false;
 
-    // 1. 기존 UI 요소 세팅용
     public void SetTarget(RectTransform targetRect)
     {
-        _targetRect = targetRect;
+           _targetRect = targetRect;
         _useCustomRect = false;
 
         Canvas canvas = targetRect.GetComponentInParent<Canvas>();
@@ -23,15 +22,15 @@ public class PunchHoleFilter : MonoBehaviour, ICanvasRaycastFilter
 
     public void SetCustomScreenRect(Vector4 screenRect)
     {
-        _targetRect = null;
+              _targetRect = null;
         _customScreenRect = screenRect;
-        _useCustomRect = true;
+           _useCustomRect = true;
     }
 
     public void ClearTarget()
     {
-        _targetRect = null;
-        _useCustomRect = false;
+              _targetRect = null;
+           _useCustomRect = false;
         _customScreenRect = Vector4.zero;
     }
 

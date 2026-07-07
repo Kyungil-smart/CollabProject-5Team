@@ -188,12 +188,6 @@ namespace GameDevTycoon.UI.Ingame
                 _timeIcon.sprite = sprite;
         }
 
-
-        public void SetNightQuitInteractable(int activeProjectCount)
-        {
-            _nightQuitButton.interactable = activeProjectCount > 0;
-        }
-
         public void SwitchToDay()
         {
             // [DoTween 페이드 연출 추가 예정]
@@ -206,6 +200,7 @@ namespace GameDevTycoon.UI.Ingame
             // [DoTween 페이드 연출 추가 예정]
             _dayUI.SetActive(false);
             _nightUI.SetActive(true);
+            _nightQuitButton.interactable = true;
             DeselectAllNightButtons();
         }
 

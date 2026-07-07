@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using static ManagementStatusData;
 
 [Serializable]
 public class SaveData
@@ -25,6 +26,7 @@ public class SaveData
     public Dictionary<Role, int> weeklyBonusPoints = new();
     public List<int> completedStoryQuestIds = new();
     public int curSpyQuestID;
+    public int selectedSpyEmployeeId;
 
     // Company 저장
     [Header("Company Data")]
@@ -46,6 +48,8 @@ public class SaveData
     public List<ProjectCompletedSaveData> completedProjectsData = new();
     // 현재 진행 중인 프로젝트 목록
     public CurrentProjectSaveData activeProjectsData = new();
+
+    public List<AchievementSaveInfo> _achievementStates = new();
 }
 
 [System.Serializable]
@@ -136,6 +140,12 @@ public class ProjectCompletedSaveData
     public List<int> weeklyGoldHistoryList;
     public bool isServiceOver;
     public bool isUpdatePending;
+    public int planUpdateId;
+    public int artUpdateId;
+    public int devUpdateId;
+    public bool planUpdateCompleted;
+    public bool artUpdateCompleted;
+    public bool devUpdateCompleted;
 
 }
 
@@ -188,5 +198,15 @@ public sealed class ManagementStatusData
         };
         clone.Recalculate();
         return clone;
+    }
+
+    // 업적 세이브 데이터
+
+    [Serializable]
+    public class AchievementSaveInfo
+    {
+        public string id;
+        public int currentValue;
+        public bool isUnlocked;
     }
 }

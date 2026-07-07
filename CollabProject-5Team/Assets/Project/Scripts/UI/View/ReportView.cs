@@ -60,7 +60,6 @@ namespace GameDevTycoon.UI.Ingame
         [SerializeField] private GameObject _panelReportDetail;
         [SerializeField] private Image _profileIcon;
         [SerializeField] TMP_Text _detailTitleLable;
-        [SerializeField] DepartmentTagView _departmentTagPrefab;
         [SerializeField] TMP_Text _detailEmployeeNameLable;
         [SerializeField] TMP_Text _detailContentLable;
         [SerializeField] Button _adoptBtn;
@@ -68,6 +67,12 @@ namespace GameDevTycoon.UI.Ingame
 
         [Header("Panel_PersonalOpinion - 추후 작업")]
         [SerializeField] private GameObject _panelPersonalOpinion;
+        [SerializeField] private Image _personalOpinionProfileIcon;
+        [SerializeField] private TextMeshProUGUI _personalOpinionNameLabel;
+        [SerializeField] private TextMeshProUGUI _personalOpinionDetailLabel;
+        [SerializeField] private TextMeshProUGUI _personalOpinionContentLabel;
+        [SerializeField] private Button _personalOpinionAdoptButton;
+        [SerializeField] private Button _personalOpinionBackButton;
 
         [Header("Panel_ReportEnd")]
         [SerializeField] private GameObject _panelReportEnd;
@@ -86,6 +91,8 @@ namespace GameDevTycoon.UI.Ingame
         public Observable<Unit> OnReportEndConfirmClicked => _reportEndConfirmButton.OnClickAsObservable();
         public Observable<Unit> OnAdoptClicked => _adoptBtn.OnClickAsObservable();
         public Observable<Unit> OnCancelClicked => _cancelBtn.OnClickAsObservable();
+        public Observable<Unit> OnPersonalOpinionAdoptClicked => _personalOpinionAdoptButton.OnClickAsObservable();
+        public Observable<Unit> OnPersonalOpinionBackClicked => _personalOpinionBackButton.OnClickAsObservable();
 
         // 담당자 패널 Show/Hide용 — Presenter에서 순서 제어
         public GameObject PanelEmployeeComment => _panelEmployeeComment;
@@ -218,8 +225,14 @@ namespace GameDevTycoon.UI.Ingame
             _detailEmployeeNameLable.text = report.owner.so.Name;
             _detailContentLable.text = report.so.content;
             _profileIcon.sprite = report.owner.so.iconNormal;
+        }
 
-            _departmentTagPrefab.Bind(report.role);
+        public void SetPersonalOpinionInfo(Employee employee, AgendaSO agenda)
+        {
+            _personalOpinionProfileIcon.sprite = employee.so.iconNormal;
+            _personalOpinionNameLabel.text = employee.so.Name;
+            _personalOpinionDetailLabel.text = "개인 작업 의견";
+            _personalOpinionContentLabel.text = agenda.desc;
         }
 
         public void SetCoverInfo(string dateRange, string companyName)

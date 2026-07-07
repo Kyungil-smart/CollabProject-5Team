@@ -25,16 +25,23 @@ namespace GameDevTycoon.UI.Ingame
         [SerializeField] private GameObject _projectListItemPrefab;
         [SerializeField] private GameObject _staffDetailPrefab;
 
+        [Header("업데이트 데이터")]
+        [SerializeField] private List<ProjectUpdateSO> _allUpdateSos = new();
+
         private ProjectSize _selectedScale;
         private Project _currentDetailProject;
         private ProjectCompleted _currentServiceRecord;
         private UpdatePart? _selectedUpdatePart;
+        private readonly Dictionary<int, ProjectUpdateSO> _updateById = new();
+        private readonly Dictionary<(ProjectSize size, Role role), List<ProjectUpdateSO>> _updatesBySizeRole = new();
+        private readonly Dictionary<UpdatePart, ProjectUpdateSO> _currentUpdateOptions = new();
 
         public bool IsVisible => _view.IsVisible;
 
         private void Start()
         {
             _selectedScale = UnselectedScale;
+            InitUpdateList();
             BindTabs();
             BindNewProject();
             BindInProgress();
@@ -53,6 +60,28 @@ namespace GameDevTycoon.UI.Ingame
         {
             ClearSelectedEmployees();
             _view.Hide();
+        }
+
+        private void InitUpdateList()
+        {
+            _updateById.Clear();
+            _updatesBySizeRole.Clear();
+
+            foreach (ProjectUpdateSO so in _allUpdateSos)
+            {
+                if (so == null) continue;
+
+                _updateById[so.id] = so;
+
+                var key = (so.size, so.role);
+                if (!_updatesBySizeRole.TryGetValue(key, out var list))
+                {
+                    list = new List<ProjectUpdateSO>();
+                    _updatesBySizeRole[key] = list;
+                }
+
+                list.Add(so);
+            }
         }
 
         private void BindTabs()
@@ -208,6 +237,8 @@ namespace GameDevTycoon.UI.Ingame
 
         private void RefreshNewProject()
         {
+            RefreshScaleCardInfo();
+
             bool hasActiveProject = Company.Instance.activeProjectCount.Value > 0;
             _view.SetActiveProjectWarningVisible(hasActiveProject);
 
@@ -409,7 +440,7 @@ namespace GameDevTycoon.UI.Ingame
             _view.SetOperationGroupVisible(true);
             SetServiceOperationValues(record);
             _view.SetServiceStopInteractable(!record.isServiceOver);
-            _view.SetUpdateButtonInteractable(false);
+            _view.SetUpdateButtonInteractable(!record.isServiceOver);
         }
 
         private void ShowCompletedDetail(ProjectCompleted record)
@@ -432,23 +463,28 @@ namespace GameDevTycoon.UI.Ingame
 
         private void OnUpdateClicked()
         {
-            if (_currentDetailProject == null) return;
+            if (_currentServiceRecord == null || _currentServiceRecord.isServiceOver) return;
 
             AudioManager.Instance?.PlaySFXClick();
             _selectedUpdatePart = null;
+            _currentUpdateOptions.Clear();
             _view.SetUpdateConfirmInteractable(false);
             _view.SetUpdateItemSelectImg(null);
 
-            // [TODO: 업데이트 시스템 연동 후 지난주 완료 항목 오버레이 처리]
-            _view.SetUpdateItemCompletedOverlay(UpdatePart.Plan, false);
-            _view.SetUpdateItemCompletedOverlay(UpdatePart.Art, false);
-            _view.SetUpdateItemCompletedOverlay(UpdatePart.Dev, false);
+            BindUpdateItem(UpdatePart.Plan);
+            BindUpdateItem(UpdatePart.Art);
+            BindUpdateItem(UpdatePart.Dev);
 
-            _view.ShowUpdateManagement(_currentDetailProject.userNamed.Value);
+            _view.ShowUpdateManagement(_currentServiceRecord.projectName);
         }
 
         private void OnUpdateItemSelected(UpdatePart part)
         {
+            if (_currentServiceRecord == null) return;
+
+            ProjectUpdateSO update = GetCurrentUpdateOption(part);
+            if (update == null || IsUpdateCompleted(_currentServiceRecord, part)) return;
+
             AudioManager.Instance?.PlaySFXClick();
             _selectedUpdatePart = part;
             _view.SetUpdateItemSelectImg(part);
@@ -457,11 +493,13 @@ namespace GameDevTycoon.UI.Ingame
 
         private void OnUpdateConfirmClicked()
         {
-            if (_selectedUpdatePart == null || _currentDetailProject == null || _currentServiceRecord == null) return;
+            if (_selectedUpdatePart == null || _currentServiceRecord == null) return;
 
-            int cost = GetUpdateCost(_currentServiceRecord.scale);
+            UpdatePart part = _selectedUpdatePart.Value;
+            ProjectUpdateSO update = GetCurrentUpdateOption(part);
+            if (update == null || IsUpdateCompleted(_currentServiceRecord, part)) return;
 
-            if (Company.Instance.gold.Value < cost)
+            if (Company.Instance.gold.Value < update.cost)
             {
                 AudioManager.Instance?.PlaySFXAlert();
                 _alertView.ShowAlertPopup("보유 자금이 부족하여 실행할 수 없습니다.");
@@ -470,30 +508,160 @@ namespace GameDevTycoon.UI.Ingame
 
             AudioManager.Instance?.PlaySFXAlert();
             _alertView.ShowConfirmPopup(
-                $"업데이트비용 {cost:N0}G 지불해야합니다. 진행 하시겠습니까?",
+                $"업데이트비용 {FormatPolicy.FormatGold(update.cost)} 지불해야합니다. 진행 하시겠습니까?",
                 onConfirm: () =>
                 {
                     AudioManager.Instance?.PlaySFXPositive();
-                    Company.Instance.gold.Value -= cost;
-                    Company.Instance.curManagementStatus.otherExpense += cost;
-                    Company.Instance.cumulativeManagementStatus.otherExpense += cost;
-                    Company.Instance.curManagementStatus.Recalculate();
-                    Company.Instance.cumulativeManagementStatus.Recalculate();
-                    _currentServiceRecord.RetentionFactor = Mathf.Clamp01(_currentServiceRecord.RetentionFactor + PerkPolicy.RETENTION_UPDATE);
-                    _currentServiceRecord.isUpdatePending = true;
+                    ApplyProjectUpdate(_currentServiceRecord, part, update);
 
                     _selectedUpdatePart = null;
-                    _view.HideUpdateManagement();
+                    _view.SetUpdateItemSelectImg(null);
+                    _view.SetUpdateConfirmInteractable(false);
+                    BindUpdateItem(part);
+                    SetServiceOperationValues(_currentServiceRecord);
+                    _hudPresenter?.RefreshHUD();
                     RefreshInProgressList();
                 }
             );
         }
 
+        private void BindUpdateItem(UpdatePart part)
+        {
+            ProjectUpdateSO update = GetOrAssignUpdate(_currentServiceRecord, part);
+            bool completed = IsUpdateCompleted(_currentServiceRecord, part);
+            bool hasData = update != null;
+
+            string title = hasData ? (update.Name?.Trim() ?? string.Empty) : "업데이트 없음";
+            string desc = hasData ? (update.desc?.Trim() ?? string.Empty) : "해당 규모의 업데이트 데이터가 없습니다.";
+            string cost = hasData ? FormatPolicy.FormatGold(update.cost) : "-";
+
+            if (hasData)
+                _currentUpdateOptions[part] = update;
+            else
+                _currentUpdateOptions.Remove(part);
+
+            _view.SetUpdateItemInfo(part, title, desc, cost, hasData && !completed);
+            _view.SetUpdateItemCompletedOverlay(part, completed);
+        }
+
+        private ProjectUpdateSO GetCurrentUpdateOption(UpdatePart part)
+        {
+            return _currentUpdateOptions.TryGetValue(part, out ProjectUpdateSO update)
+                ? update
+                : GetOrAssignUpdate(_currentServiceRecord, part);
+        }
+
+        private ProjectUpdateSO GetOrAssignUpdate(ProjectCompleted record, UpdatePart part)
+        {
+            if (record == null) return null;
+
+            int updateId = GetUpdateId(record, part);
+            if (updateId > 0 && _updateById.TryGetValue(updateId, out ProjectUpdateSO savedUpdate))
+                return savedUpdate;
+
+            Role role = GetUpdateRole(part);
+            var key = (record.scale, role);
+            if (!_updatesBySizeRole.TryGetValue(key, out List<ProjectUpdateSO> candidates) || candidates.Count == 0)
+                return null;
+
+            ProjectUpdateSO picked = candidates[Random.Range(0, candidates.Count)];
+            SetUpdateId(record, part, picked.id);
+            return picked;
+        }
+
+        private void ApplyProjectUpdate(ProjectCompleted record, UpdatePart part, ProjectUpdateSO update)
+        {
+            Company.Instance.gold.Value -= update.cost;
+            Company.Instance.curManagementStatus.devCost += update.cost;
+            Company.Instance.cumulativeManagementStatus.devCost += update.cost;
+            Company.Instance.curManagementStatus.Recalculate();
+            Company.Instance.cumulativeManagementStatus.Recalculate();
+
+            record.RetentionFactor += 0.1f;
+            SetUpdateCompleted(record, part, true);
+            record.isUpdatePending = HasCompletedUpdate(record);
+        }
+
+        private static Role GetUpdateRole(UpdatePart part)
+        {
+            switch (part)
+            {
+                case UpdatePart.Plan:
+                    return Role.PLANNER;
+                case UpdatePart.Art:
+                    return Role.ARTIST;
+                default:
+                    return Role.PROGRAMMER;
+            }
+        }
+
+        private static int GetUpdateId(ProjectCompleted record, UpdatePart part)
+        {
+            switch (part)
+            {
+                case UpdatePart.Plan:
+                    return record.planUpdateId;
+                case UpdatePart.Art:
+                    return record.artUpdateId;
+                default:
+                    return record.devUpdateId;
+            }
+        }
+
+        private static void SetUpdateId(ProjectCompleted record, UpdatePart part, int updateId)
+        {
+            switch (part)
+            {
+                case UpdatePart.Plan:
+                    record.planUpdateId = updateId;
+                    break;
+                case UpdatePart.Art:
+                    record.artUpdateId = updateId;
+                    break;
+                case UpdatePart.Dev:
+                    record.devUpdateId = updateId;
+                    break;
+            }
+        }
+
+        private static bool IsUpdateCompleted(ProjectCompleted record, UpdatePart part)
+        {
+            switch (part)
+            {
+                case UpdatePart.Plan:
+                    return record.planUpdateCompleted;
+                case UpdatePart.Art:
+                    return record.artUpdateCompleted;
+                default:
+                    return record.devUpdateCompleted;
+            }
+        }
+
+        private static void SetUpdateCompleted(ProjectCompleted record, UpdatePart part, bool completed)
+        {
+            switch (part)
+            {
+                case UpdatePart.Plan:
+                    record.planUpdateCompleted = completed;
+                    break;
+                case UpdatePart.Art:
+                    record.artUpdateCompleted = completed;
+                    break;
+                case UpdatePart.Dev:
+                    record.devUpdateCompleted = completed;
+                    break;
+            }
+        }
+
+        private static bool HasCompletedUpdate(ProjectCompleted record)
+        {
+            return record.planUpdateCompleted || record.artUpdateCompleted || record.devUpdateCompleted;
+        }
+
         private void OnScaleSelected(ProjectSize scale)
         {
-            _selectedScale = scale;
-
-            int cost = GetRequiredCost(scale);
+            ProjectSO projectSo = Company.Instance.GetProjectTemplate(scale);
+            int cost = projectSo.requiredCost;
             bool canAfford = Company.Instance.gold.Value >= cost;
 
             if (!canAfford)
@@ -503,6 +671,7 @@ namespace GameDevTycoon.UI.Ingame
                 return;
             }
 
+            _selectedScale = scale;
             AudioManager.Instance?.PlaySFXClick();
             _view.SetScaleCardSelectImg(scale);
             _view.SetProjectSetupNextInteractable(!string.IsNullOrWhiteSpace(GetCurrentProjectName()));
@@ -528,7 +697,8 @@ namespace GameDevTycoon.UI.Ingame
 
         private void OnStaffAssignConfirmClicked()
         {
-            int cost = GetRequiredCost(_selectedScale);
+            ProjectSO projectSo = Company.Instance.GetProjectTemplate(_selectedScale);
+            int cost = projectSo.requiredCost;
             if (Company.Instance.gold.Value < cost)
             {
                 AudioManager.Instance?.PlaySFXAlert();
@@ -538,7 +708,7 @@ namespace GameDevTycoon.UI.Ingame
 
             AudioManager.Instance?.PlaySFXAlert();
             _alertView.ShowConfirmPopup(
-                $"개발비 {cost:N0}G를 지불하고 프로젝트를 시작하시겠습니까?",
+                $"개발비 {FormatPolicy.FormatGold(cost)}를 지불하고 프로젝트를 시작하시겠습니까?",
                 onConfirm: () =>
                 {
                     var project = Company.Instance.CreateProject(_selectedScale, GetCurrentProjectName());
@@ -708,19 +878,23 @@ namespace GameDevTycoon.UI.Ingame
         private void ClearSelectedEmployees()
             => Company.Instance.ClearSelectedProjectEmployees();
 
-        private static int GetRequiredCost(ProjectSize scale) => scale switch
+        private void RefreshScaleCardInfo()
         {
-            ProjectSize.Medium => 50000,
-            ProjectSize.Large => 200000,
-            _ => 15000,
-        };
+            SetScaleCardInfo(ProjectSize.Small);
+            SetScaleCardInfo(ProjectSize.Medium);
+            SetScaleCardInfo(ProjectSize.Large);
+        }
 
-        private static int GetUpdateCost(ProjectSize scale) => scale switch
+        private void SetScaleCardInfo(ProjectSize scale)
         {
-            ProjectSize.Medium => 35000,
-            ProjectSize.Large => 100000,
-            _ => 10000,
-        };
+            ProjectSO projectSo = Company.Instance.GetProjectTemplate(scale);
+            int weeks = Mathf.CeilToInt(Mathf.Max(0, projectSo.durationDays) / 5f);
+            _view.SetScaleCardInfo(
+                scale,
+                $"개발기간 : {weeks}주",
+                $"비       용 : {FormatPolicy.FormatGold(projectSo.requiredCost)}"
+            );
+        }
 
         private static int GetMaxEmployeePerPart(ProjectSize scale) => scale switch
         {

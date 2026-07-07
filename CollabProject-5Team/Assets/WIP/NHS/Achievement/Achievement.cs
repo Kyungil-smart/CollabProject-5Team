@@ -1,27 +1,23 @@
-using UnityEngine;
-
-public enum AchievementType
+public enum AchievementNotifyType
 {
-    TotalGold,
-    ReachGold,
-
-    MaxLevel,
-
-    HireEmployee,
-
-    PlayTime
+            OnGoldChanged, // 완     
+       OnTotalGoldChanged, // 완
+    OnHireEmployeeChanged, // 완
+    OnFireEmployeeChanged, // 완
+           OnLevelChanged, // 완   
+        OnPlayTimeChanged  // 완
 }
 
-public class Achievement
+[System.Serializable]
+public class AchievementData
 {
-    public string                    id;
-    public string                 title;
-    public string           description;
+    public string id;
+    public string title;
+    public string description;
 
-    public AchievementType         type;
+    public AchievementNotifyType targetEvent; 
+    public int targetValue;                   
 
-    public bool              isUnlocked;
-                          
-    public int             currentValue;
-    public int              targetValue;
+    [System.NonSerialized] public int currentValue = 0; 
+    [System.NonSerialized] public bool isUnlocked = false;
 }

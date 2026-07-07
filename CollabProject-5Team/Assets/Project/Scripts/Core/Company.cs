@@ -50,6 +50,13 @@ public class Company : MonoBehaviour
     {
         Instance = this;
     #endregion
+        gold.Subscribe(currentGold =>
+        {
+            if (AchievementSystem.Instance != null)
+            {
+                AchievementSystem.Instance.NotifyEvent(AchievementNotifyType.OnGoldChanged, currentGold);
+            }
+        }).AddTo(this);
     }
 
     #region 테스트 코드
@@ -202,6 +209,13 @@ public class Company : MonoBehaviour
     #endregion
 
     #region 프로젝트 시작 관리
+    public ProjectSO GetProjectTemplate(ProjectSize scale)
+    {
+        GameObject prefab = GetProjectPrefab(scale);
+        Project project = prefab.GetComponent<Project>();
+        return project.so;
+    }
+
     public Project CreateProject(ProjectSize scale, string projectName)
     {
         var project = InstantiateProject(scale, projectName);
@@ -399,8 +413,18 @@ public class Company : MonoBehaviour
             // 누적매출 증가
             totalRevenue += p.weeklyGoldAccum;
 
+            if (AchievementSystem.Instance != null)
+                AchievementSystem.Instance.NotifyEvent(AchievementNotifyType.OnTotalGoldChanged, totalRevenue);
+
             p.weeklySales = 0;
             p.weeklyGoldAccum = 0;
+            p.isUpdatePending = false;
+            p.planUpdateCompleted = false;
+            p.artUpdateCompleted = false;
+            p.devUpdateCompleted = false;
+            p.planUpdateId = 0;
+            p.artUpdateId = 0;
+            p.devUpdateId = 0;
         }
 
         // 적자 패널티
@@ -476,6 +500,11 @@ public class Company : MonoBehaviour
         }
 
         GameManager.Instance.isUpgradeReserved = true;
+
+        if (AchievementSystem.Instance != null)
+        {
+            AchievementSystem.Instance.NotifyEvent(AchievementNotifyType.OnLevelChanged, level);
+        }
     }
 
     public void TickWeeklyOfficeCost()
@@ -592,6 +621,12 @@ public class Company : MonoBehaviour
                 prevWeekGold    = p.prevWeekGold,
                 isServiceOver   = p.isServiceOver,
                 isUpdatePending = p.isUpdatePending,
+                planUpdateId = p.planUpdateId,
+                artUpdateId = p.artUpdateId,
+                devUpdateId = p.devUpdateId,
+                planUpdateCompleted = p.planUpdateCompleted,
+                artUpdateCompleted = p.artUpdateCompleted,
+                devUpdateCompleted = p.devUpdateCompleted,
 
                 weeklyGoldHistoryList = new List<int>(p.weeklyGoldHistory)
             };
@@ -656,6 +691,12 @@ public class Company : MonoBehaviour
                     prevWeekGold    = pData.prevWeekGold,
                     isServiceOver   = pData.isServiceOver,
                     isUpdatePending = pData.isUpdatePending,
+                    planUpdateId = pData.planUpdateId,
+                    artUpdateId = pData.artUpdateId,
+                    devUpdateId = pData.devUpdateId,
+                    planUpdateCompleted = pData.planUpdateCompleted,
+                    artUpdateCompleted = pData.artUpdateCompleted,
+                    devUpdateCompleted = pData.devUpdateCompleted,
                 };
 
                 p.weeklyGoldHistory = new Queue<int>();

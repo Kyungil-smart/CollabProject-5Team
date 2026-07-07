@@ -5,9 +5,6 @@ using Random = UnityEngine.Random;
 // 각종 보고서 계산 정책 모음
 public static class ReportPolicy
 {
-    const int MaxMissingReportWarnings = 30;
-    static readonly HashSet<string> MissingReportWarningKeys = new();
-
     // 보고서 등급 결정용 점수 계산
     // 직원 기본 점수(20 + ability * 0.5) + 의욕 가중치
     public static float CalcScore(EmployeeImmutableData so, int desire)
@@ -37,36 +34,14 @@ public static class ReportPolicy
             int grade   = CalcGrade(score);
             int isStartRepo = project.day <= 5 ? 1 : 0;
 
-            ReportSO picked = ReportManager.Instance.GetReportsByTrait(e, grade, isStartRepo);
-            if (picked == null)
-            {
-                LogMissingReportOnce(e, grade, isStartRepo);
-                continue;
-            }
-
+            ReportSO picked = e.isSpy
+                ? ReportManager.Instance.GetSpyReport(e, grade, isStartRepo)
+                : ReportManager.Instance.GetReportsByTrait(e, grade, isStartRepo);
+            if (picked == null) { Debug.LogWarning($"[ReportPolicy] {e.so.Name} 에 맞는 보고서 SO 없음"); continue; }
             Report report = new Report { so = picked, owner = e };
             
             project.pendingReports.Add(report);
         }
-    }
-
-    static void LogMissingReportOnce(Employee e, int grade, int startRepo)
-    {
-        string key = $"{e.so.id}:{e.so.mainTrait}:{e.so.riskTrait}:{e.so.subTrait}:{grade}:{startRepo}";
-        if (!MissingReportWarningKeys.Add(key))
-            return;
-
-        if (MissingReportWarningKeys.Count <= MaxMissingReportWarnings)
-        {
-            Debug.LogWarning(
-                $"[ReportPolicy] {e.so.Name} 에 맞는 보고서 SO 없음. "
-                + $"grade={grade}, startRepo={startRepo}, "
-                + $"traits={e.so.mainTrait}/{e.so.riskTrait}/{e.so.subTrait}");
-            return;
-        }
-
-        if (MissingReportWarningKeys.Count == MaxMissingReportWarnings + 1)
-            Debug.LogWarning("[ReportPolicy] 보고서 SO 누락 Warning이 많아 이후 동일 계열 로그를 생략합니다. 상세 검증은 Prototype QA 창에서 확인하세요.");
     }
 
     // 이번 주 stat별 최종 점수 계산 (매 주차 독립)
@@ -87,9 +62,9 @@ public static class ReportPolicy
         };
 
         // 등급별 특성 delta (대표/보조/리스크)
-        int mainDelta = report.grade == 1 ? 12 : report.grade == 2 ? 8 : 4;
-        int subDelta  = report.grade == 1 ?  6 : report.grade == 2 ? 4 : 2;
-        int riskDelta = report.grade == 1 ? -6 : report.grade == 2 ? -4 : -2;
+        int mainDelta = report.grade == 1 ? 15 : report.grade == 2 ? 11 : 7;
+        int subDelta  = report.grade == 1 ?  7 : report.grade == 2 ? 5 : 3;
+        int riskDelta = report.grade == 1 ? -8 : report.grade == 2 ? -6 : -4;
 
         // 값 적용 (특성 점수 + 가중치)
         ApplyTraitDelta(scores, e.so.mainTrait, mainDelta);
@@ -158,4 +133,32 @@ public static class ReportPolicy
         2 => Random.value < 0.5f ? 5 : 10,
         _ => 10,
     };
+
+    // 1등급~5등급 확률. 충성도 범위: 0-39, 40-79, 80-100.
+    static readonly int[] AgendaWeightsLowLoyalty = { 0, 10, 30, 40, 20 };
+    static readonly int[] AgendaWeightsMidLoyalty = { 5, 20, 40, 30, 5 };
+    static readonly int[] AgendaWeightsHighLoyalty = { 9, 40, 50, 1, 0 };
+
+    public static int[] GetAgendaGradeWeights(int loyalty)
+    {
+        if (loyalty >= 80) return AgendaWeightsHighLoyalty;
+        if (loyalty >= 40) return AgendaWeightsMidLoyalty;
+        return AgendaWeightsLowLoyalty;
+    }
+
+    public static int PickAgendaGradeByLoyalty(int loyalty)
+    {
+        int[] weights = GetAgendaGradeWeights(loyalty);
+        int roll = Random.Range(0, 100);
+        int accumulated = 0;
+
+        for (int i = 0; i < weights.Length; i++)
+        {
+            accumulated += weights[i];
+            if (roll < accumulated)
+                return i + 1;
+        }
+
+        return weights.Length;
+    }
 }
