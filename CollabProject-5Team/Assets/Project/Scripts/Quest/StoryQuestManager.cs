@@ -90,10 +90,13 @@ public class StoryQuestManager : MonoBehaviour
         if (curSpyQuestID > 0)
             return SelectCurrentSpyQuest(); // 스파이 퀘스트 진행중이면 여기
 
+        StoryQuestPoolSO largeProjectSpyQuest = SelectLargeProjectSpyQuest();
+        if (largeProjectSpyQuest != null) return largeProjectSpyQuest;
+
         StoryQuestPoolSO normalQuest = SelectNormalStoryQuest(); // 일반 퀘스트 조건체크
         if (normalQuest != null) return normalQuest;
 
-        return SelectSpyStartQuest(); // 스파이시작 퀘스트 조건체크
+        return null;
     }
 
     StoryQuestPoolSO SelectCurrentSpyQuest()
@@ -117,12 +120,12 @@ public class StoryQuestManager : MonoBehaviour
         return null;
     }
 
-    StoryQuestPoolSO SelectSpyStartQuest()
+    StoryQuestPoolSO SelectLargeProjectSpyQuest()
     {
-        if (completedStoryQuestIds.Contains(SpyQuestStartId)) return null;
+        if (completedStoryQuestIds.Contains(LargeProjectSpyQuestId)) return null;
 
-        StoryQuestPoolSO spyStartQuest = StoryQuestDataManager.Instance.GetPoolEntry(SpyQuestStartId);
-        return IsSpyQuestConditionSatisfied(spyStartQuest) ? spyStartQuest : null;
+        StoryQuestPoolSO largeProjectSpyQuest = StoryQuestDataManager.Instance.GetPoolEntry(LargeProjectSpyQuestId);
+        return IsSpyQuestConditionSatisfied(largeProjectSpyQuest) ? largeProjectSpyQuest : null;
     }
 
     bool StartStoryQuest(StoryQuestPoolSO questSO)
@@ -153,6 +156,7 @@ public class StoryQuestManager : MonoBehaviour
         {
             FirstStoryQuestId => Company.Instance.completedProjects.Count > 0,
             FirstHireQuestId => _EmployeeManager.Instance.lastHiredEmployee != null,
+            SpyQuestStartId => Company.Instance.level == 3,
             _ => false
         };
     }
@@ -161,7 +165,6 @@ public class StoryQuestManager : MonoBehaviour
     {
         return questSO.id switch
         {
-            SpyQuestStartId => Company.Instance.level == 3,
             LargeProjectSpyQuestId => Company.Instance.activeProjectCount.Value > 0 &&
                                       Company.Instance.curProject.Scale == ProjectSize.Large,
             _ => true
