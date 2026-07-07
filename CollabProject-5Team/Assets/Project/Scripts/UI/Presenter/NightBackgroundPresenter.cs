@@ -13,13 +13,13 @@ namespace GameDevTycoon.UI.Ingame
         private void Start()
         {
             DateTimeManager.OnDay += _view.Hide;
-            DateTimeManager.OnReportEnd += _view.Show;
+            DateTimeManager.OnNightLoading += _view.Show;
         }
 
         private void OnDestroy()
         {
             DateTimeManager.OnDay -= _view.Hide;
-            DateTimeManager.OnReportEnd -= _view.Show;
+            DateTimeManager.OnNightLoading -= _view.Show;
         }
     }
 }
