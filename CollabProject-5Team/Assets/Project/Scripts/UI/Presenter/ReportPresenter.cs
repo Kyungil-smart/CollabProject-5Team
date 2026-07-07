@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using R3;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace GameDevTycoon.UI.Ingame
 {
@@ -14,9 +13,6 @@ namespace GameDevTycoon.UI.Ingame
     {
         [SerializeField] private ReportView _view;
         [SerializeField] private HUDPresenter _hudPresenter;
-
-        [Header("직군별 보고서 Next Buttons")]
-        [SerializeField] Button[] _nextButtons;
 
         [Header("프리팹")]
         [SerializeField] private GameObject _employeeStatusMiniItemPrefab;
@@ -90,15 +86,27 @@ namespace GameDevTycoon.UI.Ingame
                 .Subscribe(_ => { AudioManager.Instance?.PlaySFXNegative(); ShowNextPersonalOpinion(); })
                 .AddTo(this);
 
-            for (int i = 0; i < _nextButtons.Length; i++)
+            for (int i = 0; i < _view.NextButtonCount; i++)
             {
                 int idx = i;
-                _nextButtons[idx].OnClickAsObservable()
+                _view.OnNextButtonClicked(idx)
                     .Subscribe(_ =>
                     {
                         AudioManager.Instance?.PlaySFXClick();
                         _roleIndex = idx + 1;
                         ShowReviewForCurrentRole();
+                    })
+                    .AddTo(this);
+            }
+
+            for (int i = 0; i < _view.ReAdoptButtonCount; i++)
+            {
+                int idx = i;
+                _view.OnReAdoptButtonClicked(idx)
+                    .Subscribe(_ =>
+                    {
+                        AudioManager.Instance?.PlaySFXClick();
+                        OnReAdoptReport(idx);
                     })
                     .AddTo(this);
             }
@@ -158,8 +166,8 @@ namespace GameDevTycoon.UI.Ingame
             _roleIndex = 0;
             ShowReviewForCurrentRole();
 
-            for (int i = 0; i < _nextButtons.Length; i++)
-                _nextButtons[i].interactable = false;
+            for (int i = 0; i < _view.NextButtonCount; i++)
+                _view.SetNextButtonInteractable(i, false);
         }
 
         private void ShowReviewForCurrentRole()
@@ -221,13 +229,30 @@ namespace GameDevTycoon.UI.Ingame
 
             _view.PanelReportDetail.SetActive(false);
             _view.SetSlideInteractable(false);
-            _nextButtons[_roleIndex].interactable = true;
+            _view.SetNextButtonInteractable(_roleIndex, true);
         }
 
         private void OnCancelDetail()
         {
             _view.PanelReportDetail.SetActive(false);
             _view.SetSlideInteractable(false);
+        }
+
+        // 채택된 보고서를 취소하고 해당 직군 카드를 다시 선택 가능한 상태로 되돌림
+        private void OnReAdoptReport(int roleIndex)
+        {
+            Role role = RoleOrder[roleIndex];
+
+            if (!Company.Instance.curProject.selectedReports.ContainsKey(role))
+                return;
+
+            Company.Instance.curProject.DeselectReport(role);
+
+            var cards = _view.GetCards(roleIndex);
+            foreach (var card in cards)
+                card.SetDisabled(false);
+
+            _view.SetNextButtonInteractable(roleIndex, false);
         }
 
         /// <summary>
