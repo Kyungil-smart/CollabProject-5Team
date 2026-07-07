@@ -29,7 +29,7 @@ public class _EmployeeManager : MonoBehaviour
     public Employee lastHiredEmployee;
     public const int TrainingDurationWeeks = 4;
     const float DailyLeaveChance = 0.25f;
-    public static event Action<Employee> OnEmployeeLeft;
+    public static event Action<Employee> OnEmployeeSelfLeft;
 
     [Header("스스로 퇴사 가능?")]
     public bool canLeaveSelf = true;
@@ -199,7 +199,7 @@ public class _EmployeeManager : MonoBehaviour
             FireEmployee(employee);
             GameManager.Instance.RemoveNpcFromScene(employee);
 
-            OnEmployeeLeft?.Invoke(employee);
+            OnEmployeeSelfLeft?.Invoke(employee);
             return;
         }
     }

@@ -62,6 +62,16 @@ namespace GameDevTycoon.UI
         private IDisposable _spySubscription;
         private IDisposable _spyCancelSubscription;
 
+        private void OnEnable()
+        {
+            _EmployeeManager.OnEmployeeSelfLeft += ShowEmployeeSelfLeftNotice;
+        }
+
+        private void OnDisable()
+        {
+            _EmployeeManager.OnEmployeeSelfLeft -= ShowEmployeeSelfLeftNotice;
+        }
+
         private void Awake()
         {
             if (_confirmPopup != null) _confirmPopup.SetActive(false);
@@ -168,6 +178,18 @@ namespace GameDevTycoon.UI
 
             _noticePopup.SetActive(true);
             WaitAndHideNoticeAsync().Forget();
+        }
+
+        private void ShowEmployeeSelfLeftNotice(Employee employee)
+        {
+            ShowNoticePopup(
+                GetEmployeeSelfLeftNoticeComment(employee),
+                employee.so.Name,
+                employee.so.iconNormal);
+        }
+        private string GetEmployeeSelfLeftNoticeComment(Employee employee)
+        {
+            return $"{employee.so.Name} 직원이 회사를 떠났습니다.";
         }
 
         /// <summary>
