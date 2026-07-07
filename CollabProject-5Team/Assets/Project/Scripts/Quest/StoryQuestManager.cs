@@ -52,11 +52,13 @@ public class StoryQuestManager : MonoBehaviour
     }
     private void Start()
     {
+        DateTimeManager.OnDay += ProcessForceSpyLeave;
         DateTimeManager.OnNight += TryEnterEndingScene;
     }
 
     private void OnDestroy()
     {
+        DateTimeManager.OnDay -= ProcessForceSpyLeave;
         DateTimeManager.OnNight -= TryEnterEndingScene;
     }
 
@@ -251,12 +253,6 @@ public class StoryQuestManager : MonoBehaviour
             }
         }
 
-        foreach (Employee employee in _EmployeeManager.Instance.haveEmployees.haveEmployeeList)
-        {
-            if (employee.isSpy)
-                return employee;
-        }
-
         return null;
     }
     #endregion
@@ -286,6 +282,8 @@ public class StoryQuestManager : MonoBehaviour
         if (isSpyQuest)
             curSpyQuestID = GetNextSpyQuestId(completedQuestId);
 
+        QueueSpyResultEmployeeLeave(completedQuestId);
+
         DateTimeManager.Instance.CompleteDayWork();
     }
 
@@ -295,6 +293,36 @@ public class StoryQuestManager : MonoBehaviour
         isCorrectSpySelected = isCorrect;
         curSpyQuestID = isCorrect ? CorrectSpyResultQuestId : WrongSpyResultQuestId;
         DateTimeManager.Instance.CompleteDayWork();
+    }
+
+    void QueueSpyResultEmployeeLeave(int completedQuestId)
+    {
+        switch (completedQuestId)
+        {
+            case CorrectSpyResultQuestId:
+                _EmployeeManager.Instance.leavePendingEmployees.Add(GetSpyEmployee());
+                break;
+            case WrongSpyResultQuestId:
+                _EmployeeManager.Instance.leavePendingEmployees.Add(GetSpyEmployee());
+                _EmployeeManager.Instance.leavePendingEmployees.Add(selectedSpyEmployee);
+                break;
+        }
+    }
+
+    void ProcessForceSpyLeave()
+    {
+        bool forceLeave = curSpyQuestID switch
+        {
+            CorrectSpyEpilogueQuestId => true,
+            WrongSpyEpilogueQuestId => true,
+            _ => false
+        };
+
+        if (forceLeave)
+        {
+            _EmployeeManager.Instance.canLeaveSelf = true;
+            _EmployeeManager.Instance.TryProcessDailyLeave(force: true);
+        }
     }
 
     int GetNextSpyQuestId(int completedQuestId)
