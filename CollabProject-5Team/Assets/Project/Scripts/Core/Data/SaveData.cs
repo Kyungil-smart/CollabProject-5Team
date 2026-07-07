@@ -26,6 +26,7 @@ public class SaveData
     public Dictionary<Role, int> weeklyBonusPoints = new();
     public List<int> completedStoryQuestIds = new();
     public int curSpyQuestID;
+    public int selectedSpyEmployeeId;
 
     // Company 저장
     [Header("Company Data")]
