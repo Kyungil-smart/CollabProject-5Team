@@ -62,6 +62,16 @@ namespace GameDevTycoon.UI
         private IDisposable _spySubscription;
         private IDisposable _spyCancelSubscription;
 
+        private void OnEnable()
+        {
+            _EmployeeManager.OnEmployeeSelfLeft += ShowEmployeeSelfLeftNotice;
+        }
+
+        private void OnDisable()
+        {
+            _EmployeeManager.OnEmployeeSelfLeft -= ShowEmployeeSelfLeftNotice;
+        }
+
         private void Awake()
         {
             if (_confirmPopup != null) _confirmPopup.SetActive(false);
@@ -168,6 +178,26 @@ namespace GameDevTycoon.UI
 
             _noticePopup.SetActive(true);
             WaitAndHideNoticeAsync().Forget();
+        }
+
+        private void ShowEmployeeSelfLeftNotice(Employee employee)
+        {
+            ShowNoticePopup(
+                GetEmployeeSelfLeftNoticeComment(employee),
+                employee.so.Name,
+                employee.so.iconNormal);
+        }
+        private string GetEmployeeSelfLeftNoticeComment(Employee employee)
+        {
+            if (!employee.isSpy)
+                return employee.so.selfLeftText;
+
+            return StoryQuestManager.Instance.curSpyQuestID switch
+            {
+                1046 => "<color=red>허접~ 내가 스파이다! ㅌㅌㅌ\n정보 잘 먹고 갑니다~\nㅋㅋㅋㅋㅋㅋㅋㅋㅋ</color>",
+                1045 => "젠장! 어떻게 알았지?\n<color=red>그래.. 내가 스파이다!</color>",
+                _ => "<color=red>나 스파이 인데?!\n퇴사한다.. 이유는 몰?루</color>"//벌어져서는 안될일. 
+            };
         }
 
         /// <summary>

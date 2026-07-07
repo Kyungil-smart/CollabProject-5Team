@@ -52,11 +52,13 @@ public class StoryQuestManager : MonoBehaviour
     }
     private void Start()
     {
+        DateTimeManager.OnDay += ProcessForceSpyLeave;
         DateTimeManager.OnNight += TryEnterEndingScene;
     }
 
     private void OnDestroy()
     {
+        DateTimeManager.OnDay -= ProcessForceSpyLeave;
         DateTimeManager.OnNight -= TryEnterEndingScene;
     }
 
@@ -88,10 +90,13 @@ public class StoryQuestManager : MonoBehaviour
         if (curSpyQuestID > 0)
             return SelectCurrentSpyQuest(); // 스파이 퀘스트 진행중이면 여기
 
+        StoryQuestPoolSO largeProjectSpyQuest = SelectLargeProjectSpyQuest();
+        if (largeProjectSpyQuest != null) return largeProjectSpyQuest;
+
         StoryQuestPoolSO normalQuest = SelectNormalStoryQuest(); // 일반 퀘스트 조건체크
         if (normalQuest != null) return normalQuest;
 
-        return SelectSpyStartQuest(); // 스파이시작 퀘스트 조건체크
+        return null;
     }
 
     StoryQuestPoolSO SelectCurrentSpyQuest()
@@ -115,12 +120,12 @@ public class StoryQuestManager : MonoBehaviour
         return null;
     }
 
-    StoryQuestPoolSO SelectSpyStartQuest()
+    StoryQuestPoolSO SelectLargeProjectSpyQuest()
     {
-        if (completedStoryQuestIds.Contains(SpyQuestStartId)) return null;
+        if (completedStoryQuestIds.Contains(LargeProjectSpyQuestId)) return null;
 
-        StoryQuestPoolSO spyStartQuest = StoryQuestDataManager.Instance.GetPoolEntry(SpyQuestStartId);
-        return IsSpyQuestConditionSatisfied(spyStartQuest) ? spyStartQuest : null;
+        StoryQuestPoolSO largeProjectSpyQuest = StoryQuestDataManager.Instance.GetPoolEntry(LargeProjectSpyQuestId);
+        return IsSpyQuestConditionSatisfied(largeProjectSpyQuest) ? largeProjectSpyQuest : null;
     }
 
     bool StartStoryQuest(StoryQuestPoolSO questSO)
@@ -128,11 +133,8 @@ public class StoryQuestManager : MonoBehaviour
         Transform bubbleTarget = ResolveBubbleTarget(questSO.id);
         if (bubbleTarget == null) return false;
 
-        if (questSO.isSpyQuest || questSO.id == SpyQuestStartId)
+        if (questSO.isSpyQuest)
             curSpyQuestID = questSO.id;
-
-        if (questSO.id == LargeProjectSpyQuestId)
-            _EmployeeManager.Instance.canLeaveSelf = false;
 
         curStoryQuest = new StoryQuest();
         curStoryQuest.Init(questSO);
@@ -154,6 +156,7 @@ public class StoryQuestManager : MonoBehaviour
         {
             FirstStoryQuestId => Company.Instance.completedProjects.Count > 0,
             FirstHireQuestId => _EmployeeManager.Instance.lastHiredEmployee != null,
+            SpyQuestStartId => Company.Instance.level == 3,
             _ => false
         };
     }
@@ -162,7 +165,6 @@ public class StoryQuestManager : MonoBehaviour
     {
         return questSO.id switch
         {
-            SpyQuestStartId => Company.Instance.level == 3,
             LargeProjectSpyQuestId => Company.Instance.activeProjectCount.Value > 0 &&
                                       Company.Instance.curProject.Scale == ProjectSize.Large,
             _ => true
@@ -180,28 +182,28 @@ public class StoryQuestManager : MonoBehaviour
         if (questId == FirstHireQuestId)
         {
             _currentSpeaker = _EmployeeManager.Instance.lastHiredEmployee;
-            _currentSpeaker2 = GameManager.Instance.GetRandomActiveEmployee();
+            _currentSpeaker2 = GameManager.Instance.GetNonSpyEmployee();
             return _currentSpeaker.transform;
         }
 
         if (questId == SpyQuestStartId)
         {
-            _currentSpeaker = GameManager.Instance.GetRandomActiveEmployee();
-            _currentSpeaker2 = GameManager.Instance.GetRandomActiveEmployee();
+            _currentSpeaker = GameManager.Instance.GetNonSpyEmployee();
+            _currentSpeaker2 = GameManager.Instance.GetNonSpyEmployee();
 
             return GameObject.FindWithTag(FlowerTag).transform;
         }
 
         if (questId == SelectSpyQuestId)
         {
-            _currentSpeaker = GameManager.Instance.GetRandomActiveEmployee();
-            _currentSpeaker2 = GameManager.Instance.GetRandomActiveEmployee();
+            _currentSpeaker = GameManager.Instance.GetNonSpyEmployee();
+            _currentSpeaker2 = GameManager.Instance.GetNonSpyEmployee();
 
             return GameObject.FindWithTag(DeskTag).transform;
         }
 
-        _currentSpeaker = GameManager.Instance.GetRandomActiveEmployee();
-        _currentSpeaker2 = GameManager.Instance.GetRandomActiveEmployee();
+        _currentSpeaker = GameManager.Instance.GetNonSpyEmployee();
+        _currentSpeaker2 = GameManager.Instance.GetNonSpyEmployee();
         return _currentSpeaker.transform;
     }
     // 스토리북 띄워야하는 퀘스트인지 확인
@@ -251,12 +253,6 @@ public class StoryQuestManager : MonoBehaviour
             }
         }
 
-        foreach (Employee employee in _EmployeeManager.Instance.haveEmployees.haveEmployeeList)
-        {
-            if (employee.isSpy)
-                return employee;
-        }
-
         return null;
     }
     #endregion
@@ -286,6 +282,8 @@ public class StoryQuestManager : MonoBehaviour
         if (isSpyQuest)
             curSpyQuestID = GetNextSpyQuestId(completedQuestId);
 
+        QueueSpyResultEmployeeLeave(completedQuestId);
+
         DateTimeManager.Instance.CompleteDayWork();
     }
 
@@ -295,6 +293,37 @@ public class StoryQuestManager : MonoBehaviour
         isCorrectSpySelected = isCorrect;
         curSpyQuestID = isCorrect ? CorrectSpyResultQuestId : WrongSpyResultQuestId;
         DateTimeManager.Instance.CompleteDayWork();
+    }
+
+    void QueueSpyResultEmployeeLeave(int completedQuestId)
+    {
+        switch (completedQuestId)
+        {
+            case CorrectSpyResultQuestId:
+                _EmployeeManager.Instance.leavePendingEmployees.Add(GetSpyEmployee());
+                break;
+            case WrongSpyResultQuestId:
+                _EmployeeManager.Instance.leavePendingEmployees.Add(GetSpyEmployee());
+                _EmployeeManager.Instance.leavePendingEmployees.Add(selectedSpyEmployee);
+                break;
+        }
+    }
+
+    void ProcessForceSpyLeave()
+    {
+        bool forceLeave = curSpyQuestID switch
+        {
+            CorrectSpyEpilogueQuestId => true,
+            WrongSpyEpilogueQuestId => true,
+            EndingQuestId => true,
+            _ => false
+        };
+
+        if (forceLeave)
+        {
+            _EmployeeManager.Instance.canLeaveSelf = true;
+            _EmployeeManager.Instance.TryProcessDailyLeave(force: true);
+        }
     }
 
     int GetNextSpyQuestId(int completedQuestId)
@@ -330,6 +359,7 @@ public class StoryQuestManager : MonoBehaviour
         if (!completedStoryQuestIds.Contains(EndingQuestId)) return;
 
         // TODO: 마지막 스토리 퀘스트 완료 후 평판 300 달성 시 OnNight 타이밍에 엔딩 씬으로 전환
+        Debug.Log("<color=green>엔딩 진입!</color>");
     }
 
     #region Save/Load

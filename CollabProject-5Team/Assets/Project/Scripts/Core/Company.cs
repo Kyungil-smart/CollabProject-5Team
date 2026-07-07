@@ -256,6 +256,9 @@ public class Company : MonoBehaviour
     {
         if (level < 3) return;
         if (project.Scale != ProjectSize.Large) return;
+        if (StoryQuestManager.Instance.curSpyQuestID > 1042) return;
+
+        _EmployeeManager.Instance.canLeaveSelf = false;
 
         List<Employee> employees = project.GetAllEmployees();
         foreach (Employee employee in employees)
