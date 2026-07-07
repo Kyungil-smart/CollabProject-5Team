@@ -216,6 +216,7 @@ public class GameManager : MonoBehaviour
 
         // 포인트, 스폰 정보 갱신
         PointManager.Instance.RefreshPoints(_currentMapTransform);
+        QuestManager.Instance?.SetQuestObjectsRoot(_currentMapTransform);
 
         
         RefreshSitPoints();
