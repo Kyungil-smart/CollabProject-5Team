@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using static ManagementStatusData;
 
 public class AchievementSystem : MonoBehaviour
 {
@@ -48,9 +49,9 @@ public class AchievementSystem : MonoBehaviour
         RegisterAchievement(new AchievementData { id = "Hire_03", title = "입이 많아졌네"        , description = "10명 고용하기", targetEvent = AchievementNotifyType.OnHireEmployeeChanged, targetValue = 10 });
 
         // 4-2. 해고
-        RegisterAchievement(new AchievementData { id = "Fire_01", title = "미안하게 됬습니다.", description = "1명 해고하기"  , targetEvent = AchievementNotifyType.OnPlayTimeChanged, targetValue = 5 });
-        RegisterAchievement(new AchievementData { id = "Fire_02", title = "혹독한 사회"      , description = "5명 해고하기"  , targetEvent = AchievementNotifyType.OnPlayTimeChanged, targetValue = 5 });
-        RegisterAchievement(new AchievementData { id = "Fire_03", title = "악덕 사장"        , description = "10명 해고하기", targetEvent = AchievementNotifyType.OnPlayTimeChanged, targetValue = 10 });
+        RegisterAchievement(new AchievementData { id = "Fire_01", title = "미안하게 됬습니다.", description = "1명 해고하기"  , targetEvent = AchievementNotifyType.OnFireEmployeeChanged, targetValue = 1 });
+        RegisterAchievement(new AchievementData { id = "Fire_02", title = "혹독한 사회"      , description = "5명 해고하기"  , targetEvent = AchievementNotifyType.OnFireEmployeeChanged, targetValue = 5 });
+        RegisterAchievement(new AchievementData { id = "Fire_03", title = "악덕 사장"        , description = "10명 해고하기", targetEvent = AchievementNotifyType.OnFireEmployeeChanged, targetValue = 10 });
     }
 
     private void RegisterAchievement(AchievementData data)
@@ -88,8 +89,39 @@ public class AchievementSystem : MonoBehaviour
     }
 
     /////////////////////////// 저장 ///////////////////////////
-    
+
     public void ExportAchievementData(SaveData data)
     {
+        data._achievementStates.Clear();
+
+        foreach (var list in _achievementRegistry.Values)
+        {
+            foreach (var ach in list)
+            {
+                data._achievementStates.Add(new AchievementSaveInfo
+                {
+                    id = ach.id,
+                    currentValue = ach.currentValue,
+                    isUnlocked = ach.isUnlocked
+                });
+            }
+        }
+    }
+
+    public void ImportAchievementData(SaveData data)
+    {
+        foreach (var savedAch in data._achievementStates)
+        {
+            foreach (var list in _achievementRegistry.Values)
+            {
+                var ach = list.Find(x => x.id == savedAch.id);
+                if (ach != null)
+                {
+                    ach.currentValue = savedAch.currentValue;
+                    ach.isUnlocked = savedAch.isUnlocked;
+                    break;
+                }
+            }
+        }
     }
 }
