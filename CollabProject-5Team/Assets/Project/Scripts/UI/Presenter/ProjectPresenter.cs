@@ -293,7 +293,7 @@ namespace GameDevTycoon.UI.Ingame
                 cardGO.GetComponent<IBindable<Employee>>().Bind(employee);
 
                 bool isAssigned = IsSelected(employee);
-                bool isInEducation = false; // [TODO: 교육 시스템 연결 후 처리]
+                bool isInEducation = _EmployeeManager.Instance.GetTraining(employee) != null;
                 var assignState = isAssigned ? StaffAssignState.Assigned
                                 : isInEducation ? StaffAssignState.InEducation
                                 : StaffAssignState.Default;
