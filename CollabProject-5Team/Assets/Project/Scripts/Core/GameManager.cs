@@ -216,6 +216,7 @@ public class GameManager : MonoBehaviour
 
         // 포인트, 스폰 정보 갱신
         PointManager.Instance.RefreshPoints(_currentMapTransform);
+        QuestManager.Instance?.SetQuestObjectsRoot(_currentMapTransform);
 
         
         RefreshSitPoints();
@@ -225,6 +226,10 @@ public class GameManager : MonoBehaviour
         foreach (var employee in _activeEmployees)
         {
             var npc = employee.GetComponent<NPCController>();
+
+            npc.IsFirstTask = true; 
+            npc.IsMoveToRest = false;
+            
             // 위치 초기하
             npc.transform.position = _currentNpcSpawnPoint.position;
 
@@ -246,13 +251,18 @@ public class GameManager : MonoBehaviour
 
     public Transform GetRandomActiveNpcTransform()
     {
-        Employee employee = GetRandomActiveEmployee();
+        Employee employee = _activeEmployees[Random.Range(0, _activeEmployees.Count)]; 
         return employee.transform;
     }
-    public Employee GetRandomActiveEmployee()
+    public Employee GetNonSpyEmployee()
     {
-        if (_activeEmployees.Count == 0) return null;
-        return _activeEmployees[Random.Range(0, _activeEmployees.Count)];
+        List<Employee> nonSpyEmployees = new();
+        foreach (Employee employee in _activeEmployees)
+        {
+            if (!employee.isSpy)
+                nonSpyEmployees.Add(employee);
+        }
+        return nonSpyEmployees[Random.Range(0, nonSpyEmployees.Count)];
     }
 
     // 퇴근 명령 SpawnPoint로 이동 후 비활성화

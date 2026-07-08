@@ -41,11 +41,6 @@ namespace Dialogue
                 AudioManager.Instance?.PlaySFXClick();
                 SkipTyping();
                 _justSkipped = true;
-                if (!_isChoiceMode)
-                {
-                    if (OnNextAction != null) OnNextAction.Invoke();
-                    else Advance();
-                }
             }
         }
 

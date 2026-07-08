@@ -281,6 +281,11 @@ public class PlayerMove : MonoBehaviour
                 case PointType.Drink:       _anim.SetTrigger("Drink"); Invoke(nameof(ExitInteraction), 6f); break;
                 case PointType.CopyMachine: _anim.SetTrigger("Fax"); Invoke(nameof(ExitInteraction), 18f); break;
                 case PointType.ServerRoom:  _anim.SetTrigger("PushButton"); Invoke(nameof(ExitInteraction), 4f); break;
+                case PointType.Look:        _anim.SetBool("IsLooking", true); break;
+                case PointType.Sleep:       _anim.SetBool("IsSleeping", true); break;
+                case PointType.Play:        _anim.SetBool("IsPlaying", true); break;
+                case PointType.Make:        _anim.SetTrigger("Make"); Invoke(nameof(ExitInteraction), 2f); break;
+                case PointType.Find:        _anim.SetTrigger("Find"); Invoke(nameof(ExitInteraction), 15f); break;
 
             }
         }
@@ -303,6 +308,9 @@ public class PlayerMove : MonoBehaviour
 
         _anim.SetBool("IsWorking", false);
         _anim.SetBool("IsResting", false);
+        _anim.SetBool("IsLooking", false);
+        _anim.SetBool("IsSleeping", false);
+        _anim.SetBool("IsPlaying", false);
         _anim.SetTrigger("Idle");
 
         NavMeshHit closestHit;

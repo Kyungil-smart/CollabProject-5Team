@@ -56,6 +56,12 @@ namespace GameDevTycoon.UI.Ingame
         [SerializeField] private ReportCardView[] _programmerCards;
         [SerializeField] private GameObject[] _programmerDividers;
 
+        [Header("직군별 보고서 Next Buttons")]
+        [SerializeField] private Button[] _nextButtons;
+
+        [Header("직군별 보고서 ReAdopt Buttons")]
+        [SerializeField] private Button[] _reAdoptButtons;
+
         [Header("Panel_ReportDetail — 담당자 위임")]
         [SerializeField] private GameObject _panelReportDetail;
         [SerializeField] private Image _profileIcon;
@@ -93,6 +99,15 @@ namespace GameDevTycoon.UI.Ingame
         public Observable<Unit> OnCancelClicked => _cancelBtn.OnClickAsObservable();
         public Observable<Unit> OnPersonalOpinionAdoptClicked => _personalOpinionAdoptButton.OnClickAsObservable();
         public Observable<Unit> OnPersonalOpinionBackClicked => _personalOpinionBackButton.OnClickAsObservable();
+
+        public int NextButtonCount => _nextButtons.Length;
+        public int ReAdoptButtonCount => _reAdoptButtons.Length;
+
+        public Observable<Unit> OnNextButtonClicked(int roleIndex) => _nextButtons[roleIndex].OnClickAsObservable();
+        public Observable<Unit> OnReAdoptButtonClicked(int roleIndex) => _reAdoptButtons[roleIndex].OnClickAsObservable();
+
+        public void SetNextButtonInteractable(int roleIndex, bool interactable) =>
+            _nextButtons[roleIndex].interactable = interactable;
 
         // 담당자 패널 Show/Hide용 — Presenter에서 순서 제어
         public GameObject PanelEmployeeComment => _panelEmployeeComment;

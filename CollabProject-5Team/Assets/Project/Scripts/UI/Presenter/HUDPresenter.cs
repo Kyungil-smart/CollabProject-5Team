@@ -19,6 +19,11 @@ namespace GameDevTycoon.UI.Ingame
         [SerializeField] private SaveView _saveView;
         [SerializeField] private QuestPresenter _questPresenter;
 
+        [Header("하단 팝업 Presenter")]
+        [SerializeField] private HRPresenter _hrPresenter;
+        [SerializeField] private ProjectPresenter _projectPresenter;
+        [SerializeField] private CompanyPresenter _companyPresenter;
+
         [Header("업무 시작 시 이동할 데스크탑 프리팹")]
         [SerializeField] private DeskInteract _desk;
 
@@ -32,22 +37,11 @@ namespace GameDevTycoon.UI.Ingame
 
         private WorkStartIcon _workStartIcon;
 
-        private HRPresenter _hrPresenter;
-        private ProjectPresenter _projectPresenter;
-        private CompanyPresenter _companyPresenter;
-
         // NightUI 버튼 인덱스 — HUDView 배열 순서와 일치해야 함
         private const int IndexHR = 0;
         private const int IndexProject = 1;
         private const int IndexCompany = 2;
         private const int IndexSave = 3;
-
-        private void Awake()
-        {
-            _hrPresenter = FindObjectOfType<HRPresenter>(true);
-            _projectPresenter = FindObjectOfType<ProjectPresenter>(true);
-            _companyPresenter = FindObjectOfType<CompanyPresenter>(true);
-        }
 
         // 모든 Presenter의 Start() 완료 후 바인딩을 보장하기 위해 한 프레임 대기
         private async void Start()
@@ -62,7 +56,9 @@ namespace GameDevTycoon.UI.Ingame
             // 튜토리얼 중 Night로 시작하면 OnDay 이벤트가 오지 않으므로 미리 생성·등록
             if (TutorialManager.Instance != null && _workStartIconPrefab != null && _workStartIcon == null)
             {
-                _desk = FindObjectOfType<DeskInteract>(true);
+                if (_desk == null)
+                    _desk = FindObjectOfType<DeskInteract>(true);
+
                 if (_desk != null)
                 {
                     _workStartIcon = Instantiate(_workStartIconPrefab, (RectTransform)_view.transform)
@@ -265,7 +261,8 @@ namespace GameDevTycoon.UI.Ingame
             _view.SwitchToDay();
             AudioManager.Instance?.PlayBGM(_dayBGM);
 
-            _desk = FindObjectOfType<DeskInteract>(true);
+            if (_desk == null)
+                _desk = FindObjectOfType<DeskInteract>(true);
 
             if (_workStartIconPrefab != null && _desk != null)
             {
