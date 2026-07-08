@@ -139,6 +139,8 @@ namespace GameDevTycoon.UI.Ingame
             _employeeStatusSlideRect.anchoredPosition =
                 new Vector2(_employeeStatusSlideRect.anchoredPosition.x, _slideHiddenY);
 
+            SetSlideInteractable(false);
+
             _slideToggleButton.OnClickAsObservable()
                 .Subscribe(_ => ToggleSlide())
                 .AddTo(this);
@@ -152,7 +154,6 @@ namespace GameDevTycoon.UI.Ingame
 
         public void Hide()
         {
-            // [DoTween Bottom Sheet 아웃 연출 추가 예정]
             _canvasReport.SetActive(false);
             SetSlideVisible(false);
         }
