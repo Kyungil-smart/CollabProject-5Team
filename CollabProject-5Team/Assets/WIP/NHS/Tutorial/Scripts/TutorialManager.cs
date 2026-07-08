@@ -15,8 +15,14 @@ public class TutorialManager : MonoBehaviour
         PunchHole,
     }
 
+    public enum HoleShape
+    {
+        Squre,
+        Circle
+    }
+
     // 싱글톤
-    public  static TutorialManager  Instance => _instance;
+    public static TutorialManager  Instance => _instance;
     private static TutorialManager _instance;
 
     // UI 요소들
@@ -412,6 +418,9 @@ public class TutorialManager : MonoBehaviour
     private void TutorialPunchHole()
     {
         if (_currentActiveObject == null) return;
+
+        float shapeValue = (_tutorialSteps[_curIndex].holeShape == HoleShape.Circle) ? 1.0f : 0.0f;
+        _runtimeMaterial.SetFloat("_HoleShape", shapeValue);
 
         var filter = _tutorialPanel.GetComponent<PunchHoleFilter>()
                      ?? _tutorialPanel.AddComponent<PunchHoleFilter>();
