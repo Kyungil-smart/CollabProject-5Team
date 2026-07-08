@@ -67,33 +67,17 @@ public class TutorialManager : MonoBehaviour
         }
         _instance = this;
 
-        // 1. 인스펙터 할당 체크
-        if (_tutorialPanel == null)
-        {
-            Debug.LogError("[TutorialManager] TutorialPanel 변수가 할당되지 않았습니다! 인스펙터를 확인하세요.");
-            return;
-        }
+        if (_tutorialPanel == null) return;
 
-        // 2. Image 컴포넌트 체크
         Image panelImage = _tutorialPanel.GetComponent<Image>();
-        if (panelImage == null)
-        {
-            Debug.LogError("[TutorialManager] TutorialPanel 오브젝트에 Image 컴포넌트가 없습니다!");
-            return;
-        }
+        if (panelImage == null) return;
 
-        // 3. 머티리얼 할당 로직
         Material sourceMat = _templateMaterial != null ? _templateMaterial : panelImage.material;
 
         if (sourceMat != null)
         {
             _runtimeMaterial = new Material(sourceMat);
             panelImage.material = _runtimeMaterial;
-            Debug.Log("[TutorialManager] 머티리얼이 성공적으로 설정되었습니다.");
-        }
-        else
-        {
-            Debug.LogError("[TutorialManager] sourceMat이 null입니다. templateMaterial을 할당했는지 확인하세요.");
         }
     }
 
@@ -164,7 +148,6 @@ public class TutorialManager : MonoBehaviour
         if (_registeredObjects.ContainsKey(id))
         {
             _registeredObjects[id] = tutorialObject;
-            Debug.Log($"[TutorialManager] ID '{id}' 오브젝트가 최신 인스턴스로 갱신되었습니다. ({tutorialObject.name})");
         }
         else
         {
@@ -174,17 +157,9 @@ public class TutorialManager : MonoBehaviour
 
     private void ExecuteTutorial()
     {
-        if (_tutorialSteps == null || _curIndex < 0 || _curIndex >= _tutorialSteps.Count)
-        {
-            Debug.LogError($"[TutorialManager] 인덱스 오류: _curIndex={_curIndex}, 리스트 크기={(_tutorialSteps != null ? _tutorialSteps.Count : 0)}");
-            return;
-        }
+        if (_tutorialSteps == null || _curIndex < 0 || _curIndex >= _tutorialSteps.Count) return;
 
-        if (_tutorialSteps[_curIndex] == null)
-        {
-            Debug.LogError($"[TutorialManager] _tutorialSteps[{_curIndex}] 데이터가 null입니다!");
-            return;
-        }
+        if (_tutorialSteps[_curIndex] == null) return;
 
         _tutorialPanel.             SetActive(true);
         _tutorialPointer.gameObject.SetActive(false);
@@ -212,7 +187,6 @@ public class TutorialManager : MonoBehaviour
                 _myInputField.text = "임시 프로젝트";
 
                 _myInputField.ForceLabelUpdate();
-                Debug.Log($"[TutorialManager] InputField 타겟 감지: 자동으로 이름을 채웠습니다. ({_myInputField.text})");
             }
         }
 
@@ -238,8 +212,6 @@ public class TutorialManager : MonoBehaviour
 
     private void ProceedTutorial()
     {
-        Debug.Log($"[TutorialManager] ProceedTutorial 호출됨! 현재 인덱스: {_curIndex}");
-
         _curIndex++;
 
         if(_curIndex >= _tutorialSteps.Count)
@@ -247,14 +219,7 @@ public class TutorialManager : MonoBehaviour
             _tutorialPanel.SetActive(false);
 
             if (SceneFlowManager.Instance != null)
-            {
                 SceneFlowManager.Instance.CompleteCurrentFlow();
-                Debug.LogError("[TutorialManager] SceneFlowManager 인스턴스를 찾았습니다");
-            }
-            else
-            {
-                Debug.LogError("[TutorialManager] SceneFlowManager 인스턴스를 찾을 수 없습니다.");
-            }
 
             return;
         }
