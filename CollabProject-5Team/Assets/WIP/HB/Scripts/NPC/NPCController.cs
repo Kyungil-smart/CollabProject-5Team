@@ -133,6 +133,7 @@ public class NPCController : MonoBehaviour
     {
         if (IsInteracting) return;
         IsInteracting = true;
+        Anim.SetBool("IsInteracting", true);
 
         if (Agent != null && Agent.enabled && Agent.isOnNavMesh)
         {
@@ -149,6 +150,7 @@ public class NPCController : MonoBehaviour
     public void EndConversation()
     {
             IsInteracting = false;
+            Anim.SetBool("IsInteracting", false);
 
             if (Agent != null)
             {
@@ -203,13 +205,14 @@ public class NPCController : MonoBehaviour
         }
     }
 
+/*
     private bool IsAtDestination()
     {
         if (CurrentTarget == null) return false;
         float distance = Vector3.Distance(transform.position, CurrentTarget.GetTransform().position);
         return distance <= 0.5f;
     }
-
+*/
     public void SetTargetPoint(IInteractablePoint point) => _myTargetPoint = point;
 
     public INPCState GetCurrentState() 
