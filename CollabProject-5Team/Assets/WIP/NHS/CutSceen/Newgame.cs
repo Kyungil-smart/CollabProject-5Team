@@ -155,6 +155,7 @@ public class Newgame : MonoBehaviour
         }
 
         _companyName = input;
+        SaveLoadSystem.Instance.pendingCompanyName = _companyName;
         Company.Instance.CompanyName = _companyName;
 
          _setCompanyPanel.SetActive(false);
@@ -174,6 +175,7 @@ public class Newgame : MonoBehaviour
         }
 
         _playerName = input;
+        SaveLoadSystem.Instance.pendingPlayerName = _playerName;
         Company.Instance.playerName = _playerName;
 
         _isFinishedSetPlayerName = true;

@@ -23,6 +23,14 @@ public class OnGameSceneLoad : MonoBehaviour
         {
             SaveLoadSystem.Instance.LoadGame(loadedData);
         }
+        else
+        {
+            // 새 게임 시작시: 컷씬에서 받은 플레이어, 회사 이름을 적용
+            if (!string.IsNullOrWhiteSpace(SaveLoadSystem.Instance.pendingCompanyName))
+                Company.Instance.CompanyName = SaveLoadSystem.Instance.pendingCompanyName;
+            if (!string.IsNullOrWhiteSpace(SaveLoadSystem.Instance.pendingPlayerName))
+                Company.Instance.playerName = SaveLoadSystem.Instance.pendingPlayerName;
+        }
 
         GameManager.Instance.InitializeForSaveSystem().Forget();
 

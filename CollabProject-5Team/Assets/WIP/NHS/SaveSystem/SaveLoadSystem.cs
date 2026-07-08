@@ -18,6 +18,8 @@ public class SaveLoadSystem : MonoBehaviour
     public const int MaxSaveSlots = 3;
 
     public int? pendingLoadSlot;
+    public string pendingPlayerName;
+    public string pendingCompanyName;
 
     private static readonly JsonSerializerSettings jsonSettings = new()
     {
