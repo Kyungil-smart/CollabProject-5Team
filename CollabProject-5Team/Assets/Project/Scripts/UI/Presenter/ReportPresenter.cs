@@ -62,7 +62,7 @@ namespace GameDevTycoon.UI.Ingame
                 {
                     AudioManager.Instance?.PlaySFXClick();
                     _view.ShowPanel(ReportPanel.EmployeeComment);
-                    // [TODO: 담당자 EmployeeComment 패널 초기화 호출]
+                    _view.SetSlideInteractable(false);
                 })
                 .AddTo(this);
 
@@ -126,6 +126,7 @@ namespace GameDevTycoon.UI.Ingame
 
             _view.Show();
             _view.SetSlideVisible(true);
+            _view.SetSlideInteractable(false);
             RefreshCoverInfo();
         }
 
@@ -199,7 +200,7 @@ namespace GameDevTycoon.UI.Ingame
             };
             _view.ShowPanel(panel);
             _view.PanelReportDetail.SetActive(false);
-            _view.SetSlideInteractable(false);
+            _view.SetSlideInteractable(true);
 
             _view.BindReviewCards(_roleIndex, _currentReports, ShowDetail);
         }
@@ -210,7 +211,7 @@ namespace GameDevTycoon.UI.Ingame
             _viewingReport = report;
             _view.SetDetailInfo(report);
             _view.PanelReportDetail.SetActive(true);
-            _view.SetSlideInteractable(true);
+            _view.SetSlideInteractable(false);
             RefreshEmployeeStatusSlide(report.owner);
 
             Debug.Log($"[ReportPresenter] ShowDetail: {report.owner.so.Name}, SlideContent 자식 수: {_view.SlidePreviewContent.childCount}");
@@ -228,14 +229,14 @@ namespace GameDevTycoon.UI.Ingame
                 card.SetDisabled(true);
 
             _view.PanelReportDetail.SetActive(false);
-            _view.SetSlideInteractable(false);
+            _view.SetSlideInteractable(true);
             _view.SetNextButtonInteractable(_roleIndex, true);
         }
 
         private void OnCancelDetail()
         {
             _view.PanelReportDetail.SetActive(false);
-            _view.SetSlideInteractable(false);
+            _view.SetSlideInteractable(true);
         }
 
         // 채택된 보고서를 취소하고 해당 직군 카드를 다시 선택 가능한 상태로 되돌림
@@ -311,7 +312,7 @@ namespace GameDevTycoon.UI.Ingame
             _currentPersonalAgenda = _personalAgendaQueue[_personalAgendaIndex];
             _view.SetPersonalOpinionInfo(_currentPersonalAgenda.employee, _currentPersonalAgenda.agenda);
             _view.ShowPanel(ReportPanel.PersonalOpinion);
-            _view.SetSlideInteractable(false);
+            _view.SetSlideInteractable(true);
         }
 
         private void ShowNextPersonalOpinion()
@@ -347,6 +348,7 @@ namespace GameDevTycoon.UI.Ingame
 
         public void OnPersonalOpinionCompleted()
         {
+            _view.SetSlideInteractable(false);
             _view.ShowPanel(ReportPanel.ReportEnd);
         }
 

@@ -21,6 +21,11 @@ namespace GameDevTycoon.UI.Ingame
         [SerializeField] private Sprite _sliderActiveSprite;
         [SerializeField] private Sprite _sliderInactiveSprite;
 
+        [Header("슬라이더 핸들")]
+        [SerializeField] private Image _sliderHandleImage;
+        [SerializeField] private Sprite _sliderHandleActiveSprite;
+        [SerializeField] private Sprite _sliderHandleInactiveSprite;
+
         [Header("직군 정보")]
         [SerializeField] private Role _role;
 
@@ -45,6 +50,7 @@ namespace GameDevTycoon.UI.Ingame
 
             _checkImage.gameObject.SetActive(false);
             RefreshSliderBackground();
+            RefreshSliderHandle();
 
             OnCountChanged = _countSlider.OnValueChangedAsObservable()
                 .Select(v => (_role, Mathf.RoundToInt(v)));
@@ -65,6 +71,7 @@ namespace GameDevTycoon.UI.Ingame
                 _countSlider.value = 1;
                 _checkImage.gameObject.SetActive(false);
                 RefreshSliderBackground();
+                RefreshSliderHandle();
             }
         }
 
@@ -75,6 +82,7 @@ namespace GameDevTycoon.UI.Ingame
             _countSlider.value = 1;
             _checkImage.gameObject.SetActive(false);
             RefreshSliderBackground();
+            RefreshSliderHandle();
             RefreshJobButtonVisual();
         }
 
@@ -89,6 +97,7 @@ namespace GameDevTycoon.UI.Ingame
 
             _checkImage.gameObject.SetActive(_isSelected);
             RefreshSliderBackground();
+            RefreshSliderHandle();
             RefreshJobButtonVisual();
 
             OnSelectedChanged?.Invoke();
@@ -97,6 +106,11 @@ namespace GameDevTycoon.UI.Ingame
         private void RefreshSliderBackground()
         {
             _sliderBackground.sprite = _isSelected ? _sliderActiveSprite : _sliderInactiveSprite;
+        }
+
+        private void RefreshSliderHandle()
+        {
+            _sliderHandleImage.sprite = _isSelected ? _sliderHandleActiveSprite : _sliderHandleInactiveSprite;
         }
 
         // 선택 상태 시각 피드백 — 실제 스프라이트 교체는 Inspector 배리언트에서 처리
