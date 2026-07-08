@@ -61,8 +61,11 @@ public class TutorialManager : MonoBehaviour
     /////////////////// - 라이프사이클 - ///////////////////
     private void Awake()
     {
-        if (_instance == null) _instance = this;
-        else Destroy(gameObject);
+        if (_instance != null && _instance != this)
+        {
+            Destroy(_instance.gameObject);
+        }
+        _instance = this;
 
         // 1. 인스펙터 할당 체크
         if (_tutorialPanel == null)
@@ -235,11 +238,24 @@ public class TutorialManager : MonoBehaviour
 
     private void ProceedTutorial()
     {
+        Debug.Log($"[TutorialManager] ProceedTutorial 호출됨! 현재 인덱스: {_curIndex}");
+
         _curIndex++;
 
         if(_curIndex >= _tutorialSteps.Count)
         {
             _tutorialPanel.SetActive(false);
+
+            if (SceneFlowManager.Instance != null)
+            {
+                SceneFlowManager.Instance.CompleteCurrentFlow();
+                Debug.LogError("[TutorialManager] SceneFlowManager 인스턴스를 찾았습니다");
+            }
+            else
+            {
+                Debug.LogError("[TutorialManager] SceneFlowManager 인스턴스를 찾을 수 없습니다.");
+            }
+
             return;
         }
 

@@ -259,5 +259,18 @@ public class Newgame : MonoBehaviour
     private void EndCutSceen()
     {
         _cutSceneUI.panel.SetActive(false);
+
+        // 로그를 찍어서 신호가 가는지 확인합니다.
+        Debug.Log("컷씬: EndCutSceen 호출됨");
+
+        if (SceneFlowManager.Instance != null)
+        {
+            Debug.Log("컷씬: CompleteCurrentFlow 신호 보냄");
+            SceneFlowManager.Instance.CompleteCurrentFlow();
+        }
+        else
+        {
+            Debug.LogError("컷씬: SceneFlowManager를 찾을 수 없음!");
+        }
     }
 }

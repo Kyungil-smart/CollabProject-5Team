@@ -51,7 +51,7 @@ namespace GameDevTycoon.UI.Title
             // 새 게임은 보내진 로드 슬롯 없음
             SaveLoadSystem.Instance.pendingLoadSlot = null;
 
-            await SceneLoader.Instance.LoadAsync(SceneName.Game);
+            await SceneLoader.Instance.LoadGameFlowAsync();
         }
     }
 }
