@@ -69,17 +69,29 @@ namespace GameDevTycoon.Core
 
             if (!isLoading)
             {
-                await LoadAsync(SceneName.CutScene);
+                await LoadWithLoadingSceneAsync(SceneName.CutScene);
                 await SceneFlowManager.Instance.WaitForFlowCompletion();
 
-                await LoadAsync(SceneName.GameScene_TutorialDay);
+                await LoadWithLoadingSceneAsync(SceneName.GameScene_TutorialDay);
                 await SceneFlowManager.Instance.WaitForFlowCompletion();
 
-                await LoadAsync(SceneName.GameScene_TutorialNight);
+                await LoadWithLoadingSceneAsync(SceneName.GameScene_TutorialNight);
                 await SceneFlowManager.Instance.WaitForFlowCompletion();
             }
 
-            await LoadAsync(SceneName.Game);
+            await LoadWithLoadingSceneAsync(SceneName.Game);
+        }
+
+        public async UniTask LoadWithLoadingSceneAsync(SceneName targetScene)
+        {
+            if (IsLoading) return;
+            IsLoading = true;
+
+            LoadingSceneController.NextSceneName = targetScene.ToSceneString();
+
+            await SceneManager.LoadSceneAsync("LoadingScene").ToUniTask();
+
+            IsLoading = false;
         }
     }
 

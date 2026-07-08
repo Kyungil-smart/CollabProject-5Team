@@ -60,6 +60,9 @@ public class SaveLoadSystem : MonoBehaviour
         if (DateTimeManager.Instance != null)
             DateTimeManager.Instance.ExportSaveData(data);   // 날짜 정보 저장
 
+        if (AchievementSystem.Instance != null)
+            AchievementSystem.Instance.ExportAchievementData(data);
+
         data.realSaveTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm");
 
         string keyName = GetSaveKey(slot);
@@ -113,6 +116,9 @@ public class SaveLoadSystem : MonoBehaviour
 
             if (DateTimeManager.Instance != null)
                 DateTimeManager.Instance.ImportSaveData(data);       // 날짜 정보 로드
+
+            if (AchievementSystem.Instance != null)
+                AchievementSystem.Instance.ImportAchievementData(data);
 
             return true;
         }

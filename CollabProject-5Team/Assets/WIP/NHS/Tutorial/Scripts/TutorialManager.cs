@@ -422,7 +422,7 @@ public class TutorialManager : MonoBehaviour
 
         if (targetRect != null)
         {
-            // (1) 대상이 UI 요소일 때
+            // 대상이 UI 요소일 때
             filter.SetTarget(targetRect);
 
             Vector3[] corners = new Vector3[4];
@@ -441,7 +441,7 @@ public class TutorialManager : MonoBehaviour
         }
         else
         {
-            // (2) 대상이 3D 월드 오브젝트일 때
+            // 대상이 3D 월드 오브젝트일 때
             Vector3 worldPos = _currentActiveObject.transform.position;
             Vector3 screenPos = Camera.main.WorldToScreenPoint(worldPos);
 
