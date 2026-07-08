@@ -15,8 +15,14 @@ public class TutorialManager : MonoBehaviour
         PunchHole,
     }
 
+    public enum HoleShape
+    {
+        Square,
+        Circle
+    }
+
     // 싱글톤
-    public  static TutorialManager  Instance => _instance;
+    public static TutorialManager  Instance => _instance;
     private static TutorialManager _instance;
 
     // UI 요소들
@@ -413,135 +419,80 @@ public class TutorialManager : MonoBehaviour
     {
         if (_currentActiveObject == null) return;
 
-        var filter = _tutorialPanel.GetComponent<PunchHoleFilter>()
-                     ?? _tutorialPanel.AddComponent<PunchHoleFilter>();
+        bool isCircle = (_tutorialSteps[_curIndex].holeShape == HoleShape.Circle);
+        _runtimeMaterial.SetFloat("_HoleShape", isCircle ? 1.0f : 0.0f);
 
-        RectTransform targetRect = _currentActiveObject.GetComponent<RectTransform>();
-        RectTransform panelRect = _tutorialPanel.GetComponent<RectTransform>();
-        Vector4 holeVector = Vector4.zero;
+        var filter = _tutorialPanel.GetComponent<PunchHoleFilter>() ?? _tutorialPanel.AddComponent<PunchHoleFilter>();
 
-        if (targetRect != null)
-        {
-            // 대상이 UI 요소일 때
-            filter.SetTarget(targetRect);
+        Vector4 holeVector = CalculateHoleVector(out bool isTargetUI);
 
-            Vector3[] corners = new Vector3[4];
-            targetRect.GetWorldCorners(corners);
+        if (isTargetUI) filter.SetTarget(_currentActiveObject.GetComponent<RectTransform>(), _tutorialSteps[_curIndex].holeShape);
+        else filter.SetCustomScreenRect(new Vector4(holeVector.x, holeVector.y, holeVector.z, holeVector.w)); // 실제 로직에 맞게 조정 필요
 
-            Vector3 bl = panelRect.InverseTransformPoint(corners[0]); // Bottom Left
-            Vector3 tr = panelRect.InverseTransformPoint(corners[2]); // Top Right
-
-            // 회전이나 스케일 반전을 대비해 안전하게 Min/Max 값 추출
-            float minX = Mathf.Min(bl.x, tr.x);
-            float maxX = Mathf.Max(bl.x, tr.x);
-            float minY = Mathf.Min(bl.y, tr.y);
-            float maxY = Mathf.Max(bl.y, tr.y);
-
-            holeVector = new Vector4(minX, minY, maxX, maxY);
-        }
-        else
-        {
-            // 대상이 3D 월드 오브젝트일 때
-            Vector3 worldPos = _currentActiveObject.transform.position;
-            Vector3 screenPos = Camera.main.WorldToScreenPoint(worldPos);
-
-            float screenObjectSize = 100;
-            Vector4 pixelRect = new Vector4(
-                screenPos.x - screenObjectSize,
-                screenPos.y - screenObjectSize,
-                screenPos.x + screenObjectSize,
-                screenPos.y + screenObjectSize
-            );
-            filter.SetCustomScreenRect(pixelRect);
-
-            // 셰이더용 로컬 좌표 변환
-            Canvas canvas = _tutorialPanel.GetComponentInParent<Canvas>();
-            Camera uiCamera = (canvas.renderMode == RenderMode.ScreenSpaceOverlay) ? null : canvas.worldCamera;
-
-            // 스크린 좌표를 튜토리얼 패널의 로컬 좌표로 변환
-            RectTransformUtility.ScreenPointToLocalPointInRectangle(
-                panelRect,
-                new Vector2(screenPos.x, screenPos.y),
-                uiCamera,
-                out Vector2 localCenter
-            );
-
-            // 캔버스 스케일 팩터를 고려한 구멍 크기 조정
-            float scaleFactor = canvas != null ? canvas.scaleFactor : 1f;
-            float localSize = screenObjectSize / scaleFactor;
-
-            holeVector = new Vector4(
-                localCenter.x - localSize,
-                localCenter.y - localSize,
-                localCenter.x + localSize,
-                localCenter.y + localSize
-            );
-        }
-
-        // 셰이더 데이터 주입
-        var panelImage = _tutorialPanel.GetComponent<Image>();
-        if (panelImage != null && _runtimeMaterial != null)
-        {
-            panelImage.raycastTarget = true;
-
-            // 명시적으로 복제 가공된 런타임 머티리얼에 위치 좌표 주입
-            _runtimeMaterial.SetVector("_HoleRect", holeVector);
-
-            panelImage.SetMaterialDirty(); // 강제 UI 그래픽 갱신
-        }
-
+        _runtimeMaterial.SetVector("_HoleRect", holeVector);
+        _tutorialPanel.GetComponent<Image>().raycastTarget = true;
         SetPointerPosition();
     }
 
-    private void UpdatePunchHole()
+    private Vector4 CalculateHoleVector(out bool isTargetUI)
     {
-        if (_currentActiveObject == null) return;
-
-        var filter = _tutorialPanel.GetComponent<PunchHoleFilter>();
-        if (filter == null) return;
-
-        RectTransform targetRect = _currentActiveObject.GetComponent<RectTransform>();
         RectTransform panelRect = _tutorialPanel.GetComponent<RectTransform>();
-        Vector4 holeVector = Vector4.zero;
+        RectTransform targetRect = _currentActiveObject.GetComponent<RectTransform>();
+        isTargetUI = (targetRect != null);
 
-        if (targetRect != null)
+        if (isTargetUI)
         {
-            // UI 타겟: WorldCorners를 이용해 현재 위치 계산
             Vector3[] corners = new Vector3[4];
             targetRect.GetWorldCorners(corners);
             Vector3 bl = panelRect.InverseTransformPoint(corners[0]);
             Vector3 tr = panelRect.InverseTransformPoint(corners[2]);
 
-            holeVector = new Vector4(
-                Mathf.Min(bl.x, tr.x), Mathf.Min(bl.y, tr.y),
-                Mathf.Max(bl.x, tr.x), Mathf.Max(bl.y, tr.y)
-            );
-            filter.SetTarget(targetRect);
+            return new Vector4(Mathf.Min(bl.x, tr.x), Mathf.Min(bl.y, tr.y),
+                               Mathf.Max(bl.x, tr.x), Mathf.Max(bl.y, tr.y));
         }
         else
         {
-            // 3D 타겟: ScreenPoint 이용
             Vector3 screenPos = Camera.main.WorldToScreenPoint(_currentActiveObject.transform.position);
-
             Canvas canvas = _tutorialPanel.GetComponentInParent<Canvas>();
             Camera uiCamera = (canvas.renderMode == RenderMode.ScreenSpaceOverlay) ? null : canvas.worldCamera;
 
             RectTransformUtility.ScreenPointToLocalPointInRectangle(panelRect, screenPos, uiCamera, out Vector2 localCenter);
 
             float scaleFactor = canvas != null ? canvas.scaleFactor : 1f;
-            float localSize = 100f / scaleFactor; // 기존 screenObjectSize 기준
+            float localSize = 100f / scaleFactor;
 
-            holeVector = new Vector4(
-                localCenter.x - localSize, localCenter.y - localSize,
-                localCenter.x + localSize, localCenter.y + localSize
-            );
-            filter.SetCustomScreenRect(new Vector4(screenPos.x - 100, screenPos.y - 100, screenPos.x + 100, screenPos.y + 100));
+            return new Vector4(localCenter.x - localSize, localCenter.y - localSize,
+                               localCenter.x + localSize, localCenter.y + localSize);
         }
+    }
 
-        // 셰이더 전달
+    private void UpdatePunchHole()
+    {
+        if (_currentActiveObject == null) return;
+
+        // 1. 좌표 계산
+        Vector4 holeVector = CalculateHoleVector(out bool isTargetUI);
+
+        // 2. 셰이더 적용
         if (_runtimeMaterial != null)
         {
             _runtimeMaterial.SetVector("_HoleRect", holeVector);
+        }
+
+        // 3. 필터 업데이트
+        var filter = _tutorialPanel.GetComponent<PunchHoleFilter>();
+        if (filter == null) return;
+
+        RectTransform targetRect = _currentActiveObject.GetComponent<RectTransform>();
+
+        if (isTargetUI)
+        {
+            filter.SetTarget(targetRect, _tutorialSteps[_curIndex].holeShape);
+        }
+        else
+        {
+            Vector3 screenPos = Camera.main.WorldToScreenPoint(_currentActiveObject.transform.position);
+            filter.SetCustomScreenRect(new Vector4(screenPos.x - 100, screenPos.y - 100, screenPos.x + 100, screenPos.y + 100));
         }
     }
 

@@ -13,6 +13,7 @@ public class TutorialDataSO : ScriptableObject
     public string    tutorialExplain;
     public bool         textPosition;
 
-    public int punchHoleX;
-    public int punchHoleY;
+    public HoleShape holeShape;
+    public int       punchHoleX;
+    public int       punchHoleY;
 }
