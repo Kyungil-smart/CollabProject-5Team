@@ -25,14 +25,14 @@ public class _EmployeeManager : MonoBehaviour
     public EmployeeList employeeList;
     public HaveEmployees haveEmployees;
     public List<EmployeeTrainingProgress> activeTrainings = new();
-    public List<Employee> leavePendingEmployees = new();
+    public List<Employee> leavePendingEmployees = new(); // 퇴사하기로 마음 먹은 직원 리스트
     public Employee lastHiredEmployee;
     public const int TrainingDurationWeeks = 4;
     const float DailyLeaveChance = 0.25f;
-    public static event Action<string> OnEmployeeLeft;
+    public static event Action<Employee> OnEmployeeSelfLeft;
 
     [Header("스스로 퇴사 가능?")]
-    public bool canLeaveSelf;
+    public bool canLeaveSelf = true;
     #region DontDestroyOnLoad 없는 Instance
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     public static void Init() => Instance = null;
@@ -173,25 +173,25 @@ public class _EmployeeManager : MonoBehaviour
 
     public void RegisterLeavePendingEmployees()
     {
+        if (!canLeaveSelf) return;
         foreach (Employee employee in haveEmployees.haveEmployeeList)
         {
             if (leavePendingEmployees.Contains(employee))
                 continue;
 
             EmployeeMutableData data = employee.MutableData;
-            if (data.fatigue >= 100 || data.desire <= 0 || data.loyalty <= 0)
+            if (data.fatigue >= 100 || data.loyalty <= 0)
                 leavePendingEmployees.Add(employee);
         }
     }
 
-    public void TryProcessDailyLeave()
+    public void TryProcessDailyLeave(bool force = false) // 직원 스스로 퇴사 시도
     {
         if (!canLeaveSelf) return;
-
         for (int i = 0; i < leavePendingEmployees.Count; i++)
         {
             Employee employee = leavePendingEmployees[i];
-            if (UnityEngine.Random.value >= DailyLeaveChance)
+            if (!force && UnityEngine.Random.value >= DailyLeaveChance)
                 continue;
 
             string employeeName = employee.so.Name;
@@ -199,7 +199,7 @@ public class _EmployeeManager : MonoBehaviour
             FireEmployee(employee);
             GameManager.Instance.RemoveNpcFromScene(employee);
 
-            OnEmployeeLeft?.Invoke(employeeName);
+            OnEmployeeSelfLeft?.Invoke(employee);
             return;
         }
     }
@@ -296,6 +296,7 @@ public class _EmployeeManager : MonoBehaviour
     {
         data.savedEmployees.Clear();
         data.lastHiredEmployeeId = lastHiredEmployee != null ? lastHiredEmployee.so.id : 0;
+        data.canLeaveSelf = canLeaveSelf;
         if (data.leavePendingEmployeeIds == null)
             data.leavePendingEmployeeIds = new List<int>();
         else
@@ -355,6 +356,7 @@ public class _EmployeeManager : MonoBehaviour
     {
         activeTrainings.Clear();
         leavePendingEmployees.Clear();
+        canLeaveSelf = data.canLeaveSelf;
         foreach (Employee emp in haveEmployees.haveEmployeeList)
         {
             if (emp != null)

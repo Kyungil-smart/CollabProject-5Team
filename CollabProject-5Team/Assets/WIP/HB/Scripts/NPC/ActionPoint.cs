@@ -11,6 +11,7 @@ public class ActionPoint : MonoBehaviour, IInteractablePoint
         set
         {
             if (_isOccupied == value) return;
+
             _isOccupied = value;
         }
     }

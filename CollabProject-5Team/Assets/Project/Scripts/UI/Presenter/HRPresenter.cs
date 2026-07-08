@@ -279,6 +279,7 @@ namespace GameDevTycoon.UI.Ingame
 
                     bool isBusy = IsEmployeeBusy(captured);
                     _view.SetEducationButtonInteractable(!isBusy);
+                    _view.SetFireButtonInteractable(_EmployeeManager.Instance.canLeaveSelf);
                 });
             }
         }

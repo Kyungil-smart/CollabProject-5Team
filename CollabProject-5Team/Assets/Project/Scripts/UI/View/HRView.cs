@@ -164,6 +164,7 @@ namespace GameDevTycoon.UI.Ingame
 
             HireButton.interactable = false;
             _employeeManageEducationButton.interactable = false;
+            _employeeManageFireButton.interactable = false;
             _educationCourseConfirmButton.interactable = false;
             _recruitConfirmButton.interactable = false;
 
@@ -337,6 +338,9 @@ namespace GameDevTycoon.UI.Ingame
 
         public void SetEducationButtonInteractable(bool interactable)
             => _employeeManageEducationButton.interactable = interactable;
+
+        public void SetFireButtonInteractable(bool interactable)
+            => _employeeManageFireButton.interactable = interactable;
 
         public void SetEducationCourseConfirmInteractable(bool interactable)
         {

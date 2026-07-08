@@ -281,11 +281,7 @@ namespace GameDevTycoon.UI.Ingame
                 CountAssigned(Role.PROGRAMMER), max
             );
 
-            // 확정 조건: 기획/아트/개발 각 1명 이상
-            bool canConfirm = CountAssigned(Role.PLANNER) >= 1
-                           && CountAssigned(Role.ARTIST) >= 1
-                           && CountAssigned(Role.PROGRAMMER) >= 1;
-            _view.SetStaffAssignConfirmInteractable(canConfirm);
+            _view.SetStaffAssignConfirmInteractable(HasRequiredAssignedEmployees());
 
             foreach (var employee in employeeList)
             {
@@ -872,6 +868,14 @@ namespace GameDevTycoon.UI.Ingame
         private int CountAssigned(Role role)
             => Company.Instance.selectedProjectEmployees.Count(e => e.so.role == role);
 
+        private bool HasRequiredAssignedEmployees()
+        {
+            int required = GetRequiredEmployeePerPart(_selectedScale);
+            return CountAssigned(Role.PLANNER) >= required
+                && CountAssigned(Role.ARTIST) >= required
+                && CountAssigned(Role.PROGRAMMER) >= required;
+        }
+
         private bool IsSelected(Employee employee)
             => Company.Instance.selectedProjectEmployees.Contains(employee);
 
@@ -902,6 +906,11 @@ namespace GameDevTycoon.UI.Ingame
             ProjectSize.Large => 3,
             _ => 1,
         };
+
+        private static int GetRequiredEmployeePerPart(ProjectSize scale)
+        {
+            return GetMaxEmployeePerPart(scale);
+        }
 
         private static string ScaleToString(ProjectSize scale) => scale switch
         {

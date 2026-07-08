@@ -163,6 +163,12 @@ public class Project : MonoBehaviour
         Debug.Log($"[{userNamed.Value}] {report.role} 보고서선택: {report.so.title}-{report.trait} ({report.grade}등급)");
     }
 
+    // UI에서 채택 취소 시 호출
+    public void DeselectReport(Role role)
+    {
+        selectedReports.Remove(role);
+    }
+
     // 선택된 보고서를 모두 승인하여 주차 stat 저장
     public void ApproveSelectedReports()
     {
