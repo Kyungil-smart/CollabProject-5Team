@@ -3971,10 +3971,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _view: {fileID: 424229606257895679}
   _hudPresenter: {fileID: 0}
-  _nextButtons:
-  - {fileID: 8786785680350347972}
-  - {fileID: 3473241007350554325}
-  - {fileID: 8632612284223505434}
   _employeeStatusMiniItemPrefab: {fileID: 5795527634663094337, guid: e6aadfe9d4b86e448bc4da0a570ac018, type: 3}
   _allAgendas: []
 --- !u!224 &263189190297462577
@@ -5907,6 +5903,8 @@ MonoBehaviour:
   _programmerDividers:
   - {fileID: 6782629944275303554}
   - {fileID: 7081381835912681293}
+  _nextButtons: []
+  _reAdoptButtons: []
   _panelReportDetail: {fileID: 4333261854754711716}
   _profileIcon: {fileID: 7448625245276223141}
   _detailTitleLable: {fileID: 1959154532998804727}
@@ -49525,6 +49523,10 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 5413285649635077275, guid: 857515b9e9b9a5b499687079413aa3ce, type: 3}
+      propertyPath: m_text
+      value: "\uC19C\uC774"
+      objectReference: {fileID: 0}
     - target: {fileID: 6372533408363786112, guid: 857515b9e9b9a5b499687079413aa3ce, type: 3}
       propertyPath: m_Pivot.x
       value: 0
@@ -74681,6 +74683,9 @@ MonoBehaviour:
   _savePresenter: {fileID: 6606674862493168095}
   _saveView: {fileID: 6333983452241427694}
   _questPresenter: {fileID: 4934791815098068084}
+  _hrPresenter: {fileID: 0}
+  _projectPresenter: {fileID: 0}
+  _companyPresenter: {fileID: 0}
   _desk: {fileID: 0}
   _workStartIconPrefab: {fileID: 4111562007969624501, guid: d226c7de81525e6499222a98d16862bf, type: 3}
   _workStartIconOffset: {x: 0, y: 1.5, z: 0}
