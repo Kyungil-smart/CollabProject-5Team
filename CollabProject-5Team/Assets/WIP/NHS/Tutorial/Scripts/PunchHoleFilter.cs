@@ -1,75 +1,82 @@
-using UnityEngine;
+    using UnityEngine;
+    using static TutorialManager;
 
-public class PunchHoleFilter : MonoBehaviour, ICanvasRaycastFilter
-{
-    private RectTransform _targetRect;
-    private Camera        _canvasCamera;
-
-    private Vector4 _customScreenRect = Vector4.zero;
-    private bool _useCustomRect = false;
-
-    public bool IsCircleMode { get; set; }
-
-    public void SetTarget(RectTransform targetRect, bool isCircle = false)
+    public class PunchHoleFilter : MonoBehaviour, ICanvasRaycastFilter
     {
-        _targetRect = targetRect;
-        _useCustomRect = false;
-        IsCircleMode = isCircle;
+        private RectTransform _holeTargetRect;
+        private Camera        _canvasCamera;
 
-        Canvas canvas = targetRect.GetComponentInParent<Canvas>();
-        if (canvas != null) _canvasCamera = canvas.worldCamera;
-    }
+        private Vector4 _customScreenRect = Vector4.zero;
+        private bool _usePunchHole = false;
 
-    public void SetCustomScreenRect(Vector4 screenRect)
-    {
-              _targetRect = null;
-        _customScreenRect = screenRect;
-           _useCustomRect = true;
-    }
+        public HoleShape _punchHoleMode { get; set; }
 
-    public void ClearTarget()
-    {
-              _targetRect = null;
-           _useCustomRect = false;
-        _customScreenRect = Vector4.zero;
-    }
+        public void SetTarget(RectTransform targetRect, HoleShape mode = HoleShape.Square)
+        {
+              _usePunchHole = false;
+             _punchHoleMode = mode;
+            _holeTargetRect = targetRect;
+
+            Canvas canvas = targetRect.GetComponentInParent<Canvas>();
+            if (canvas != null) _canvasCamera = canvas.worldCamera;
+        }
+
+        public void SetCustomScreenRect(Vector4 screenRect)
+        {
+                _usePunchHole = true;
+              _holeTargetRect = null;
+            _customScreenRect = screenRect;
+        }
+
+        public void ClearTarget()
+        {
+                _usePunchHole = false;
+              _holeTargetRect = null;
+            _customScreenRect = Vector4.zero;
+        }
 
     public bool IsRaycastLocationValid(Vector2 sp, Camera eventCamera)
     {
-        // 1. 커스텀(3D) 영역 체크
-        if (_useCustomRect)
+        bool isInside = false;
+
+        if (_usePunchHole)
         {
-            if (IsCircleMode)
+            // 1. 3D 타겟
+            if (_punchHoleMode == HoleShape.Circle)
             {
                 Vector2 center = new Vector2((_customScreenRect.x + _customScreenRect.z) * 0.5f,
                                              (_customScreenRect.y + _customScreenRect.w) * 0.5f);
                 float radius = (_customScreenRect.z - _customScreenRect.x) * 0.5f;
-                return Vector2.Distance(sp, center) > radius; // 밖이면 통과(true)
+                isInside = Vector2.Distance(sp, center) <= radius;
             }
-            bool isInsideCustom = sp.x >= _customScreenRect.x && sp.x <= _customScreenRect.z &&
-                                  sp.y >= _customScreenRect.y && sp.y <= _customScreenRect.w;
-            return !isInsideCustom;
+            else if(_punchHoleMode == HoleShape.Square)
+            {
+                isInside = sp.x >= _customScreenRect.x && sp.x <= _customScreenRect.z &&
+                           sp.y >= _customScreenRect.y && sp.y <= _customScreenRect.w;
+            }   
         }
 
-        // 2. UI 타겟 체크
-        if (_targetRect == null) return true;
-
-        if (IsCircleMode)
+        else if (_holeTargetRect != null)
         {
-            // UI 중앙과 반지름 계산
-            Vector3[] corners = new Vector3[4];
-            _targetRect.GetWorldCorners(corners);
-            Vector2 center = (Vector2)corners[0] + (Vector2)(corners[2] - corners[0]) * 0.5f;
-
-            // 원의 반지름 (너비 기준)
-            float radius = Vector2.Distance(corners[0], corners[3]) * 0.5f;
-
-            // 스크린 포인트와 원 중심 사이의 거리가 반지름보다 크면 밖임(true)
-            return Vector2.Distance(sp, center) > radius;
+            // 2. UI 타겟\
+            if (_punchHoleMode == HoleShape.Circle)
+            {
+                Vector3[] corners = new Vector3[4];
+                _holeTargetRect.GetWorldCorners(corners);
+                Vector2 center = (Vector2)corners[0] + (Vector2)(corners[2] - corners[0]) * 0.5f;
+                float radius = Vector2.Distance(corners[0], corners[3]) * 0.5f;
+                isInside = Vector2.Distance(sp, center) <= radius;
+            }
+            else if (_punchHoleMode == HoleShape.Square)
+            {
+                isInside = RectTransformUtility.RectangleContainsScreenPoint(_holeTargetRect, sp, _canvasCamera ?? eventCamera);
+            }
+        }
+        else
+        {
+            return true;
         }
 
-        // 기본 사각형 체크
-        bool isInside = RectTransformUtility.RectangleContainsScreenPoint(_targetRect, sp, _canvasCamera ?? eventCamera);
         return !isInside;
     }
 }
