@@ -46,12 +46,9 @@ namespace GameDevTycoon.UI.Title
 
         private async UniTaskVoid LoadNewGameSceneAsync()
         {
-            // [TODO: 회사 이름 설정 팝업 → 페이드아웃 → 씬 전환 순서로 교체]
-
-            // 새 게임은 보내진 로드 슬롯 없음
             SaveLoadSystem.Instance.pendingLoadSlot = null;
 
-            await SceneLoader.Instance.LoadAsync(SceneName.Game);
+            await SceneLoader.Instance.LoadGameFlowAsync();
         }
     }
 }

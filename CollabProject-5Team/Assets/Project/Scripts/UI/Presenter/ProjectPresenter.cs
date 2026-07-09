@@ -32,6 +32,7 @@ namespace GameDevTycoon.UI.Ingame
         private Project _currentDetailProject;
         private ProjectCompleted _currentServiceRecord;
         private UpdatePart? _selectedUpdatePart;
+        private const int UpdateLockWeeks = 2;
         private readonly Dictionary<int, ProjectUpdateSO> _updateById = new();
         private readonly Dictionary<(ProjectSize size, Role role), List<ProjectUpdateSO>> _updatesBySizeRole = new();
         private readonly Dictionary<UpdatePart, ProjectUpdateSO> _currentUpdateOptions = new();
@@ -293,7 +294,7 @@ namespace GameDevTycoon.UI.Ingame
                 cardGO.GetComponent<IBindable<Employee>>().Bind(employee);
 
                 bool isAssigned = IsSelected(employee);
-                bool isInEducation = false; // [TODO: 교육 시스템 연결 후 처리]
+                bool isInEducation = _EmployeeManager.Instance.GetTraining(employee) != null;
                 var assignState = isAssigned ? StaffAssignState.Assigned
                                 : isInEducation ? StaffAssignState.InEducation
                                 : StaffAssignState.Default;
@@ -436,7 +437,7 @@ namespace GameDevTycoon.UI.Ingame
             _view.SetOperationGroupVisible(true);
             SetServiceOperationValues(record);
             _view.SetServiceStopInteractable(!record.isServiceOver);
-            _view.SetUpdateButtonInteractable(!record.isServiceOver);
+            _view.SetUpdateButtonInteractable(!record.isServiceOver && !record.isUpdatePending);
         }
 
         private void ShowCompletedDetail(ProjectCompleted record)
@@ -513,7 +514,8 @@ namespace GameDevTycoon.UI.Ingame
                     _selectedUpdatePart = null;
                     _view.SetUpdateItemSelectImg(null);
                     _view.SetUpdateConfirmInteractable(false);
-                    BindUpdateItem(part);
+                    _view.HideUpdateManagement();
+                    _view.SetUpdateButtonInteractable(false);
                     SetServiceOperationValues(_currentServiceRecord);
                     _hudPresenter?.RefreshHUD();
                     RefreshInProgressList();
@@ -575,7 +577,8 @@ namespace GameDevTycoon.UI.Ingame
 
             record.RetentionFactor += 0.1f;
             SetUpdateCompleted(record, part, true);
-            record.isUpdatePending = HasCompletedUpdate(record);
+            SetUpdateLockWeeks(record, part, UpdateLockWeeks);
+            record.isUpdatePending = true;
         }
 
         private static Role GetUpdateRole(UpdatePart part)
@@ -622,15 +625,7 @@ namespace GameDevTycoon.UI.Ingame
 
         private static bool IsUpdateCompleted(ProjectCompleted record, UpdatePart part)
         {
-            switch (part)
-            {
-                case UpdatePart.Plan:
-                    return record.planUpdateCompleted;
-                case UpdatePart.Art:
-                    return record.artUpdateCompleted;
-                default:
-                    return record.devUpdateCompleted;
-            }
+            return GetUpdateLockWeeks(record, part) > 0;
         }
 
         private static void SetUpdateCompleted(ProjectCompleted record, UpdatePart part, bool completed)
@@ -649,9 +644,33 @@ namespace GameDevTycoon.UI.Ingame
             }
         }
 
-        private static bool HasCompletedUpdate(ProjectCompleted record)
+        private static int GetUpdateLockWeeks(ProjectCompleted record, UpdatePart part)
         {
-            return record.planUpdateCompleted || record.artUpdateCompleted || record.devUpdateCompleted;
+            switch (part)
+            {
+                case UpdatePart.Plan:
+                    return record.planUpdateLockWeeks;
+                case UpdatePart.Art:
+                    return record.artUpdateLockWeeks;
+                default:
+                    return record.devUpdateLockWeeks;
+            }
+        }
+
+        private static void SetUpdateLockWeeks(ProjectCompleted record, UpdatePart part, int lockWeeks)
+        {
+            switch (part)
+            {
+                case UpdatePart.Plan:
+                    record.planUpdateLockWeeks = lockWeeks;
+                    break;
+                case UpdatePart.Art:
+                    record.artUpdateLockWeeks = lockWeeks;
+                    break;
+                case UpdatePart.Dev:
+                    record.devUpdateLockWeeks = lockWeeks;
+                    break;
+            }
         }
 
         private void OnScaleSelected(ProjectSize scale)

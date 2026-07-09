@@ -155,6 +155,7 @@ public class Newgame : MonoBehaviour
         }
 
         _companyName = input;
+        SaveLoadSystem.Instance.pendingCompanyName = _companyName;
         Company.Instance.CompanyName = _companyName;
 
          _setCompanyPanel.SetActive(false);
@@ -174,6 +175,7 @@ public class Newgame : MonoBehaviour
         }
 
         _playerName = input;
+        SaveLoadSystem.Instance.pendingPlayerName = _playerName;
         Company.Instance.playerName = _playerName;
 
         _isFinishedSetPlayerName = true;
@@ -246,7 +248,7 @@ public class Newgame : MonoBehaviour
                 if (nameToCheck.ToLower().Contains(word.Trim().ToLower()))
                 {
                     _warningPanel.SetActive(true);
-                    _warningText.text = "나쁜말은 안되요~";
+                    _warningText.text = "나쁜말은 안돼요~";
                     Debug.LogWarning($"금지어가 포함되어 있습니다: {word}");
                     return false;
                 }
@@ -258,6 +260,7 @@ public class Newgame : MonoBehaviour
 
     private void EndCutSceen()
     {
-        _cutSceneUI.panel.SetActive(false);
+        if (SceneFlowManager.Instance != null)
+            SceneFlowManager.Instance.CompleteCurrentFlow();
     }
 }

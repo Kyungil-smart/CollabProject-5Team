@@ -59,7 +59,7 @@ namespace GameDevTycoon.UI.Ingame
 
         private static void SetScoreBar(Slider bar, TextMeshProUGUI label, int score)
         {
-            bar.value = score / 100f;
+            bar.value = score;
             label.text = score.ToString();
         }
     }

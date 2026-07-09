@@ -1,6 +1,7 @@
+using Cysharp.Threading.Tasks;
+using GameDevTycoon.Core;
 using System.Collections.Generic;
 using System.Linq;
-using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 public class GameManager : MonoBehaviour
@@ -123,23 +124,11 @@ public class GameManager : MonoBehaviour
         if (!_activeEmployees.Contains(emp))
             _activeEmployees.Add(emp);
 
-        // 빈자리 할당
-        var target = PointManager.Instance.GetAllPoints().FirstOrDefault(p => !p.IsOccupied);
-        if (target != null)
-        {
-            target.IsOccupied = true;
-            controller.CurrentTarget = target;
-        }
-
         emp.transform.position = _currentNpcSpawnPoint.position;
         emp.transform.rotation = Quaternion.identity;
         emp.gameObject.SetActive(true);
-        
-        if (controller.CurrentTarget != null)
-            controller.ChangeState(new NPCMove());
-        
-        else
-            controller.ChangeState(new NPCIdle());
+
+        controller.AssignNewTask();
 
         await UniTask.Delay(_spawnDelayMs);
     }

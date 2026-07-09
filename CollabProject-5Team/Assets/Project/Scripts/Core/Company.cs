@@ -1,6 +1,9 @@
+using Cysharp.Threading.Tasks;
+using GameDevTycoon.Core;
 using R3;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 #if UNITY_EDITOR
 public enum TestProjectStartSize{None,small,normal,large}
 #endif
@@ -29,7 +32,8 @@ public class Company : MonoBehaviour
 
     [Header("사후 관리")]
     public int popularity;   // 회사 인기
-    public int reputation;   // 회사 평판
+    public int reputation;
+
     public int weeklyCost;    // 유지비
     public int dailyProfit;  // 데일리 캐시 (완료 프로젝트 합산)
     public int weeklyProfit; // 데일리캐시를 일주일동안 누적한 값 (UI 히스토리용)
@@ -422,22 +426,35 @@ public class Company : MonoBehaviour
             p.weeklySales = 0;
             p.weeklyGoldAccum = 0;
             p.isUpdatePending = false;
-            p.planUpdateCompleted = false;
-            p.artUpdateCompleted = false;
-            p.devUpdateCompleted = false;
-            p.planUpdateId = 0;
-            p.artUpdateId = 0;
-            p.devUpdateId = 0;
+            TickProjectUpdateLock(ref p.planUpdateLockWeeks, ref p.planUpdateCompleted, ref p.planUpdateId);
+            TickProjectUpdateLock(ref p.artUpdateLockWeeks, ref p.artUpdateCompleted, ref p.artUpdateId);
+            TickProjectUpdateLock(ref p.devUpdateLockWeeks, ref p.devUpdateCompleted, ref p.devUpdateId);
         }
 
         // 적자 패널티
         if (gold.Value < 0)
-            reputation += PerkPolicy.PENALTY_DEFICIT_HIT;
+            reputation += PerkPolicy.PENALTY_DEFICIT_WEEK;
 
         // TODO: 적자시 1회 빚 및 게임오버 시스템
     }
 
     // 프로젝트 완료시 직원 보상 적용
+    void TickProjectUpdateLock(ref int lockWeeks, ref bool completed, ref int updateId)
+    {
+        if (lockWeeks <= 0)
+        {
+            completed = false;
+            updateId = 0;
+            return;
+        }
+
+        lockWeeks--;
+        if (lockWeeks > 0) return;
+
+        completed = false;
+        updateId = 0;
+    }
+
     public void ApplyCompletionEmployeeRewards(Project project)
     {
         int abilityDelta = PerkPolicy.CalcCompletionAbilityDelta(project.Scale, project.Grade);
@@ -630,6 +647,9 @@ public class Company : MonoBehaviour
                 planUpdateCompleted = p.planUpdateCompleted,
                 artUpdateCompleted = p.artUpdateCompleted,
                 devUpdateCompleted = p.devUpdateCompleted,
+                planUpdateLockWeeks = p.planUpdateLockWeeks,
+                artUpdateLockWeeks = p.artUpdateLockWeeks,
+                devUpdateLockWeeks = p.devUpdateLockWeeks,
 
                 weeklyGoldHistoryList = new List<int>(p.weeklyGoldHistory)
             };
@@ -700,6 +720,9 @@ public class Company : MonoBehaviour
                     planUpdateCompleted = pData.planUpdateCompleted,
                     artUpdateCompleted = pData.artUpdateCompleted,
                     devUpdateCompleted = pData.devUpdateCompleted,
+                    planUpdateLockWeeks = pData.planUpdateLockWeeks,
+                    artUpdateLockWeeks = pData.artUpdateLockWeeks,
+                    devUpdateLockWeeks = pData.devUpdateLockWeeks,
                 };
 
                 p.weeklyGoldHistory = new Queue<int>();

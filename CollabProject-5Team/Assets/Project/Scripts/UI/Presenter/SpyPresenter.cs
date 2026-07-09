@@ -149,13 +149,15 @@ namespace GameDevTycoon.UI.Ingame
 
             if (isCorrect)
             {
-                Debug.Log($"[SpySystem] 정답 성공 판정: {target.so.Name} 검거 완료.");
+                Debug.Log($"[SpyPresenter] 정답! 성공 판정: {target.so.Name} 검거 완료.");
 
                 _alertView.ShowSpySuccessResult(onClose: null);
             }
             else
             {
-                Debug.Log($"[SpySystem] 오답 실패 판정: {target.so.Name} 선택.");
+                Debug.Log($"[SpyPresenter] 오답! 실패 판정: {target.so.Name} 선택.");
+
+                Company.Instance.reputation += PerkPolicy.PENALTY_SPY_FAIL; // 허접은 평판 감소
             }
         }
 

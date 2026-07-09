@@ -61,4 +61,7 @@ public class ProjectCompleted
     public bool planUpdateCompleted;
     public bool artUpdateCompleted;
     public bool devUpdateCompleted;
+    public int planUpdateLockWeeks;
+    public int artUpdateLockWeeks;
+    public int devUpdateLockWeeks;
 }

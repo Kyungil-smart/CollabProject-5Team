@@ -346,6 +346,7 @@ namespace GameDevTycoon.UI.Ingame
         // Tab_InProgress 패널 전환
         public void ShowInProgressList()
         {
+            _tabInProgress.SetActive(true);
             _panelProjectDetail.SetActive(false);
             _panelUpdateManagement.SetActive(false);
         }
@@ -358,6 +359,7 @@ namespace GameDevTycoon.UI.Ingame
 
         public void ShowUpdateManagement(string projectName)
         {
+            _tabInProgress.SetActive(false);
             _panelProjectDetail.SetActive(false);
             _panelUpdateManagement.SetActive(true);
             _updateProjectNameLabel.text = projectName;
@@ -365,6 +367,7 @@ namespace GameDevTycoon.UI.Ingame
 
         public void HideUpdateManagement()
         {
+            _tabInProgress.SetActive(true);
             _panelUpdateManagement.SetActive(false);
             _panelProjectDetail.SetActive(true);
         }
@@ -416,7 +419,7 @@ namespace GameDevTycoon.UI.Ingame
         public void SetProgressBar(float value)
         {
             _progressBar.value = value;
-            _progressValueLabel.text = $"{Mathf.RoundToInt(value * 100f)}%";
+            _progressValueLabel.text = $"{Mathf.RoundToInt(value)}%";
         }
 
         public void SetProjectDetailInfo(string gameName, string scale,

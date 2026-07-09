@@ -16,8 +16,11 @@ public class SaveLoadSystem : MonoBehaviour
     private static readonly byte[] iv = Encoding.UTF8.GetBytes("Dtt7oG3F424o5r91");
 
     public const int MaxSaveSlots = 3;
+    public const int EndingSaveSlot = 99;
 
     public int? pendingLoadSlot;
+    public string pendingPlayerName;
+    public string pendingCompanyName;
 
     private static readonly JsonSerializerSettings jsonSettings = new()
     {
@@ -59,6 +62,9 @@ public class SaveLoadSystem : MonoBehaviour
 
         if (DateTimeManager.Instance != null)
             DateTimeManager.Instance.ExportSaveData(data);   // 날짜 정보 저장
+
+        if (AchievementSystem.Instance != null)
+            AchievementSystem.Instance.ExportAchievementData(data);
 
         data.realSaveTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm");
 
@@ -113,6 +119,9 @@ public class SaveLoadSystem : MonoBehaviour
 
             if (DateTimeManager.Instance != null)
                 DateTimeManager.Instance.ImportSaveData(data);       // 날짜 정보 로드
+
+            if (AchievementSystem.Instance != null)
+                AchievementSystem.Instance.ImportAchievementData(data);
 
             return true;
         }

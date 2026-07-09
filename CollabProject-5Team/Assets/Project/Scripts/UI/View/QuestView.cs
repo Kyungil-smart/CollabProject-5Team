@@ -73,6 +73,12 @@ namespace GameDevTycoon.UI.Ingame
         public void SetEventQuestTitle(int count)
             => _eventQuestTitleLabel.text = $"이벤트 퀘스트 ({count})";
 
+        public void SetEventQuestSectionVisible(bool visible)
+        {
+            _eventQuestTitleLabel.gameObject.SetActive(visible);
+            _eventQuestContent.gameObject.SetActive(visible);
+        }
+
         // DailyQuestAlertPopup
         public void ShowDailyQuestAlert(string questName, int current, int total)
             => ShowQuestAlert("일일 퀘스트", questName, current, total);

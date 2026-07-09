@@ -43,8 +43,22 @@ public class NPCController : MonoBehaviour
         // 초기 스폰 (무조건 책상)
         if (IsFirstTask)
         {
-            target = PointManager.Instance.GetPointsByType(PointType.Desk).FirstOrDefault(p => !p.IsOccupied && p.Owner == null);
-            if (target != null) { MyDesk = target; target.Owner = this; }
+            // 이미 내 소유의 자리가 있으면 그대로 사용 (신규 배정 로직 타지 않음)
+            if (MyDesk != null && MyDesk.Owner == this && !MyDesk.IsOccupied)
+            {
+                target = MyDesk;
+            }
+            else
+            {
+                target = PointManager.Instance.GetPointsByType(PointType.Desk)
+                            .FirstOrDefault(p => !p.IsOccupied && p.Owner == null);
+
+                if (target != null)
+                {
+                    MyDesk = target;
+                    target.Owner = this;
+                }
+            }
             IsFirstTask = false;
         }
         
@@ -133,6 +147,7 @@ public class NPCController : MonoBehaviour
     {
         if (IsInteracting) return;
         IsInteracting = true;
+        Anim.SetBool("IsInteracting", true);
 
         if (Agent != null && Agent.enabled && Agent.isOnNavMesh)
         {
@@ -149,6 +164,7 @@ public class NPCController : MonoBehaviour
     public void EndConversation()
     {
             IsInteracting = false;
+            Anim.SetBool("IsInteracting", false);
 
             if (Agent != null)
             {
@@ -202,14 +218,6 @@ public class NPCController : MonoBehaviour
             case PointType.Find: Anim.SetTrigger("Find"); break;
         }
     }
-
-    private bool IsAtDestination()
-    {
-        if (CurrentTarget == null) return false;
-        float distance = Vector3.Distance(transform.position, CurrentTarget.GetTransform().position);
-        return distance <= 0.5f;
-    }
-
     public void SetTargetPoint(IInteractablePoint point) => _myTargetPoint = point;
 
     public INPCState GetCurrentState() 
