@@ -50,7 +50,7 @@ public class NPCAction : INPCState
             case PointType.ServerRoom:  stayTime = Random.Range(4.0f, 5.0f); break;
             case PointType.Look:        stayTime = Random.Range(4.0f, 5.0f); break;
             case PointType.Make:        stayTime = Random.Range(3.0f, 4.0f); break;
-            case PointType.Find:        stayTime = Random.Range(18.0f, 18.0f); break;
+            case PointType.Find:        stayTime = Random.Range(12.0f, 12.0f); break;
         }
 
         try
