@@ -1,3 +1,5 @@
+using Cysharp.Threading.Tasks;
+using GameDevTycoon.Core;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using TMPro;
@@ -131,13 +133,21 @@ public class EndCutScene : MonoBehaviour
 
     private void TriggerSceneFlowCompletion()
     {
-        if (SceneFlowManager.Instance != null)
+        if (SceneNameExtensions.ToSceneString(SceneName.CutScene_End) == gameObject.scene.name)
         {
-            SceneFlowManager.Instance.CompleteCurrentFlow();
+            HandleEndingCutSceneCompletion().Forget();
+            return;
         }
-        else
-        {
-            Debug.LogError("SceneFlowManager 인스턴스를 찾을 수 없습니다.");
-        }
+
+        SceneFlowManager.Instance?.CompleteCurrentFlow();
+    }
+
+    private async UniTaskVoid HandleEndingCutSceneCompletion()
+    {
+        AudioManager.Instance?.StopBGM();
+
+        SaveLoadSystem.Instance.SaveGame(SaveLoadSystem.EndingSaveSlot);
+
+        await SceneLoader.Instance.LoadWithLoadingSceneAsync(SceneName.Game);
     }
 }

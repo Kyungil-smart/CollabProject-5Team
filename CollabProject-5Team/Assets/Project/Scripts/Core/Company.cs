@@ -1,6 +1,9 @@
+using Cysharp.Threading.Tasks;
+using GameDevTycoon.Core;
 using R3;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 #if UNITY_EDITOR
 public enum TestProjectStartSize{None,small,normal,large}
 #endif
@@ -29,7 +32,32 @@ public class Company : MonoBehaviour
 
     [Header("사후 관리")]
     public int popularity;   // 회사 인기
-    public int reputation;   // 회사 평판
+    private int _reputation;
+
+    public int reputation
+    {
+        get => _reputation;
+        set
+        {
+            if (_reputation < 100 && value >= 100)
+            {
+                _reputation = value;
+                StartEndingSequence().Forget();
+            }
+            else
+            {
+                _reputation = value;
+            }
+        }
+    }
+
+    private async UniTaskVoid StartEndingSequence()
+    {
+        SaveLoadSystem.Instance.SaveGame(SaveLoadSystem.EndingSaveSlot);
+
+        await SceneLoader.Instance.LoadWithLoadingSceneAsync(SceneName.CutScene_End);
+    }
+
     public int weeklyCost;    // 유지비
     public int dailyProfit;  // 데일리 캐시 (완료 프로젝트 합산)
     public int weeklyProfit; // 데일리캐시를 일주일동안 누적한 값 (UI 히스토리용)
