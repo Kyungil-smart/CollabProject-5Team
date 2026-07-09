@@ -141,9 +141,9 @@ public static class PerkPolicy
         => Mathf.Max(0.1f, (score - SCORE_WEIGHT_BASELINE) / 100f);
 
     // - 매출 가중치 (gold) ─
-    const int SMALL_FACTOR  = 150;
-    const int MEDIUM_FACTOR = 200;
-    const int LARGE_FACTOR  = 300;
+    const int SMALL_FACTOR  = 120;
+    const int MEDIUM_FACTOR = 140;
+    const int LARGE_FACTOR  = 180;
     static int SalesFactor(ProjectSize size) => size switch
     {
         ProjectSize.Medium => MEDIUM_FACTOR,
@@ -184,12 +184,12 @@ public static class PerkPolicy
 
     // ─ 평판 ─
     // 평판 : 0부터 시작, 감소 가능
-    /// <summary>주간 판매량 100장 미다 +1</summary>
+    /// <summary>주간 판매량 10장 미다 +1</summary>
     public static int CalcReputationGainFromSales(int weeklySales)
         => (weeklySales+5) / 10;
             //반올림 용 5더하기
 
-    // 평판 감소 상수 (미구현)
+    // 평판 감소 상수
     public const int PENALTY_SPY_FAIL    = -10; // 스파이 행위 적발 실패 시
     public const int PENALTY_DEFICIT_HIT = -20; // 회사 자금 적자 시 즉시
     public const int PENALTY_DEFICIT_WEEK= -10; // 적자 유지 주차마다

@@ -79,7 +79,7 @@ public sealed class DebugUIPresenter : MonoBehaviour
             .AddTo(this);
 
         _addReputationButton.OnClickAsObservable()
-            .Subscribe(_ => Company.Instance.reputation += 25)
+            .Subscribe(_ => Company.Instance.reputation += 1000)
             .AddTo(this);
 
         //_addGoldButton.OnClickAsObservable()
