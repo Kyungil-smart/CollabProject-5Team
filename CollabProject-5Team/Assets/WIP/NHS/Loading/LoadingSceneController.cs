@@ -8,8 +8,6 @@ public class LoadingSceneController : MonoBehaviour
 {
     public static string NextSceneName { get; set; }
 
-    [SerializeField] Image progressBar;
-
     private void Start()
     {
         // Start에서 바로 UniTask 실행
@@ -22,16 +20,6 @@ public class LoadingSceneController : MonoBehaviour
 
         while (op.progress < 0.9f)
         {
-            progressBar.fillAmount = op.progress;
-            await UniTask.Yield();
-        }
-
-        // 0.9f 도달 후 마무리 애니메이션/대기
-        float timer = 0f;
-        while (timer < 1.0f) // 1초 정도 더 대기
-        {
-            timer += Time.unscaledDeltaTime;
-            progressBar.fillAmount = Mathf.Lerp(0.9f, 1f, timer);
             await UniTask.Yield();
         }
 
