@@ -29,6 +29,9 @@ public class NPCAction : INPCState
             case PointType.CopyMachine: npc.Anim.SetTrigger("Fax"); break;
             case PointType.Drink: npc.Anim.SetTrigger("Drink"); break;
             case PointType.ServerRoom: npc.Anim.SetTrigger("PushButton"); break;
+            case PointType.Look: npc.Anim.SetTrigger("Look"); break;
+            case PointType.Make: npc.Anim.SetTrigger("Make"); break;
+            case PointType.Find: npc.Anim.SetTrigger("Find"); break;
         }
 
         PerformActionTask(npc).Forget();
@@ -43,8 +46,11 @@ public class NPCAction : INPCState
             case PointType.Desk:        stayTime = Random.Range(20.0f, 30.0f); break;
             case PointType.Sofa:        stayTime = Random.Range(5.0f, 10.0f); break;
             case PointType.CopyMachine: stayTime = Random.Range(20.0f, 20.0f); break;
-            case PointType.Drink:       stayTime = Random.Range(7.0f, 7.0f); break;
+            case PointType.Drink:       stayTime = Random.Range(3.0f, 4.0f); break;
             case PointType.ServerRoom:  stayTime = Random.Range(4.0f, 5.0f); break;
+            case PointType.Look:        stayTime = Random.Range(4.0f, 5.0f); break;
+            case PointType.Make:        stayTime = Random.Range(3.0f, 4.0f); break;
+            case PointType.Find:        stayTime = Random.Range(18.0f, 18.0f); break;
         }
 
         try
