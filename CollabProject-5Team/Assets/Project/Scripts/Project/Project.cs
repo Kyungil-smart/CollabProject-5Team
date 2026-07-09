@@ -40,7 +40,7 @@ public class Project : MonoBehaviour
     public float qualityScore;    // 완성도 점수 (기획)
     public float stabilityScore;  // 안정성 점수 (개발)
     public float charmScore;      // 매력도 점수 (아트)
-    public float ProgressDayBar => Mathf.Clamp01((float)day / DurationDays) * 100f;
+    public float ProgressDayBar => Mathf.Clamp01((float)day / DurationDays);
 
     // 보고서 승인 대기 목록 (Friday Night 생성, 역할별 다수)
     public List<Report> pendingReports = new();
