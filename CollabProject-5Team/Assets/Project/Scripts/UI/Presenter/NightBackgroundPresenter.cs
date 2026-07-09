@@ -14,12 +14,14 @@ namespace GameDevTycoon.UI.Ingame
         {
             DateTimeManager.OnDay += _view.Hide;
             DateTimeManager.OnNightLoading += _view.Show;
+            OnGameSceneLoad.OnNightSaveLoad += _view.Show;
         }
 
         private void OnDestroy()
         {
             DateTimeManager.OnDay -= _view.Hide;
             DateTimeManager.OnNightLoading -= _view.Show;
+            OnGameSceneLoad.OnNightSaveLoad -= _view.Show;
         }
     }
 }
