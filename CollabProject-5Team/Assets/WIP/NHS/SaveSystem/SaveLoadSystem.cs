@@ -16,6 +16,7 @@ public class SaveLoadSystem : MonoBehaviour
     private static readonly byte[] iv = Encoding.UTF8.GetBytes("Dtt7oG3F424o5r91");
 
     public const int MaxSaveSlots = 3;
+    public const int EndingSaveSlot = 99;
 
     public int? pendingLoadSlot;
     public string pendingPlayerName;

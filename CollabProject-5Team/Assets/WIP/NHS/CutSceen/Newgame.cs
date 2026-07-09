@@ -248,7 +248,7 @@ public class Newgame : MonoBehaviour
                 if (nameToCheck.ToLower().Contains(word.Trim().ToLower()))
                 {
                     _warningPanel.SetActive(true);
-                    _warningText.text = "나쁜말은 안되요~";
+                    _warningText.text = "나쁜말은 안돼요~";
                     Debug.LogWarning($"금지어가 포함되어 있습니다: {word}");
                     return false;
                 }
