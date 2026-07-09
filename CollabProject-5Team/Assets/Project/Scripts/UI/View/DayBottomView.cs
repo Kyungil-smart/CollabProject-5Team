@@ -54,7 +54,7 @@ namespace GameDevTycoon.UI.Ingame
         {
             _projectNameLabel.text = projectName;
             _progressSlider.value = progressRate;
-            _progressValueLabel.text = $"{progressRate * 100f:F0}%";
+            _progressValueLabel.text = $"{progressRate:F0}%";
         }
 
         public void SetDayQuitInteractable(bool interactable)

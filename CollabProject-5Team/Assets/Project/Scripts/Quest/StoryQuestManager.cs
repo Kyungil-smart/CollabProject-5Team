@@ -20,7 +20,7 @@ public class StoryQuestManager : MonoBehaviour
     const int CorrectSpyEpilogueQuestId = 1045;
     const int WrongSpyEpilogueQuestId = 1046;
     const int EndingQuestId = 1047;
-    const int EndingSceneRequiredReputation = 300;
+    const int EndingSceneRequiredReputation = 3000;
 
     [SerializeField] Sprite StoryBookBubbleSprite;
 

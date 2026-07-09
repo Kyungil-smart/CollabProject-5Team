@@ -416,7 +416,7 @@ namespace GameDevTycoon.UI.Ingame
         public void SetProgressBar(float value)
         {
             _progressBar.value = value;
-            _progressValueLabel.text = $"{Mathf.RoundToInt(value * 100f)}%";
+            _progressValueLabel.text = $"{Mathf.RoundToInt(value)}%";
         }
 
         public void SetProjectDetailInfo(string gameName, string scale,
