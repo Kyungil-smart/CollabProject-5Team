@@ -32,7 +32,7 @@ public class Company : MonoBehaviour
 
     [Header("사후 관리")]
     public int popularity;   // 회사 인기
-    private int reputation;
+    public int reputation;
 
     public int weeklyCost;    // 유지비
     public int dailyProfit;  // 데일리 캐시 (완료 프로젝트 합산)
