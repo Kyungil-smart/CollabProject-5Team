@@ -246,7 +246,7 @@ namespace GameDevTycoon.UI.Ingame
         {
             _personalOpinionProfileIcon.sprite = employee.so.iconNormal;
             _personalOpinionNameLabel.text = employee.so.Name;
-            _personalOpinionDetailLabel.text = "개인 작업 의견";
+            _personalOpinionDetailLabel.text = $"<b>개인 작업 의견</b>\n\n비용: {FormatPolicy.FormatGold(agenda.cost)}";
             _personalOpinionContentLabel.text = agenda.desc;
         }
 
