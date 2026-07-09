@@ -19,7 +19,6 @@ public class EndCutScene : MonoBehaviour
     }
     
     [Header("스킵")]
-    [SerializeField] private Button _skipButton;
 
     [Header("BGM")]
     [SerializeField] private AudioClip _bgmSetup;
@@ -48,7 +47,6 @@ public class EndCutScene : MonoBehaviour
         AudioManager.Instance?.PlayBGM(_bgmSetup);
 
          _cutSceneUI.nextButton.onClick.AddListener(OnNextDialogueClicked);
-                    _skipButton.onClick.AddListener(OnCanSkip);
 
         ShowCutScene();
     }
@@ -114,9 +112,9 @@ public class EndCutScene : MonoBehaviour
         {
             _currentIdx++;
 
+            // 씬 종료
             if (_currentIdx >= _cutSceneList.Count)
             {
-                TriggerSceneFlowCompletion();
             }
             else
             {
@@ -126,28 +124,4 @@ public class EndCutScene : MonoBehaviour
     }
 
 
-    private void OnCanSkip()
-    {
-        TriggerSceneFlowCompletion();
-    }
-
-    private void TriggerSceneFlowCompletion()
-    {
-        if (SceneNameExtensions.ToSceneString(SceneName.CutScene_End) == gameObject.scene.name)
-        {
-            HandleEndingCutSceneCompletion().Forget();
-            return;
-        }
-
-        SceneFlowManager.Instance?.CompleteCurrentFlow();
-    }
-
-    private async UniTaskVoid HandleEndingCutSceneCompletion()
-    {
-        AudioManager.Instance?.StopBGM();
-
-        SaveLoadSystem.Instance.SaveGame(SaveLoadSystem.EndingSaveSlot);
-
-        await SceneLoader.Instance.LoadWithLoadingSceneAsync(SceneName.Game);
-    }
 }
