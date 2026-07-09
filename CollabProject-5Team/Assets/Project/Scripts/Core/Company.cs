@@ -460,7 +460,7 @@ public class Company : MonoBehaviour
 
         // 적자 패널티
         if (gold.Value < 0)
-            reputation += PerkPolicy.PENALTY_DEFICIT_HIT;
+            reputation += PerkPolicy.PENALTY_DEFICIT_WEEK;
 
         // TODO: 적자시 1회 빚 및 게임오버 시스템
     }

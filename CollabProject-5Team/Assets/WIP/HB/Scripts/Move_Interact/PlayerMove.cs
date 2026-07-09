@@ -59,6 +59,7 @@ public class PlayerMove : MonoBehaviour
         }
 
         bool IsUIOpen = CameraManager.Instance != null && CameraManager.Instance.IsUIOpen.Value;
+        if (IsUIOpen) return;
 
         // UI창이 열려있으면 터치 관통 방지
         if (IsPointerOverUI()) return;

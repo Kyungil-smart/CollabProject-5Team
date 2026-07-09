@@ -1,4 +1,3 @@
-using System.Runtime.CompilerServices;
 using TMPro;
 using UnityEngine;
 
@@ -62,7 +61,7 @@ public class NPCInteract : MonoBehaviour, IInteractable
         {
             anim.SetTrigger("Greet");
 
-            Invoke(nameof(RollBackAnimation), 1.0f);
+            // Invoke(nameof(RollBackAnimation), 1.0f);
         }
 
         if (player != null)

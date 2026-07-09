@@ -1,19 +1,30 @@
 using Cysharp.Threading.Tasks;
-using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class LoadingSceneController : MonoBehaviour
 {
-    public static string NextSceneName { get; set; }
+    [SerializeField] Image _loadingImage;
+    [SerializeField] Sprite _gameSceneSprite;
 
-    [SerializeField] Image progressBar;
+    public static string NextSceneName { get; set; }
 
     private void Start()
     {
+        ApplySceneSprite();
+
+        // Start에서 바로 UniTask 실행
         LoadTargetSceneAsync().Forget();
     }
+
+    private void ApplySceneSprite()
+    {
+        if (NextSceneName != "GameScene") return;
+
+        _loadingImage.sprite = _gameSceneSprite;
+    }
+
     private async UniTaskVoid LoadTargetSceneAsync()
     {
         var op = SceneManager.LoadSceneAsync(NextSceneName);
@@ -21,15 +32,6 @@ public class LoadingSceneController : MonoBehaviour
 
         while (op.progress < 0.9f)
         {
-            progressBar.fillAmount = op.progress;
-            await UniTask.Yield();
-        }
-
-        float timer = 0f;
-        while (timer < 1.0f)
-        {
-            timer += Time.unscaledDeltaTime;
-            progressBar.fillAmount = Mathf.Lerp(0.9f, 1f, timer);
             await UniTask.Yield();
         }
 
