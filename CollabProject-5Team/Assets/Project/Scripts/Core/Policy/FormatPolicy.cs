@@ -8,7 +8,7 @@ public static class FormatPolicy
         if (gold < 0)
             return $"-{FormatGold(-gold)}";
 
-        if (gold < 10_000)
+        if (gold < 1000)
             return $"{gold:N0}G";
 
         if (gold < 100_000)
