@@ -1,8 +1,11 @@
+using System;
 using UnityEngine;
 using Cysharp.Threading.Tasks;
 
 public class OnGameSceneLoad : MonoBehaviour
 {
+    public static event Action OnNightSaveLoad;
+
     private void Start()
     {
         InvokeAfterStart().Forget();
@@ -38,6 +41,7 @@ public class OnGameSceneLoad : MonoBehaviour
         {
             case TimeOfDay.Night:
                 DateTimeManager.OnReportEnd?.Invoke();
+                OnNightSaveLoad?.Invoke();
                 break;
             default:
                 DateTimeManager.OnDay?.Invoke();
