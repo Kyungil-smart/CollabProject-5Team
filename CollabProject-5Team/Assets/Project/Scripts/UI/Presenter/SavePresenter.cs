@@ -11,7 +11,7 @@ namespace GameDevTycoon.UI.Ingame
     /// 슬롯 선택/해제 토글, 저장/불러오기 버튼 처리.
     /// 빈 슬롯 선택 시 SaveButton만 활성, 저장된 슬롯은 둘 다 활성, AutoSaveSlot은 LoadButton만 활성.
     /// </summary>
-    public sealed class SavePresenter : MonoBehaviour
+    public sealed class SavePresenter : MonoBehaviour, IBottomNightUI
     {
         [SerializeField] private SaveView _view;
         [SerializeField] private AlertView _alertView;
@@ -26,6 +26,8 @@ namespace GameDevTycoon.UI.Ingame
         private SaveSlotData _autoSlotData;
         private SaveSlotData _slot1Data;
         private SaveSlotData _slot2Data;
+
+        public bool IsVisible => _view.IsVisible;
 
         private void Start()
         {

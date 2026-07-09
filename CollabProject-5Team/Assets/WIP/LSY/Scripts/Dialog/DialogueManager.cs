@@ -44,7 +44,14 @@ namespace Dialogue
                 .Subscribe(_ => HideAll())
                 .AddTo(this);
 
+            DateTimeManager.OnDay += HideAll;
         }
+
+        private void OnDestroy()
+        {
+            DateTimeManager.OnDay -= HideAll;
+        }
+
         private void Start() => HideAll();
 
         public void StartDialogueById(Employee emp)
@@ -303,6 +310,7 @@ namespace Dialogue
 
         void HideAll()
         {
+            _isDialogueRunning = false;
             CameraManager.Instance.ResetCamera();
             CameraManager.Instance.IsUIOpen.Value = false;
 
@@ -311,10 +319,20 @@ namespace Dialogue
                 _currentNpcController.EndConversation();
                 _currentNpcController = null;
             }
-            
-            if (_playerView   != null) _playerView.gameObject.SetActive(false);
-            if (_employeeView != null) _employeeView.gameObject.SetActive(false);
-            _currentView   = null;
+
+            if (_playerView != null)
+            {
+                _playerView.OnTypingComplete = null;
+                _playerView.OnNextAction     = null;
+                _playerView.gameObject.SetActive(false);
+            }
+            if (_employeeView != null)
+            {
+                _employeeView.OnTypingComplete = null;
+                _employeeView.OnNextAction     = null;
+                _employeeView.gameObject.SetActive(false);
+            }
+            _currentView = null;
             HideChoices();
             GameManager.Instance?.player?.CloseInteractionUI();
         }
