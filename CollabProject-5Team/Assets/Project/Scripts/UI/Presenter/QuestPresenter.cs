@@ -23,7 +23,6 @@ namespace GameDevTycoon.UI.Ingame
         // 섹션별 재사용 풀 — 비활성 오브젝트를 먼저 꺼내 쓰고 부족하면 추가 생성
         private readonly List<QuestItemView> _dailyPool = new();
         private readonly List<QuestItemView> _storyPool = new();
-        private readonly List<QuestItemView> _eventPool = new();
 
         private AsyncOperationHandle<GameObject> _prefabHandle;
         private GameObject _questItemPrefab;
@@ -284,15 +283,13 @@ namespace GameDevTycoon.UI.Ingame
         {
             var dailyQuests = GetDailyQuests();
             var storyQuests = GetStoryQuests();
-            var eventQuests = GetEventQuests();
 
             BindSection(_view.DailyQuestContent, _dailyPool, dailyQuests);
 
             _view.SetStoryQuestTitle(storyQuests.Count);
             BindSection(_view.StoryQuestContent, _storyPool, storyQuests);
 
-            _view.SetEventQuestTitle(eventQuests.Count);
-            BindSection(_view.EventQuestContent, _eventPool, eventQuests);
+            _view.SetEventQuestSectionVisible(false);
         }
 
         // 재사용: 기존 아이템은 Bind 재호출, 부족하면 추가 생성, 남으면 비활성화
@@ -328,6 +325,22 @@ namespace GameDevTycoon.UI.Ingame
         // 일일 퀘스트는 하루에 하나만 존재
         private static List<QuestItemData> GetDailyQuests()
         {
+            EventQuest eventQuest = EventQuestManager.Instance != null
+                ? EventQuestManager.Instance.curEventQuest
+                : null;
+
+            if (eventQuest != null)
+            {
+                return new()
+                {
+                    new QuestItemData
+                    {
+                        questName = EventQuest.QuestName,
+                        isCompleted = eventQuest.state == QuestState.End
+                    }
+                };
+            }
+
             DailyQuest quest = QuestManager.Instance.curDailyQuest;
             if (quest == null) return new();
 
@@ -354,24 +367,6 @@ namespace GameDevTycoon.UI.Ingame
                 new QuestItemData
                 {
                     questName = quest.so.questName,
-                    isCompleted = quest.state == QuestState.End
-                }
-            };
-        }
-
-        private static List<QuestItemData> GetEventQuests()
-        {
-            EventQuest quest = EventQuestManager.Instance != null
-                ? EventQuestManager.Instance.curEventQuest
-                : null;
-
-            if (quest == null) return new();
-
-            return new()
-            {
-                new QuestItemData
-                {
-                    questName = EventQuest.QuestName,
                     isCompleted = quest.state == QuestState.End
                 }
             };
