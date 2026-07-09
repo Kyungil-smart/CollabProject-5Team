@@ -106,7 +106,7 @@ namespace GameDevTycoon.UI.Ingame
                 .AddTo(this);
 
             _view.OnSaveClicked
-                .Subscribe(_ => OnSaveClicked())
+                .Subscribe(_ => { AudioManager.Instance?.PlaySFXClick(); OnNightButtonClicked(IndexSave, _savePresenter); })
                 .AddTo(this);
 
             _view.OnNightQuitClicked
@@ -317,13 +317,6 @@ namespace GameDevTycoon.UI.Ingame
             }
         }
 
-        private void OnSaveClicked()
-        {
-            AudioManager.Instance?.PlaySFXClick();
-            _view.SelectNightButton(IndexSave);
-            _savePresenter.Show();
-        }
-
         private void OnNightQuitClicked()
         {
             AudioManager.Instance?.PlaySFXClick();
@@ -347,6 +340,7 @@ namespace GameDevTycoon.UI.Ingame
             if (yielded.Add(_hrPresenter)) yield return _hrPresenter;
             if (yielded.Add(_projectPresenter)) yield return _projectPresenter;
             if (yielded.Add(_companyPresenter)) yield return _companyPresenter;
+            if (yielded.Add(_savePresenter)) yield return _savePresenter;
 
             //추후 IBottomNightUI가 추가로 존재하면 여기에 추가
         }
