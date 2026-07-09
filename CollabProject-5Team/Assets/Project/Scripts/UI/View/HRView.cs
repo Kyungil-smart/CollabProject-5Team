@@ -297,7 +297,7 @@ namespace GameDevTycoon.UI.Ingame
         public void SetTotalRecruitInfo(int count, int cost)
         {
             _totalCountLabel.text = $"총 {count} 명";
-            _totalCostLabel.text = $"{cost:N0} G";
+            _totalCostLabel.text = FormatPolicy.FormatGold(cost);
         }
 
         public void ShowApplicantList()
