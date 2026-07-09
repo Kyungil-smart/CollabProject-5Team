@@ -426,12 +426,9 @@ public class Company : MonoBehaviour
             p.weeklySales = 0;
             p.weeklyGoldAccum = 0;
             p.isUpdatePending = false;
-            p.planUpdateCompleted = false;
-            p.artUpdateCompleted = false;
-            p.devUpdateCompleted = false;
-            p.planUpdateId = 0;
-            p.artUpdateId = 0;
-            p.devUpdateId = 0;
+            TickProjectUpdateLock(ref p.planUpdateLockWeeks, ref p.planUpdateCompleted, ref p.planUpdateId);
+            TickProjectUpdateLock(ref p.artUpdateLockWeeks, ref p.artUpdateCompleted, ref p.artUpdateId);
+            TickProjectUpdateLock(ref p.devUpdateLockWeeks, ref p.devUpdateCompleted, ref p.devUpdateId);
         }
 
         // 적자 패널티
@@ -442,6 +439,22 @@ public class Company : MonoBehaviour
     }
 
     // 프로젝트 완료시 직원 보상 적용
+    void TickProjectUpdateLock(ref int lockWeeks, ref bool completed, ref int updateId)
+    {
+        if (lockWeeks <= 0)
+        {
+            completed = false;
+            updateId = 0;
+            return;
+        }
+
+        lockWeeks--;
+        if (lockWeeks > 0) return;
+
+        completed = false;
+        updateId = 0;
+    }
+
     public void ApplyCompletionEmployeeRewards(Project project)
     {
         int abilityDelta = PerkPolicy.CalcCompletionAbilityDelta(project.Scale, project.Grade);
@@ -634,6 +647,9 @@ public class Company : MonoBehaviour
                 planUpdateCompleted = p.planUpdateCompleted,
                 artUpdateCompleted = p.artUpdateCompleted,
                 devUpdateCompleted = p.devUpdateCompleted,
+                planUpdateLockWeeks = p.planUpdateLockWeeks,
+                artUpdateLockWeeks = p.artUpdateLockWeeks,
+                devUpdateLockWeeks = p.devUpdateLockWeeks,
 
                 weeklyGoldHistoryList = new List<int>(p.weeklyGoldHistory)
             };
@@ -704,6 +720,9 @@ public class Company : MonoBehaviour
                     planUpdateCompleted = pData.planUpdateCompleted,
                     artUpdateCompleted = pData.artUpdateCompleted,
                     devUpdateCompleted = pData.devUpdateCompleted,
+                    planUpdateLockWeeks = pData.planUpdateLockWeeks,
+                    artUpdateLockWeeks = pData.artUpdateLockWeeks,
+                    devUpdateLockWeeks = pData.devUpdateLockWeeks,
                 };
 
                 p.weeklyGoldHistory = new Queue<int>();
