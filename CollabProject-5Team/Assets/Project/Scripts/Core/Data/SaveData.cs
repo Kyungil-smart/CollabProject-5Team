@@ -22,6 +22,8 @@ public class SaveData
     public int lastHiredEmployeeId;
     public bool canLeaveSelf;
     public List<int> leavePendingEmployeeIds = new();
+    public List<int> currentApplicantIds = new();
+    public List<RecruitRequestSaveData> activeRecruitRequests = new();
 
     // QuestManager 저장
     public Dictionary<Role, int> weeklyBonusPoints = new();
@@ -51,6 +53,13 @@ public class SaveData
     public CurrentProjectSaveData activeProjectsData = new();
 
     public List<AchievementSaveInfo> _achievementStates = new();
+}
+
+[Serializable]
+public class RecruitRequestSaveData
+{
+    public Role targetRole;
+    public int count;
 }
 
 [System.Serializable]
