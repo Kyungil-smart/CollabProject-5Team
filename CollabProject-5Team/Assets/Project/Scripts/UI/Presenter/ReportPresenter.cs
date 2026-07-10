@@ -139,10 +139,15 @@ namespace GameDevTycoon.UI.Ingame
             _view.SetCoverInfo(dateRange, Company.Instance.CompanyName);
         }
 
-        private void RefreshEmployeeStatusSlide(Employee employee)
+        private void ClearEmployeeStatusSlide()
         {
             for (int i = _view.SlidePreviewContent.childCount - 1; i >= 0; i--)
                 DestroyImmediate(_view.SlidePreviewContent.GetChild(i).gameObject);
+        }
+
+        private void RefreshEmployeeStatusSlide(Employee employee)
+        {
+            ClearEmployeeStatusSlide();
 
             var item = Instantiate(_employeeStatusMiniItemPrefab, _view.SlidePreviewContent);
             item.Bind(employee);
@@ -228,12 +233,14 @@ namespace GameDevTycoon.UI.Ingame
             _view.PanelReportDetail.SetActive(false);
             _view.SetSlideInteractable(false);
             _view.SetNextButtonInteractable(_roleIndex, true);
+            ClearEmployeeStatusSlide();
         }
 
         private void OnCancelDetail()
         {
             _view.PanelReportDetail.SetActive(false);
             _view.SetSlideInteractable(false);
+            ClearEmployeeStatusSlide();
         }
 
         // 채택된 보고서를 취소하고 해당 직군 카드를 다시 선택 가능한 상태로 되돌림
@@ -310,6 +317,7 @@ namespace GameDevTycoon.UI.Ingame
             _view.SetPersonalOpinionInfo(_currentPersonalAgenda.employee, _currentPersonalAgenda.agenda);
             _view.ShowPanel(ReportPanel.PersonalOpinion);
             _view.SetSlideInteractable(true);
+            RefreshEmployeeStatusSlide(_currentPersonalAgenda.employee);
         }
 
         private void ShowNextPersonalOpinion()
@@ -347,6 +355,7 @@ namespace GameDevTycoon.UI.Ingame
         {
             _view.SetSlideInteractable(false);
             _view.ShowPanel(ReportPanel.ReportEnd);
+            ClearEmployeeStatusSlide();
         }
 
         private void OnReportEndConfirmed()
