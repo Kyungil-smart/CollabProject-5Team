@@ -28,7 +28,7 @@ namespace GameDevTycoon.EditorQA
         private static readonly FieldInfo ChosenBranchField = typeof(DialogueManager).GetField(
             "_chosenBranch", BindingFlags.Instance | BindingFlags.NonPublic);
 
-        [MenuItem("Tools/QA/4. Dialogue Reward Runtime QA", false, 104)]
+        [MenuItem("Tools/QA/6. Dialogue Reward Runtime QA", false, 106)]
         public static void Open()
         {
             DialogueRewardRuntimeQAWindow window = GetWindow<DialogueRewardRuntimeQAWindow>("Dialogue Reward QA");
