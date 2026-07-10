@@ -12,6 +12,7 @@ namespace GameDevTycoon.EditorQA
         {
             Gameplay,
             Dialogue,
+            DialogueCoverage,
             Report
         }
 
@@ -48,6 +49,7 @@ namespace GameDevTycoon.EditorQA
         private RuntimeArea _runtimeArea;
 
         [NonSerialized] private DialogueRewardRuntimeQAWindow _dialoguePanel;
+        [NonSerialized] private DialogueCoverageRuntimeQAWindow _dialogueCoveragePanel;
         [NonSerialized] private ReportRuntimeQAWindow _reportPanel;
 
         [MenuItem("Tools/QA/5. Runtime QA", false, 105)]
@@ -64,6 +66,11 @@ namespace GameDevTycoon.EditorQA
         internal static void OpenReportTab()
         {
             OpenTab(RuntimeArea.Report);
+        }
+
+        internal static void OpenDialogueCoverageTab()
+        {
+            OpenTab(RuntimeArea.DialogueCoverage);
         }
 
         private static void OpenTab(RuntimeArea area)
@@ -108,16 +115,25 @@ namespace GameDevTycoon.EditorQA
                 _reportPanel = CreateInstance<ReportRuntimeQAWindow>();
                 _reportPanel.hideFlags = HideFlags.DontSave;
             }
+
+            if (_dialogueCoveragePanel == null)
+            {
+                _dialogueCoveragePanel = CreateInstance<DialogueCoverageRuntimeQAWindow>();
+                _dialogueCoveragePanel.hideFlags = HideFlags.DontSave;
+            }
         }
 
         private void DestroyEmbeddedPanels()
         {
             if (_dialoguePanel != null)
                 DestroyImmediate(_dialoguePanel);
+            if (_dialogueCoveragePanel != null)
+                DestroyImmediate(_dialogueCoveragePanel);
             if (_reportPanel != null)
                 DestroyImmediate(_reportPanel);
 
             _dialoguePanel = null;
+            _dialogueCoveragePanel = null;
             _reportPanel = null;
         }
 
@@ -606,6 +622,9 @@ namespace GameDevTycoon.EditorQA
                 case RuntimeArea.Dialogue:
                     _dialoguePanel.DrawEmbeddedGUI();
                     return;
+                case RuntimeArea.DialogueCoverage:
+                    _dialogueCoveragePanel.DrawEmbeddedGUI();
+                    return;
                 case RuntimeArea.Report:
                     _reportPanel.DrawEmbeddedGUI();
                     return;
@@ -624,7 +643,7 @@ namespace GameDevTycoon.EditorQA
             EditorGUILayout.Space(5f);
             _runtimeArea = (RuntimeArea)GUILayout.Toolbar(
                 (int)_runtimeArea,
-                new[] { "전체 흐름", "대화", "보고서" },
+                new[] { "전체 흐름", "대화 보상", "대화 커버리지", "보고서" },
                 GUILayout.Height(28f));
             EditorGUILayout.Space(4f);
         }
