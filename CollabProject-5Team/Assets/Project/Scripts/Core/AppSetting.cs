@@ -15,7 +15,7 @@ public static class AppSetting
         Screen.sleepTimeout = SleepTimeout.NeverSleep;
 
         // 백그라운드 진입 시 일시정지
-        Application.runInBackground = false;
+        Application.runInBackground = true;
 #if UNITY_EDITOR
         DebugManager.instance.enableRuntimeUI = false;
         DebugManager.instance.displayRuntimeUI = false;

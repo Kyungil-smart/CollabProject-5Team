@@ -258,6 +258,9 @@ public class DateTimeManager : MonoBehaviour
 
         if (Company.Instance.activeProjectCount.Value > 0)
             Company.Instance.curProject.ProgressNight();
+        else
+            foreach (Employee e in _EmployeeManager.Instance.haveEmployees.haveEmployeeList)
+                ReportPolicy.ApplyRejectedFatigue(e);
 
         _EmployeeManager.Instance.RegisterLeavePendingEmployees();
         _EmployeeManager.Instance.GenerateWeeklyApplicants();
