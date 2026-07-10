@@ -29,12 +29,12 @@ public class AchievementSystem : MonoBehaviour
     private void LoadAchievementData()
     {
         // 1. 골드
-        RegisterAchievement(new AchievementData { id = "Gold_01", title = "돈이 복사가 된다고?"    , description = "골드 500k 모으기", targetEvent = AchievementNotifyType.OnGoldChanged,  targetValue = 50000 });
-        RegisterAchievement(new AchievementData { id = "Gold_02", title = "내 주머니에 종이가 백장", description = "골드 1M 모으기", targetEvent = AchievementNotifyType.OnGoldChanged, targetValue = 100000 });
+        RegisterAchievement(new AchievementData { id = "Gold_01", title = "돈이 복사가 된다고?"    , description = "골드 500k 모으기", targetEvent = AchievementNotifyType.OnGoldChanged,  targetValue = 500000 });
+        RegisterAchievement(new AchievementData { id = "Gold_02", title = "내 주머니에 종이가 백장", description = "골드 1M 모으기", targetEvent = AchievementNotifyType.OnGoldChanged, targetValue = 1000000 });
 
         // 1-2. 총 골드
-        RegisterAchievement(new AchievementData { id = "TotalGold_01", title = "돈의 맛"  , description = "총 매출 1M", targetEvent = AchievementNotifyType.OnTotalGoldChanged, targetValue = 50000 });
-        RegisterAchievement(new AchievementData { id = "TotalGold_02", title = "돈 돈 돈!", description = "총 매출 10M    ", targetEvent = AchievementNotifyType.OnTotalGoldChanged, targetValue = 100000 });
+        RegisterAchievement(new AchievementData { id = "TotalGold_01", title = "돈의 맛"  , description = "총 매출 1M", targetEvent = AchievementNotifyType.OnTotalGoldChanged, targetValue = 1000000 });
+        RegisterAchievement(new AchievementData { id = "TotalGold_02", title = "돈 돈 돈!", description = "총 매출 5M", targetEvent = AchievementNotifyType.OnTotalGoldChanged, targetValue = 5000000 });
 
         // 2. 회사 레벨 
         RegisterAchievement(new AchievementData { id = "Office_02", title = "좋좋소"              , description = "중형 회사로 증축", targetEvent = AchievementNotifyType.OnLevelChanged, targetValue = 2 });
