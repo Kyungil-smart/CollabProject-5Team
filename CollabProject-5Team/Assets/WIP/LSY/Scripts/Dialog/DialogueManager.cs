@@ -79,7 +79,6 @@ namespace Dialogue
             {
                 DateTimeManager.Instance.CompleteSpecialDialogue(employeeId.ToString());
                 DialogueEvents.NotifyDialogueEnded(employeeId);
-                Debug.Log($"[DM] 풀항목없음으로 종료 — id={employeeId}, state={state}");
                 return;
             }
 
@@ -159,7 +158,6 @@ namespace Dialogue
             if (nodeId == EndNodeId || nodeId == 0)
             {
                 EndDialogue();
-                Debug.Log($"[DM] 노드ID종료 — nodeId={nodeId}");
                 return;
             }
 

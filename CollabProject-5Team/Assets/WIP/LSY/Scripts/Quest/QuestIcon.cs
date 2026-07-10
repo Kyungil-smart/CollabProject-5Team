@@ -10,6 +10,7 @@ public class QuestIcon : MonoBehaviour
 
     private RectTransform _rect;
     private Canvas _canvas;
+    private Camera _cam;
     private Transform _target;
     private Vector3 _worldOffset;
     private bool _isOffscreen;
@@ -20,13 +21,14 @@ public class QuestIcon : MonoBehaviour
     {
         _rect   = GetComponent<RectTransform>();
         _canvas = GetComponentInParent<Canvas>();
+        _cam    = Camera.main;
         button.onClick.AddListener(OnButtonClicked);
     }
 
     private void OnButtonClicked()
     {
         if (_isOffscreen && _target != null)
-            CameraManager.Instance?.FocusOnTarget(_target.position + _worldOffset, Camera.main.orthographicSize);
+            CameraManager.Instance?.FocusOnTarget(_target.position + _worldOffset, _cam.orthographicSize);
     }
 
     public void SetTarget(Transform target, Vector3 worldOffset)
@@ -40,11 +42,10 @@ public class QuestIcon : MonoBehaviour
 
     private void UpdatePosition()
     {
-        if (_target == null || Camera.main == null) return;
-        if (_rect == null) _rect = GetComponent<RectTransform>();
+        if (_target == null || _cam == null) return;
 
         Vector3 worldPos  = _target.position + _worldOffset;
-        Vector3 screenPos = Camera.main.WorldToViewportPoint(worldPos);
+        Vector3 screenPos = _cam.WorldToViewportPoint(worldPos);
 
         _isOffscreen = screenPos.z < 0f
             || screenPos.x < 0f || screenPos.x > 1f
@@ -52,7 +53,7 @@ public class QuestIcon : MonoBehaviour
 
         if (!_isOffscreen)
         {
-            _rect.position = Camera.main.WorldToScreenPoint(worldPos);
+            _rect.position = _cam.WorldToScreenPoint(worldPos);
             return;
         }
 
