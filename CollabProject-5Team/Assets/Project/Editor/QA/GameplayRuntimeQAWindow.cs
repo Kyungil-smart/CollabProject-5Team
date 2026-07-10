@@ -8,6 +8,13 @@ namespace GameDevTycoon.EditorQA
 {
     public sealed class GameplayRuntimeQAWindow : EditorWindow
     {
+        private enum RuntimeArea
+        {
+            Gameplay,
+            Dialogue,
+            Report
+        }
+
         private enum RuntimeCategory
         {
             All,
@@ -38,25 +45,80 @@ namespace GameDevTycoon.EditorQA
         private bool _showFail = true;
         private bool _showInfo;
         private double _nextSampleTime;
+        private RuntimeArea _runtimeArea;
 
-        [MenuItem("Tools/QA/5. Gameplay Runtime QA", false, 105)]
+        [NonSerialized] private DialogueRewardRuntimeQAWindow _dialoguePanel;
+        [NonSerialized] private ReportRuntimeQAWindow _reportPanel;
+
+        [MenuItem("Tools/QA/5. Runtime QA", false, 105)]
         public static void Open()
         {
-            GameplayRuntimeQAWindow window = GetWindow<GameplayRuntimeQAWindow>("Gameplay Runtime QA");
+            OpenTab(RuntimeArea.Gameplay);
+        }
+
+        internal static void OpenDialogueTab()
+        {
+            OpenTab(RuntimeArea.Dialogue);
+        }
+
+        internal static void OpenReportTab()
+        {
+            OpenTab(RuntimeArea.Report);
+        }
+
+        private static void OpenTab(RuntimeArea area)
+        {
+            GameplayRuntimeQAWindow window = GetWindow<GameplayRuntimeQAWindow>("Runtime QA");
             window.minSize = new Vector2(760f, 520f);
+            window._runtimeArea = area;
+            window.EnsureEmbeddedPanels();
             window.Show();
+            window.Repaint();
         }
 
         private void OnEnable()
         {
             EditorApplication.update += OnEditorUpdate;
             EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
+            EnsureEmbeddedPanels();
         }
 
         private void OnDisable()
         {
             EditorApplication.update -= OnEditorUpdate;
             EditorApplication.playModeStateChanged -= OnPlayModeStateChanged;
+            DestroyEmbeddedPanels();
+        }
+
+        private void OnInspectorUpdate()
+        {
+            Repaint();
+        }
+
+        private void EnsureEmbeddedPanels()
+        {
+            if (_dialoguePanel == null)
+            {
+                _dialoguePanel = CreateInstance<DialogueRewardRuntimeQAWindow>();
+                _dialoguePanel.hideFlags = HideFlags.DontSave;
+            }
+
+            if (_reportPanel == null)
+            {
+                _reportPanel = CreateInstance<ReportRuntimeQAWindow>();
+                _reportPanel.hideFlags = HideFlags.DontSave;
+            }
+        }
+
+        private void DestroyEmbeddedPanels()
+        {
+            if (_dialoguePanel != null)
+                DestroyImmediate(_dialoguePanel);
+            if (_reportPanel != null)
+                DestroyImmediate(_reportPanel);
+
+            _dialoguePanel = null;
+            _reportPanel = null;
         }
 
         private void OnPlayModeStateChanged(PlayModeStateChange state)
@@ -536,12 +598,35 @@ namespace GameDevTycoon.EditorQA
 
         private void OnGUI()
         {
+            EnsureEmbeddedPanels();
+            DrawRuntimeTabs();
+
+            switch (_runtimeArea)
+            {
+                case RuntimeArea.Dialogue:
+                    _dialoguePanel.DrawEmbeddedGUI();
+                    return;
+                case RuntimeArea.Report:
+                    _reportPanel.DrawEmbeddedGUI();
+                    return;
+            }
+
             DrawToolbar();
             DrawCategoryTabs();
             DrawCurrentStatus();
             DrawActions();
             DrawSummary();
             DrawRecords();
+        }
+
+        private void DrawRuntimeTabs()
+        {
+            EditorGUILayout.Space(5f);
+            _runtimeArea = (RuntimeArea)GUILayout.Toolbar(
+                (int)_runtimeArea,
+                new[] { "전체 흐름", "대화", "보고서" },
+                GUILayout.Height(28f));
+            EditorGUILayout.Space(4f);
         }
 
         private void DrawToolbar()

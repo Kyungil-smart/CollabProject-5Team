@@ -19,12 +19,9 @@ namespace GameDevTycoon.EditorQA
         private bool _showFailed = true;
         private double _nextRepaintTime;
 
-        [MenuItem("Tools/QA/7. Report Runtime QA", false, 107)]
         public static void Open()
         {
-            ReportRuntimeQAWindow window = GetWindow<ReportRuntimeQAWindow>("Report Runtime QA");
-            window.minSize = new Vector2(760f, 500f);
-            window.Show();
+            GameplayRuntimeQAWindow.OpenReportTab();
         }
 
         private void OnEnable()
@@ -349,6 +346,11 @@ namespace GameDevTycoon.EditorQA
         private static bool Approximately(float left, float right) => Mathf.Abs(left - right) <= ScoreTolerance;
 
         private void OnGUI()
+        {
+            DrawEmbeddedGUI();
+        }
+
+        internal void DrawEmbeddedGUI()
         {
             DrawToolbar();
             DrawGuide();

@@ -28,12 +28,9 @@ namespace GameDevTycoon.EditorQA
         private static readonly FieldInfo ChosenBranchField = typeof(DialogueManager).GetField(
             "_chosenBranch", BindingFlags.Instance | BindingFlags.NonPublic);
 
-        [MenuItem("Tools/QA/6. Dialogue Reward Runtime QA", false, 106)]
         public static void Open()
         {
-            DialogueRewardRuntimeQAWindow window = GetWindow<DialogueRewardRuntimeQAWindow>("Dialogue Reward QA");
-            window.minSize = new Vector2(680f, 440f);
-            window.Show();
+            GameplayRuntimeQAWindow.OpenDialogueTab();
         }
 
         private void OnEnable()
@@ -299,6 +296,11 @@ namespace GameDevTycoon.EditorQA
         }
 
         private void OnGUI()
+        {
+            DrawEmbeddedGUI();
+        }
+
+        internal void DrawEmbeddedGUI()
         {
             DrawToolbar();
             DrawGuide();

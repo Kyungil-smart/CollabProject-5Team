@@ -40,22 +40,10 @@ namespace GameDevTycoon.EditorQA
                 QABuildPrecheck.RunFromMenu);
 
             DrawSection(
-                "4. 게임플레이 런타임 QA",
-                "Play Mode에서 퀘스트/날짜, 프로젝트/재화, 인사, 저장 복원 흐름을 자동 검증합니다.",
-                "게임플레이 런타임 QA 열기",
+                "4. 런타임 QA",
+                "하나의 창에서 전체 흐름, 대화 보상, 보고서 승인 결과를 탭으로 전환하며 검증합니다.",
+                "런타임 QA 열기",
                 GameplayRuntimeQAWindow.Open);
-
-            DrawSection(
-                "5. 대화 보상 런타임 QA",
-                "Play Mode에서 선택지 효과 문자열과 실제 직원 상태/자금 변화를 비교해 PASS/FAIL로 기록합니다.",
-                "대화 보상 런타임 QA 열기",
-                DialogueRewardRuntimeQAWindow.Open);
-
-            DrawSection(
-                "6. 보고서 승인 런타임 QA",
-                "Play Mode에서 보고서 승인 전후의 프로젝트 점수, 퀘스트 보정, 직원 상태를 비교합니다.",
-                "보고서 승인 런타임 QA 열기",
-                ReportRuntimeQAWindow.Open);
 
             EditorGUILayout.Space(8f);
             using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
@@ -64,9 +52,8 @@ namespace GameDevTycoon.EditorQA
                 EditorGUILayout.LabelField("1. 기획 데이터 QA 실행", EditorStyles.miniLabel);
                 EditorGUILayout.LabelField("2. 데이터 입력 대기/작업 유형 필터로 결과 정리", EditorStyles.miniLabel);
                 EditorGUILayout.LabelField("3. 개발 연결 QA에서 Missing Script, 깨진 참조, 버튼 연결 확인", EditorStyles.miniLabel);
-                EditorGUILayout.LabelField("4. Play Mode에서 퀘스트/날짜/프로젝트/인사/저장 흐름 확인", EditorStyles.miniLabel);
-                EditorGUILayout.LabelField("5. 대화와 보고서의 실제 수치 적용 확인", EditorStyles.miniLabel);
-                EditorGUILayout.LabelField("6. 필요하면 Markdown 리포트로 공유", EditorStyles.miniLabel);
+                EditorGUILayout.LabelField("4. Runtime QA의 전체 흐름/대화/보고서 탭에서 실제 적용 확인", EditorStyles.miniLabel);
+                EditorGUILayout.LabelField("5. 필요하면 Markdown 리포트로 공유", EditorStyles.miniLabel);
             }
         }
 
