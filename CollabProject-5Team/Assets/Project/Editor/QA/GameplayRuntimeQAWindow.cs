@@ -13,7 +13,9 @@ namespace GameDevTycoon.EditorQA
             Gameplay,
             Dialogue,
             DialogueCoverage,
-            Report
+            Report,
+            ReportCoverage,
+            QuestCoverage
         }
 
         private enum RuntimeCategory
@@ -51,6 +53,8 @@ namespace GameDevTycoon.EditorQA
         [NonSerialized] private DialogueRewardRuntimeQAWindow _dialoguePanel;
         [NonSerialized] private DialogueCoverageRuntimeQAWindow _dialogueCoveragePanel;
         [NonSerialized] private ReportRuntimeQAWindow _reportPanel;
+        [NonSerialized] private ReportCoverageRuntimeQAWindow _reportCoveragePanel;
+        [NonSerialized] private QuestCoverageRuntimeQAWindow _questCoveragePanel;
 
         [MenuItem("Tools/QA/5. Runtime QA", false, 105)]
         public static void Open()
@@ -73,10 +77,20 @@ namespace GameDevTycoon.EditorQA
             OpenTab(RuntimeArea.DialogueCoverage);
         }
 
+        internal static void OpenReportCoverageTab()
+        {
+            OpenTab(RuntimeArea.ReportCoverage);
+        }
+
+        internal static void OpenQuestCoverageTab()
+        {
+            OpenTab(RuntimeArea.QuestCoverage);
+        }
+
         private static void OpenTab(RuntimeArea area)
         {
             GameplayRuntimeQAWindow window = GetWindow<GameplayRuntimeQAWindow>("Runtime QA");
-            window.minSize = new Vector2(760f, 520f);
+            window.minSize = new Vector2(1100f, 600f);
             window._runtimeArea = area;
             window.EnsureEmbeddedPanels();
             window.Show();
@@ -121,6 +135,16 @@ namespace GameDevTycoon.EditorQA
                 _dialogueCoveragePanel = CreateInstance<DialogueCoverageRuntimeQAWindow>();
                 _dialogueCoveragePanel.hideFlags = HideFlags.DontSave;
             }
+            if (_reportCoveragePanel == null)
+            {
+                _reportCoveragePanel = CreateInstance<ReportCoverageRuntimeQAWindow>();
+                _reportCoveragePanel.hideFlags = HideFlags.DontSave;
+            }
+            if (_questCoveragePanel == null)
+            {
+                _questCoveragePanel = CreateInstance<QuestCoverageRuntimeQAWindow>();
+                _questCoveragePanel.hideFlags = HideFlags.DontSave;
+            }
         }
 
         private void DestroyEmbeddedPanels()
@@ -131,10 +155,16 @@ namespace GameDevTycoon.EditorQA
                 DestroyImmediate(_dialogueCoveragePanel);
             if (_reportPanel != null)
                 DestroyImmediate(_reportPanel);
+            if (_reportCoveragePanel != null)
+                DestroyImmediate(_reportCoveragePanel);
+            if (_questCoveragePanel != null)
+                DestroyImmediate(_questCoveragePanel);
 
             _dialoguePanel = null;
             _dialogueCoveragePanel = null;
             _reportPanel = null;
+            _reportCoveragePanel = null;
+            _questCoveragePanel = null;
         }
 
         private void OnPlayModeStateChanged(PlayModeStateChange state)
@@ -628,6 +658,12 @@ namespace GameDevTycoon.EditorQA
                 case RuntimeArea.Report:
                     _reportPanel.DrawEmbeddedGUI();
                     return;
+                case RuntimeArea.ReportCoverage:
+                    _reportCoveragePanel.DrawEmbeddedGUI();
+                    return;
+                case RuntimeArea.QuestCoverage:
+                    _questCoveragePanel.DrawEmbeddedGUI();
+                    return;
             }
 
             DrawToolbar();
@@ -643,7 +679,7 @@ namespace GameDevTycoon.EditorQA
             EditorGUILayout.Space(5f);
             _runtimeArea = (RuntimeArea)GUILayout.Toolbar(
                 (int)_runtimeArea,
-                new[] { "전체 흐름", "대화 보상", "대화 커버리지", "보고서" },
+                new[] { "전체 흐름", "대화 보상", "대화 커버리지", "보고서 승인", "보고서 커버리지", "퀘스트 커버리지" },
                 GUILayout.Height(28f));
             EditorGUILayout.Space(4f);
         }
