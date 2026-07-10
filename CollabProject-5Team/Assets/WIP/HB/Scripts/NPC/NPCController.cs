@@ -65,7 +65,7 @@ public class NPCController : MonoBehaviour
         // 휴식 모드 (책상에서 일어난 직후)
         else if (IsMoveToRest)
         {
-            var publicPoints = PointManager.Instance.GetPublicPoints().Where(p => !p.IsOccupied).ToList();
+            var publicPoints = PointManager.Instance.GetPublicPoints();
             if (publicPoints.Count > 0)
             {
                 target = publicPoints.OrderBy(x => Random.value).FirstOrDefault();
