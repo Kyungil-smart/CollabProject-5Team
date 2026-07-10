@@ -39,6 +39,12 @@ namespace GameDevTycoon.EditorQA
                 "빌드 사전 검사 실행",
                 QABuildPrecheck.RunFromMenu);
 
+            DrawSection(
+                "4. 대화 보상 런타임 QA",
+                "Play Mode에서 선택지 효과 문자열과 실제 직원 상태/자금 변화를 비교해 PASS/FAIL로 기록합니다.",
+                "대화 보상 런타임 QA 열기",
+                DialogueRewardRuntimeQAWindow.Open);
+
             EditorGUILayout.Space(8f);
             using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
             {
@@ -46,7 +52,8 @@ namespace GameDevTycoon.EditorQA
                 EditorGUILayout.LabelField("1. 기획 데이터 QA 실행", EditorStyles.miniLabel);
                 EditorGUILayout.LabelField("2. 데이터 입력 대기/작업 유형 필터로 결과 정리", EditorStyles.miniLabel);
                 EditorGUILayout.LabelField("3. 개발 연결 QA에서 Missing Script, 깨진 참조, 버튼 연결 확인", EditorStyles.miniLabel);
-                EditorGUILayout.LabelField("4. 필요하면 Markdown 리포트로 공유", EditorStyles.miniLabel);
+                EditorGUILayout.LabelField("4. Play Mode에서 대화 보상 실제 적용 확인", EditorStyles.miniLabel);
+                EditorGUILayout.LabelField("5. 필요하면 Markdown 리포트로 공유", EditorStyles.miniLabel);
             }
         }
 
