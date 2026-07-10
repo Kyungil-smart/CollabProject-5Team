@@ -144,6 +144,8 @@ public class _EmployeeManager : MonoBehaviour
 
             currentApplicants.AddRange(applicants);
         }
+
+        activeRecruiRequests.Clear();
     }
 
     public void ClearAllRecruitData()
@@ -297,6 +299,8 @@ public class _EmployeeManager : MonoBehaviour
         data.savedEmployees.Clear();
         data.lastHiredEmployeeId = lastHiredEmployee != null ? lastHiredEmployee.so.id : 0;
         data.canLeaveSelf = canLeaveSelf;
+        data.currentApplicantIds.Clear();
+        data.activeRecruitRequests.Clear();
         if (data.leavePendingEmployeeIds == null)
             data.leavePendingEmployeeIds = new List<int>();
         else
@@ -350,12 +354,26 @@ public class _EmployeeManager : MonoBehaviour
             if (employee != null && haveEmployees.haveEmployeeList.Contains(employee))
                 data.leavePendingEmployeeIds.Add(employee.so.id);
         }
+
+        foreach (Employee applicant in currentApplicants)
+            data.currentApplicantIds.Add(applicant.so.id);
+
+        foreach (RecruitRequest request in activeRecruiRequests)
+        {
+            data.activeRecruitRequests.Add(new RecruitRequestSaveData
+            {
+                targetRole = request.TargetRole,
+                count = request.Count
+            });
+        }
     }
 
     public void ImportEmployeeData(SaveData data)
     {
         activeTrainings.Clear();
         leavePendingEmployees.Clear();
+        currentApplicants.Clear();
+        activeRecruiRequests.Clear();
         canLeaveSelf = data.canLeaveSelf;
         foreach (Employee emp in haveEmployees.haveEmployeeList)
         {
@@ -405,6 +423,15 @@ public class _EmployeeManager : MonoBehaviour
         }
 
         lastHiredEmployee = haveEmployees.haveEmployeeList.Find(e => e.so.id == data.lastHiredEmployeeId);
+
+        foreach (int applicantId in data.currentApplicantIds)
+        {
+            if (employeeList.leftEmployees.TryGetValue(applicantId, out GameObject applicantObject))
+                currentApplicants.Add(applicantObject.GetComponent<Employee>());
+        }
+
+        foreach (RecruitRequestSaveData request in data.activeRecruitRequests)
+            activeRecruiRequests.Add(new RecruitRequest(request.targetRole, request.count));
     }
 
     void RestoreEmployeeStatus(Employee employee, EmployeeSaveData saveData)
