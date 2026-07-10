@@ -139,7 +139,7 @@ public static class TraitTable
         [Trait.CleanCode]       = T("클린 코드",       TraitRole.Develop, true,   4, TraitStat.BugControl, TraitStat.TechPower),
         [Trait.HardCode]        = T("하드 코드",       TraitRole.Develop, false, -3, TraitStat.BugControl, TraitStat.TechPower),
         [Trait.SystemArchitect] = T("아키텍트",        TraitRole.Develop, true,   4, TraitStat.TechPower,  TraitStat.BugControl),
-        [Trait.SpaghettiCook]   = T("스파게티 요리사", TraitRole.Develop, false, -3, TraitStat.TechPower,  TraitStat.BugControl),
+        [Trait.SpaghettiCook]   = T("스파게티요리사", TraitRole.Develop, false, -3, TraitStat.TechPower,  TraitStat.BugControl),
         [Trait.FastDev]         = T("빠른 개발",       TraitRole.Develop, true,   3, TraitStat.TechPower,  TraitStat.Optimize),
         [Trait.SlowDev]         = T("느린 개발",       TraitRole.Develop, false, -4, TraitStat.TechPower,  TraitStat.Optimize),
         [Trait.IssueSolver]     = T("이슈 해결사",     TraitRole.Develop, true,   3, TraitStat.BugControl, TraitStat.Optimize),
