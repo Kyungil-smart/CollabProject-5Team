@@ -56,7 +56,6 @@ namespace Dialogue
         public DialogueNodeSO GetNode(int nodeId)
         {
             if (_nodeMap.TryGetValue(nodeId, out DialogueNodeSO node)) return node;
-            Debug.LogWarning($"[DialogueDataManager] 노드 ID {nodeId} 없음");
             return null;
         }
 
@@ -65,10 +64,7 @@ namespace Dialogue
             (int, EmployeeDialogueState) key = (employeeId, state);
 
             if (!_poolMap.TryGetValue(key, out List<DialoguePoolEntrySO> fullList) || fullList.Count == 0)
-            {
-                Debug.LogWarning($"[DialogueDataManager] 풀 항목 없음 — employeeId={employeeId}, state={state}");
                 return null;
-            }
 
             _poolLastPicked.TryGetValue(key, out DialoguePoolEntrySO lastPicked);
 

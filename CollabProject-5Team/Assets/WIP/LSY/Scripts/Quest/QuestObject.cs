@@ -17,6 +17,11 @@ public class QuestObject : MonoBehaviour, IInteractable
     private QuestIcon _bulbInstance;
     private QuestInteract _starInstance;
 
+    private void Awake()
+    {
+        if (targetCollider == null) targetCollider = GetComponent<Collider>();
+    }
+
     private void OnEnable() { ShowBulb(); }
     private void OnDisable() { ClearIcons(); }
 
@@ -24,7 +29,7 @@ public class QuestObject : MonoBehaviour, IInteractable
     {
         if (_bulbInstance == null && _starInstance == null) return;
 
-        Collider col = targetCollider != null ? targetCollider : GetComponent<Collider>();
+        Collider col = targetCollider;
         if (col == null || GameManager.Instance.player == null) return;
 
         Vector3 closestPoint = col.ClosestPoint(GameManager.Instance.player.transform.position);
@@ -83,8 +88,7 @@ public class QuestObject : MonoBehaviour, IInteractable
     private void OnIconClicked()
     {
         AudioManager.Instance?.PlaySFXClick();
-        Collider col = targetCollider != null ? targetCollider : GetComponent<Collider>();
-        GameManager.Instance.player.SetInteractTarget(this, col);
+        GameManager.Instance.player.SetInteractTarget(this, targetCollider);
     }
 
     public void OnInteract()

@@ -47,8 +47,6 @@ namespace GameDevTycoon.UI.Ingame
             Role.PLANNER    => "기획",
             Role.PROGRAMMER => "개발",
             Role.ARTIST     => "아트",
-            Role.MARKETING  => "마케팅",
-            Role.QA         => "QA",
             _               => string.Empty
         };
     }

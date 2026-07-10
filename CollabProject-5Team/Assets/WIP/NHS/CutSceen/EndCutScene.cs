@@ -1,7 +1,6 @@
 using Cysharp.Threading.Tasks;
 using GameDevTycoon.Core;
 using System.Collections.Generic;
-using System.Text.RegularExpressions;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -100,7 +99,7 @@ public class EndCutScene : MonoBehaviour
         _isTyping = false;
     }
 
-    private void OnNextDialogueClicked()
+    private async void OnNextDialogueClicked()
     {
         if (_isTyping)
         {
@@ -115,6 +114,7 @@ public class EndCutScene : MonoBehaviour
             // 씬 종료
             if (_currentIdx >= _cutSceneList.Count)
             {
+                await SceneLoader.Instance.LoadWithLoadingSceneAsync(SceneName.Title);
             }
             else
             {

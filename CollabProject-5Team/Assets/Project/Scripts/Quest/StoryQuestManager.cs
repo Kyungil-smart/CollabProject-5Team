@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using GameDevTycoon.Core;
 using R3;
 using UnityEngine;
 
@@ -353,13 +354,12 @@ public class StoryQuestManager : MonoBehaviour
     }
     #endregion
 
-    void TryEnterEndingScene()
+    async void TryEnterEndingScene()
     {
         if (Company.Instance.reputation < EndingSceneRequiredReputation) return;
         if (!completedStoryQuestIds.Contains(EndingQuestId)) return;
 
-        // TODO: 마지막 스토리 퀘스트 완료 후 평판 300 달성 시 OnNight 타이밍에 엔딩 씬으로 전환
-        Debug.Log("<color=green>엔딩 진입!</color>");
+        await SceneLoader.Instance.LoadWithLoadingSceneAsync(SceneName.CutScene_End);
     }
 
     #region Save/Load

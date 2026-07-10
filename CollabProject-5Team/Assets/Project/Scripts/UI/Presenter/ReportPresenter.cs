@@ -15,7 +15,7 @@ namespace GameDevTycoon.UI.Ingame
         [SerializeField] private HUDPresenter _hudPresenter;
 
         [Header("프리팹")]
-        [SerializeField] private GameObject _employeeStatusMiniItemPrefab;
+        [SerializeField] private EmployeeStatusMiniItemView _employeeStatusMiniItemPrefab;
 
         [Header("Agenda")]
         [SerializeField] private List<AgendaSO> _allAgendas = new();
@@ -145,10 +145,7 @@ namespace GameDevTycoon.UI.Ingame
                 DestroyImmediate(_view.SlidePreviewContent.GetChild(i).gameObject);
 
             var item = Instantiate(_employeeStatusMiniItemPrefab, _view.SlidePreviewContent);
-            var bindable = item.GetComponent<IBindable<Employee>>();
-            bindable?.Bind(employee);
-
-            Debug.Log($"[ReportPresenter] RefreshEmployeeStatusSlide: {employee.so.Name}, IBindable: {bindable != null}");
+            item.Bind(employee);
         }
 
         /// <summary>
@@ -200,7 +197,7 @@ namespace GameDevTycoon.UI.Ingame
             };
             _view.ShowPanel(panel);
             _view.PanelReportDetail.SetActive(false);
-            _view.SetSlideInteractable(true);
+            _view.SetSlideInteractable(false);
 
             _view.BindReviewCards(_roleIndex, _currentReports, ShowDetail);
         }
@@ -211,7 +208,7 @@ namespace GameDevTycoon.UI.Ingame
             _viewingReport = report;
             _view.SetDetailInfo(report);
             _view.PanelReportDetail.SetActive(true);
-            _view.SetSlideInteractable(false);
+            _view.SetSlideInteractable(true);
             RefreshEmployeeStatusSlide(report.owner);
 
             Debug.Log($"[ReportPresenter] ShowDetail: {report.owner.so.Name}, SlideContent 자식 수: {_view.SlidePreviewContent.childCount}");
@@ -229,14 +226,14 @@ namespace GameDevTycoon.UI.Ingame
                 card.SetDisabled(true);
 
             _view.PanelReportDetail.SetActive(false);
-            _view.SetSlideInteractable(true);
+            _view.SetSlideInteractable(false);
             _view.SetNextButtonInteractable(_roleIndex, true);
         }
 
         private void OnCancelDetail()
         {
             _view.PanelReportDetail.SetActive(false);
-            _view.SetSlideInteractable(true);
+            _view.SetSlideInteractable(false);
         }
 
         // 채택된 보고서를 취소하고 해당 직군 카드를 다시 선택 가능한 상태로 되돌림

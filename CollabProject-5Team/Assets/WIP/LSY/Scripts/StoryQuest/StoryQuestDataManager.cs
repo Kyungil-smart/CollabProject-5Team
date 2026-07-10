@@ -45,14 +45,12 @@ public class StoryQuestDataManager : MonoBehaviour
     public StoryQuestNodeSO GetNode(int nodeId)
     {
         if (_nodeMap.TryGetValue(nodeId, out StoryQuestNodeSO node)) return node;
-        Debug.LogWarning($"[StoryQuestDataManager] 노드 ID {nodeId} 없음");
         return null;
     }
 
     public StoryQuestPoolSO GetPoolEntry(int poolId)
     {
         if (_poolMap.TryGetValue(poolId, out StoryQuestPoolSO entry)) return entry;
-        Debug.LogWarning($"[StoryQuestDataManager] 퀘스트풀 ID {poolId} 없음");
         return null;
     }
 

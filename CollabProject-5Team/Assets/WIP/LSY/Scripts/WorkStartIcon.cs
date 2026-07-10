@@ -7,6 +7,7 @@ public class WorkStartIcon : MonoBehaviour
     [SerializeField] private Button _button;
 
     private RectTransform _rect;
+    private Camera _cam;
     private Transform _target;
     private Vector3 _worldOffset;
 
@@ -15,6 +16,7 @@ public class WorkStartIcon : MonoBehaviour
     private void Awake()
     {
         _rect = GetComponent<RectTransform>();
+        _cam  = Camera.main;
     }
 
     public void SetTarget(Transform target, Vector3 worldOffset)
@@ -28,8 +30,7 @@ public class WorkStartIcon : MonoBehaviour
 
     private void UpdatePosition()
     {
-        if (_target == null || Camera.main == null) return;
-        if (_rect == null) _rect = GetComponent<RectTransform>();
-        _rect.position = Camera.main.WorldToScreenPoint(_target.position + _worldOffset);
+        if (_target == null || _cam == null) return;
+        _rect.position = _cam.WorldToScreenPoint(_target.position + _worldOffset);
     }
 }

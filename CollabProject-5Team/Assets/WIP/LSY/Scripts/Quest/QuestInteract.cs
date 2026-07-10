@@ -19,6 +19,7 @@ public class QuestInteract : MonoBehaviour, IPointerClickHandler, IPointerDownHa
     private const float HoldIconScale = 0.9f; // HOLD 중 아이콘 축소 비율
 
     private RectTransform _rect;
+    private Camera _cam;
     private QuestObject _questObject;
     private Transform _target;
     private Vector3 _worldOffset;
@@ -32,6 +33,7 @@ public class QuestInteract : MonoBehaviour, IPointerClickHandler, IPointerDownHa
     private void Awake()
     {
         _rect = GetComponent<RectTransform>();
+        _cam  = Camera.main;
         if (icon != null) _iconOriginalScale = icon.localScale;
     }
 
@@ -92,11 +94,9 @@ public class QuestInteract : MonoBehaviour, IPointerClickHandler, IPointerDownHa
 
     private void UpdatePosition()
     {
-        if (_target == null || Camera.main == null) return;
+        if (_target == null || _cam == null) return;
 
-        if (_rect == null) _rect = GetComponent<RectTransform>();
-
-        _rect.position = Camera.main.WorldToScreenPoint(_target.position + _worldOffset);
+        _rect.position = _cam.WorldToScreenPoint(_target.position + _worldOffset);
     }
 
     // TAP: 활성 오브젝트가 여러 개면 1탭으로 완료, 1개뿐이면 targetCount번 연타해야 완료

@@ -26,9 +26,10 @@ namespace Dialogue
                     string[] kv = trimmed.Split(new string[] { "-=" }, StringSplitOptions.None);
                     ApplyStat(ref delta, kv[0].Trim(), -ParseValue(kv[1]));
                 }
-                else
+                else if (trimmed.Contains("="))
                 {
-                    Debug.LogWarning($"[DialogueEffectParser] 파싱 불가 항목: {trimmed}");
+                    string[] kv = trimmed.Split(new string[] { "=" }, StringSplitOptions.None);
+                    ApplyStat(ref delta, kv[0].Trim(), ParseValue(kv[1]));
                 }
             }
 
@@ -37,7 +38,7 @@ namespace Dialogue
 
         static void ApplyStat(ref StatDelta delta, string statName, int value)
         {
-            switch (statName)
+            switch (statName.ToLower())
             {
                 case "desire":  delta.desireDelta  += value; break;
                 case "fatigue": delta.fatigueDelta += value; break;
@@ -62,7 +63,6 @@ namespace Dialogue
                     }
                     break;
                 default:
-                    Debug.LogWarning($"[DialogueEffectParser] 알 수 없는 스탯: {statName}");
                     break;
             }
         }
@@ -70,7 +70,6 @@ namespace Dialogue
         static int ParseValue(string raw)
         {
             if (int.TryParse(raw.Trim(), out int result)) return result;
-            Debug.LogWarning($"[DialogueEffectParser] 숫자 파싱 실패: {raw}");
             return 0;
         }
     }
