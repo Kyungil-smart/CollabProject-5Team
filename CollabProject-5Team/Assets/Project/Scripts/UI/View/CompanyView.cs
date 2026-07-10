@@ -170,7 +170,7 @@ namespace GameDevTycoon.UI.Ingame
         {
             _companyNameLabel.text = companyName;
             _officeLevelValue.text = $"{officeLevel} 레벨";
-            _gameRankingValue.text = $"{ranking} 위";
+            //_gameRankingValue.text = $"{ranking} 위";
             _employeeCountValue.text = $"{employeeCount} 명";
             _releasedGameCountValue.text = $"{releasedGameCount} 개";
             _reputationValue.text = reputation.ToString();
